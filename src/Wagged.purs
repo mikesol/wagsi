@@ -4,4 +4,4 @@ import Hack
 import Math
 import Prelude
 
-it = wag $ psci {}
+--it = wag $ psci {}

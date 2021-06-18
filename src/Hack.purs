@@ -22,7 +22,7 @@ newtype Wag
   = Wag
   ( forall proof graph control.
     WAG RunAudio RunEngine proof Unit { | graph } control ->
-    Scene (Extern) RunAudio RunEngine proof Unit
+    Scene Extern RunAudio RunEngine proof Unit
   )
 
 foreign import handlers :: Effect (Object (Wag -> Effect Unit))

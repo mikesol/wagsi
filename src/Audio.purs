@@ -1,10 +1,11 @@
 module Audio where
 
 import Prelude
+
 import Control.Applicative.Indexed (ipure)
 import Data.Either (Either(..))
 import Data.Tuple.Nested (type (/\))
-import Hack (Evt(..), Extern, unwag)
+import Hack (Evt(..), Extern, Wag(..))
 import WAGS.Control.Functions.Validated (ibranch, (@!>))
 import WAGS.Control.Indexed (IxWAG)
 import WAGS.Control.Types (Frame0, Scene)
@@ -31,6 +32,6 @@ piece =
     @!> ibranch \e _ ->
         if e.active then case e.trigger of
           InitialEvent -> Right (ipure unit)
-          HotReload w -> Left (unwag w)
+          HotReload (Wag w) -> Left w
         else
           Right (ipure unit)
