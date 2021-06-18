@@ -10,11 +10,16 @@ module.exports = {
   plugins: [
     new EventHooksPlugin({
       environment: () => {
-        fs.writeFileSync('', 'src/Engine.purs')
+        const fi = fs.readFileSync("src/EngineTemplate.purs");
+        fs.writeFileSync(
+          "module Engine where\n" + fi.split("\n").slice(1),
+          "src/Engine.purs"
+        );
       },
       done: () => {
-        const fi = fs.readFileSync('src/Wagged.purs');
-        fs.writeFileSync(fi, 'src/Engine.purs');
+        const tmpl = fs.readFileSync("src/EngineTemplate.purs");
+        const fi = fs.readFileSync("src/Wagged.purs");
+        fs.writeFileSync(fi, "src/Engine.purs");
       },
     }),
   ],
