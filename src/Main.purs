@@ -3,18 +3,19 @@ module Main where
 import Prelude
 
 import Audio (piece)
+import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (toNullable)
 import Data.Tuple (fst, snd)
-import Control.Alt((<|>))
 import Data.Tuple.Nested (type (/\))
 import Data.Typelevel.Num (class Pos)
 import Data.Vec as V
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
+import Effect.Class.Console as Log
 import FRP.Event (subscribe)
 import Hack (Evt(..), wag)
 import Halogen (ClassName(..))
@@ -113,7 +114,7 @@ handleAction = case _ of
       H.liftEffect do
         subscribe
           (run (pure InitialEvent <|> (HotReload <$> wag)) (pure unit) { easingAlgorithm } (FFIAudio ffiAudio) piece)
-          (const $ pure unit)
+          (Log.info <<< show <<< _.instructions)
     H.modify_ _ { unsubscribe = unsubscribe, audioCtx = Just ctx }
   StopAudio -> do
     { unsubscribe, audioCtx } <- H.get
