@@ -43,6 +43,10 @@ cont ::
   forall newGraph newControl proof.
   GraphIsRenderable newGraph =>
   (Control -> IxWAG RunAudio RunEngine proof Unit Graph {|newGraph} newControl) ->
-  (forall newProof. Extern -> newControl -> IxWAG RunAudio RunEngine newProof Unit {|newGraph} {|newGraph} newControl) ->
+  (forall newProof.
+    Extern ->
+    newControl ->
+    IxWAG RunAudio RunEngine newProof Unit {|newGraph} {|newGraph} newControl
+  ) ->
   Wag
 cont update loop = Wag (unsafeCoerce (cont' update loop))
