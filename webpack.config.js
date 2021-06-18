@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 module.exports = {
   mode: "production",
   entry: "./src/index.js",
@@ -6,6 +7,17 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
   },
+  plugins: [
+    new EventHooksPlugin({
+      environment: () => {
+        fs.writeFileSync('', 'src/Engine.purs')
+      },
+      done: () => {
+        const fi = fs.readFileSync('src/Wagged.purs');
+        fs.writeFileSync(fi, 'src/Engine.purs');
+      },
+    }),
+  ],
   module: {
     rules: [
       {
@@ -28,6 +40,6 @@ module.exports = {
   devServer: {
     contentBase: path.resolve(__dirname, "dist"),
     watchContentBase: true,
-    hot: true
+    hot: true,
   },
 };

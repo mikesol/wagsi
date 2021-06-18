@@ -1,4 +1,4 @@
-module Hack (Wag, wag, unwag, Extern, Evt(..)) where
+module Hack where
 
 import Prelude
 import Data.Array as A
@@ -24,14 +24,6 @@ newtype Wag
     WAG RunAudio RunEngine proof Unit { | graph } control ->
     Scene (Extern) RunAudio RunEngine proof Unit
   )
-
-unwag ::
-  Wag ->
-  ( forall proof graph control.
-    WAG RunAudio RunEngine proof Unit { | graph } control ->
-    Scene (Extern) RunAudio RunEngine proof Unit
-  )
-unwag (Wag w) = w
 
 foreign import handlers :: Effect (Object (Wag -> Effect Unit))
 
