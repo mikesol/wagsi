@@ -15,6 +15,7 @@ import WAGS.Patch (class Patch, ipatch)
 import WAGS.Run (RunAudio, RunEngine)
 import WAGS.Validation (class GraphIsRenderable)
 
+-- stopPrelude
 type Graph
   = ( speaker :: TSpeaker /\ { toSpeaker :: Unit }
     , toSpeaker :: TConstant /\ {}
@@ -23,6 +24,7 @@ type Graph
 type Control
   = Unit
 
+-- startCont
 cont' ::
   forall newGraph newControl proof.
   GraphIsRenderable newGraph =>
@@ -47,17 +49,20 @@ cont' update loop w =
       )
       (ix w)
 
+type Cont newGraph newControl proof
+  = GraphIsRenderable newGraph =>
+    Patch Graph newGraph =>
+    (Control -> IxWAG RunAudio RunEngine proof Unit { | newGraph } { | newGraph } newControl) ->
+    ( forall newProof.
+      Extern ->
+      newControl ->
+      IxWAG RunAudio RunEngine newProof Unit { | newGraph } { | newGraph } newControl
+    ) ->
+    Wag
+
 cont ::
   forall newGraph newControl proof.
-  GraphIsRenderable newGraph =>
-  Patch Graph newGraph =>
-  (Control -> IxWAG RunAudio RunEngine proof Unit { | newGraph } { | newGraph } newControl) ->
-  ( forall newProof.
-    Extern ->
-    newControl ->
-    IxWAG RunAudio RunEngine newProof Unit { | newGraph } { | newGraph } newControl
-  ) ->
-  Wag
+  Cont newGraph newControl proof
 cont update loop = Wag (unsafeCoerce go)
   where
   go :: WAG RunAudio RunEngine proof Unit { | Graph } Control -> Scene Extern RunAudio RunEngine proof Unit

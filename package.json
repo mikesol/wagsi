@@ -19,8 +19,8 @@
     "webpack-dev-server": "^3.11.2"
   },
   "scripts": {
-    "postinstall": "spago install && spago build",
-    "start": "webpack serve --mode=development --open",
+    "postinstall": "node makeEngine.js && spago install && spago build",
+    "start": "node makeEngine.js && webpack serve --mode=development --open",
     "build": "webpack"
   }
 }
