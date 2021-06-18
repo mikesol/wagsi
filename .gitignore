@@ -10,3 +10,4 @@
 /.spago
 /dist/bundle.js
 /scripts/.venv
+/src/Engine.purs
