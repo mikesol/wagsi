@@ -9,8 +9,9 @@ import WAGS.Graph.AudioUnit (TGain, TSinOsc, TSpeaker)
 
 type Graph
   = ( speaker :: TSpeaker /\ { unit0 :: Unit }
-    , unit0 :: TGain /\ { osc0 :: Unit }
+    , unit0 :: TGain /\ { osc0 :: Unit, osc1 :: Unit }
     , osc0 :: TSinOsc /\ {}
+    , osc1 :: TSinOsc /\ {}
     )
 
 type Control
@@ -21,7 +22,7 @@ it =
   (cont :: forall proof. Cont Graph Control proof)
     ( \a ->
         ichange
-          { osc0: 440.0
+          { osc0: 443.0
           , unit0: 0.1
           }
     )

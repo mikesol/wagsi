@@ -1,5 +1,6 @@
 const path = require("path");
 const fs = require("fs");
+const EventHooksPlugin = require('event-hooks-webpack-plugin');
 
 var allBefore = function (str, acc, arr) {
   if (arr === []) {
@@ -18,7 +19,7 @@ var allAfter = function (str, arr) {
   if (arr[0] === str) {
     return arr.slice(1);
   }
-  return allBefore(str, arr.slice(1));
+  return allAfter(str, arr.slice(1));
 };
 
 var removeImportEngine = function (arr) {
@@ -44,6 +45,7 @@ module.exports = {
         );
       },
       done: () => {
+        console.log("Done!!")
         const tmpl = fs.readFileSync("src/EngineTemplate.purs").toString();
         const fi = fs.readFileSync("src/Wagged.purs").toString();
         fs.writeFileSync(
@@ -57,7 +59,7 @@ module.exports = {
               [],
               removeImportEngine(fi.split("\n").slice(1))
             ).join("\n") +
-            allAfter("-- startCont", tmpl.split("\n"))
+            allAfter("-- startCont", tmpl.split("\n")).join('\n')
         );
       },
     }),

@@ -7,7 +7,7 @@ import Data.Either (Either(..))
 import Data.Tuple.Nested (type (/\))
 import Hack (Evt(..), Extern, Wag(..))
 import Unsafe.Coerce (unsafeCoerce)
-import WAGS.Control.Functions.Validated (ibranch)
+import Experiment (ibranch)
 import WAGS.Control.Indexed (IxWAG(..))
 import WAGS.Control.Types (Scene, WAG)
 import WAGS.Graph.AudioUnit (TConstant, TSpeaker)
@@ -39,7 +39,7 @@ cont' update loop w =
       ipatch
       update (extract w)
   in
-    ibranch
+    ibranch (\i -> i { trigger = InitialEvent })
       ( \e a ->
           if e.active then case e.trigger of
             InitialEvent -> Right (loop e a)
