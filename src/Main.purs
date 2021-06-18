@@ -1,12 +1,14 @@
 module Main where
 
 import Prelude
+
 import Audio (piece)
 import Control.Comonad.Cofree (Cofree, (:<))
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (toNullable)
 import Data.Tuple (fst, snd)
+import Control.Alt((<|>))
 import Data.Tuple.Nested (type (/\))
 import Data.Typelevel.Num (class Pos)
 import Data.Vec as V
@@ -14,7 +16,7 @@ import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import FRP.Event (subscribe)
-import Hack (initialWag, wagb)
+import Hack (Evt(..), wag)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.Aff (awaitBody, runHalogenAff)
@@ -109,9 +111,8 @@ handleAction = case _ of
       ffiAudio = (defaultFFIAudio ctx unitCache) { microphone = toNullable microphone }
     unsubscribe <-
       H.liftEffect do
-        initialWag' <- initialWag
         subscribe
-          (run (pure unit) (wagb initialWag') { easingAlgorithm } (FFIAudio ffiAudio) piece)
+          (run (pure InitialEvent <|> (HotReload <$> wag)) (pure unit) { easingAlgorithm } (FFIAudio ffiAudio) piece)
           (const $ pure unit)
     H.modify_ _ { unsubscribe = unsubscribe, audioCtx = Just ctx }
   StopAudio -> do

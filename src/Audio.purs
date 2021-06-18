@@ -1,7 +1,6 @@
 module Audio where
 
 import Prelude
-
 import Control.Applicative.Indexed (ipure)
 import Data.Either (Either(..))
 import Data.Tuple.Nested (type (/\))
@@ -30,7 +29,8 @@ piece ::
 piece =
   createFrame
     @!> ibranch \e _ ->
-      if e.active && e.trigger == HotReload then
-        Left (unwag e.world)
-      else
-        Right $ ipure unit
+        if e.active then case e.trigger of
+          InitialEvent -> Right (ipure unit)
+          HotReload w -> Left (unwag w)
+        else
+          Right (ipure unit)
