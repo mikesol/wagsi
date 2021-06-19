@@ -11,12 +11,15 @@ import Unsafe.Coerce (unsafeCoerce)
 import WAGS.Control.Functions.Validated (ibranch)
 import WAGS.Control.Indexed (IxWAG(..))
 import WAGS.Control.Types (Scene, WAG)
+import WAGS.Create.Optionals (speaker, constant)
 import WAGS.Graph.AudioUnit (TConstant, TSpeaker)
 import WAGS.Patch (class Patch, ipatch)
 import WAGS.Run (RunAudio, RunEngine)
 import WAGS.Validation (class GraphIsRenderable)
 
 -- stopPrelude
+graph = speaker { toSpeaker: constant 0.0}
+
 type Graph
   = ( speaker :: TSpeaker /\ { toSpeaker :: Unit }
     , toSpeaker :: TConstant /\ {}
