@@ -32,6 +32,6 @@ piece =
     @!> ibranch \e _ ->
         if e.active then case e.trigger of
           InitialEvent -> Right (ipure unit)
-          HotReload (Wag w) -> Left w
+          HotReload (Wag w) -> Left (w e)
         else
           Right (ipure unit)

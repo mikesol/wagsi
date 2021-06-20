@@ -32,6 +32,8 @@ type Extern
 newtype Wag
   = Wag
   ( forall world audio engine proof res graph control.
+    Monoid res =>
+    AudioInterpret audio engine =>
     SceneI Evt world ->
     WAG audio engine proof res { | graph } control ->
     Scene (SceneI Evt world) audio engine proof res
@@ -50,102 +52,32 @@ wag =
     wag_ id f
     pure (dewag_ id)
 
-{- cont' ::
-  forall world rAlpha audio engine proof res outGraphAlpha controlAlpha.
-  Monoid res =>
-  AudioInterpret audio engine =>
-  Create rAlpha () outGraphAlpha =>
-  { | rAlpha } ->
-  ( forall rBeta outGraphBeta controlBeta.
-    GraphIsRenderable outGraphBeta =>
-    Create rBeta () outGraphBeta =>
-    Change rBeta outGraphBeta =>
-    Patch outGraphAlpha outGraphBeta =>
-    ( (SceneI Evt world -> controlAlpha -> controlBeta)
-        /\ ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta })
-    ) ->
-    SceneI Evt world ->
-    WAG audio engine proof res { | outGraphAlpha } { control :: controlAlpha, fromTrigger :: Boolean } ->
-    Scene (SceneI Evt world) audio engine proof res
-  )
-cont' _ = go
-  where
-  go ::
-    forall rBeta outGraphBeta controlBeta.
-    GraphIsRenderable outGraphBeta =>
-    Create rBeta () outGraphBeta =>
-    Change rBeta outGraphBeta =>
-    Patch outGraphAlpha outGraphBeta =>
-    ( (SceneI Evt world -> controlAlpha -> controlBeta)
-        /\ ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta })
-    ) ->
-    SceneI Evt world ->
-    WAG audio engine proof res { | outGraphAlpha } { control :: controlAlpha, fromTrigger :: Boolean } ->
-    Scene (SceneI Evt world) audio engine proof res
-  go (changeControl /\ newGraph) env w =
-    let
-      controlAlpha = extract w
+class GetRAlpha (hasRAlpha :: Type) (isRAlpha :: Row Type) | hasRAlpha -> isRAlpha
 
-      controlBeta = changeControl env controlAlpha.control
+instance getRAlpha :: GetRAlpha { | rAlpha } rAlpha
+instance getRAlphaF :: GetRAlpha gra rAlpha => GetRAlpha (i -> gra) rAlpha
+instance getRAlphaT :: GetRAlpha r rAlpha => GetRAlpha (l /\ r) rAlpha
 
-      ((IxWAG wg) :: IxWAG audio engine proof res { | outGraphAlpha } { | outGraphBeta } Unit) = ipatch
-
-      wagBeta = wg w $> { control: controlBeta, fromTrigger: controlAlpha.fromTrigger }
-    in
-      ibranch
-        ( \e a ->
-            let
-              newCtrl /\ rec = newGraph e a.control
-
-              loop =
-                ( ichange ::
-                    forall proofInner.
-                    Change rBeta outGraphBeta =>
-                    { | rBeta } ->
-                    IxWAG
-                      audio
-                      engine
-                      proofInner
-                      res
-                      { | outGraphBeta }
-                      { | outGraphBeta }
-                      Unit
-                )
-                  rec
-                  $> { fromTrigger: false, control: newCtrl }
-            in
-              if e.active then case e.trigger of
-                InitialEvent -> Right loop
-                HotReload (Wag wg) ->
-                  if a.fromTrigger then
-                    Right loop
-                  else
-                    Left (lcmap (map (\x -> x { fromTrigger = true })) (wg e))
-              else
-                Right loop
-        )
-        wagBeta
-  -}
 cont' ::
-  forall world rAlpha audio engine proof res outGraphAlpha controlAlpha.
+  forall world hasRAlpha rAlpha audio engine proof res outGraphAlpha controlAlpha.
   Monoid res =>
   AudioInterpret audio engine =>
+  GetRAlpha hasRAlpha rAlpha =>
   Create rAlpha () outGraphAlpha =>
-  { | rAlpha } ->
+  hasRAlpha ->
   ( forall rBeta outGraphBeta controlBeta.
     GraphIsRenderable outGraphBeta =>
     Create rBeta () outGraphBeta =>
     Change rBeta outGraphBeta =>
     Patch outGraphAlpha outGraphBeta =>
+    (SceneI Evt world -> controlAlpha -> controlBeta) ->
+    ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta }) ->
     (forall m. WAG audio engine proof res { | outGraphBeta } m -> WAG audio engine proof res { | outGraphBeta } m) ->
-    ( (SceneI Evt world -> controlAlpha -> controlBeta)
-        /\ ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta })
-    ) ->
     SceneI Evt world ->
     WAG audio engine proof res { | outGraphAlpha } { control :: controlAlpha, fromTrigger :: Boolean } ->
     Scene (SceneI Evt world) audio engine proof res
   )
-cont' _ forceId (changeControl /\ newGraph) env w =
+cont' _ changeControl newGraph forceId env w =
   let
     controlAlpha = extract w
 

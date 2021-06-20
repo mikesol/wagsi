@@ -54,11 +54,7 @@ module.exports = {
             allBefore("-- stopPrelude", [], tmpl.split("\n"))
               .slice(1)
               .join("\n") +
-            allBefore(
-              "-- wag",
-              [],
-              removeImportEngine(fi.split("\n").slice(1))
-            ).join("\n") +
+            removeImportEngine(fi.split("\n").slice(1)) +
             allAfter("-- startCont", tmpl.split("\n")).join('\n')
         );
       },
