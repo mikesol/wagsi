@@ -1,13 +1,15 @@
 module Wagged where
 
 import Prelude
-
 import Data.Tuple.Nested (type (/\), (/\))
 import Engine (cont)
 import WAGS.Change (ichange)
-import WAGS.Create.Optionals (speaker, gain, sinOsc)
+import WAGS.Create.Optionals
 import WAGS.Graph.AudioUnit (OnOff(..), TGain, TSinOsc, TSpeaker)
 
-graph = speaker { unit0: gain 0.02 { osc0: sinOsc 440.0 } }
+control _ a = a
 
-it = cont (\_ a -> a) (\_ a -> a /\ graph) identity
+graph _ a = a /\ speaker { toSpeaker: constant 0.0 }
+
+-- wag
+it = cont control graph identity
