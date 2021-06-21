@@ -58,32 +58,33 @@ instance getRAlpha :: GetRAlpha { | rAlpha } rAlpha
 instance getRAlphaF :: GetRAlpha gra rAlpha => GetRAlpha (i -> gra) rAlpha
 instance getRAlphaT :: GetRAlpha r rAlpha => GetRAlpha (l /\ r) rAlpha
 
+type WTrigger control = { control :: control, fromTrigger :: Boolean }
+
 cont' ::
-  forall world hasRAlpha rAlpha audio engine proof res outGraphAlpha controlAlpha.
+  forall world hasRAlpha rAlpha audio engine proof res outGraphAlpha controlAlpha
+         rBeta outGraphBeta controlBeta.
   Monoid res =>
   AudioInterpret audio engine =>
   GetRAlpha hasRAlpha rAlpha =>
   Create rAlpha () outGraphAlpha =>
+  -----
+  GraphIsRenderable outGraphBeta =>
+  Create rBeta () outGraphBeta =>
+  Change rBeta outGraphBeta =>
+  Patch outGraphAlpha outGraphBeta =>
   hasRAlpha ->
-  ( forall rBeta outGraphBeta controlBeta.
-    GraphIsRenderable outGraphBeta =>
-    Create rBeta () outGraphBeta =>
-    Change rBeta outGraphBeta =>
-    Patch outGraphAlpha outGraphBeta =>
-    (SceneI Evt world -> controlAlpha -> controlBeta) ->
-    ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta }) ->
-    (forall m. WAG audio engine proof res { | outGraphBeta } m -> WAG audio engine proof res { | outGraphBeta } m) ->
-    SceneI Evt world ->
-    WAG audio engine proof res { | outGraphAlpha } { control :: controlAlpha, fromTrigger :: Boolean } ->
-    Scene (SceneI Evt world) audio engine proof res
-  )
-cont' _ changeControl newGraph forceId env w =
+  (SceneI Evt world -> controlAlpha -> controlBeta) ->
+  ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta }) ->
+  SceneI Evt world ->
+  WAG audio engine proof res { | outGraphAlpha } { control :: controlAlpha, fromTrigger :: Boolean } ->
+  Scene (SceneI Evt world) audio engine proof res
+cont' _ changeControl newGraph env w =
   let
     controlAlpha = extract w
 
     controlBeta = changeControl env controlAlpha.control
 
-    wBeta = forceId (patch w)
+    (wBeta :: WAG audio engine proof res { | outGraphBeta } (WTrigger controlAlpha)) = patch w
 
     wagBeta = wBeta $> { control: controlBeta, fromTrigger: controlAlpha.fromTrigger }
   in

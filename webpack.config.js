@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
-const EventHooksPlugin = require('event-hooks-webpack-plugin');
-
+const EventHooksPlugin = require("event-hooks-webpack-plugin");
+var nCompiles = 0;
 var allBefore = function (str, acc, arr) {
   if (arr === []) {
     return acc;
@@ -44,23 +44,26 @@ module.exports = {
           "module Engine where\n" + fi.split("\n").slice(1).join("\n")
         );
       },
-      done: () => {
-        console.log("Done!!")
-        const tmpl = fs.readFileSync("src/EngineTemplate.purs").toString();
-        const fi = fs.readFileSync("src/Wagged.purs").toString();
-        fs.writeFileSync(
-          "src/Engine.purs",
-          "module Engine where\n" +
-            allBefore("-- stopPrelude", [], tmpl.split("\n"))
-              .slice(1)
-              .join("\n") +
-            allBefore(
-              "-- wag",
-              [],
-              removeImportEngine(fi.split("\n").slice(1))
-            ).join("\n") +
-            allAfter("-- startCont", tmpl.split("\n")).join('\n')
-        );
+      done: (stats) => {
+        if (nCompiles > 0) {
+          //console.log("Done called", nCompiles, stats);
+          const tmpl = fs.readFileSync("src/EngineTemplate.purs").toString();
+          const fi = fs.readFileSync("src/Wagged.purs").toString();
+          fs.writeFileSync(
+            "src/Engine.purs",
+            "module Engine where\n" +
+              allBefore("-- stopPrelude", [], tmpl.split("\n"))
+                .slice(1)
+                .join("\n") +
+              allBefore(
+                "-- wag",
+                [],
+                removeImportEngine(fi.split("\n").slice(1))
+              ).join("\n") +
+              allAfter("-- startCont", tmpl.split("\n")).join("\n")
+          );
+        }
+        nCompiles++;
       },
     }),
   ],
