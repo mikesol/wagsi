@@ -12,5 +12,5 @@ control _ (a :: Unit) = a
 graph e (a :: Unit) =
   a
     /\ speaker
-        { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: 440.0 }
+        { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 }
         }
