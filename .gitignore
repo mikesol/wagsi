@@ -11,3 +11,4 @@
 /dist/bundle.js
 /scripts/.venv
 /src/Engine.purs
+/src/Gopher.purs

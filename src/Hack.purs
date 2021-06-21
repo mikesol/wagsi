@@ -60,7 +60,7 @@ instance getRAlphaT :: GetRAlpha r rAlpha => GetRAlpha (l /\ r) rAlpha
 
 type WTrigger control = { control :: control, fromTrigger :: Boolean }
 
-cont' ::
+cont___w444g ::
   forall world hasRAlpha rAlpha audio engine proof res outGraphAlpha controlAlpha
          rBeta outGraphBeta controlBeta.
   Monoid res =>
@@ -78,7 +78,7 @@ cont' ::
   SceneI Evt world ->
   WAG audio engine proof res { | outGraphAlpha } { control :: controlAlpha, fromTrigger :: Boolean } ->
   Scene (SceneI Evt world) audio engine proof res
-cont' _ changeControl newGraph env w =
+cont___w444g _ changeControl newGraph env w =
   let
     controlAlpha = extract w
 
