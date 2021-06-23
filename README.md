@@ -1,6 +1,6 @@
-# Repl hacks
+# WagsI
 
-Live coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
+Interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
 
 ## Gitpod.io
 
@@ -77,7 +77,7 @@ graph (e :: Extern) (a :: Unit) =
 
 ## Cheat-sheet
 
-To see the various functions, you can use from `wags`, check out the Wags quick guide and the [examples in `purescript-wags`](https://github.com/mikesol/purescript-wags/tree/main/examples). Otherwise, the world's your oyster. It's vanilla PureScript. Go to town with monads, applicative functors, comonads, exotic typeclasses...
+Check out the Wags [cheat sheet](https://github.com/mikesol/purescript-wags/blob/main/CHEATSHEET.md), the [examples in `purescript-wags`](https://github.com/mikesol/purescript-wags/tree/main/examples), and the Pursuit documentation for constructing audio units like `sinOsc`, `highpass`, `loopBuf`, `convolver` etc (https://pursuit.purescript.org/packages/purescript-wags/0.3.2/docs/WAGS.Create.Optionals). Otherwise, the world's your oyster. It's vanilla PureScript. Go to town with monads, applicative functors, comonads, exotic typeclasses...
 
 ## Advanced usage
 
