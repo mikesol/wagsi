@@ -12,3 +12,4 @@
 /scripts/.venv
 /src/Engine.purs
 /src/Gopher.purs
+ide-purescript-0.25.0.vsix
