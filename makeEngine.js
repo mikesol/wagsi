@@ -5,4 +5,6 @@ fs.writeFileSync(
   "src/Engine.purs",
   "module Engine where\n" + fi.split("\n").slice(1).join("\n")
 );
-fs.unlinkSync("src/Gopher.purs");
+try {
+  fs.unlinkSync("src/Gopher.purs");
+} catch {}

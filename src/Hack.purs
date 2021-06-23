@@ -45,6 +45,11 @@ foreign import wag_ :: String -> (Wag -> Effect Unit) -> Effect Unit
 
 foreign import dewag_ :: String -> Effect Unit
 
+renderableTuple :: forall a b c. Create b () c => GraphIsRenderable c => a -> { | b } -> a /\ { | b }
+renderableTuple = (/\)
+
+infixr 6 renderableTuple as /-\
+
 wag :: Event Wag
 wag =
   makeEvent \f -> do
