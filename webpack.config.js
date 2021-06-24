@@ -84,6 +84,7 @@ module.exports = {
   devServer: {
     contentBase: path.resolve(__dirname, "dist"),
     watchContentBase: true,
+    disableHostCheck: true,
     hot: true,
   },
 };
