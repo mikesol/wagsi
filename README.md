@@ -19,7 +19,7 @@ The best way to get up and started is on [github.io](https://github.io).  Here's
 graph e (a :: Unit) = a /-\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
 ```
 
-Then, you can change the graph and, whenever you save the document, the audio will update after a short pause.
+Then, you can change the graph and, whenever you save the document, the audio will update after a short pause. When restarting, you always need to _change_ some value in `Wagged.purs` (ie add a frivolous toplevel declaration) so that it will compile. This is a known issue & hopefully will be fixed soon.
 
 ## API
 
