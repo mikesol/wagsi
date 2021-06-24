@@ -2,11 +2,30 @@
 
 Interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
 
-## Gitpod.io
+## Github Codespaces
 
 You can check out this video, a summary of which is provided below:
 
-The best way to get up and started is on [gitpod.io](https://gitpod.io).  Here's how!
+1. Sign up for [GitHub Codespaces](https://github.com/codespaces).
+1. Fork https://github.com/mikesol/wagsi.
+1. On the [Codespaces page](https://github.com/codespaces), create a new codespace for this repo.
+1. From the terminal on the bottom of the screen, run `npm install`.
+1. Run `npm run ide:codespaces` to install a forked version of PureScript IDE.
+1. Press `Ctrl+Shift+P` and look for the command **PureScript: Restart/Reconnect purs IDE server**. Select this. You can monitor the output of the PureScript IDE server by clicking on the output tab. Eventually, yellow (or red) squigglies should show up in your source files.
+1. Go to the **Ports** tab and add a new port **8080**, making sure it is set to **Public** (the default is _private_, so you'll have to change this).
+1. Still in the **Ports** tab, copy the URL under "local address" into the `codespacesPublicUrl` field of your package.json.
+1. Run `npm run start:codespaces` to start the webpage.
+1. Navigate to the same page as the one you copied to `codespacesPublicUrl`.
+1. Once the page with the local address loads, click **Start audio**.
+1. Back in the online editor, open up `Wagged.purs` and start making some music! For inspiration, you can use this `graph`:
+
+```purescript
+graph e (a :: Unit) = a /-\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
+```
+
+Then, you can change the graph and, whenever you save the document, the audio will update after a short pause. When restarting, you always need to _change_ some value in `Wagged.purs` (ie add a frivolous toplevel declaration) so that it will compile. This is a known issue & hopefully will be fixed soon.
+
+## Gitpod.io
 
 1. Sign up for an account.
 1. Navigate to https://www.gitpod.io/#https://github.com/mikesol/wagsi. This will automatically provision your gitpod environment. Note that you only need to do this once - you can reboot the environment after creating it for the first time.

@@ -27,5 +27,6 @@
     "ide:gitpod": "wget https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/language-purescript-0.2.5.vsix && wget https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/ide-purescript-0.25.0.vsix && code --install-extension /workspace/wagsi/language-purescript-0.2.5.vsix && code --install-extension /workspace/wagsi/ide-purescript-0.25.0.vsix && rm language-purescript-0.2.5.vsix && rm ide-purescript-0.25.0.vsix",
     "ide:codespaces": "wget https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/language-purescript-0.2.5.vsix && wget https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/ide-purescript-0.25.0.vsix && code --install-extension /workspaces/wagsi/language-purescript-0.2.5.vsix && code --install-extension /workspaces/wagsi/ide-purescript-0.25.0.vsix && rm language-purescript-0.2.5.vsix && rm ide-purescript-0.25.0.vsix",
     "build": "webpack"
-  }
+  },
+  "dependencies": {}
 }
