@@ -12,7 +12,6 @@ You can check out this video, a summary of which is provided below:
 1. From the terminal on the bottom of the screen, run `npm install`.
 1. Run `npm run ide:codespaces` to install a forked version of PureScript IDE.
 1. **Exit and re-enter codespaces** for the PureScript IDE installation to take effect. You only need to do this after the first install.
-1. Press `Ctrl+Shift+P` and look for the command **PureScript: Restart/Reconnect purs IDE server**. Select this. You can monitor the output of the PureScript IDE server by clicking on the output tab. Eventually, yellow (or red) squigglies should show up in your source files.
 1. Go to the **Ports** tab and add a new port **8080**, making sure it is set to **Public** (the default is _private_, so you'll have to change this).
 1. Still in the **Ports** tab, copy the URL under "local address" into the `codespacesPublicUrl` field of your package.json.
 1. Run `npm run start:codespaces` to start the webpage.
