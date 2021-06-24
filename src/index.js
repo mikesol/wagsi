@@ -5,11 +5,13 @@ import hack from "../output/Hack/foreign.js";
 main.main();
 
 if (module.hot) {
-  module.hot.accept("../output/Gopher/index.js", function() {
-    console.log('Hello wags!', psci.w_4_4_gg_);
-    var handlers = hack.handlers();
-    for (var item in handlers) {
-      handlers[item](psci.w_4_4_gg_)();
+  module.hot.accept("../output/Gopher/index.js", function () {
+    if (psci.w_4_4_gg_) {
+      console.log("Hello wags!");
+      var handlers = hack.handlers();
+      for (var item in handlers) {
+        handlers[item](psci.w_4_4_gg_)();
+      }
     }
-  })
+  });
 }
