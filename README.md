@@ -4,7 +4,10 @@ Interactive coding with [`purescript-wags`](https://github.com/mikesol/purescrip
 
 ## Github Codespaces
 
-You can check out this video, a summary of which is provided below:
+[![Wags](https://img.youtube.com/vi/tHa7Eh9Ktyo/0.jpg)](https://www.youtube.com/watch?v=tHa7Eh9Ktyo)
+
+
+You can check out the above video, a summary of which is provided below:
 
 1. Sign up for [GitHub Codespaces](https://github.com/codespaces).
 1. Fork https://github.com/mikesol/wagsi.
