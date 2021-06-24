@@ -6,10 +6,10 @@ Interactive coding with [`purescript-wags`](https://github.com/mikesol/purescrip
 
 You can check out this video, a summary of which is provided below:
 
-The best way to get up and started is on [github.io](https://github.io).  Here's how!
+The best way to get up and started is on [gitpod.io](https://gitpod.io).  Here's how!
 
 1. Sign up for an account.
-1. Navigate to https://github.io/#https://github.com/mikesol/wagsi. This will automatically provision your gitpod environment. Note that you only need to do this once - you can reboot the environment after creating it for the first time.
+1. Navigate to https://www.gitpod.io/#https://github.com/mikesol/wagsi. This will automatically provision your gitpod environment. Note that you only need to do this once - you can reboot the environment after creating it for the first time.
 1. From the terminal on the bottom of the screen, run `npm install && npm run ide && npm start`. On reboots, you need only run `npm install && npm start`.
 1. You'll see a pop-up asking to open a port and to open the page in your browser. Click on both. This will open a new page for your audio session.
 1. On the new page, click **Start audio**.
