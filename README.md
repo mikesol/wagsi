@@ -102,10 +102,6 @@ graph (e :: Extern) (a :: Unit) =
 
 Check out the Wags [cheat sheet](https://github.com/mikesol/purescript-wags/blob/main/CHEATSHEET.md), the [examples in `purescript-wags`](https://github.com/mikesol/purescript-wags/tree/main/examples), and the Pursuit documentation for constructing audio units like `sinOsc`, `highpass`, `loopBuf`, `convolver` etc (https://pursuit.purescript.org/packages/purescript-wags/0.3.2/docs/WAGS.Create.Optionals). Otherwise, the world's your oyster. It's vanilla PureScript. Go to town with monads, applicative functors, comonads, exotic typeclasses...
 
-## Advanced usage
-
-You can pull in whatever audio buffers, external events (MIDI, mouse clicks) and states (mouse position, axial tilt of the Earth) into your session. To do this, you'll need to modify the file `Main.purs`. This video shows a few examples of that:
-
 ## Local start
 
 It is also possible to run this repo locally.  Here are the steps:
