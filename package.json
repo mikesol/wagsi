@@ -21,7 +21,7 @@
   "scripts": {
     "postinstall": "node makeEngine.js && spago install && spago build",
     "start": "node makeEngine.js && webpack serve --mode=development --open",
-    "ide": "wget https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/ide-purescript-0.25.0.vsix && code --install-extension ide-purescript-0.25.0.vsix",
+    "gitpod": "wget https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/ide-purescript-0.25.0.vsix && code --install-extension /workspace/wagsi/ide-purescript-0.25.0.vsix",
     "build": "webpack"
   }
 }

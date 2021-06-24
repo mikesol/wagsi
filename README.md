@@ -10,10 +10,13 @@ The best way to get up and started is on [gitpod.io](https://gitpod.io).  Here's
 
 1. Sign up for an account.
 1. Navigate to https://www.gitpod.io/#https://github.com/mikesol/wagsi. This will automatically provision your gitpod environment. Note that you only need to do this once - you can reboot the environment after creating it for the first time.
-1. From the terminal on the bottom of the screen, run `npm install && npm run ide && npm start`. On reboots, you need only run `npm install && npm start`.
+1. From the terminal on the bottom of the screen, run `npm install`.
+1. On the left panel, click the **Extensions** icon (the four boxes), search for **PureScript Language Support**, and install it. Do _not_ install PureScript IDE. If you do, it's no biggie - just uninstall it. We'll be installing a custom one in the next step.
+1. Run `npm run gitpod` to install PureScript IDE.
+1. Run `npm start` to start the webpage.
 1. You'll see a pop-up asking to open a port and to open the page in your browser. Click on both. This will open a new page for your audio session.
 1. On the new page, click **Start audio**.
-1. Back in the online editor, open up Wagged and start making some music! For inspiration, you can use this for `graph`:
+1. Back in the online editor, open up Wagged and start making some music! For inspiration, you can use this `graph`:
 
 ```purescript
 graph e (a :: Unit) = a /-\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
