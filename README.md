@@ -11,7 +11,6 @@ The best way to get up and started is on [gitpod.io](https://gitpod.io).  Here's
 1. Sign up for an account.
 1. Navigate to https://www.gitpod.io/#https://github.com/mikesol/wagsi. This will automatically provision your gitpod environment. Note that you only need to do this once - you can reboot the environment after creating it for the first time.
 1. From the terminal on the bottom of the screen, run `npm install`.
-1. On the left panel, click the **Extensions** icon (the four boxes), search for **PureScript Language Support**, and install it. Do _not_ install PureScript IDE. If you do, it's no biggie - just uninstall it. We'll be installing a custom one in the next step.
 1. Run `npm run gitpod` to install PureScript IDE.
 1. Press `Ctrl+Shift+P` and look for the command **PureScript: Restart/Reconnect purs IDE server**. Select this. You can monitor the output of the purescript ide server by clicking on the output tab. Eventually, yellow (or red) squigglies should show up in your source files.
 1. Run `npm start` to start the webpage.
