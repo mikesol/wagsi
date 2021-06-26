@@ -1,6 +1,7 @@
 module Hack where
 
 import Prelude
+
 import Control.Comonad (extract)
 import Data.Array as A
 import Data.Either (Either(..))
@@ -13,6 +14,7 @@ import Effect (Effect)
 import Effect.Random (randomInt)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
+import FromEnv (class FromEnv, fromEnv)
 import WAGS.Change (class Change, ichange)
 import WAGS.Control.Functions.Validated (ibranch, (@!>))
 import WAGS.Control.Indexed (IxWAG)
@@ -52,7 +54,7 @@ foreign import dewag_ :: String -> Effect Unit
 
 wagsableTuple ::
   forall world controlOld controlNew b c.
-  Monoid controlNew =>
+  FromEnv (SceneI Evt world) controlNew =>
   CreateT b () c =>
   GraphIsRenderable c =>
   (SceneI Evt world -> controlOld -> controlNew) ->
@@ -103,9 +105,8 @@ cont___w444g ::
   Patch outGraphAlpha outGraphBeta =>
   -- the transition from the first scene to beta in case we start in the middle
   Patch () outGraphBeta =>
-  -- controlBeta has to be a monoid in case we start in the middle
-  -- in the future, we can consider determining this by the environment as well
-  Monoid controlBeta =>
+  -- controlBeta has to be a FromEnv in case we start in the middle
+  FromEnv (SceneI Evt world) controlBeta =>
   hasRAlpha ->
   ( (SceneI Evt world -> controlAlpha -> controlBeta)
       /\ ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta })
@@ -133,7 +134,7 @@ cont___w444g _ (changeControl /\ newGraph) =
   createFrame ::
     SceneI Evt world ->
     IxWAG audio engine Frame0 res {} { | outGraphBeta } { fromTrigger :: Boolean, control :: controlBeta }
-  createFrame _ = ipatch $> { fromTrigger: false, control: mempty }
+  createFrame e = ipatch $> { fromTrigger: false, control: fromEnv e }
 
   branchingLogic ::
     forall proofB.
