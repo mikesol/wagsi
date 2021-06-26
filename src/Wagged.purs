@@ -8,7 +8,7 @@ import WAGS.Change (ichange)
 import WAGS.Create.Optionals
 import WAGS.Graph.AudioUnit (OnOff(..), TGain, TSinOsc, TSpeaker)
 
-control (_:: Extern) (a :: Unit) = a
+control (_ :: Extern) (a :: Unit) = a
 
 -- change this to make sound
 -- for example, you can try:

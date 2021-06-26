@@ -1,13 +1,13 @@
 module Main where
 
 import Prelude
-
 import Audio (piece)
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Promise (toAffE)
 import Data.Foldable (for_)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Newtype (unwrap)
 import Data.Nullable (toNullable)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested (type (/\))
@@ -17,8 +17,9 @@ import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import FRP.Event (subscribe)
+import Foreign (Foreign)
 import Foreign.Object as O
-import Hack (Evt(..), wag)
+import Hack (Evt(..), Wag(..), wag)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.Aff (awaitBody, runHalogenAff)
@@ -102,6 +103,10 @@ easingAlgorithm =
   in
     fOf 15
 
+foreign import cachedScene :: Maybe Wag -> (Wag -> Maybe Wag) -> Effect (Maybe Wag)
+
+foreign import storeWag :: Foreign
+
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   StartAudio -> do
@@ -122,8 +127,9 @@ handleAction = case _ of
           }
     unsubscribe <-
       H.liftEffect do
+        maybeWag <- cachedScene Nothing Just
         subscribe
-          (run (pure InitialEvent <|> (HotReload <$> wag)) (pure unit) { easingAlgorithm } (FFIAudio ffiAudio) piece)
+          (run (pure InitialEvent <|> (HotReload <$> wag)) (pure unit) { easingAlgorithm } (FFIAudio ffiAudio) (fromMaybe piece ((\(Wag wg) -> fst wg) <$> maybeWag)))
           (const (pure unit)) --(Log.info <<< show <<< _.instructions)
     H.modify_ _ { unsubscribe = unsubscribe, audioCtx = Just ctx }
   StopAudio -> do

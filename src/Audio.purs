@@ -1,9 +1,11 @@
 module Audio where
 
 import Prelude
+
 import Control.Applicative.Indexed (ipure)
 import Data.Either (Either(..))
 import Data.Profunctor (lcmap)
+import Data.Tuple (snd)
 import Data.Tuple.Nested (type (/\))
 import Hack (Evt(..), Extern, Wag(..))
 import WAGS.Control.Functions.Validated (ibranch, (@!>))
@@ -42,6 +44,6 @@ piece =
               if a.fromTrigger then
                 Right loop
               else
-                Left (lcmap (map (\x -> x { fromTrigger = true })) (wg e))
+                Left (lcmap (map (\x -> x { fromTrigger = true })) (snd wg e))
           else
             Right loop
