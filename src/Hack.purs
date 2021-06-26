@@ -45,10 +45,20 @@ foreign import wag_ :: String -> (Wag -> Effect Unit) -> Effect Unit
 
 foreign import dewag_ :: String -> Effect Unit
 
-renderableTuple :: forall a b c. CreateT b () c => GraphIsRenderable c => a -> { | b } -> a /\ { | b }
-renderableTuple = (/\)
+wagsableTuple ::
+  forall world controlOld controlNew b c.
+  Monoid controlNew =>
+  CreateT b () c =>
+  GraphIsRenderable c =>
+  (SceneI Evt world -> controlOld -> controlNew) ->
+  (SceneI Evt world -> controlNew -> (controlNew /\ { | b })) ->
+  (
+    (SceneI Evt world -> controlOld -> controlNew) /\
+    (SceneI Evt world -> controlNew -> (controlNew /\ { | b }))
+  )
+wagsableTuple = (/\)
 
-infixr 6 renderableTuple as /-\
+infixr 6 wagsableTuple as /@\
 
 wag :: Event Wag
 wag =
@@ -78,12 +88,12 @@ cont___w444g ::
   Change rBeta outGraphBeta =>
   Patch outGraphAlpha outGraphBeta =>
   hasRAlpha ->
-  (SceneI Evt world -> controlAlpha -> controlBeta) ->
-  ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta }) ->
+  ((SceneI Evt world -> controlAlpha -> controlBeta) /\
+  ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta })) ->
   SceneI Evt world ->
   WAG audio engine proof res { | outGraphAlpha } { control :: controlAlpha, fromTrigger :: Boolean } ->
   Scene (SceneI Evt world) audio engine proof res
-cont___w444g _ changeControl newGraph env w =
+cont___w444g _ (changeControl /\ newGraph) env w =
   let
     controlAlpha = extract w
 
