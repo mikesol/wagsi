@@ -16,7 +16,7 @@ import Foreign.Object (Object)
 import WAGS.Change (class Change, ichange)
 import WAGS.Control.Functions.Validated (ibranch)
 import WAGS.Control.Types (Scene, WAG)
-import WAGS.Create (class Create)
+import WAGS.CreateT (class CreateT)
 import WAGS.Interpret (class AudioInterpret)
 import WAGS.Patch (class Patch, patch)
 import WAGS.Run (SceneI)
@@ -45,7 +45,7 @@ foreign import wag_ :: String -> (Wag -> Effect Unit) -> Effect Unit
 
 foreign import dewag_ :: String -> Effect Unit
 
-renderableTuple :: forall a b c. Create b () c => GraphIsRenderable c => a -> { | b } -> a /\ { | b }
+renderableTuple :: forall a b c. CreateT b () c => GraphIsRenderable c => a -> { | b } -> a /\ { | b }
 renderableTuple = (/\)
 
 infixr 6 renderableTuple as /-\
@@ -71,10 +71,10 @@ cont___w444g ::
   Monoid res =>
   AudioInterpret audio engine =>
   GetRAlpha hasRAlpha rAlpha =>
-  Create rAlpha () outGraphAlpha =>
+  CreateT rAlpha () outGraphAlpha =>
   -----
   GraphIsRenderable outGraphBeta =>
-  Create rBeta () outGraphBeta =>
+  CreateT rBeta () outGraphBeta =>
   Change rBeta outGraphBeta =>
   Patch outGraphAlpha outGraphBeta =>
   hasRAlpha ->
