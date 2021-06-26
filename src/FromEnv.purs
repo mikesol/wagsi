@@ -49,8 +49,8 @@ instance fromEnvLast :: Monoid (Last a) => FromEnv anything (Last a) where
 class FromEnvRow' (rl :: RowList.RowList Type) (e :: Type) (o :: Row Type) | rl e -> o where
   fromEnvRow' :: Proxy rl -> e -> { | o }
 
-instance fromEnvRowCons :: (IsSymbol a, Row.Lacks a x, FromEnv e fo, FromEnvRow' c e x, Row.Cons a fo x o) => FromEnvRow' (RowList.Cons a b c) e o where
-  fromEnvRow' _ e = Record.insert (Proxy :: _ a) (fromEnv e) (fromEnvRow' (Proxy :: _ c) e)
+instance fromEnvRowCons :: (IsSymbol sym, Row.Lacks sym restRow, FromEnv e res, FromEnvRow' restRL e restRow, Row.Cons sym res restRow o) => FromEnvRow' (RowList.Cons sym res restRL) e o where
+  fromEnvRow' _ e = Record.insert (Proxy :: _ sym) (fromEnv e) (fromEnvRow' (Proxy :: _ restRL) e)
 
 instance fromEnvRowNil :: FromEnvRow' (RowList.Nil) e () where
   fromEnvRow' _ _ = {}
