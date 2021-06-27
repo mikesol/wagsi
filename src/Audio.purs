@@ -7,6 +7,7 @@ import Data.Either (Either(..))
 import Data.Profunctor (lcmap)
 import Data.Tuple (snd)
 import Data.Tuple.Nested (type (/\))
+import FromEnv (ORow(..))
 import Hack (Evt(..), Extern, Wag(..))
 import WAGS.Control.Functions.Validated (ibranch, (@!>))
 import WAGS.Control.Indexed (IxWAG)
@@ -24,11 +25,11 @@ type SceneType
     }
 
 type InitialControl
-  = { fromTrigger :: Boolean, control :: Unit }
+  = { fromTrigger :: Boolean, control :: ORow () }
 
 createFrame ::
   Extern -> FrameTp RunAudio RunEngine Frame0 {} SceneType InitialControl
-createFrame _ = ipatch $> { fromTrigger: false, control: unit }
+createFrame _ = ipatch $> { fromTrigger: false, control: ORow {} }
 
 piece ::
   Scene Extern RunAudio RunEngine Frame0 Unit
@@ -36,7 +37,7 @@ piece =
   createFrame
     @!> ibranch \e a ->
         let
-          loop = ipure { fromTrigger: false, control: unit }
+          loop = ipure { fromTrigger: false, control: a.control }
         in
           if e.active then case e.trigger of
             InitialEvent -> Right loop

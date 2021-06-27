@@ -70,6 +70,8 @@ control :: Extern -> CP0 -> CP1
 control e = union { volume1: e.time % 0.2 } -- initializes volume1 at the current time mod 0.2
 ```
 
+One pattern I've found useful is to use `ORow`, which is a row of orthogonal functions from `env` to some value.  A further simplification is using `ezctrl`, which fills in the terms of the `ORow` (left-biased) in cases where one does not need to reset or manipulate existing values in the accumulator.
+
 ### graph
 
 `graph` is a function that accepts the the external environment and a control parameter of type `T1` and outputs a tuple with the control parameter of type `T1` and a valid audio graph. A _valid_ audio graph is one that conforms to the typeclass `GraphIsRenderable`. This will check, amongst other things, that you only have one microphone and one speaker, that there are no orphaned audio nodes, etc. This check is performed every time you save, and if the graph is not renderable, you'll see an error message.
