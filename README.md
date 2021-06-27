@@ -23,7 +23,7 @@ You can check out the above video, a summary of which is provided below:
 1. Back in the online editor, open up `Wagged.purs` and start making some music! For inspiration, you can use this `graph`:
 
 ```purescript
-graph e (a :: Unit) = a /-\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
+graph e (a :: Unit) = a /\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
 ```
 
 Then, you can change the graph and, whenever you save the document, the audio will update after a short pause. When restarting, you always need to _change_ some value in `Wagged.purs` (ie add a frivolous toplevel declaration) so that it will compile. This is a known issue & hopefully will be fixed soon.
@@ -41,7 +41,7 @@ Then, you can change the graph and, whenever you save the document, the audio wi
 1. Back in the online editor, open up Wagged and start making some music! For inspiration, you can use this `graph`:
 
 ```purescript
-graph e (a :: Unit) = a /-\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
+graph e (a :: Unit) = a /\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
 ```
 
 Then, you can change the graph and, whenever you save the document, the audio will update after a short pause. When restarting, you always need to _change_ some value in `Wagged.purs` (ie add a frivolous toplevel declaration) so that it will compile. This is a known issue & hopefully will be fixed soon.
@@ -72,7 +72,7 @@ control e = union { volume1: e.time % 0.2 } -- initializes volume1 at the curren
 
 ### graph
 
-`graph` is a function that accepts the the external environment and a control parameter of type `T1` and outputs a tuple with the control parameter of type `T1` and a valid audio graph. A _valid_ audio graph is one that conforms to the typeclass `GraphIsRenderable`. This will check, amongst other things, that you only have one microphone and one speaker, that there are no orphaned audio nodes, etc. This check is performed every time you save, and if the graph is not renderable, you'll see an error message. All of the examples use the operator `/-\` to construct this tuple.
+`graph` is a function that accepts the the external environment and a control parameter of type `T1` and outputs a tuple with the control parameter of type `T1` and a valid audio graph. A _valid_ audio graph is one that conforms to the typeclass `GraphIsRenderable`. This will check, amongst other things, that you only have one microphone and one speaker, that there are no orphaned audio nodes, etc. This check is performed every time you save, and if the graph is not renderable, you'll see an error message.
 
 Because the types of the output of `graph` are monstrous, it is advised not to try to write them out. There'll be a Yellow Squiggly of Triumph under the term in VSCode to signify that it compiles cleanly.
 
@@ -81,7 +81,7 @@ type CP1 = { volume0 :: Number, volume1 :: Number }
 
 graph (e :: Extern) (a :: CP1) =
   (a { volume0 = a.volume0 + (e.time % 0.1) })
-    /-\
+    /\
       speaker
         { unit0: a.volume0 { osc0: sinOsc 440.0 }
         , unit1: a.volume1 { osc1: sinOsc 440.0 }
@@ -99,7 +99,7 @@ myFuncOfTime t = (cos (pi * t) * -0.02 + 0.02)
 control (_:: Extern) (a :: Unit) = a
 
 graph (e :: Extern) (a :: Unit) =
-  a /-\ speaker { unit0: gain (myFuncOfTime e.time) { osc0: sinOsc 440.0 } }
+  a /\ speaker { unit0: gain (myFuncOfTime e.time) { osc0: sinOsc 440.0 } }
 ```
 
 ## Cheat-sheet
