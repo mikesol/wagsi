@@ -4,6 +4,11 @@ import psci from "../output/Gopher/index.js";
 import hack from "../output/Hack/foreign.js";
 main.main();
 
+if (psci.w_4_4_gg_) {
+  console.log("Found an initial wag!");
+  main.storeWag.wag = psci.w_4_4_gg_;
+}
+
 if (module.hot) {
   module.hot.accept("../output/Gopher/index.js", function () {
     if (psci.w_4_4_gg_) {
