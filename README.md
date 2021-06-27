@@ -48,13 +48,15 @@ Then, you can change the graph and, whenever you save the document, the audio wi
 
 ## API
 
-The entire workspace for building a live session lives in a `src/Wagged.purs`. There are two top-level declarations that need to have a specific type.
+The entire workspace for building a live session lives in a `src/Wagged.purs`. There's only one top-level declaration that needs a specific type: `wagsi`. If you use the constructor `/@\`, it'll perform most of the necessary checks to make sure the type is correct.
 
 ```purescript
 control (_:: Extern) (a :: Unit) = a
 
 graph (e :: Extern) (a :: Unit) =
-  a /-\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
+  a /\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
+
+wagsi = control /@\ graph
 ```
 
 ### control
