@@ -41,7 +41,7 @@ module.exports = {
         const fi = fs.readFileSync("src/EngineTemplate.purs").toString();
         fs.writeFileSync(
           "src/Engine.purs",
-          "module Engine where\n" + fi.split("\n").slice(1).join("\n")
+          "module Engine where\n" + fi.split(/\r\n|\n|\r/).slice(1).join("\n")
         );
       },
       done: (stats) => {
@@ -52,10 +52,10 @@ module.exports = {
           fs.writeFileSync(
             "src/Engine.purs",
             "module Engine where\n" +
-              allBefore("-- stopPrelude", [], tmpl.split("\n"))
+              allBefore("-- stopPrelude", [], tmpl.split(/\r\n|\n|\r/))
                 .slice(1)
                 .join("\n") +
-              fi.split("\n").slice(1).join("\n")
+              fi.split(/\r\n|\n|\r/).slice(1).join("\n")
           );
         }
         nCompiles++;
