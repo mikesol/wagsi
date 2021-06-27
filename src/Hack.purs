@@ -1,7 +1,6 @@
 module Hack where
 
 import Prelude
-
 import Control.Comonad (extract)
 import Data.Array as A
 import Data.Either (Either(..))
@@ -37,10 +36,8 @@ newtype Wag
   ( forall world audio engine proof res graph control.
     Monoid res =>
     AudioInterpret audio engine =>
-    -- this is the piece in case we've already started
     Scene (SceneI Evt world) audio engine proof res
-      /\ -- this is the continuation
-      ( SceneI Evt world ->
+      /\ ( SceneI Evt world ->
         WAG audio engine proof res { | graph } control ->
         Scene (SceneI Evt world) audio engine proof res
       )
@@ -73,25 +70,27 @@ wag =
     wag_ id f
     pure (dewag_ id)
 
-class GetRAlpha hasRAlpha isRAlpha | hasRAlpha -> isRAlpha
+class GetRAlphaAndControlAlpha wagsi rAlpha controlAlpha | wagsi -> rAlpha controlAlpha
 
-instance getRAlpha :: GetRAlpha { | rAlpha } rAlpha
-
-instance getRAlphaF :: GetRAlpha gra rAlpha => GetRAlpha (i -> gra) rAlpha
-
-instance getRAlphaT :: GetRAlpha r rAlpha => GetRAlpha (l /\ r) rAlpha
+instance getRAlphaAndControlAlpha ::
+  GetRAlphaAndControlAlpha
+    ( (env -> controlOld -> controlNew)
+        /\ (env -> controlNew -> (controlNew /\ { | b }))
+    )
+    b
+    controlOld
 
 type WTrigger control
   = { control :: control, fromTrigger :: Boolean }
 
 cont___w444g ::
-  forall world hasRAlpha rAlpha audio engine proof res outGraphAlpha controlAlpha rBeta outGraphBeta controlBeta.
+  forall world wagsi rAlpha audio engine proof res outGraphAlpha controlAlpha rBeta outGraphBeta controlBeta.
   -- the residual always has to be a monoid
   Monoid res =>
   -- the audio needs to be renderable
   AudioInterpret audio engine =>
   -- gets an r alpha from the input term. this is usually a graph
-  GetRAlpha hasRAlpha rAlpha =>
+  GetRAlphaAndControlAlpha wagsi rAlpha controlAlpha =>
   -- computes the input graph from rAlpha, used for patching
   CreateT rAlpha () outGraphAlpha =>
   -----
@@ -107,7 +106,7 @@ cont___w444g ::
   Patch () outGraphBeta =>
   -- controlBeta has to be a FromEnv in case we start in the middle
   FromEnv (SceneI Evt world) controlBeta =>
-  hasRAlpha ->
+  wagsi ->
   ( (SceneI Evt world -> controlAlpha -> controlBeta)
       /\ ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta })
   ) ->
