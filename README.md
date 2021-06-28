@@ -2,10 +2,19 @@
 
 Interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
 
+## Jam sessions!
+
+[The first wagsi jam session!](https://twitter.com/stronglynormal/status/1409566300452577286)
+
+If you're attending a wagsi Jam session (we're at 0.0.1), please make sure to follow these instructions.
+
+1. Install VSCode and the VSCode Live Share extension. Once the extension is installed, click on the Live Share button on the left bar (the arrow bending counterclockwise around a circle). During the actual Jam Session, you'll need to sign in with GitHub or a Microsoft account, so make sure to have one of those as well.
+1. Make sure to join the live chat (usually Google Meet or Discord) from a _different_ device than the one doing the audio rendering in the browser. For example, you can use your phone to render the audio and the computer for joining the meetup or vice versa. Also, if possible, make sure the device that is playing audio from the browser has a microphone. If you're using a phone or a laptop, this is almost always the case.
+1. If you're not already familiar with PureScript, check out some of the [existing resources on PureScript](https://leanpub.com/fp-made-easier) to get started. If you're a noob or novice and on the fence about joining a jam session, fear not - other folks will be there that can help you out.
+
 ## Github Codespaces
 
 [![Wags](https://img.youtube.com/vi/tHa7Eh9Ktyo/0.jpg)](https://www.youtube.com/watch?v=tHa7Eh9Ktyo)
-
 
 You can check out the above video, a summary of which is provided below:
 
