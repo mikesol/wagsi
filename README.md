@@ -6,7 +6,7 @@ Interactive coding with [`purescript-wags`](https://github.com/mikesol/purescrip
 
 [Link to the first wagsi jam session](https://twitter.com/stronglynormal/status/1409566300452577286)
 
-If you're attending a wagsi Jam session (we're at 0.0.1), please make sure to follow these instructions.
+If you're attending a wagsi Jam session, please make sure to follow these instructions.
 
 1. Install VSCode and the VSCode Live Share extension. Once the extension is installed, click on the Live Share button on the left bar (the arrow bending counterclockwise around a circle). During the actual Jam Session, you'll need to sign in with GitHub or a Microsoft account, so make sure to have one of those as well.
 1. Make sure to join the live chat (usually Google Meet or Discord) from a _different_ device than the one doing the audio rendering in the browser. For example, you can use your phone to render the audio and the computer for joining the meetup or vice versa. Also, if possible, make sure the device that is playing audio from the browser has a microphone. If you're using a phone or a laptop, this is almost always the case.
