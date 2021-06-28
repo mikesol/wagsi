@@ -10,6 +10,7 @@ import Data.Monoid.Disj (Disj)
 import Data.Monoid.Dual (Dual)
 import Data.Monoid.Endo (Endo)
 import Data.Monoid.Multiplicative (Multiplicative)
+import Data.Newtype (class Newtype)
 import Data.Symbol (class IsSymbol)
 import Prim.Row as Row
 import Prim.RowList as RowList
@@ -62,6 +63,8 @@ instance fromEnvORow :: (RowList.RowToList r rl, FromEnvRow' rl e o) => FromEnv 
   fromEnv e = ORow (fromEnvRow' (Proxy :: _ rl) e)
 
 newtype Marker env = Marker env
+
+derive instance newtypeMarker :: Newtype (Marker env) _
 
 instance fromEnvMarker :: FromEnv env (Marker env) where
   fromEnv = Marker
