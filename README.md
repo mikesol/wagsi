@@ -4,7 +4,7 @@ Interactive coding with [`purescript-wags`](https://github.com/mikesol/purescrip
 
 ## Jam sessions!
 
-[The first wagsi jam session!](https://twitter.com/stronglynormal/status/1409566300452577286)
+[Link to the first wagsi jam session](https://twitter.com/stronglynormal/status/1409566300452577286)
 
 If you're attending a wagsi Jam session (we're at 0.0.1), please make sure to follow these instructions.
 
