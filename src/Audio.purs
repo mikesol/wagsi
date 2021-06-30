@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Applicative.Indexed (ipure)
 import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Tuple (snd)
 import Data.Tuple.Nested (type (/\))
@@ -39,12 +40,10 @@ piece =
         let
           loop = ipure { fromTrigger: false, control: a.control }
         in
-          if e.active then case e.trigger of
-            InitialEvent -> Right loop
-            HotReload (Wag wg) ->
+          case e.trigger of
+            Just (HotReload (Wag wg)) ->
               if a.fromTrigger then
                 Right loop
               else
                 Left (lcmap (map (\x -> x { fromTrigger = true })) (snd wg e))
-          else
-            Right loop
+            _ -> Right loop

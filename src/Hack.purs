@@ -1,16 +1,19 @@
 module Hack where
 
 import Prelude
+
 import Control.Comonad (extract)
 import Data.Array as A
 import Data.Either (Either(..))
 import Data.Foldable (fold)
+import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Traversable (sequence)
 import Data.Tuple (snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Effect (Effect)
 import Effect.Random (randomInt)
+import FFIStuff (Stash)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
 import FromEnv (class FromEnv, fromEnv)
@@ -21,15 +24,22 @@ import WAGS.Control.Types (Frame0, Scene, WAG)
 import WAGS.CreateT (class CreateT)
 import WAGS.Interpret (class AudioInterpret)
 import WAGS.Patch (class Patch, ipatch, patch)
-import WAGS.Run (RunAudio, SceneI, RunEngine)
+import WAGS.Run (SceneI)
 import WAGS.Validation (class GraphIsRenderable)
 
 data Evt
   = InitialEvent
   | HotReload Wag
+  | MouseDown Int
+  | MouseUp Int
+  | KeyboardDown String
+  | KeyboardUp String
+
+type Wld
+  = { mousePosition :: Maybe { x :: Int, y :: Int } }
 
 type Extern
-  = SceneI Evt Unit
+  = SceneI Evt Wld
 
 newtype Wag
   = Wag
@@ -49,6 +59,12 @@ foreign import wag_ :: String -> (Wag -> Effect Unit) -> Effect Unit
 
 foreign import dewag_ :: String -> Effect Unit
 
+foreign import ffiHandlers :: Effect (Object (Stash -> Effect Unit))
+
+foreign import ffi_ :: String -> (Stash -> Effect Unit) -> Effect Unit
+
+foreign import deffi_ :: String -> Effect Unit
+
 wagsableTuple ::
   forall world controlOld controlNew b c.
   FromEnv (SceneI Evt world) controlNew =>
@@ -62,6 +78,13 @@ wagsableTuple ::
 wagsableTuple = (/\)
 
 infixr 6 wagsableTuple as /@\
+
+stash :: Event Stash
+stash =
+  makeEvent \f -> do
+    id <- (fold <<< map show) <$> (sequence $ A.replicate 24 (randomInt 0 9))
+    ffi_ id f
+    pure (deffi_ id)
 
 wag :: Event Wag
 wag =
@@ -149,14 +172,13 @@ cont___w444g _ (changeControl /\ newGraph) =
                 ichange rec
                   $> { fromTrigger: false, control: newCtrl }
             in
-              if e.active then case e.trigger of
-                InitialEvent -> Right loop
-                HotReload (Wag wg) ->
+              case e.trigger of
+                Just (HotReload (Wag wg)) ->
                   if a.fromTrigger then
                     Right loop
                   else
                     Left (lcmap (map (\x -> x { fromTrigger = true })) (snd wg e))
-              else
-                Right loop
+                _ -> Right loop
+              
         )
     )

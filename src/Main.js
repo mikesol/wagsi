@@ -9,3 +9,15 @@ exports.cachedScene = function (nothing) {
     };
   };
 };
+
+var storeStash = {};
+
+exports.storeStash = storeStash;
+
+exports.cachedStash = function (nothing) {
+  return function (just) {
+    return function () {
+      return storeStash.stash ? just(storeStash.stash) : nothing;
+    };
+  };
+};

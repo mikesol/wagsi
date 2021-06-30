@@ -1,22 +1,39 @@
 import "./style.css";
 import main from "../output/Main/index.js";
-import psci from "../output/Gopher/index.js";
+import gopher from "../output/Gopher/index.js";
+import stash from "../output/Stash/index.js";
 import hack from "../output/Hack/foreign.js";
 main.main();
 
-if (psci.w_4_4_gg_) {
+if (gopher.w_4_4_gg_) {
   console.log("Found an initial wag!");
-  main.storeWag.wag = psci.w_4_4_gg_;
+  main.storeWag.wag = gopher.w_4_4_gg_;
 }
+
+if (stash.stash) {
+  console.log("Found an initial stash!");
+  main.storeStash.stash = stash.stash;
+}
+
 
 if (module.hot) {
   module.hot.accept("../output/Gopher/index.js", function () {
-    if (psci.w_4_4_gg_) {
+    if (gopher.w_4_4_gg_) {
       console.log("Hello wags!");
-      main.storeWag.wag = psci.w_4_4_gg_;
+      main.storeWag.wag = gopher.w_4_4_gg_;
       var handlers = hack.handlers();
       for (var item in handlers) {
-        handlers[item](psci.w_4_4_gg_)();
+        handlers[item](gopher.w_4_4_gg_)();
+      }
+    }
+  });
+  module.hot.accept("../output/Stash/index.js", function () {
+    if (stash.stash) {
+      console.log("Hello stash!");
+      main.storeStash.stash = stash.stash;
+      var handlers = hack.ffiHandlers();
+      for (var item in handlers) {
+        handlers[item](stash.stash)();
       }
     }
   });
