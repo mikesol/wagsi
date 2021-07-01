@@ -166,8 +166,8 @@ handleAction = case _ of
   Initialize -> pure unit
   UpdateStashInfo s -> H.modify_ _ { stashInfo = s }
   StartAudio -> do
-    H.modify_ _ { audioStarted = true, canStopAudio = false }
     handleAction StopAudio
+    H.modify_ _ { audioStarted = true, canStopAudio = false }
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
     { ctx, unsubscribeFromWags, unsubscribeFromStash } <-
