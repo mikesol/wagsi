@@ -59,7 +59,7 @@ instance fromEnvRowNil :: FromEnvRow' (RowList.Nil) e () where
 -- ORow short for OrthogonalRow, meaning a row where the entires are orthogonal
 newtype ORow (r :: Row Type) = ORow { | r }
 
-instance fromEnvORow :: (RowList.RowToList r rl, FromEnvRow' rl e o) => FromEnv e (ORow o) where
+instance fromEnvORow :: (RowList.RowToList o rl, FromEnvRow' rl e o) => FromEnv e (ORow o) where
   fromEnv e = ORow (fromEnvRow' (Proxy :: _ rl) e)
 
 newtype Marker env = Marker env
