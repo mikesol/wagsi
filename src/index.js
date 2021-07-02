@@ -21,6 +21,7 @@ if (module.hot) {
   module.hot.accept("../output/Math/index.js");
   module.hot.accept("../output/Math/foreign.js");
   module.hot.accept("../output/EZCtrl/index.js");
+  module.hot.accept("../output/Engine/index.js");
   module.hot.accept("../output/Gopher/index.js", function () {
     if (gopher.w_4_4_gg_) {
       console.log("Hello wags!");

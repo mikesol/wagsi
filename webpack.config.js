@@ -44,9 +44,9 @@ module.exports = {
           "module Engine where\n" + fi.split(/\r\n|\n|\r/).slice(1).join("\n")
         );
       },
-      done: (stats) => {
-        if (nCompiles > 0) {
-          //console.log("Done called", nCompiles, stats);
+      assetEmitted: (file, { content, source, outputPath, compilation, targetPath }) => {
+        if (nCompiles > 0 && outputPath.indexOf('Gopher.js') !== -1) {
+          console.log("Writing new engine 🚀");
           const tmpl = fs.readFileSync("src/EngineTemplate.purs").toString();
           const fi = fs.readFileSync("src/Wagged.purs").toString();
           fs.writeFileSync(
