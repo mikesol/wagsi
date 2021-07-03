@@ -179,6 +179,13 @@ let additions =
         , repo = "https://github.com/mikesol/purescript-wags.git"
         , version = "v0.3.6"
         }
+      , wags-lib =
+      { dependencies =
+        [ "wags"
+        ]
+      , repo = "https://github.com/mikesol/purescript-wags-lib.git"
+      , version = "v0.0.0"
+      }
       , painting =
         { dependencies =
           [ "canvas"

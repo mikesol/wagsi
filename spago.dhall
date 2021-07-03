@@ -33,6 +33,7 @@ You can edit this file as you like.
   , "typelevel"
   , "typelevel-peano"
   , "wags"
+  , "wags-lib"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]
