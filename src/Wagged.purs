@@ -6,7 +6,7 @@ import WAGS.Create.Optionals
 
 import Control.Comonad.Cofree (head, tail)
 import Data.Int (toNumber)
-import Data.Newtype (unwrap)
+import Data.Newtype (unwrap, wrap)
 import Data.Tuple.Nested (type (/\), (/\))
 import EZCtrl (ezctrl)
 import FromEnv (ORow(..))
@@ -23,10 +23,10 @@ control = ezctrl
 -- for example, you can try:
 -- a /\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
 
-graph ({ time, headroom } :: Extern) (ORow a :: ORow (rate0 :: ARate)) =
+graph ({ time, headroom } :: Extern) (a :: ORow (rate0 :: ARate)) =
   let
-    rate = unwrap a.rate0 { time,  rate: 8.0 + sin (pi * time) * 6.0 }
+    rate = unwrap (unwrap a).rate0 { time,  rate: 8.0 + sin (pi * time) * 6.0 }
   in
-    (ORow {rate0: (ARate (tail rate))}) /\ speaker { unit0: gain (cos (pi * (head rate)) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
+    (wrap {rate0: (ARate (tail rate))}) /\ speaker { unit0: gain (cos (pi * (head rate)) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
 
 wagsi = control /@\ graph
