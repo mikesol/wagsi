@@ -2,6 +2,7 @@ module FromEnv where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
 import Data.Monoid.Additive (Additive)
@@ -12,59 +13,73 @@ import Data.Monoid.Endo (Endo)
 import Data.Monoid.Multiplicative (Multiplicative)
 import Data.Newtype (class Newtype)
 import Data.Symbol (class IsSymbol)
+import Data.Typelevel.Num (class Pos)
+import LibWrap (ABufferPool(..), ARate(..), AnEmitter(..))
 import Prim.Row as Row
 import Prim.RowList as RowList
 import Record as Record
 import Type.Proxy (Proxy(..))
+import WAGS.Lib.Rate (makeEmitter, makeRate)
+import WAGS.Lib.BufferPool (bufferPool)
+import Wagsi.Types (Extern)
 
-class FromEnv env val where
-  fromEnv :: env -> val
+class FromEnv val where
+  fromEnv :: Extern -> val
 
-instance fromEnvUnit :: FromEnv anything Unit where
+instance fromEnvUnit :: FromEnv Unit where
   fromEnv = const unit
 
-instance fromEnvAdditive :: Monoid (Additive a) => FromEnv anything (Additive a) where
+instance fromEnvAdditive :: Monoid (Additive a) => FromEnv (Additive a) where
   fromEnv = const mempty
 
-instance fromEnvConj :: Monoid (Conj a) => FromEnv anything (Conj a) where
+instance fromEnvConj :: Monoid (Conj a) => FromEnv (Conj a) where
   fromEnv = const mempty
 
-instance fromEnvDisj :: Monoid (Disj a) => FromEnv anything (Disj a) where
+instance fromEnvDisj :: Monoid (Disj a) => FromEnv (Disj a) where
   fromEnv = const mempty
 
-instance fromEnvDual :: Monoid (Dual a) => FromEnv anything (Dual a) where
+instance fromEnvDual :: Monoid (Dual a) => FromEnv (Dual a) where
   fromEnv = const mempty
 
-instance fromEnvEndo :: Monoid (Endo a b) => FromEnv anything (Endo a b) where
+instance fromEnvEndo :: Monoid (Endo a b) => FromEnv (Endo a b) where
   fromEnv = const mempty
 
-instance fromEnvMultiplicative :: Monoid (Multiplicative a) => FromEnv anything (Multiplicative a) where
+instance fromEnvMultiplicative :: Monoid (Multiplicative a) => FromEnv (Multiplicative a) where
   fromEnv = const mempty
 
-instance fromEnvFirst :: Monoid (First a) => FromEnv anything (First a) where
+instance fromEnvFirst :: Monoid (First a) => FromEnv (First a) where
   fromEnv = const mempty
 
-instance fromEnvLast :: Monoid (Last a) => FromEnv anything (Last a) where
+instance fromEnvLast :: Monoid (Last a) => FromEnv (Last a) where
   fromEnv = const mempty
 
-class FromEnvRow' (rl :: RowList.RowList Type) (e :: Type) (o :: Row Type) | rl e -> o where
-  fromEnvRow' :: Proxy rl -> e -> { | o }
+class FromEnvRow' (rl :: RowList.RowList Type) (o :: Row Type) | rl -> o where
+  fromEnvRow' :: Proxy rl -> Extern -> { | o }
 
-instance fromEnvRowCons :: (IsSymbol sym, Row.Lacks sym restRow, FromEnv e res, FromEnvRow' restRL e restRow, Row.Cons sym res restRow o) => FromEnvRow' (RowList.Cons sym res restRL) e o where
+instance fromEnvRowCons :: (IsSymbol sym, Row.Lacks sym restRow, FromEnv res, FromEnvRow' restRL restRow, Row.Cons sym res restRow o) => FromEnvRow' (RowList.Cons sym res restRL) o where
   fromEnvRow' _ e = Record.insert (Proxy :: _ sym) (fromEnv e) (fromEnvRow' (Proxy :: _ restRL) e)
 
-instance fromEnvRowNil :: FromEnvRow' (RowList.Nil) e () where
+instance fromEnvRowNil :: FromEnvRow' (RowList.Nil) () where
   fromEnvRow' _ _ = {}
 
 -- ORow short for OrthogonalRow, meaning a row where the entires are orthogonal
 newtype ORow (r :: Row Type) = ORow { | r }
 
-instance fromEnvORow :: (RowList.RowToList o rl, FromEnvRow' rl e o) => FromEnv e (ORow o) where
+instance fromEnvORow :: (RowList.RowToList o rl, FromEnvRow' rl o) => FromEnv (ORow o) where
   fromEnv e = ORow (fromEnvRow' (Proxy :: _ rl) e)
 
-newtype Marker env = Marker env
+newtype Marker = Marker Extern
 
-derive instance newtypeMarker :: Newtype (Marker env) _
+derive instance newtypeMarker :: Newtype Marker _
 
-instance fromEnvMarker :: FromEnv env (Marker env) where
+instance fromEnvMarker :: FromEnv Marker where
   fromEnv = Marker
+
+instance fromEnvRate ::  FromEnv ARate where
+  fromEnv { time } = ARate (makeRate { prevTime: time, startsAt: time })
+
+instance fromEnvEmitter ::  FromEnv AnEmitter where
+  fromEnv { time } = AnEmitter (makeEmitter { prevTime: time, startsAt: time })
+
+instance fromBufferPool :: Pos n => FromEnv (ABufferPool n) where
+  fromEnv _ = ABufferPool (bufferPool Nothing Nothing)

@@ -31,7 +31,8 @@ import FRP.Event.Mouse as Mouse
 import Foreign (Foreign)
 import Foreign.Object (Object)
 import Foreign.Object as O
-import Hack (Evt(..), Wag(..), stash, wag)
+import Wagsi.Types (Evt(..), Wag(..))
+import Hack (stash, wag)
 import Halogen (ClassName(..), SubscriptionId)
 import Halogen as H
 import Halogen.Aff (awaitBody, runHalogenAff)

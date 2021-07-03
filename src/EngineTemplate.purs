@@ -5,8 +5,8 @@ import Prelude
 import Data.Tuple.Nested ((/\))
 import EZCtrl (ezctrl)
 import FromEnv (ORow)
-import Hack (Extern, (/@\))
-import Hack (Extern)
+import Hack ((/@\))
+import Wagsi.Types (Extern)
 import WAGS.Create.Optionals (speaker, constant)
 
 -- stopPrelude

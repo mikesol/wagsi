@@ -26,32 +26,7 @@ import WAGS.Interpret (class AudioInterpret)
 import WAGS.Patch (class Patch, ipatch, patch)
 import WAGS.Run (SceneI)
 import WAGS.Validation (class GraphIsRenderable)
-
-data Evt
-  = InitialEvent
-  | HotReload Wag
-  | MouseDown Int
-  | MouseUp Int
-  | KeyboardDown String
-  | KeyboardUp String
-
-type Wld
-  = { mousePosition :: Maybe { x :: Int, y :: Int } }
-
-type Extern
-  = SceneI Evt Wld
-
-newtype Wag
-  = Wag
-  ( forall world audio engine proof res graph control.
-    Monoid res =>
-    AudioInterpret audio engine =>
-    Scene (SceneI Evt world) audio engine proof res
-      /\ ( SceneI Evt world ->
-        WAG audio engine proof res { | graph } control ->
-        Scene (SceneI Evt world) audio engine proof res
-      )
-  )
+import Wagsi.Types (Wag(..), Extern, Evt(..), Wld)
 
 foreign import handlers :: Effect (Object (Wag -> Effect Unit))
 
@@ -66,14 +41,14 @@ foreign import ffi_ :: String -> (Stash -> Effect Unit) -> Effect Unit
 foreign import deffi_ :: String -> Effect Unit
 
 wagsableTuple ::
-  forall world controlOld controlNew b c.
-  FromEnv (SceneI Evt world) controlNew =>
+  forall controlOld controlNew b c.
+  FromEnv controlNew =>
   CreateT b () c =>
   GraphIsRenderable c =>
-  (SceneI Evt world -> controlOld -> controlNew) ->
-  (SceneI Evt world -> controlNew -> (controlNew /\ { | b })) ->
-  ( (SceneI Evt world -> controlOld -> controlNew)
-      /\ (SceneI Evt world -> controlNew -> (controlNew /\ { | b }))
+  (Extern -> controlOld -> controlNew) ->
+  (Extern -> controlNew -> (controlNew /\ { | b })) ->
+  ( (Extern -> controlOld -> controlNew)
+      /\ (Extern -> controlNew -> (controlNew /\ { | b }))
   )
 wagsableTuple = (/\)
 
@@ -107,7 +82,7 @@ type WTrigger control
   = { control :: control, fromTrigger :: Boolean }
 
 cont___w444g ::
-  forall world wagsi rAlpha audio engine proof res outGraphAlpha controlAlpha rBeta outGraphBeta controlBeta.
+  forall wagsi rAlpha audio engine proof res outGraphAlpha controlAlpha rBeta outGraphBeta controlBeta.
   -- the residual always has to be a monoid
   Monoid res =>
   -- the audio needs to be renderable
@@ -128,15 +103,15 @@ cont___w444g ::
   -- the transition from the first scene to beta in case we start in the middle
   Patch () outGraphBeta =>
   -- controlBeta has to be a FromEnv in case we start in the middle
-  FromEnv (SceneI Evt world) controlBeta =>
+  FromEnv controlBeta =>
   wagsi ->
-  ( (SceneI Evt world -> controlAlpha -> controlBeta)
-      /\ ((SceneI Evt world) -> controlBeta -> controlBeta /\ { | rBeta })
+  ( (Extern -> controlAlpha -> controlBeta)
+      /\ (Extern -> controlBeta -> controlBeta /\ { | rBeta })
   ) ->
-  ( Scene (SceneI Evt world) audio engine Frame0 res
-      /\ ( SceneI Evt world ->
+  ( Scene Extern audio engine Frame0 res
+      /\ ( Extern ->
         WAG audio engine proof res { | outGraphAlpha } { control :: controlAlpha, fromTrigger :: Boolean } ->
-        Scene (SceneI Evt world) audio engine proof res
+        Scene Extern audio engine proof res
       )
   )
 cont___w444g _ (changeControl /\ newGraph) =
@@ -154,14 +129,14 @@ cont___w444g _ (changeControl /\ newGraph) =
           branchingLogic wagBeta
   where
   createFrame ::
-    SceneI Evt world ->
+    Extern ->
     IxWAG audio engine Frame0 res {} { | outGraphBeta } { fromTrigger :: Boolean, control :: controlBeta }
   createFrame e = ipatch $> { fromTrigger: false, control: fromEnv e }
 
   branchingLogic ::
     forall proofB.
     WAG audio engine proofB res { | outGraphBeta } { control :: controlBeta, fromTrigger :: Boolean } ->
-    Scene (SceneI Evt world) audio engine proofB res
+    Scene Extern audio engine proofB res
   branchingLogic =
     ( ibranch
         ( \e a ->
