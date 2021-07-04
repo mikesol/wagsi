@@ -60,56 +60,25 @@ Then, you can change the graph and, whenever you save the document, the audio wi
 The entire workspace for building a live session lives in a `src/Wagged.purs`. There's only one top-level declaration that needs a specific type: `wagsi`. If you use the constructor `/@\`, it'll perform most of the necessary checks to make sure the type is correct.
 
 ```purescript
-control (_:: Extern) (a :: Unit) = a
-
-graph (e :: Extern) (a :: Unit) =
-  a /\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
-
-wagsi = control /@\ graph
+wagsi (e :: Extern) (a :: {}) =
+  a /@\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
 ```
 
-### control
-`control` is a function that accepts the external environment and a control parameter of type `T0` and outputs the control parameter of type `T1`, which may be equal to `T0`. This function is called _once_ upon recompile and should only be used to give terms initial values or remove terms. It should not be used to incrementally update terms (you'll use graph for that). For example:
+`wagsi` is a function that accepts the the external environment and a control parameter and outputs a tuple with the control parameter and a valid audio graph. The control parameter must be a `Record` whose elements implement the typeclass `FromEnv`. Currently, `FromEnv` has implementations for most "classic" monoids (`Endo`, `Conj`) as well as stuff from `wags-lib` defined in `LibWrap.purs` (`ARate`, `AnEmitter`, etc).
 
-```purescript
-type CP0 = { volume0 :: Number }
-type CP1 = { volume0 :: Number, volume1 :: Number }
-
-control :: Extern -> CP0 -> CP1
-control e = union { volume1: e.time % 0.2 } -- initializes volume1 at the current time mod 0.2
-```
-
-One pattern I've found useful is to use `ORow`, which is a row of orthogonal functions from `env` to some value.  A further simplification is using `ezctrl`, which fills in the terms of the `ORow` (left-biased) in cases where one does not need to reset or manipulate existing values in the accumulator.
-
-### graph
-
-`graph` is a function that accepts the the external environment and a control parameter of type `T1` and outputs a tuple with the control parameter of type `T1` and a valid audio graph. A _valid_ audio graph is one that conforms to the typeclass `GraphIsRenderable`. This will check, amongst other things, that you only have one microphone and one speaker, that there are no orphaned audio nodes, etc. This check is performed every time you save, and if the graph is not renderable, you'll see an error message.
+A _valid_ audio graph is one that conforms to the typeclass `GraphIsRenderable`. This will check, amongst other things, that you only have one microphone and one speaker, that there are no orphaned audio nodes, etc. This check is performed every time you save, and if the graph is not renderable, you'll see an error message.
 
 Because the types of the output of `graph` are monstrous, it is advised not to try to write them out. There'll be a Yellow Squiggly of Triumph under the term in VSCode to signify that it compiles cleanly.
 
-```purescript
-type CP1 = { volume0 :: Number, volume1 :: Number }
-
-graph (e :: Extern) (a :: CP1) =
-  (a { volume0 = a.volume0 + (e.time % 0.1) })
-    /\
-      speaker
-        { unit0: a.volume0 { osc0: sinOsc 440.0 }
-        , unit1: a.volume1 { osc1: sinOsc 440.0 }
-        }
-```
-
 ### Other declarations
 
-Besides `control` and `graph`, you can add whatever other top-level declarations you want. In the example below, we abstract out the gain calculation of `unit0` to a separate function.
+Besides `wagsi`, you can add whatever other top-level declarations you want. In the example below, we abstract out the gain calculation of `unit0` to a separate function.
 
 ```purescript
 myFuncOfTime :: Number -> Number
 myFuncOfTime t = (cos (pi * t) * -0.02 + 0.02)
 
-control (_:: Extern) (a :: Unit) = a
-
-graph (e :: Extern) (a :: Unit) =
+wagsi (e :: Extern) (a :: {}) =
   a /\ speaker { unit0: gain (myFuncOfTime e.time) { osc0: sinOsc 440.0 } }
 ```
 
