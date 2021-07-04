@@ -2,7 +2,6 @@ module FromEnv where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
 import Data.Monoid.Additive (Additive)
@@ -13,14 +12,10 @@ import Data.Monoid.Endo (Endo)
 import Data.Monoid.Multiplicative (Multiplicative)
 import Data.Newtype (class Newtype)
 import Data.Symbol (class IsSymbol)
-import Data.Typelevel.Num (class Pos)
-import LibWrap (ABufferPool(..), ARate(..), AnEmitter(..))
 import Prim.Row as Row
 import Prim.RowList as RowList
 import Record as Record
 import Type.Proxy (Proxy(..))
-import WAGS.Lib.Rate (makeEmitter, makeRate)
-import WAGS.Lib.BufferPool (bufferPool)
 import Wagsi.Types (Extern)
 
 class FromEnv val where
@@ -76,12 +71,3 @@ derive instance newtypeMarker :: Newtype Marker _
 
 instance fromEnvMarker :: FromEnv Marker where
   fromEnv = Marker
-
-instance fromEnvRate ::  FromEnv ARate where
-  fromEnv { time } = ARate (makeRate { prevTime: time, startsAt: time })
-
-instance fromEnvEmitter ::  FromEnv AnEmitter where
-  fromEnv { time } = AnEmitter (makeEmitter { prevTime: time, startsAt: time })
-
-instance fromBufferPool :: Pos n => FromEnv (ABufferPool n) where
-  fromEnv _ = ABufferPool (bufferPool Nothing Nothing)
