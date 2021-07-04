@@ -21,7 +21,7 @@
   },
   "scripts": {
     "postinstall": "node makeEngine.js && spago install && spago build",
-    "start": "node makeEngine.js && webpack serve --mode=development --open",
+    "start": "node makeEngine.js && spago install && spago build && webpack serve --mode=development --open",
     "start:gitpod": "node makeEngine.js && webpack serve --mode=development --open --public \"$(gp url 8080 | sed 's+https://++'):443\"",
     "start:codespaces": "node makeEngine.js && webpack serve --mode=development --open --public \"$npm_package_codespacesPublicUrl\"",
     "ide": "wget https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/language-purescript-0.2.5.vsix && wget https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/ide-purescript-0.25.0.vsix && code --install-extension language-purescript-0.2.5.vsix && code --install-extension ide-purescript-0.25.0.vsix && rm language-purescript-0.2.5.vsix && rm ide-purescript-0.25.0.vsix",
