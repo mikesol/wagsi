@@ -7,16 +7,19 @@ import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Promise (toAffE)
 import Data.Compactable (compact)
+import Data.Either (Either(..))
 import Data.Foldable (for_)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Nullable (toNullable)
 import Data.Traversable (sequence)
 import Data.Tuple (fst, snd)
-import Data.Tuple.Nested (type (/\))
+import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Pos)
 import Data.Vec as V
 import Effect (Effect)
-import Effect.Aff (Aff, forkAff, joinFiber, launchAff_, parallel, sequential)
+import Effect.Aff (Aff, forkAff, joinFiber, launchAff_, parallel, sequential, try)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console as Log
@@ -31,7 +34,6 @@ import FRP.Event.Mouse as Mouse
 import Foreign (Foreign)
 import Foreign.Object (Object)
 import Foreign.Object as O
-import Wagsi.Types (Evt(..), Wag(..))
 import Hack (stash, wag)
 import Halogen (ClassName(..), SubscriptionId)
 import Halogen as H
@@ -41,8 +43,9 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
-import WAGS.Interpret (AudioContext, BrowserPeriodicWave, FFIAudio(..), close, context, decodeAudioDataFromUri, defaultFFIAudio, getMicrophoneAndCamera, makeFloatArray, makePeriodicWave, makeUnitCache)
+import WAGS.Interpret (AudioContext, BrowserAudioBuffer, BrowserFloatArray, BrowserPeriodicWave, FFIAudio(..), close, context, decodeAudioDataFromUri, defaultFFIAudio, getMicrophoneAndCamera, makeFloatArray, makePeriodicWave, makeUnitCache)
 import WAGS.Run (run)
+import Wagsi.Types (Evt(..), Wag(..))
 
 main :: Effect Unit
 main =
@@ -149,18 +152,36 @@ foreign import cachedStash :: Maybe Stash -> (Stash -> Maybe Stash) -> Effect (M
 
 foreign import storeStash :: Foreign
 
-oe :: forall a b. (a -> Aff b) -> Object a -> Object b -> Aff (Object b)
-oe trans template current = O.union filtered <$> (sequential (sequence (map (parallel <<< trans) newStuff)))
+oe :: forall a b. (a -> b -> Boolean) -> (a -> Aff b) -> Object a -> Object b -> Aff (Object b)
+oe isEq trans template current = O.union <$> (sequential (sequence (map (parallel <<< trans) newStuff))) <*> pure filtered 
   where
+  -- things from the old to keep. as the above operation is left biased
+  -- it will ignore anything in newStuff
   filtered = O.filterKeys (flip O.member template) current
 
-  newStuff = O.filterKeys (not <<< flip O.member current) template
+  -- if it is not in current, then it is new
+  -- if it is not eq, then it is new
+  newStuff = O.filterWithKey (\k v -> maybe true (\v' -> not (isEq v v')) (O.lookup k current)) template
 
 ffiBehavior :: forall a b. Ref.Ref a -> (a -> b) -> Behavior b
 ffiBehavior stashRef f =
   behavior \eAToB ->
     makeEvent \fB ->
       subscribe eAToB \aToB -> Ref.read stashRef >>= fB <<< aToB <<< f
+
+arrrr :: Array ~> Array
+arrrr = identity
+
+toMap :: forall a. Object a -> Map String a
+toMap = Map.fromFoldable <<< arrrr <<< O.toUnfoldable
+
+fromMap :: forall a. Map String a -> Object a 
+fromMap = O.fromFoldable <<< arrrr <<< Map.toUnfoldable
+
+type CachedStash = { buffers :: Object (String /\ BrowserAudioBuffer)
+    , floatArrays :: Object ((Array Number) /\ BrowserFloatArray)
+    , periodicWaves :: Object ((Array Number /\ Array Number) /\ BrowserPeriodicWave )
+    }
 
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
@@ -174,30 +195,32 @@ handleAction = case _ of
     { ctx, unsubscribeFromWags, unsubscribeFromStash } <-
       H.liftAff do
         ctx <- H.liftEffect context
-        stashRef <- H.liftEffect $ Ref.new { buffers: O.empty, periodicWaves: O.empty, floatArrays: O.empty }
+        (stashRef :: Ref.Ref CachedStash) <- H.liftEffect $ Ref.new { buffers: O.empty, periodicWaves: O.empty, floatArrays: O.empty }
         unsubscribeFromStash <-
           H.liftEffect
             $ subscribe (cs <|> stash) \newStash -> do
                 oldStash <- Ref.read stashRef
                 let
-                  newBuffers = oe (toAffE <<< decodeAudioDataFromUri ctx) newStash.buffers oldStash.buffers
-                let
-                  newFloatArrays = oe (H.liftEffect <<< makeFloatArray) newStash.floatArrays oldStash.floatArrays
-                let
-                  newPeriodicWaves = oe (H.liftEffect <<< (#) ctx) newStash.periodicWaves oldStash.periodicWaves
+                  newBuffers = oe (\a b -> Just a == map fst b) (\uri -> (try $ toAffE $ decodeAudioDataFromUri ctx uri) >>= case _ of
+                    Left e -> Log.error ("Could not download " <> uri <> ", error: " <> show e) $> Nothing
+                    Right a -> pure (Just (uri /\ a))) newStash.buffers (map Just oldStash.buffers)
+
+                  newFloatArrays = oe (\a b -> a == fst b) (\a -> map ((/\) a) (H.liftEffect (makeFloatArray a))) newStash.floatArrays oldStash.floatArrays
+
+                  newPeriodicWaves = oe (\a b -> fst a == fst b) (\(t /\ f) -> map ((/\) t) (H.liftEffect (f ctx))) newStash.periodicWaves oldStash.periodicWaves
                 launchAff_ do
                   buffersF <- forkAff newBuffers
                   floatArraysF <- forkAff newFloatArrays
                   periodicWavesF <- forkAff newPeriodicWaves
                   { buffers, floatArrays, periodicWaves } <- { buffers: _, floatArrays: _, periodicWaves: _ } <$> joinFiber buffersF <*> joinFiber floatArraysF <*> joinFiber periodicWavesF
-                  H.liftEffect (Ref.write { buffers, floatArrays, periodicWaves } stashRef)
+                  H.liftEffect (Ref.write { buffers: (fromMap $ compact $ toMap $ buffers), floatArrays, periodicWaves } stashRef)
                   H.liftEffect (HS.notify listener $ UpdateStashInfo { buffers: O.keys buffers, floatArrays: O.keys floatArrays, periodicWaves: O.keys periodicWaves })
         let
-          behaviorBuffers = ffiBehavior stashRef _.buffers
+          behaviorBuffers = ffiBehavior stashRef (map snd <<< _.buffers)
 
-          behaviorFloatArrays = ffiBehavior stashRef _.floatArrays
+          behaviorFloatArrays = ffiBehavior stashRef (map snd <<< _.floatArrays)
 
-          behaviorPeriodicWaves = ffiBehavior stashRef _.periodicWaves
+          behaviorPeriodicWaves = ffiBehavior stashRef (map snd <<< _.periodicWaves)
         { microphone } <- H.liftAff $ getMicrophoneAndCamera true false
         unitCache <- H.liftEffect makeUnitCache
         let

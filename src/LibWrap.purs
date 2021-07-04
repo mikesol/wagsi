@@ -5,17 +5,14 @@ module LibWrap
   , AnImpulse(..)
   ) where
 
-import Prelude
-
-import Control.Comonad.Cofree (Cofree, deferCofree)
+import Control.Comonad.Cofree (Cofree)
 import Data.Identity (Identity)
 import Data.Maybe (Maybe(..))
-import Data.Tuple.Nested ((/\))
 import Data.Newtype (class Newtype)
 import Data.Typelevel.Num (class Pos)
-import Data.Vec as V
 import FromEnv (class FromEnv)
-import WAGS.Lib.BufferPool (Buffy, TimeHeadroomOffsets, bufferPool)
+import WAGS.Lib.BufferPool (BuffyStream, bufferPool)
+import WAGS.Lib.Impulse (impulse)
 import WAGS.Lib.Rate (Emitter, Rate, makeEmitter, makeRate)
 
 newtype ARate
@@ -28,20 +25,12 @@ newtype AnEmitter
 
 derive instance newtypeAnEmitter :: Newtype AnEmitter _
 
-newtype ABufferPool n
-  = ABufferPool
-  ( TimeHeadroomOffsets ->
-    Cofree ((->) TimeHeadroomOffsets) (V.Vec n Buffy)
-  )
+newtype ABufferPool n r
+  = ABufferPool (BuffyStream n r)
 
-derive instance newtypeABufferPool :: Newtype (ABufferPool n) _
+derive instance newtypeABufferPool :: Newtype (ABufferPool n r) _
 
 newtype AnImpulse = AnImpulse (Cofree Identity Boolean)
-
-impulse :: Cofree Identity Boolean
-impulse = go true
-  where
-  go tf = deferCofree \_ -> tf /\ pure (go false)
 
 derive instance newtypeAnImpulse :: Newtype AnImpulse _
 
@@ -52,7 +41,7 @@ instance fromEnvRate :: FromEnv ARate where
 instance fromEnvEmitter :: FromEnv AnEmitter where
   fromEnv { time } = AnEmitter (makeEmitter { prevTime: time, startsAt: time })
 
-instance fromEnvBufferPool :: Pos n => FromEnv (ABufferPool n) where
+instance fromEnvBufferPool :: Pos n => FromEnv (ABufferPool n r) where
   fromEnv _ = ABufferPool (bufferPool Nothing Nothing)
 
 instance fromEnvImpulse :: FromEnv AnImpulse where
