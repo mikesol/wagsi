@@ -7,16 +7,18 @@ import Data.Array as A
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Maybe (Maybe(..))
+import Data.Newtype (unwrap, wrap)
 import Data.Profunctor (lcmap)
 import Data.Traversable (sequence)
 import Data.Tuple (snd)
 import Data.Tuple.Nested ((/\), type (/\))
+import EZCtrl (class EZCtrl, ezctrl)
 import Effect (Effect)
 import Effect.Random (randomInt)
 import FFIStuff (Stash)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
-import FromEnv (class FromEnv, fromEnv)
+import FromEnv (class FromEnv, ORow(..), fromEnv)
 import WAGS.Change (class Change, ichange)
 import WAGS.Control.Functions.Validated (ibranch, (@!>))
 import WAGS.Control.Indexed (IxWAG)
@@ -41,15 +43,11 @@ foreign import ffi_ :: String -> (Stash -> Effect Unit) -> Effect Unit
 foreign import deffi_ :: String -> Effect Unit
 
 wagsableTuple ::
-  forall controlOld controlNew b c.
-  FromEnv controlNew =>
+  forall controlNew b c.
+  FromEnv (ORow controlNew) =>
   CreateT b () c =>
   GraphIsRenderable c =>
-  (Extern -> controlOld -> controlNew) ->
-  (Extern -> controlNew -> (controlNew /\ { | b })) ->
-  ( (Extern -> controlOld -> controlNew)
-      /\ (Extern -> controlNew -> (controlNew /\ { | b }))
-  )
+  { | controlNew } -> { | b } -> { | controlNew } /\ { | b }
 wagsableTuple = (/\)
 
 infixr 6 wagsableTuple as /@\
@@ -72,11 +70,9 @@ class GetRAlphaAndControlAlpha wagsi rAlpha controlAlpha | wagsi -> rAlpha contr
 
 instance getRAlphaAndControlAlpha ::
   GetRAlphaAndControlAlpha
-    ( (env -> controlOld -> controlNew)
-        /\ (env -> controlNew -> (controlNew /\ { | b }))
-    )
-    b
-    controlOld
+    (env -> { | controlAlpha } -> ({ | controlAlpha } /\ { | rAlpha }))
+    rAlpha
+    controlAlpha
 
 type WTrigger control
   = { control :: control, fromTrigger :: Boolean }
@@ -103,26 +99,25 @@ cont___w444g ::
   -- the transition from the first scene to beta in case we start in the middle
   Patch () outGraphBeta =>
   -- controlBeta has to be a FromEnv in case we start in the middle
-  FromEnv controlBeta =>
+  FromEnv (ORow controlBeta) =>
+  EZCtrl controlAlpha controlBeta =>
   wagsi ->
-  ( (Extern -> controlAlpha -> controlBeta)
-      /\ (Extern -> controlBeta -> controlBeta /\ { | rBeta })
-  ) ->
+  (Extern -> { | controlBeta } -> { | controlBeta } /\ { | rBeta }) ->
   ( Scene Extern audio engine Frame0 res
       /\ ( Extern ->
-        WAG audio engine proof res { | outGraphAlpha } { control :: controlAlpha, fromTrigger :: Boolean } ->
+        WAG audio engine proof res { | outGraphAlpha } { control :: (ORow controlAlpha), fromTrigger :: Boolean } ->
         Scene Extern audio engine proof res
       )
   )
-cont___w444g _ (changeControl /\ newGraph) =
+cont___w444g _ newGraph =
   (createFrame @!> branchingLogic)
     /\ \env w ->
         let
           controlAlpha = extract w
 
-          controlBeta = changeControl env controlAlpha.control
+          controlBeta = ezctrl env controlAlpha.control
 
-          (wBeta :: WAG audio engine proof res { | outGraphBeta } (WTrigger controlAlpha)) = patch w
+          (wBeta :: WAG audio engine proof res { | outGraphBeta } (WTrigger (ORow controlAlpha))) = patch w
 
           wagBeta = wBeta $> { control: controlBeta, fromTrigger: controlAlpha.fromTrigger }
         in
@@ -130,22 +125,22 @@ cont___w444g _ (changeControl /\ newGraph) =
   where
   createFrame ::
     Extern ->
-    IxWAG audio engine Frame0 res {} { | outGraphBeta } { fromTrigger :: Boolean, control :: controlBeta }
+    IxWAG audio engine Frame0 res {} { | outGraphBeta } { fromTrigger :: Boolean, control :: (ORow controlBeta) }
   createFrame e = ipatch $> { fromTrigger: false, control: fromEnv e }
 
   branchingLogic ::
     forall proofB.
-    WAG audio engine proofB res { | outGraphBeta } { control :: controlBeta, fromTrigger :: Boolean } ->
+    WAG audio engine proofB res { | outGraphBeta } { control :: (ORow controlBeta), fromTrigger :: Boolean } ->
     Scene Extern audio engine proofB res
   branchingLogic =
     ( ibranch
         ( \e a ->
             let
-              newCtrl /\ rec = newGraph e a.control
+              newCtrl /\ rec = newGraph e (unwrap a.control)
 
               loop =
                 ichange rec
-                  $> { fromTrigger: false, control: newCtrl }
+                  $> { fromTrigger: false, control: (wrap newCtrl) }
             in
               case e.trigger of
                 Just (HotReload (Wag wg)) ->
@@ -154,6 +149,5 @@ cont___w444g _ (changeControl /\ newGraph) =
                   else
                     Left (lcmap (map (\x -> x { fromTrigger = true })) (snd wg e))
                 _ -> Right loop
-              
         )
     )

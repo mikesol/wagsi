@@ -10,9 +10,4 @@ import Wagsi.Types (Extern)
 import WAGS.Create.Optionals (speaker, constant)
 
 -- stopPrelude
-control :: Extern -> ORow () -> ORow ()
-control = ezctrl
-
-graph (e :: Extern) (a :: ORow ()) = a /\ speaker { toSpeaker: constant 0.0 }
-
-wagsi = control /@\ graph
+wagsi (e :: Extern) (a :: {}) = a /@\ speaker { toSpeaker: constant 0.0 }
