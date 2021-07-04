@@ -1,9 +1,11 @@
 name: Sanity chcek
 on: push
 jobs:
-  container-job:
+  build:
     runs-on: ubuntu-latest
-    container: node:10.18-jessie
+    strategy:
+      matrix:
+        node-version: [14.x]
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
