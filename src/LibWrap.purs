@@ -12,7 +12,7 @@ import Data.Newtype (class Newtype)
 import Data.Typelevel.Num (class Pos)
 import FromEnv (class FromEnv)
 import WAGS.Lib.BufferPool (BuffyStream, bufferPool)
-import WAGS.Lib.Impulse (impulse)
+import WAGS.Lib.Impulse (blip, impulse)
 import WAGS.Lib.Rate (Emitter, Rate, makeEmitter, makeRate)
 
 newtype ARate
@@ -34,6 +34,10 @@ newtype AnImpulse = AnImpulse (Cofree Identity Boolean)
 
 derive instance newtypeAnImpulse :: Newtype AnImpulse _
 
+newtype ABlip = ABlip (Boolean -> Cofree ((->) Boolean) Boolean)
+
+derive instance newtypeABlip :: Newtype ABlip _
+
 ----
 instance fromEnvRate :: FromEnv ARate where
   fromEnv { time } = ARate (makeRate { prevTime: time, startsAt: time })
@@ -46,3 +50,6 @@ instance fromEnvBufferPool :: Pos n => FromEnv (ABufferPool n r) where
 
 instance fromEnvImpulse :: FromEnv AnImpulse where
   fromEnv _ = AnImpulse impulse
+
+instance fromEnvBlip :: FromEnv ABlip where
+  fromEnv _ = ABlip blip
