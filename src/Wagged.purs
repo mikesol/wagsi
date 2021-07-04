@@ -1,16 +1,11 @@
 module Wagged where
 
-import Math
 import Prelude
+import Math
 import WAGS.Create.Optionals
 
-import Data.Tuple.Nested (type (/\), (/\))
-import EZCtrl (ezctrl)
-import FromEnv (ORow)
 import Wagsi.Types (Extern)
 import Hack ((/@\))
-import WAGS.Change (ichange)
-import WAGS.Graph.AudioUnit (OnOff(..), TGain, TSinOsc, TSpeaker)
 
 -- change this to make sound
 -- for example, you can try:
