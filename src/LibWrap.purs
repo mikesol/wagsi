@@ -3,6 +3,7 @@ module LibWrap
   , AnEmitter(..)
   , ABufferPool(..)
   , AnImpulse(..)
+  , ABlip(..)
   ) where
 
 import Control.Comonad.Cofree (Cofree)
