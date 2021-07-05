@@ -53,7 +53,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
             gain 1.0
               { oscUnit0Player0:
                   gain (ff 0.04 (pure (sin (pi * time * 3.0) * 0.03 + 0.02)))
-                    { osc0Player0: sinOsc (440.0 + sin (pi * time) * 10.0) }
+                    { osc0Player0: sinOsc (90.0 + sin (pi * time) * 6.0) }
               , bufUnit0Player0:
                   gain 1.0
                     { bufUnit0G0Player0:
