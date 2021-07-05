@@ -39,10 +39,12 @@ type Acc
     }
 
 playHH0 :: { time :: Number, headroom :: Number } -> Maybe Number
-playHH0 { time, headroom } = if dist < 0.06 then Just (max 0.0 (mody - (time % mody))) else Nothing
+playHH0 { time, headroom } = if dist < sensitivity then Just (if tmody < (mody / 2.0) then 0.0 else (mody - tmody)) else Nothing
   where
-  mody = 1.0
+  sensitivity = 0.04
+  mody = 0.2
   dist = Math.abs ((time + headroom) % mody)
+  tmody = time % mody
 
 wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
   newAcc
@@ -58,7 +60,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
                         gain (bGain (V.index (head newPlayer0BP0) d0))
                           { bufUnit0B0Player0:
                               playBuf
-                                { playbackRate: 1.0
+                                { playbackRate: 1.0 + sin (pi * time) * 0.1
                                 , onOff: (bOnOff (V.index (head newPlayer0BP0) d0))
                                 }
                                 "hi-hat"
