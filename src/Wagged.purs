@@ -42,7 +42,7 @@ playHH0 :: { time :: Number, headroom :: Number } -> Maybe Number
 playHH0 { time, headroom } = if dist < sensitivity then Just (if tmody < (mody / 2.0) then 0.0 else (mody - tmody)) else Nothing
   where
   sensitivity = 0.04
-  mody = 0.2
+  mody = 0.8
   dist = Math.abs ((time + headroom) % mody)
   tmody = time % mody
 
@@ -53,7 +53,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
             gain 1.0
               { oscUnit0Player0:
                   gain (ff 0.04 (pure (sin (pi * time * 3.0) * 0.03 + 0.02)))
-                    { osc0Player0: sinOsc (90.0 + sin (pi * time) * 6.0) }
+                    { osc0Player0: sinOsc (1000.0 + sin (pi * time) * 6.0) }
               , bufUnit0Player0:
                   gain 1.0
                     { bufUnit0G0Player0:
@@ -63,7 +63,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
                                 { playbackRate: 1.0 + sin (pi * time) * 0.1
                                 , onOff: (bOnOff (V.index (head newPlayer0BP0) d0))
                                 }
-                                "hi-hat"
+                                "paddd"
                           }
                     }
               }
@@ -81,7 +81,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
                                 { playbackRate: 1.0
                                 , onOff: (bOnOff (V.index (head newPlayer1BP0) d0))
                                 }
-                                "hi-hat"
+                                "kick0"
                           }
                     }
               }
@@ -99,7 +99,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
                                 { playbackRate: 1.0
                                 , onOff: (bOnOff (V.index (head newPlayer2BP0) d0))
                                 }
-                                "hi-hat"
+                                "bell"
                           }
                     }
               }
@@ -117,7 +117,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
                                 { playbackRate: 1.0
                                 , onOff: (bOnOff (V.index (head newPlayer3BP0) d0))
                                 }
-                                "hi-hat"
+                                "bell"
                           }
                     }
               }
