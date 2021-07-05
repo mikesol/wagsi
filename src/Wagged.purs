@@ -1,10 +1,12 @@
 module Wagged where
 
-import Math
+import Math(pi, sin, cos, (%))
+import Math as Math
 import Prelude
 import WAGS.Create.Optionals
 import Control.Comonad.Cofree (head, tail)
 import Data.Int (toNumber)
+import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Data.Newtype (unwrap, wrap)
 import Data.Tuple (Tuple)
 import Data.Typelevel.Num (D1, D3, d0)
@@ -17,9 +19,6 @@ import WAGS.Graph.Parameter (AudioParameter)
 import WAGS.Lib.BufferPool (bGain, bOnOff)
 import Wagsi.Types (Extern)
 
--- change this to make sound
--- for example, you can try:
--- a /@\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { oscUnit0: sinOsc 440.0 } }
 type Acc
   = { player0Rate0 :: ARate
     , player0Blip0 :: ABlip
@@ -36,97 +35,23 @@ type Acc
     , player3Rate0 :: ARate
     , player3Blip0 :: ABlip
     , player3BP0 :: ABufferPool D1 Int
-    ---
-    , player4Rate0 :: ARate
-    , player4Blip0 :: ABlip
-    , player4BP0 :: ABufferPool D1 Int
     }
 
-type Scene
-  = { speaker ::
-        Tuple A.Speaker
-          { player0 ::
-              Tuple (A.Gain AudioParameter)
-                { bufUnit0Player0 ::
-                    Tuple (A.Gain AudioParameter)
-                      { bufUnit0G0Player0 ::
-                          Tuple (A.Gain AudioParameter)
-                            { bufUnit0B0Player0 :: Tuple (A.PlayBuf String Number APOnOff AudioParameter) {}
-                            }
-                      }
-                , oscUnit0Player0 ::
-                    Tuple (A.Gain AudioParameter)
-                      { osc0Player0 :: Tuple (A.SinOsc APOnOff AudioParameter) {}
-                      }
-                }
-          , player1 ::
-              Tuple (A.Gain AudioParameter)
-                { bufUnit0Player1 ::
-                    Tuple (A.Gain AudioParameter)
-                      { bufUnit0G0Player1 ::
-                          Tuple (A.Gain AudioParameter)
-                            { bufUnit0B0Player1 :: Tuple (A.PlayBuf String Number APOnOff AudioParameter) {}
-                            }
-                      }
-                , oscUnit0Player1 ::
-                    Tuple (A.Gain AudioParameter)
-                      { osc0Player1 :: Tuple (A.SinOsc APOnOff AudioParameter) {}
-                      }
-                }
-          , player2 ::
-              Tuple (A.Gain AudioParameter)
-                { bufUnit0Player2 ::
-                    Tuple (A.Gain AudioParameter)
-                      { bufUnit0G0Player2 ::
-                          Tuple (A.Gain AudioParameter)
-                            { bufUnit0B0Player2 :: Tuple (A.PlayBuf String Number APOnOff AudioParameter) {}
-                            }
-                      }
-                , oscUnit0Player2 ::
-                    Tuple (A.Gain AudioParameter)
-                      { osc0Player2 :: Tuple (A.SinOsc APOnOff AudioParameter) {}
-                      }
-                }
-          , player3 ::
-              Tuple (A.Gain AudioParameter)
-                { bufUnit0Player3 ::
-                    Tuple (A.Gain AudioParameter)
-                      { bufUnit0G0Player3 ::
-                          Tuple (A.Gain AudioParameter)
-                            { bufUnit0B0Player3 :: Tuple (A.PlayBuf String Number APOnOff AudioParameter) {}
-                            }
-                      }
-                , oscUnit0Player3 ::
-                    Tuple (A.Gain AudioParameter)
-                      { osc0Player3 :: Tuple (A.SinOsc APOnOff AudioParameter) {}
-                      }
-                }
-          , player4 ::
-              Tuple (A.Gain AudioParameter)
-                { bufUnit0Player4 ::
-                    Tuple (A.Gain AudioParameter)
-                      { bufUnit0G0Player4 ::
-                          Tuple (A.Gain AudioParameter)
-                            { bufUnit0B0Player4 :: Tuple (A.PlayBuf String Number APOnOff AudioParameter) {}
-                            }
-                      }
-                , oscUnit0Player4 ::
-                    Tuple (A.Gain AudioParameter)
-                      { osc0Player4 :: Tuple (A.SinOsc APOnOff AudioParameter) {}
-                      }
-                }
-          }
-    }
+playHH0 :: { time :: Number, headroom :: Number } -> Maybe Number
+playHH0 { time, headroom } = if dist < 0.06 then Just (max 0.0 (1.0 - (time % 1.0))) else Nothing
+  where
+  dist = Math.abs ((time + headroom) % 1.0)
 
-wagsi :: Extern -> Acc -> Tuple Acc Scene
-wagsi { time, headroom: headroom' } a =
+wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
   newAcc
     /@\ speaker
         { player0:
             gain 1.0
-              { oscUnit0Player0: gain (sin (pi * time * 2.0) * 0.03 + 0.02) { osc0Player0: sinOsc (440.0 + sin (pi * time) * 10.0) }
+              { oscUnit0Player0:
+                  gain (sin (pi * time * 2.0) * 0.03 + 0.02)
+                    { osc0Player0: sinOsc (440.0 + sin (pi * time) * 10.0) }
               , bufUnit0Player0:
-                  gain 0.0
+                  gain 1.0
                     { bufUnit0G0Player0:
                         gain (bGain (V.index (head newPlayer0BP0) d0))
                           { bufUnit0B0Player0:
@@ -140,7 +65,9 @@ wagsi { time, headroom: headroom' } a =
               }
         , player1:
             gain 1.0
-              { oscUnit0Player1: gain 0.0 { osc0Player1: sinOsc 440.0 }
+              { oscUnit0Player1:
+                  gain 0.0
+                    { osc0Player1: triangleOsc 440.0 }
               , bufUnit0Player1:
                   gain 0.0
                     { bufUnit0G0Player1:
@@ -156,7 +83,9 @@ wagsi { time, headroom: headroom' } a =
               }
         , player2:
             gain 1.0
-              { oscUnit0Player2: gain 0.0 { osc0Player2: sinOsc 440.0 }
+              { oscUnit0Player2:
+                  gain 0.0
+                    { osc0Player2: squareOsc 440.0 }
               , bufUnit0Player2:
                   gain 0.0
                     { bufUnit0G0Player2:
@@ -172,7 +101,9 @@ wagsi { time, headroom: headroom' } a =
               }
         , player3:
             gain 1.0
-              { oscUnit0Player3: gain 0.0 { osc0Player3: sinOsc 440.0 }
+              { oscUnit0Player3:
+                  gain 0.0
+                    { osc0Player3: sawtoothOsc 440.0 }
               , bufUnit0Player3:
                   gain 0.0
                     { bufUnit0G0Player3:
@@ -186,31 +117,22 @@ wagsi { time, headroom: headroom' } a =
                           }
                     }
               }
-        , player4:
-            gain 1.0
-              { oscUnit0Player4: gain 0.0 { osc0Player4: sinOsc 440.0 }
-              , bufUnit0Player4:
-                  gain 0.0
-                    { bufUnit0G0Player4:
-                        gain (bGain (V.index (head newPlayer4BP0) d0))
-                          { bufUnit0B0Player4:
-                              playBuf
-                                { playbackRate: 1.0
-                                , onOff: (bOnOff (V.index (head newPlayer4BP0) d0))
-                                }
-                                "hi-hat"
-                          }
-                    }
-              }
         }
   where
   headroom = toNumber headroom' / 1000.0
 
   newPlayer0Rate0 = unwrap a.player0Rate0 { time, rate: 1.0 }
 
-  newPlayer0Blip0 = unwrap a.player0Blip0 false
+  playHH0Now = playHH0 { time, headroom }
 
-  newPlayer0BP0 = unwrap a.player0BP0 { time, headroom, offsets: [] }
+  newPlayer0Blip0 = unwrap a.player0Blip0 (isJust playHH0Now)
+
+  newPlayer0BP0 =
+    unwrap a.player0BP0
+      { time
+      , headroom
+      , offsets: if (head newPlayer0Blip0) then fromMaybe [] (pure <<< { offset: _, rest: 0 } <$> playHH0Now) else []
+      }
 
   ---
   newPlayer1Rate0 = unwrap a.player1Rate0 { time, rate: 1.0 }
@@ -233,13 +155,6 @@ wagsi { time, headroom: headroom' } a =
 
   newPlayer3Blip0 = unwrap a.player3Blip0 false
 
-  ---
-  newPlayer4Rate0 = unwrap a.player4Rate0 { time, rate: 1.0 }
-
-  newPlayer4BP0 = unwrap a.player4BP0 { time, headroom, offsets: [] }
-
-  newPlayer4Blip0 = unwrap a.player4Blip0 false
-
   (newAcc :: Acc) =
     { player0Rate0: wrap (tail newPlayer0Rate0)
     , player0Blip0: wrap (tail newPlayer0Blip0)
@@ -256,8 +171,4 @@ wagsi { time, headroom: headroom' } a =
     , player3Rate0: wrap (tail newPlayer3Rate0)
     , player3Blip0: wrap (tail newPlayer3Blip0)
     , player3BP0: wrap (tail newPlayer3BP0)
-    ---
-    , player4Rate0: wrap (tail newPlayer4Rate0)
-    , player4Blip0: wrap (tail newPlayer4Blip0)
-    , player4BP0: wrap (tail newPlayer4BP0)
     }
