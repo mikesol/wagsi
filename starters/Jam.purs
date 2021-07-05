@@ -1,4 +1,4 @@
-module Wagged where
+module WAGSI.Starters.Jam where
 
 import Math
 import Prelude
@@ -17,9 +17,6 @@ import WAGS.Graph.Parameter (AudioParameter, ff)
 import WAGS.Lib.BufferPool (bGain, bOnOff)
 import Wagsi.Types (Extern)
 
--- change this to make sound
--- for example, you can try:
--- a /@\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { oscUnit0: sinOsc 440.0 } }
 type Acc
   = { player0Rate0 :: ARate
     , player0Rate1 :: ARate
@@ -326,11 +323,3 @@ wagsi { time, headroom: headroom' } a =
     , player4Rate3: wrap (tail newPlayer4Rate3)
     , player4BP0: wrap (tail newPlayer4BP0)
     }
-
-{-
-  a
-    /@\ speaker
-        { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { oscUnit0: sinOsc 660.0 }
-        , unit1: gain (cos (pi * e.time) * -0.02 + 0.02) { osc1: triangleOsc 440.0 }
-        }
--}
