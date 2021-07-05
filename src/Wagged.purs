@@ -2,7 +2,6 @@ module Wagged where
 
 import Prelude
 import WAGS.Create.Optionals
-
 import Control.Comonad.Cofree (head, tail)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
@@ -42,24 +41,33 @@ playHH0 :: { time :: Number, headroom :: Number } -> Maybe Number
 playHH0 { time, headroom } = if dist < sensitivity then Just (if tmody < (mody / 2.0) then 0.0 else (mody - tmody)) else Nothing
   where
   sensitivity = 0.04
+
   mody = 1.4 + sin (pi * time) * 0.3
+
   dist = Math.abs ((time + headroom) % mody)
+
   tmody = time % mody
 
 playHH1 :: { time :: Number, headroom :: Number } -> Maybe Number
 playHH1 { time, headroom } = if dist < sensitivity then Just (if tmody < (mody / 2.0) then 0.0 else (mody - tmody)) else Nothing
   where
   sensitivity = 0.04
+
   mody = (if (time % 8.0 < 2.0) then 0.6 else 1.2) + sin (pi * time) * 0.3
+
   dist = Math.abs ((time + headroom) % mody)
+
   tmody = time % mody
 
 playHH2 :: { time :: Number, headroom :: Number } -> Maybe Number
-playHH2{ time, headroom } = if dist < sensitivity then Just (if tmody < (mody / 2.0) then 0.0 else (mody - tmody)) else Nothing
+playHH2 { time, headroom } = if dist < sensitivity then Just (if tmody < (mody / 2.0) then 0.0 else (mody - tmody)) else Nothing
   where
   sensitivity = 0.04
+
   mody = 4.0 + sin (pi * time) * 0.3
+
   dist = Math.abs ((time + headroom) % mody)
+
   tmody = time % mody
 
 wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
@@ -69,7 +77,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
             gain 0.25
               { oscUnit0Player0:
                   gain (ff 0.04 (pure (sin (pi * time * 3.0) * 0.03 + 0.02)))
-                    { osc0Player0: sinOsc (184.9972 + sin (pi * time * 2.0) * 40.0 + sin (pi * time * 0.1) * 400.0)  }
+                    { osc0Player0: sinOsc (184.9972 + sin (pi * time * 2.0) * 40.0 + sin (pi * time * 0.1) * 400.0) }
               , bufUnit0Player0:
                   gain 1.3
                     { bufUnit0G0Player0:
@@ -80,12 +88,18 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
                                 , onOff: (bOnOff (V.index (head newPlayer0BP0) d0))
                                 }
                                 "lowpad"
-                            , bufUnit0B0Playerrrrrrr0: highpass (3000.0 + sin (pi * time) * 1000.0) {hpdddd: gain 0.1 { origPad: playBuf
-                                { playbackRate: 2.0 + sin (pi * time) * 0.4
-                                , onOff: (bOnOff (V.index (head newPlayer1BP0) d0))
+                          , bufUnit0B0Playerrrrrrr0:
+                              highpass (3000.0 + sin (pi * time) * 1000.0)
+                                { hpdddd:
+                                    gain 0.1
+                                      { origPad:
+                                          playBuf
+                                            { playbackRate: 2.0 + sin (pi * time) * 0.4
+                                            , onOff: (bOnOff (V.index (head newPlayer1BP0) d0))
+                                            }
+                                            "paddd"
+                                      }
                                 }
-                                "paddd"}}
-                              
                           }
                     }
               }
@@ -93,7 +107,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
             gain 1.0
               { oscUnit0Player1:
                   gain 0.0 -- (0.01 + sin (pi * time * 8.0) * 0.01)
-                    { osc0Player1: triangleOsc (349.2282 + sin (pi * time * 0.1) * 200.0 )}
+                    { osc0Player1: triangleOsc (349.2282 + sin (pi * time * 0.1) * 200.0) }
               , bufUnit0Player1:
                   gain 0.2
                     { bufUnit0G0Player1:
@@ -103,20 +117,28 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
                                 { playbackRate: 1.1 + sin (pi * time) * 0.4
                                 , onOff: (bOnOff (V.index (head newPlayer1BP0) d0))
                                 }
-                                "hi-hat", bufUnit0B0Player3LBxxg:
-                              gain 1.5 { lbbbbb: loopBuf
-                                { playbackRate: 1.5 + sin ( pi * time ) * 0.3
-                                , onOff: On
-                                , loopStart: 4.3
-                                , loopEnd: 5.0
+                                "hi-hat"
+                          , bufUnit0B0Player3LBxxg:
+                              gain 1.5
+                                { lbbbbb:
+                                    loopBuf
+                                      { playbackRate: 1.5 + sin (pi * time) * 0.3
+                                      , onOff: On
+                                      , loopStart: 4.3
+                                      , loopEnd: 5.0
+                                      }
+                                      "indian2"
                                 }
-                                "indian2"}, birdieeeee:
-                              gain (1.0 + sin (pi * time * 3.0) * 0.4) { birdieBuff: loopBuf
-                                { playbackRate: 1.5 + sin ( pi * time ) * 0.3
-                                , onOff: On
-                                , loopStart: 0.0
+                          , birdieeeee:
+                              gain (1.0 + sin (pi * time * 3.0) * 0.4)
+                                { birdieBuff:
+                                    loopBuf
+                                      { playbackRate: 1.5 + sin (pi * time) * 0.3
+                                      , onOff: On
+                                      , loopStart: 0.0
+                                      }
+                                      "birdie"
                                 }
-                                "birdie"}
                           }
                     }
               }
@@ -124,7 +146,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
             gain 1.0
               { oscUnit0Player2:
                   gain 0.0 -- (0.005 + sin (pi * time) * 0.0025)
-                    { osc0Player2: squareOsc (1230.0 + sin (pi * time * 2.0) * 40.0 + sin (pi * time * 0.1) * 400.0)  }
+                    { osc0Player2: squareOsc (1230.0 + sin (pi * time * 2.0) * 40.0 + sin (pi * time * 0.1) * 400.0) }
               , bufUnit0Player2:
                   gain 0.15
                     { bufUnit0G0Player2:
@@ -196,7 +218,8 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
 
   newPlayer2Blip0 = unwrap a.player2Blip0 (isJust playHH2Now)
 
-  newPlayer2BP0 = unwrap a.player2BP0
+  newPlayer2BP0 =
+    unwrap a.player2BP0
       { time
       , headroom
       , offsets: if (head newPlayer2Blip0) then fromMaybe [] (pure <<< { offset: _, rest: 0 } <$> playHH2Now) else []
