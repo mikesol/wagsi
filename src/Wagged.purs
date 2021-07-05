@@ -1,9 +1,8 @@
 module Wagged where
 
-import Math(pi, sin, cos, (%))
-import Math as Math
 import Prelude
 import WAGS.Create.Optionals
+
 import Control.Comonad.Cofree (head, tail)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
@@ -13,9 +12,11 @@ import Data.Typelevel.Num (D1, D3, d0)
 import Data.Vec as V
 import Hack ((/@\))
 import LibWrap (ABlip, ABufferPool, ARate)
+import Math (pi, sin, cos, (%))
+import Math as Math
 import WAGS.Graph.AudioUnit (APOnOff)
 import WAGS.Graph.AudioUnit as A
-import WAGS.Graph.Parameter (AudioParameter)
+import WAGS.Graph.Parameter (AudioParameter, ff)
 import WAGS.Lib.BufferPool (bGain, bOnOff)
 import Wagsi.Types (Extern)
 
@@ -38,9 +39,10 @@ type Acc
     }
 
 playHH0 :: { time :: Number, headroom :: Number } -> Maybe Number
-playHH0 { time, headroom } = if dist < 0.06 then Just (max 0.0 (1.0 - (time % 1.0))) else Nothing
+playHH0 { time, headroom } = if dist < 0.06 then Just (max 0.0 (mody - (time % mody))) else Nothing
   where
-  dist = Math.abs ((time + headroom) % 1.0)
+  mody = 1.0
+  dist = Math.abs ((time + headroom) % mody)
 
 wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
   newAcc
@@ -48,7 +50,7 @@ wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
         { player0:
             gain 1.0
               { oscUnit0Player0:
-                  gain (sin (pi * time * 2.0) * 0.03 + 0.02)
+                  gain (ff 0.04 (pure (sin (pi * time * 3.0) * 0.03 + 0.02)))
                     { osc0Player0: sinOsc (440.0 + sin (pi * time) * 10.0) }
               , bufUnit0Player0:
                   gain 1.0
