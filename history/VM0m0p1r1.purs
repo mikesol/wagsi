@@ -11,14 +11,16 @@ import Data.Typelevel.Num (D1, D3, d0)
 import Data.Vec as V
 import Math (pi, sin, cos, (%))
 import Math as Math
+import Type.Proxy (Proxy(..))
 import WAGS.Graph.AudioUnit (APOnOff, OnOff(..))
 import WAGS.Graph.AudioUnit as A
 import WAGS.Graph.Parameter (AudioParameter, ff)
 import WAGS.Lib.BufferPool (ABufferPool, ASnappyBufferPool, bGain, bOnOff)
-import WAGS.Lib.Cofree (actualize, tail)
+import WAGS.Lib.Cofree (actualize, actualizes, tail, tails)
 import WAGS.Lib.Emitter (fEmitter)
 import WAGS.Lib.Impulse (ABlip)
 import WAGS.Lib.Rate (ARate)
+import WAGS.Lib.Template (fromTemplate)
 import WAGS.Run (SceneI(..))
 import WAGSI.Plumbing.Hack ((/@\))
 import WAGSI.Plumbing.Types (Extern)
@@ -51,16 +53,13 @@ stash =
 -}
 type Acc
   = { player0BP0 :: ASnappyBufferPool D1
-    ---
     , player1BP0 :: ASnappyBufferPool D1
-    ---
     , player2BP0 :: ASnappyBufferPool D1
-    ---
     , player3BP0 :: ASnappyBufferPool D1
     }
 
-wagsi (e@(SceneI { time, headroom: headroom' }) :: Extern) (a :: Acc) =
-  newAcc
+wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
+  nextAcc
     /@\ speaker
         { player0:
             gain 0.25
@@ -70,26 +69,27 @@ wagsi (e@(SceneI { time, headroom: headroom' }) :: Extern) (a :: Acc) =
               , bufUnit0Player0:
                   gain 1.3
                     { bufUnit0G0Player0:
-                        gain (bGain (V.index (head newPlayer0BP0) d0))
-                          { bufUnit0B0Player0:
-                              playBuf
-                                { playbackRate: 1.3 + sin (pi * time) * 0.4
-                                , onOff: (bOnOff (V.index (head newPlayer0BP0) d0))
-                                }
-                                "lowpad"
-                          }
-                    , bufUnit0B0Playerrrrrrr0:
-                        highpass (3000.0 + sin (pi * time) * 1000.0)
-                          { hpdddd:
-                              gain 0.1
-                                { origPad:
-                                    playBuf
-                                      { playbackRate: 2.0 + sin (pi * time) * 0.4
-                                      , onOff: (bOnOff (V.index (head newPlayer1BP0) d0))
-                                      }
-                                      "paddd"
-                                }
-                          }
+                        fromTemplate (Proxy :: _ "bufUnit0B0Player0") (head new.player0BP0) \_ ipt ->
+                          gain (bGain ipt)
+                            { onePad:
+                                playBuf
+                                  { playbackRate: 1.3 + sin (pi * time) * 0.4
+                                  , onOff: (bOnOff ipt)
+                                  }
+                                  "lowpad"
+                            , twoPad:
+                                highpass (3000.0 + sin (pi * time) * 1000.0)
+                                  { hpdddd:
+                                      gain 0.2
+                                        { origPad:
+                                            playBuf
+                                              { playbackRate: 2.0 + sin (pi * time) * 0.4
+                                              , onOff: (bOnOff ipt)
+                                              }
+                                              "paddd"
+                                        }
+                                  }
+                            }
                     }
               }
         , player1:
@@ -100,14 +100,15 @@ wagsi (e@(SceneI { time, headroom: headroom' }) :: Extern) (a :: Acc) =
               , bufUnit0Player1:
                   gain 0.2
                     { bufUnit0G0Player1:
-                        gain (bGain (V.index (head newPlayer1BP0) d0))
-                          { bufUnit0B0Player1:
-                              playBuf
-                                { playbackRate: 1.1 + sin (pi * time) * 0.4
-                                , onOff: (bOnOff (V.index (head newPlayer1BP0) d0))
-                                }
-                                "hi-hat"
-                          }
+                        fromTemplate (Proxy :: _ "bufUnit0B0Player1") (head new.player1BP0) \_ ipt ->
+                          gain (bGain ipt)
+                            { bufUnit0B0Player1:
+                                playBuf
+                                  { playbackRate: 1.1 + sin (pi * time) * 0.4
+                                  , onOff: (bOnOff ipt)
+                                  }
+                                  "hi-hat"
+                            }
                     , bufUnit0B0Player3LBxxg:
                         gain 1.5
                           { lbbbbb:
@@ -139,14 +140,15 @@ wagsi (e@(SceneI { time, headroom: headroom' }) :: Extern) (a :: Acc) =
               , bufUnit0Player2:
                   gain 0.15
                     { bufUnit0G0Player2:
-                        gain (bGain (V.index (head newPlayer2BP0) d0))
-                          { bufUnit0B0Player2:
-                              playBuf
-                                { playbackRate: 1.0
-                                , onOff: (bOnOff (V.index (head newPlayer2BP0) d0))
-                                }
-                                "kick1"
-                          }
+                        fromTemplate (Proxy :: _ "bufUnit0B0Player2") (head new.player2BP0) \_ ipt ->
+                          gain (bGain ipt)
+                            { bufUnit0B0Player2:
+                                playBuf
+                                  { playbackRate: 1.0
+                                  , onOff: (bOnOff ipt)
+                                  }
+                                  "kick1"
+                            }
                     }
               }
         , player3:
@@ -168,22 +170,12 @@ wagsi (e@(SceneI { time, headroom: headroom' }) :: Extern) (a :: Acc) =
               }
         }
   where
-  headroom = toNumber headroom' / 1000.0
+  new =
+    actualizes a e
+      { player0BP0: (1.4 + sin (pi * time) * 0.3)
+      , player1BP0: (if (time % 8.0 < 2.0) then 0.6 else 1.2) + sin (pi * time) * 0.3
+      , player2BP0: 4.0 + sin (pi * time) * 0.3
+      , player3BP0: 2.6
+      }
 
-  newPlayer0BP0 = actualize a.player0BP0 e (1.4 + sin (pi * time) * 0.3)
-
-  newPlayer1BP0 = actualize a.player1BP0 e ((if (time % 8.0 < 2.0) then 0.6 else 1.2) + sin (pi * time) * 0.3)
-
-  newPlayer2BP0 = actualize a.player2BP0 e (4.0 + sin (pi * time) * 0.3)
-
-  newPlayer3BP0 = actualize a.player3BP0 e 2.6
-
-  (newAcc :: Acc) =
-    { player0BP0: wrap (tail newPlayer0BP0)
-    ---
-    , player1BP0: wrap (tail newPlayer1BP0)
-    ---
-    , player2BP0: wrap (tail newPlayer2BP0)
-    ---
-    , player3BP0: wrap (tail newPlayer3BP0)
-    }
+  (nextAcc :: Acc) = tails new
