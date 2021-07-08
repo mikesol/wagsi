@@ -18,7 +18,7 @@ import Prim.Row as Row
 import Prim.RowList as RowList
 import Record as Record
 import Type.Proxy (Proxy(..))
-import WAGS.Lib.BufferPool (ABufferPool, makeBufferPool)
+import WAGS.Lib.BufferPool (ABufferPool, AHotBufferPool, ASnappyBufferPool, makeBufferPool, makeHotBufferPool, makeSnappyBufferPool)
 import WAGS.Lib.Emitter (AnEmitter, makeEmitter)
 import WAGS.Lib.Impulse (ABlip, AnImpulse, makeBlip, makeImpulse)
 import WAGS.Lib.Rate (ARate, makeRate)
@@ -89,6 +89,12 @@ instance fromEnvEmitter :: FromEnv AnEmitter where
 
 instance fromEnvBufferPool :: Pos n => FromEnv (ABufferPool n r) where
   fromEnv _ = makeBufferPool Nothing Nothing
+
+instance fromEnvHotBufferPool :: Pos n => FromEnv (AHotBufferPool n) where
+  fromEnv (SceneI { time }) = makeHotBufferPool { prevTime: time, startsAt: time } Nothing Nothing
+
+instance fromEnvSnappyBufferPool :: Pos n => FromEnv (ASnappyBufferPool n) where
+  fromEnv (SceneI { time }) = makeSnappyBufferPool { prevTime: time, startsAt: time } Nothing Nothing
 
 instance fromEnvImpulse :: FromEnv AnImpulse where
   fromEnv _ = makeImpulse
