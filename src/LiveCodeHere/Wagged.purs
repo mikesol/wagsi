@@ -1,11 +1,11 @@
-module Wagged where
+module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 import Math
 import WAGS.Create.Optionals
 
-import Wagsi.Types (Extern)
-import Hack ((/@\))
+import WAGSI.Plumbing.Types (Extern)
+import WAGSI.Plumbing.Hack ((/@\))
 
 -- change this to make sound
 -- for example, you can try:

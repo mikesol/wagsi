@@ -1,4 +1,4 @@
-module Hack where
+module WAGSI.Plumbing.Hack where
 
 import Prelude
 
@@ -12,13 +12,13 @@ import Data.Profunctor (lcmap)
 import Data.Traversable (sequence)
 import Data.Tuple (snd)
 import Data.Tuple.Nested ((/\), type (/\))
-import EZCtrl (class EZCtrl, ezctrl)
+import WAGSI.Plumbing.EZCtrl (class EZCtrl, ezctrl)
 import Effect (Effect)
 import Effect.Random (randomInt)
-import FFIStuff (Stash)
+import WAGSI.Plumbing.FFIStuff (Stash)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
-import FromEnv (class FromEnv, ORow(..), fromEnv)
+import WAGSI.Plumbing.FromEnv (class FromEnv, ORow(..), fromEnv)
 import WAGS.Change (class Change, ichange)
 import WAGS.Control.Functions.Validated (ibranch, (@!>))
 import WAGS.Control.Indexed (IxWAG)
@@ -26,9 +26,9 @@ import WAGS.Control.Types (Frame0, Scene, WAG)
 import WAGS.CreateT (class CreateT)
 import WAGS.Interpret (class AudioInterpret)
 import WAGS.Patch (class Patch, ipatch, patch)
-import WAGS.Run (SceneI)
+import WAGS.Run (SceneI(..))
 import WAGS.Validation (class GraphIsRenderable)
-import Wagsi.Types (Wag(..), Extern, Evt(..), Wld)
+import WAGSI.Plumbing.Types (Wag(..), Extern, Evt(..), Wld)
 
 foreign import handlers :: Effect (Object (Wag -> Effect Unit))
 
@@ -134,7 +134,7 @@ cont___w444g _ newGraph =
     Scene Extern audio engine proofB res
   branchingLogic =
     ( ibranch
-        ( \e a ->
+        ( \e@(SceneI { trigger }) a ->
             let
               newCtrl /\ rec = newGraph e (unwrap a.control)
 
@@ -142,7 +142,7 @@ cont___w444g _ newGraph =
                 ichange rec
                   $> { fromTrigger: false, control: (wrap newCtrl) }
             in
-              case e.trigger of
+              case trigger of
                 Just (HotReload (Wag wg)) ->
                   if a.fromTrigger then
                     Right loop

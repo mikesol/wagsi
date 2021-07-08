@@ -2,6 +2,7 @@ module WAGSI.History.VM0m0p1 where
 
 import Prelude
 import WAGS.Create.Optionals
+
 import Control.Comonad.Cofree (head, tail)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
@@ -9,15 +10,17 @@ import Data.Newtype (unwrap, wrap)
 import Data.Tuple (Tuple)
 import Data.Typelevel.Num (D1, D3, d0)
 import Data.Vec as V
-import Hack ((/@\))
-import LibWrap (ABlip, ABufferPool, ARate)
 import Math (pi, sin, cos, (%))
 import Math as Math
 import WAGS.Graph.AudioUnit (APOnOff, OnOff(..))
 import WAGS.Graph.AudioUnit as A
 import WAGS.Graph.Parameter (AudioParameter, ff)
-import WAGS.Lib.BufferPool (bGain, bOnOff)
-import Wagsi.Types (Extern)
+import WAGS.Lib.BufferPool (ABufferPool, bGain, bOnOff)
+import WAGS.Lib.Impulse (ABlip)
+import WAGS.Lib.Rate (ARate)
+import WAGS.Run (SceneI(..))
+import WAGSI.Plumbing.Hack ((/@\))
+import WAGSI.Plumbing.Types (Extern)
 
 {-
 module Stash where
@@ -97,7 +100,7 @@ playHH2 { time, headroom } = if dist < sensitivity then Just (if tmody < (mody /
 
   tmody = time % mody
 
-wagsi ({ time, headroom: headroom' } :: Extern) (a :: Acc) =
+wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
   newAcc
     /@\ speaker
         { player0:

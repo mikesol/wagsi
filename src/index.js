@@ -1,9 +1,9 @@
 import "./style.css";
-import main from "../output/Main/index.js";
-import engine from "../output/Engine/index.js";
-import gopher from "../output/Gopher/index.js";
-import stash from "../output/Stash/index.js";
-import hack from "../output/Hack/foreign.js";
+import main from "../output/WAGSI.Main/index.js";
+import engine from "../output/WAGSI.LiveCodeHere.Engine/index.js";
+import gopher from "../output/WAGSI.LiveCodeHere.Engine/index.js";
+import stash from "../output/WAGSI.LiveCodeHere.Engine/index.js";
+import hack from "../output/WAGSI.Plumbing.Hack/foreign.js";
 
 var shouldI = { skipUpdate: false };
 

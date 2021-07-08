@@ -6,15 +6,16 @@ import WAGS.Create.Optionals
 
 import Control.Comonad.Cofree (head, tail)
 import Data.Newtype (unwrap)
-import Hack ((/@\))
-import LibWrap (ARate(..))
-import Wagsi.Types (Extern)
+import WAGS.Lib.Rate (ARate(..))
+import WAGS.Run (SceneI(..))
+import WAGSI.Plumbing.Hack ((/@\))
+import WAGSI.Plumbing.Types (Extern)
 
 -- change this to make sound
 -- for example, you can try:
 -- a /\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
 --wagsi (e :: Extern) (a :: {}) = a /@\ speaker { toSpeaker: constant 0.0 }
-wagsi ({ time, headroom } :: Extern) ( a ::
+wagsi (SceneI { time } :: Extern) ( a ::
     { rate0 :: ARate
     , rate1 :: ARate
     }

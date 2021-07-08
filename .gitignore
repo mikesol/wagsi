@@ -10,7 +10,7 @@
 /.spago
 /dist/bundle.js
 /scripts/.venv
-/src/Engine.purs
-/src/Gopher.purs
+/src/LiveCodeHere/Engine.purs
+/src/Plumbing/Gopher.purs
 ide-purescript-*.vsix
 language-purescript-*.vsix

@@ -1,4 +1,4 @@
-module FFIStuff where
+module WAGSI.Plumbing.FFIStuff where
 
 import Data.Symbol (class IsSymbol, reflectSymbol)
 import Data.Tuple.Nested (type (/\), (/\))

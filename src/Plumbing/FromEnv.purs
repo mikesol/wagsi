@@ -1,7 +1,8 @@
-module FromEnv where
+module WAGSI.Plumbing.FromEnv where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
 import Data.Monoid.Additive (Additive)
@@ -12,11 +13,17 @@ import Data.Monoid.Endo (Endo)
 import Data.Monoid.Multiplicative (Multiplicative)
 import Data.Newtype (class Newtype)
 import Data.Symbol (class IsSymbol)
+import Data.Typelevel.Num (class Pos)
 import Prim.Row as Row
 import Prim.RowList as RowList
 import Record as Record
 import Type.Proxy (Proxy(..))
-import Wagsi.Types (Extern)
+import WAGS.Lib.BufferPool (ABufferPool, makeBufferPool)
+import WAGS.Lib.Emitter (AnEmitter, makeEmitter)
+import WAGS.Lib.Impulse (ABlip, AnImpulse, makeBlip, makeImpulse)
+import WAGS.Lib.Rate (ARate, makeRate)
+import WAGS.Run (SceneI(..))
+import WAGSI.Plumbing.Types (Extern)
 
 class FromEnv val where
   fromEnv :: Extern -> val
@@ -71,3 +78,20 @@ derive instance newtypeMarker :: Newtype Marker _
 
 instance fromEnvMarker :: FromEnv Marker where
   fromEnv = Marker
+
+---- lib wrap
+
+instance fromEnvRate :: FromEnv ARate where
+  fromEnv (SceneI { time }) = makeRate { prevTime: time, startsAt: time }
+
+instance fromEnvEmitter :: FromEnv AnEmitter where
+  fromEnv (SceneI { time }) = makeEmitter { prevTime: time, startsAt: time }
+
+instance fromEnvBufferPool :: Pos n => FromEnv (ABufferPool n r) where
+  fromEnv _ = makeBufferPool Nothing Nothing
+
+instance fromEnvImpulse :: FromEnv AnImpulse where
+  fromEnv _ = makeImpulse
+
+instance fromEnvBlip :: FromEnv ABlip where
+  fromEnv _ = makeBlip

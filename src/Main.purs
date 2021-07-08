@@ -1,8 +1,8 @@
-module Main where
+module WAGSI.Main where
 
 import Prelude
 
-import Audio (piece)
+import WAGSI.Plumbing.Audio (piece)
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Promise (toAffE)
@@ -24,7 +24,7 @@ import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console as Log
 import Effect.Ref as Ref
-import FFIStuff (Stash)
+import WAGSI.Plumbing.FFIStuff (Stash)
 import FRP.Behavior (Behavior, behavior)
 import FRP.Behavior.Mouse (position)
 import FRP.Event (Event, makeEvent, subscribe)
@@ -34,7 +34,7 @@ import FRP.Event.Mouse as Mouse
 import Foreign (Foreign)
 import Foreign.Object (Object)
 import Foreign.Object as O
-import Hack (stash, wag)
+import WAGSI.Plumbing.Hack (stash, wag)
 import Halogen (ClassName(..), SubscriptionId)
 import Halogen as H
 import Halogen.Aff (awaitBody, runHalogenAff)
@@ -45,7 +45,7 @@ import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
 import WAGS.Interpret (AudioContext, BrowserAudioBuffer, BrowserFloatArray, BrowserPeriodicWave, FFIAudio(..), close, context, decodeAudioDataFromUri, defaultFFIAudio, getMicrophoneAndCamera, makeFloatArray, makePeriodicWave, makeUnitCache)
 import WAGS.Run (run)
-import Wagsi.Types (Evt(..), Wag(..))
+import WAGSI.Plumbing.Types (Evt(..), Wag(..))
 
 main :: Effect Unit
 main =

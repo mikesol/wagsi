@@ -1,6 +1,6 @@
-module Stash where
+module WAGSI.LiveCodeHere.Stash where
 
-import FFIStuff (Stash, stashable)
+import WAGSI.Plumbing.FFIStuff (Stash, stashable)
 
 stash :: Stash
 stash =

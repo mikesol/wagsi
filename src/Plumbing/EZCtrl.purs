@@ -1,11 +1,11 @@
-module EZCtrl where
+module WAGSI.Plumbing.EZCtrl where
 
 import Data.Symbol (class IsSymbol)
-import FromEnv (class FromEnv, ORow(..), fromEnv)
+import WAGSI.Plumbing.FromEnv (class FromEnv, ORow(..), fromEnv)
 import Prim.Ordering (Ordering, LT, GT, EQ)
 import Prim.Row as Row
 import Prim.RowList as RL
-import Wagsi.Types (Extern)
+import WAGSI.Plumbing.Types (Extern)
 import Prim.Symbol as Sym
 import Record as Record
 import Type.Proxy (Proxy(..))

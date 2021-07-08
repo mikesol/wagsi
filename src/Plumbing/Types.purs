@@ -1,4 +1,4 @@
-module Wagsi.Types where
+module WAGSI.Plumbing.Types where
 
 import Prelude
 
