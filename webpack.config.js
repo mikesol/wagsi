@@ -12,7 +12,7 @@ module.exports = {
   plugins: [
     new EventHooksPlugin({
       environment: () => {
-        const fi = fs.readFileSync("src/EngineTemplate.purs").toString();
+        const fi = fs.readFileSync("src/Plumbing/EngineTemplate.purs").toString();
         fs.writeFileSync(
           "src/Engine.purs",
           "module Engine where\n" + fi.split(/\r\n|\n|\r/).slice(1).join("\n")

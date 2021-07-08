@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.EngineTemplate where
+module WAGSI.Plumbing.EngineTemplate where
 
 import WAGSI.Plumbing.Hack ((/@\))
 import WAGSI.Plumbing.Types (Extern)
