@@ -1,4 +1,4 @@
-module WAGSI.Starters.Rates where
+module WAGSI.History.VM0m0p0 where
 
 import Math
 import Prelude
