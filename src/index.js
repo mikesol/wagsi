@@ -1,11 +1,10 @@
 import "./style.css";
 import main from "../output/WAGSI.Main/index.js";
-import engine from "../output/WAGSI.LiveCodeHere.Engine/index.js";
 import gopher from "../output/WAGSI.LiveCodeHere.Engine/index.js";
 import stash from "../output/WAGSI.LiveCodeHere.Engine/index.js";
 import hack from "../output/WAGSI.Plumbing.Hack/foreign.js";
 
-var shouldI = { skipUpdate: false };
+var nonce = gopher.nonce;
 
 main.main();
 
@@ -19,15 +18,19 @@ if (stash.stash) {
   main.storeStash.stash = stash.stash;
 }
 
-if (module.hot) {
-  module.hot.accept("../output/Math/index.js");
-  module.hot.accept("../output/Math/foreign.js");
-  module.hot.accept("../output/EZCtrl/index.js");
-  module.hot.accept("../output/Engine/index.js", function (i) {
-    shouldI.skipUpdate = true;
+module.hot
+  .apply({ ignoreUnaccepted: true })
+  .then((outdatedModules) => {
+    console.log("outdatedModules", outdatedModules);
+  })
+  .catch((error) => {
+    console.error(error);
   });
+
+if (module.hot) {
   module.hot.accept("../output/Gopher/index.js", function (i) {
-    if (gopher.w_4_4_gg_ && !shouldI.skipUpdate) {
+    if (gopher.w_4_4_gg_ && gopher.nonce !== nonce) {
+      nonce = gopher.nonce
       console.log("Hello wags 🐕");
       main.storeWag.wag = gopher.w_4_4_gg_;
       var handlers = hack.handlers();

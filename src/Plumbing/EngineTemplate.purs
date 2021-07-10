@@ -5,4 +5,4 @@ import WAGSI.Plumbing.Types (Extern)
 import WAGS.Create.Optionals (speaker, constant)
 
 -- stopPrelude
-wagsi (e :: Extern) (a :: {}) = a /@\ speaker { toSpeaker: constant 0.0 }
+wagsi (e :: Extern) (a :: {}) = a /@\ speaker { zeros: constant 0.0 }

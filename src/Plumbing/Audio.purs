@@ -21,8 +21,8 @@ type FrameTp a e p i o x
   = IxWAG a e p Unit i o x
 
 type SceneType
-  = { speaker :: TSpeaker /\ { toSpeaker :: Unit }
-    , toSpeaker :: TConstant /\ {}
+  = { speaker :: TSpeaker /\ { zeros :: Unit }
+    , zeros :: TConstant /\ {}
     }
 
 type InitialControl
