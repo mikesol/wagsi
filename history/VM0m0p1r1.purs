@@ -1,27 +1,18 @@
 module WAGSI.History.VM0m0p1r1 where
 
+import Math
 import Prelude
 import WAGS.Create.Optionals
+
 import Control.Comonad.Cofree (head)
-import Data.Int (toNumber)
-import Data.Maybe (Maybe(..), fromMaybe, isJust)
-import Data.Newtype (unwrap, wrap)
-import Data.Tuple (Tuple)
-import Data.Typelevel.Num (D1, D3, d0)
-import Data.Vec as V
-import Math (pi, sin, cos, (%))
-import Math as Math
+import Data.Typelevel.Num (D3)
 import Type.Proxy (Proxy(..))
-import WAGS.Graph.AudioUnit (APOnOff, OnOff(..))
-import WAGS.Graph.AudioUnit as A
-import WAGS.Graph.Parameter (AudioParameter, ff)
-import WAGS.Lib.BufferPool (ABufferPool, ASnappyBufferPool, bGain, bOnOff)
-import WAGS.Lib.Cofree (actualize, actualizes, tail, tails)
-import WAGS.Lib.Emitter (fEmitter)
-import WAGS.Lib.Impulse (ABlip)
-import WAGS.Lib.Rate (ARate)
-import WAGS.Lib.Template (fromTemplate)
+import WAGS.Graph.AudioUnit (OnOff(..))
+import WAGS.Graph.Parameter (ff)
+import WAGS.Lib.BufferPool (ASnappyBufferPool, bGain, bOnOff)
+import WAGS.Lib.Cofree (actualizes, tails)
 import WAGS.Run (SceneI(..))
+import WAGS.Template (fromTemplate)
 import WAGSI.Plumbing.Hack ((/@\))
 import WAGSI.Plumbing.Types (Extern)
 
@@ -52,10 +43,10 @@ stash =
 
 -}
 type Acc
-  = { player0BP0 :: ASnappyBufferPool D1
-    , player1BP0 :: ASnappyBufferPool D1
-    , player2BP0 :: ASnappyBufferPool D1
-    , player3BP0 :: ASnappyBufferPool D1
+  = { player0BP0 :: ASnappyBufferPool D3
+    , player1BP0 :: ASnappyBufferPool D3
+    , player2BP0 :: ASnappyBufferPool D3
+    , player3BP0 :: ASnappyBufferPool D3
     }
 
 wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
@@ -65,7 +56,7 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
             gain 0.25
               { oscUnit0Player0:
                   gain (ff 0.04 (pure (sin (pi * time * 3.0) * 0.03 + 0.02)))
-                    { osc0Player0: sinOsc (184.9972 + sin (pi * time * 2.0) * 40.0 + sin (pi * time * 0.1) * 400.0) }
+                    (sinOsc (184.9972 + sin (pi * time * 2.0) * 40.0 + sin (pi * time * 0.1) * 400.0))
               , bufUnit0Player0:
                   gain 1.3
                     { bufUnit0G0Player0:
@@ -79,16 +70,14 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
                                   "lowpad"
                             , twoPad:
                                 highpass (3000.0 + sin (pi * time) * 1000.0)
-                                  { hpdddd:
-                                      gain 0.2
-                                        { origPad:
-                                            playBuf
-                                              { playbackRate: 2.0 + sin (pi * time) * 0.4
-                                              , onOff: (bOnOff ipt)
-                                              }
-                                              "paddd"
-                                        }
-                                  }
+                                  ( gain 0.2
+                                      ( playBuf
+                                          { playbackRate: 2.0 + sin (pi * time) * 0.4
+                                          , onOff: (bOnOff ipt)
+                                          }
+                                          "paddd"
+                                      )
+                                  )
                             }
                     }
               }
@@ -96,77 +85,71 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
             gain 1.0
               { oscUnit0Player1:
                   gain 0.0 -- (0.01 + sin (pi * time * 8.0) * 0.01)
-                    { osc0Player1: triangleOsc (349.2282 + sin (pi * time * 0.1) * 200.0) }
+                    (triangleOsc (349.2282 + sin (pi * time * 0.1) * 200.0))
               , bufUnit0Player1:
                   gain 0.2
                     { bufUnit0G0Player1:
                         fromTemplate (Proxy :: _ "bufUnit0B0Player1") (head new.player1BP0) \_ ipt ->
                           gain (bGain ipt)
-                            { bufUnit0B0Player1:
-                                playBuf
-                                  { playbackRate: 1.1 + sin (pi * time) * 0.4
-                                  , onOff: (bOnOff ipt)
-                                  }
-                                  "hi-hat"
-                            }
+                            ( playBuf
+                                { playbackRate: 1.1 + sin (pi * time) * 0.4
+                                , onOff: (bOnOff ipt)
+                                }
+                                "hi-hat"
+                            )
                     , bufUnit0B0Player3LBxxg:
                         gain 1.5
-                          { lbbbbb:
-                              loopBuf
-                                { playbackRate: 1.5 + sin (pi * time) * 0.3
-                                , onOff: On
-                                , loopStart: 4.3
-                                , loopEnd: 5.0
-                                }
-                                "indian2"
-                          }
+                          ( loopBuf
+                              { playbackRate: 1.5 + sin (pi * time) * 0.3
+                              , onOff: On
+                              , loopStart: 4.3
+                              , loopEnd: 5.0
+                              }
+                              "indian2"
+                          )
                     , birdieeeee:
                         gain (1.0 + sin (pi * time * 3.0) * 0.4)
-                          { birdieBuff:
-                              loopBuf
-                                { playbackRate: 1.5 + sin (pi * time) * 0.3
-                                , onOff: On
-                                , loopStart: 0.0
-                                }
-                                "birdie"
-                          }
+                          ( loopBuf
+                              { playbackRate: 1.5 + sin (pi * time) * 0.3
+                              , onOff: On
+                              , loopStart: 0.0
+                              }
+                              "birdie"
+                          )
                     }
               }
         , player2:
             gain 1.0
               { oscUnit0Player2:
                   gain 0.0 -- (0.005 + sin (pi * time) * 0.0025)
-                    { osc0Player2: squareOsc (1230.0 + sin (pi * time * 2.0) * 40.0 + sin (pi * time * 0.1) * 400.0) }
+                    (squareOsc (1230.0 + sin (pi * time * 2.0) * 40.0 + sin (pi * time * 0.1) * 400.0))
               , bufUnit0Player2:
                   gain 0.15
                     { bufUnit0G0Player2:
                         fromTemplate (Proxy :: _ "bufUnit0B0Player2") (head new.player2BP0) \_ ipt ->
                           gain (bGain ipt)
-                            { bufUnit0B0Player2:
-                                playBuf
-                                  { playbackRate: 1.0
-                                  , onOff: (bOnOff ipt)
-                                  }
-                                  "kick1"
-                            }
+                            ( playBuf
+                                { playbackRate: 1.0
+                                , onOff: (bOnOff ipt)
+                                }
+                                "kick1"
+                            )
                     }
               }
         , player3:
             gain 1.0
               { oscUnit0Player3:
-                  gain 0.0
-                    { osc0Player3: sawtoothOsc 440.0 }
+                  gain 0.0 (sawtoothOsc 440.0)
               , bufUnit0Player3:
                   gain 2.0
-                    { bufUnit0B0Player3LBx:
-                        loopBuf
-                          { playbackRate: 0.80
-                          , onOff: On
-                          , loopStart: 4.25
-                          , loopEnd: 5.3
-                          }
-                          "indian2"
-                    }
+                    ( loopBuf
+                        { playbackRate: 0.80
+                        , onOff: On
+                        , loopStart: 4.25
+                        , loopEnd: 5.3
+                        }
+                        "indian2"
+                    )
               }
         }
   where
