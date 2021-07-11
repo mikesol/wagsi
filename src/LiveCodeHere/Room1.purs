@@ -1,5 +1,9 @@
 module WAGSI.LiveCodeHere.Room1 where
 
+import Prelude
+import Math
+import WAGS.Create.Optionals
+
 import WAGS.Lib.Rate (ARate)
 import WAGSI.Plumbing.Types (Extern)
 

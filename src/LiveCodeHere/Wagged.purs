@@ -1,7 +1,7 @@
 module WAGSI.LiveCodeHere.Wagged where
 
-import Math
 import Prelude
+import Math
 import WAGS.Create.Optionals
 
 import Record.Builder as Record
