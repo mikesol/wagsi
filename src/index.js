@@ -1,6 +1,6 @@
 import "./style.css";
 import main from "../output/WAGSI.Main/index.js";
-import gopher from "../output/WAGSI.LiveCodeHere.Gopher/index.js";
+import gopher from "../output/WAGSI.PutThePastBehindUs.Gopher/index.js";
 import stash from "../output/WAGSI.LiveCodeHere.Stash/index.js";
 import hack from "../output/WAGSI.Plumbing.Hack/foreign.js";
 
@@ -30,7 +30,7 @@ if (module.hot) {
       });
   }
   module.hot.accept(
-    "../output/WAGSI.LiveCodeHere.Gopher/index.js",
+    "../output/WAGSI.PutThePastBehindUs.Gopher/index.js",
     function (i) {
       if (gopher.w_4_4_gg_ && gopher.nonce !== nonce) {
         nonce = gopher.nonce;
