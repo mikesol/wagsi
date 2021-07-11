@@ -1,21 +1,21 @@
 module WAGSI.Plumbing.Audio where
 
 import Prelude
-
 import Control.Applicative.Indexed (ipure)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import Data.Tuple (snd)
 import Data.Tuple.Nested (type (/\))
-import WAGSI.Plumbing.FromEnv (ORow(..))
-import WAGSI.Plumbing.Types (Evt(..), Extern, Wag(..))
 import WAGS.Control.Functions.Validated (ibranch, (@!>))
 import WAGS.Control.Indexed (IxWAG)
 import WAGS.Control.Types (Frame0, Scene)
 import WAGS.Graph.AudioUnit (TConstant, TSpeaker)
+import WAGS.Lib.Rate (ARate)
 import WAGS.Patch (ipatch)
 import WAGS.Run (RunAudio, RunEngine, SceneI(..))
+import WAGSI.Plumbing.FromEnv (ORow(..), fromEnv)
+import WAGSI.Plumbing.Types (Evt(..), Extern, Wag(..))
 
 type FrameTp a e p i o x
   = IxWAG a e p Unit i o x
@@ -26,11 +26,15 @@ type SceneType
     }
 
 type InitialControl
-  = { fromTrigger :: Boolean, control :: ORow () }
+  = { fromTrigger :: Boolean, control :: ORow ( room0Rate0 :: ARate, room1Rate0 :: ARate ) }
 
 createFrame ::
   Extern -> FrameTp RunAudio RunEngine Frame0 {} SceneType InitialControl
-createFrame _ = ipatch $> { fromTrigger: false, control: ORow {} }
+createFrame e =
+  ipatch
+    $> { fromTrigger: false
+      , control: ORow { room0Rate0: fromEnv e, room1Rate0: fromEnv e }
+      }
 
 piece ::
   Scene Extern RunAudio RunEngine Frame0 Unit

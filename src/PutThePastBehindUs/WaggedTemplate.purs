@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.Wagged where
+module WAGSI.PutThePastBehindUs.WaggedTemplate where
 
 import Math
 import Prelude
@@ -7,10 +7,10 @@ import WAGS.Create.Optionals
 import Record.Builder as Record
 import Type.Row (type (+))
 import WAGS.Lib.Cofree (actualizes, heads, tails)
-import WAGSI.LiveCodeHere.Room0 as Room0
-import WAGSI.LiveCodeHere.Room1 as Room1
 import WAGSI.Plumbing.Hack ((/@\))
 import WAGSI.Plumbing.Types (Extern)
+import WAGSI.PutThePastBehindUs.Room0Template as Room0
+import WAGSI.PutThePastBehindUs.Room1Template as Room1
 
 -- change this to make sound
 -- for example, you can try:

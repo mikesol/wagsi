@@ -6,7 +6,6 @@ import Data.Maybe (Maybe)
 import Data.Tuple.Nested (type (/\))
 import WAGS.Control.Types (Scene, WAG)
 import WAGS.Interpret (class AudioInterpret)
-import WAGS.Lib.Cofree (class Actualize)
 import WAGS.Run (SceneI)
 
 newtype Wag
