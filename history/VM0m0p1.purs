@@ -3,20 +3,19 @@ module WAGSI.History.VM0m0p1 where
 import Prelude
 import WAGS.Create.Optionals
 
-import Control.Comonad.Cofree (head, tail)
+import Control.Comonad (extract)
+import Control.Comonad.Cofree.Class (unwrapCofree)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
-import Data.Newtype (unwrap, wrap)
-import Data.Tuple (Tuple)
-import Data.Typelevel.Num (D1, D3, d0)
+import Data.Newtype (unwrap)
+import Data.Typelevel.Num (D1, d0)
 import Data.Vec as V
-import Math (pi, sin, cos, (%))
+import Math (pi, sin, (%))
 import Math as Math
-import WAGS.Graph.AudioUnit (APOnOff, OnOff(..))
-import WAGS.Graph.AudioUnit as A
-import WAGS.Graph.Parameter (AudioParameter, ff)
+import WAGS.Graph.AudioUnit (OnOff(..))
+import WAGS.Graph.Parameter (ff)
+import WAGS.Lib.Blip (ABlip)
 import WAGS.Lib.BufferPool (ABufferPool, bGain, bOnOff)
-import WAGS.Lib.Impulse (ABlip)
 import WAGS.Lib.Rate (ARate)
 import WAGS.Run (SceneI(..))
 import WAGSI.Plumbing.Hack ((/@\))
@@ -111,11 +110,11 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
               , bufUnit0Player0:
                   gain 1.3
                     { bufUnit0G0Player0:
-                        gain (bGain (V.index (head newPlayer0BP0) d0))
+                        gain (bGain (V.index (extract newPlayer0BP0) d0))
                           { bufUnit0B0Player0:
                               playBuf
                                 { playbackRate: 1.3 + sin (pi * time) * 0.4
-                                , onOff: (bOnOff (V.index (head newPlayer0BP0) d0))
+                                , onOff: (bOnOff (V.index (extract newPlayer0BP0) d0))
                                 }
                                 "lowpad"
                           , bufUnit0B0Playerrrrrrr0:
@@ -125,7 +124,7 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
                                       { origPad:
                                           playBuf
                                             { playbackRate: 2.0 + sin (pi * time) * 0.4
-                                            , onOff: (bOnOff (V.index (head newPlayer1BP0) d0))
+                                            , onOff: (bOnOff (V.index (extract newPlayer1BP0) d0))
                                             }
                                             "paddd"
                                       }
@@ -141,11 +140,11 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
               , bufUnit0Player1:
                   gain 0.2
                     { bufUnit0G0Player1:
-                        gain (bGain (V.index (head newPlayer1BP0) d0))
+                        gain (bGain (V.index (extract newPlayer1BP0) d0))
                           { bufUnit0B0Player1:
                               playBuf
                                 { playbackRate: 1.1 + sin (pi * time) * 0.4
-                                , onOff: (bOnOff (V.index (head newPlayer1BP0) d0))
+                                , onOff: (bOnOff (V.index (extract newPlayer1BP0) d0))
                                 }
                                 "hi-hat"
                           , bufUnit0B0Player3LBxxg:
@@ -180,11 +179,11 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
               , bufUnit0Player2:
                   gain 0.15
                     { bufUnit0G0Player2:
-                        gain (bGain (V.index (head newPlayer2BP0) d0))
+                        gain (bGain (V.index (extract newPlayer2BP0) d0))
                           { bufUnit0B0Player2:
                               playBuf
                                 { playbackRate: 1.0
-                                , onOff: (bOnOff (V.index (head newPlayer2BP0) d0))
+                                , onOff: (bOnOff (V.index (extract newPlayer2BP0) d0))
                                 }
                                 "kick1"
                           }
@@ -224,7 +223,7 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
     unwrap a.player0BP0
       { time
       , headroom
-      , offsets: if (head newPlayer0Blip0) then fromMaybe [] (pure <<< { offset: _, rest: 0 } <$> playHH0Now) else []
+      , offsets: if (extract newPlayer0Blip0) then fromMaybe [] (pure <<< { offset: _, rest: 0 } <$> playHH0Now) else []
       }
 
   ---
@@ -238,7 +237,7 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
     unwrap a.player1BP0
       { time
       , headroom
-      , offsets: if (head newPlayer1Blip0) then fromMaybe [] (pure <<< { offset: _, rest: 0 } <$> playHH1Now) else []
+      , offsets: if (extract newPlayer1Blip0) then fromMaybe [] (pure <<< { offset: _, rest: 0 } <$> playHH1Now) else []
       }
 
   ---
@@ -252,7 +251,7 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
     unwrap a.player2BP0
       { time
       , headroom
-      , offsets: if (head newPlayer2Blip0) then fromMaybe [] (pure <<< { offset: _, rest: 0 } <$> playHH2Now) else []
+      , offsets: if (extract newPlayer2Blip0) then fromMaybe [] (pure <<< { offset: _, rest: 0 } <$> playHH2Now) else []
       }
 
   ---
@@ -263,19 +262,19 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
   newPlayer3Blip0 = unwrap a.player3Blip0 false
 
   (newAcc :: Acc) =
-    { player0Rate0: wrap (tail newPlayer0Rate0)
-    , player0Blip0: wrap (tail newPlayer0Blip0)
-    , player0BP0: wrap (tail newPlayer0BP0)
+    { player0Rate0: (unwrapCofree newPlayer0Rate0)
+    , player0Blip0: (unwrapCofree newPlayer0Blip0)
+    , player0BP0: (unwrapCofree newPlayer0BP0)
     ---
-    , player1Rate0: wrap (tail newPlayer1Rate0)
-    , player1Blip0: wrap (tail newPlayer1Blip0)
-    , player1BP0: wrap (tail newPlayer1BP0)
+    , player1Rate0: (unwrapCofree newPlayer1Rate0)
+    , player1Blip0: (unwrapCofree newPlayer1Blip0)
+    , player1BP0: (unwrapCofree newPlayer1BP0)
     ---
-    , player2Rate0: wrap (tail newPlayer2Rate0)
-    , player2Blip0: wrap (tail newPlayer2Blip0)
-    , player2BP0: wrap (tail newPlayer2BP0)
+    , player2Rate0: (unwrapCofree newPlayer2Rate0)
+    , player2Blip0: (unwrapCofree newPlayer2Blip0)
+    , player2BP0: (unwrapCofree newPlayer2BP0)
     ---
-    , player3Rate0: wrap (tail newPlayer3Rate0)
-    , player3Blip0: wrap (tail newPlayer3Blip0)
-    , player3BP0: wrap (tail newPlayer3BP0)
+    , player3Rate0: (unwrapCofree newPlayer3Rate0)
+    , player3Blip0: (unwrapCofree newPlayer3Blip0)
+    , player3BP0: (unwrapCofree newPlayer3BP0)
     }

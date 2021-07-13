@@ -4,9 +4,10 @@ import Math
 import Prelude
 import WAGS.Create.Optionals
 
-import Control.Comonad.Cofree (head, tail)
+import Control.Comonad (extract)
+import Control.Comonad.Cofree.Class (unwrapCofree)
 import Data.Newtype (unwrap)
-import WAGS.Lib.Rate (ARate(..))
+import WAGS.Lib.Rate (ARate)
 import WAGS.Run (SceneI(..))
 import WAGSI.Plumbing.Hack ((/@\))
 import WAGSI.Plumbing.Types (Extern)
@@ -33,8 +34,8 @@ wagsi (SceneI { time } :: Extern) ( a ::
         , rate: 2.0 + sin (pi * time) * 1.0
         }
   in
-    { rate0: (ARate (tail rate0)), rate1: (ARate (tail rate1)) }
+    { rate0: unwrapCofree rate0, rate1: unwrapCofree rate1 }
       /@\ speaker
-          { unit0: gain (cos (pi * (head rate0)) * -0.02 + 0.02) { osc0: sinOsc 440.0 }
-          , unit1: gain (cos (pi * (head rate1)) * -0.02 + 0.02) { osc1: sinOsc 660.0 }
+          { unit0: gain (cos (pi * (extract rate0)) * -0.02 + 0.02) { osc0: sinOsc 440.0 }
+          , unit1: gain (cos (pi * (extract rate1)) * -0.02 + 0.02) { osc1: sinOsc 660.0 }
           }

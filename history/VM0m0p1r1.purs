@@ -10,7 +10,7 @@ import Type.Proxy (Proxy(..))
 import WAGS.Graph.AudioUnit (OnOff(..))
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.BufferPool (ASnappyBufferPool, bGain, bOnOff)
-import WAGS.Lib.Cofree (actualizes, tails)
+import WAGS.Lib.Cofree (actualizes, heads, tails)
 import WAGS.Run (SceneI(..))
 import WAGS.Template (fromTemplate)
 import WAGSI.Plumbing.Hack ((/@\))
@@ -60,7 +60,7 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
               , bufUnit0Player0:
                   gain 1.3
                     { bufUnit0G0Player0:
-                        fromTemplate (Proxy :: _ "bufUnit0B0Player0") (head new.player0BP0) \_ ipt ->
+                        fromTemplate (Proxy :: _ "bufUnit0B0Player0") (headz.player0BP0) \_ ipt ->
                           gain (bGain ipt)
                             { onePad:
                                 playBuf
@@ -89,7 +89,7 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
               , bufUnit0Player1:
                   gain 0.2
                     { bufUnit0G0Player1:
-                        fromTemplate (Proxy :: _ "bufUnit0B0Player1") (head new.player1BP0) \_ ipt ->
+                        fromTemplate (Proxy :: _ "bufUnit0B0Player1") (headz.player1BP0) \_ ipt ->
                           gain (bGain ipt)
                             ( playBuf
                                 { playbackRate: 1.1 + sin (pi * time) * 0.4
@@ -126,7 +126,7 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
               , bufUnit0Player2:
                   gain 0.15
                     { bufUnit0G0Player2:
-                        fromTemplate (Proxy :: _ "bufUnit0B0Player2") (head new.player2BP0) \_ ipt ->
+                        fromTemplate (Proxy :: _ "bufUnit0B0Player2") (headz.player2BP0) \_ ipt ->
                           gain (bGain ipt)
                             ( playBuf
                                 { playbackRate: 1.0
@@ -160,5 +160,6 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
       , player2BP0: 4.0 + sin (pi * time) * 0.3
       , player3BP0: 2.6
       }
+  headz = heads new
 
   (nextAcc :: Acc) = tails new

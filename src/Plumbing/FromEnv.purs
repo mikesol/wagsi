@@ -20,6 +20,7 @@ import Record as Record
 import Type.Proxy (Proxy(..))
 import WAGS.Lib.BufferPool (ABufferPool, AHotBufferPool, ASnappyBufferPool, makeBufferPool, makeHotBufferPool, makeSnappyBufferPool)
 import WAGS.Lib.Emitter (AnEmitter, makeEmitter)
+import WAGS.Lib.Trigger (makeTrigger, makeSnappyTrigger, ATrigger, ASnappyTrigger)
 import WAGS.Lib.Impulse (AnImpulse, makeImpulse)
 import WAGS.Lib.Blip (ABlip, makeBlip)
 import WAGS.Lib.Rate (ARate, makeRate)
@@ -95,7 +96,13 @@ instance fromEnvHotBufferPool :: Pos n => FromEnv (AHotBufferPool n) where
   fromEnv (SceneI { time }) = makeHotBufferPool { prevTime: time, startsAt: time } Nothing Nothing
 
 instance fromEnvSnappyBufferPool :: Pos n => FromEnv (ASnappyBufferPool n) where
-  fromEnv (SceneI { time }) = makeSnappyBufferPool { prevTime: time, startsAt: time } Nothing Nothing
+  fromEnv _ = makeSnappyBufferPool  Nothing Nothing
+
+instance fromEnvTrigger ::FromEnv (ATrigger) where
+  fromEnv _ = makeTrigger
+
+instance fromEnvSnappyTrigger :: FromEnv (ASnappyTrigger) where
+  fromEnv _ = makeSnappyTrigger
 
 instance fromEnvImpulse :: FromEnv AnImpulse where
   fromEnv _ = makeImpulse
