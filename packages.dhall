@@ -184,7 +184,7 @@ let additions =
         [ "wags"
         ]
       , repo = "https://github.com/mikesol/purescript-wags-lib.git"
-      , version = "v0.0.11"
+      , version = "v0.0.12"
       }
       , painting =
         { dependencies =
