@@ -18,7 +18,7 @@ import Effect.Random (randomInt)
 import WAGSI.Plumbing.FFIStuff (Stash)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
-import WAGSI.Plumbing.FromEnv (class FromEnv, ORow(..), fromEnv)
+import WAGSI.Plumbing.FromEnv (class FromEnv, fromEnv)
 import WAGS.Change (class Change, ichange)
 import WAGS.Control.Functions.Validated (ibranch, (@!>))
 import WAGS.Control.Indexed (IxWAG)
@@ -44,7 +44,7 @@ foreign import deffi_ :: String -> Effect Unit
 
 wagsableTuple ::
   forall controlNew b c.
-  FromEnv (ORow controlNew) =>
+  FromEnv { | controlNew } =>
   CreateT b () c =>
   GraphIsRenderable c =>
   { | controlNew } -> { | b } -> { | controlNew } /\ { | b }
@@ -99,13 +99,13 @@ cont___w444g ::
   -- the transition from the first scene to beta in case we start in the middle
   Patch () outGraphBeta =>
   -- controlBeta has to be a FromEnv in case we start in the middle
-  FromEnv (ORow controlBeta) =>
+  FromEnv { | controlBeta } =>
   EZCtrl controlAlpha controlBeta =>
   wagsi ->
   (Extern -> { | controlBeta } -> { | controlBeta } /\ { | rBeta }) ->
   ( Scene Extern audio engine Frame0 res
       /\ ( Extern ->
-        WAG audio engine proof res { | outGraphAlpha } { control :: (ORow controlAlpha), fromTrigger :: Boolean } ->
+        WAG audio engine proof res { | outGraphAlpha } { control :: { | controlAlpha }, fromTrigger :: Boolean } ->
         Scene Extern audio engine proof res
       )
   )
@@ -117,7 +117,7 @@ cont___w444g _ newGraph =
 
           controlBeta = ezctrl env controlAlpha.control
 
-          (wBeta :: WAG audio engine proof res { | outGraphBeta } (WTrigger (ORow controlAlpha))) = patch w
+          (wBeta :: WAG audio engine proof res { | outGraphBeta } (WTrigger { | controlAlpha })) = patch w
 
           wagBeta = wBeta $> { control: controlBeta, fromTrigger: controlAlpha.fromTrigger }
         in
@@ -125,22 +125,22 @@ cont___w444g _ newGraph =
   where
   createFrame ::
     Extern ->
-    IxWAG audio engine Frame0 res {} { | outGraphBeta } { fromTrigger :: Boolean, control :: (ORow controlBeta) }
+    IxWAG audio engine Frame0 res {} { | outGraphBeta } { fromTrigger :: Boolean, control :: { | controlBeta } }
   createFrame e = ipatch $> { fromTrigger: false, control: fromEnv e }
 
   branchingLogic ::
     forall proofB.
-    WAG audio engine proofB res { | outGraphBeta } { control :: (ORow controlBeta), fromTrigger :: Boolean } ->
+    WAG audio engine proofB res { | outGraphBeta } { control :: { | controlBeta }, fromTrigger :: Boolean } ->
     Scene Extern audio engine proofB res
   branchingLogic =
     ( ibranch
         ( \e@(SceneI { trigger }) a ->
             let
-              newCtrl /\ rec = newGraph e (unwrap a.control)
+              newCtrl /\ rec = newGraph e (a.control)
 
               loop =
                 ichange rec
-                  $> { fromTrigger: false, control: (wrap newCtrl) }
+                  $> { fromTrigger: false, control: (newCtrl) }
             in
               case trigger of
                 Just (HotReload (Wag wg)) ->

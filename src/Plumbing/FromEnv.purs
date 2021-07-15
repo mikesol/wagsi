@@ -67,13 +67,8 @@ instance fromEnvRowCons :: (IsSymbol sym, Row.Lacks sym restRow, FromEnv res, Fr
 instance fromEnvRowNil :: FromEnvRow' (RowList.Nil) () where
   fromEnvRow' _ _ = {}
 
--- ORow short for OrthogonalRow, meaning a row where the entires are orthogonal
-newtype ORow (r :: Row Type) = ORow { | r }
-
-derive instance newtypeORow :: Newtype (ORow r) _
-
-instance fromEnvORow :: (RowList.RowToList o rl, FromEnvRow' rl o) => FromEnv (ORow o) where
-  fromEnv e = ORow (fromEnvRow' (Proxy :: _ rl) e)
+instance fromEnvRow :: (RowList.RowToList o rl, FromEnvRow' rl o) => FromEnv { | o } where
+  fromEnv e = fromEnvRow' (Proxy :: _ rl) e
 
 newtype Marker = Marker Extern
 

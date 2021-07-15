@@ -23,7 +23,6 @@ import WAGS.Lib.Latch (ALatchAP, MakeLatchAP, LatchAP)
 import WAGS.Lib.Piecewise (APFofT, makeLoopingTerracedR, makePiecewise, makeTerracedR)
 import WAGS.Lib.Rate (ARate)
 import WAGS.Run (SceneI(..))
-import WAGSI.Plumbing.FromEnv (ORow)
 import WAGSI.Plumbing.Types (Extern)
 
 type Instruments'' a r
