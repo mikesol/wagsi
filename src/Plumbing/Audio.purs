@@ -14,7 +14,7 @@ import WAGS.Graph.AudioUnit (TConstant, TSpeaker)
 import WAGS.Lib.Rate (ARate)
 import WAGS.Patch (ipatch)
 import WAGS.Run (RunAudio, RunEngine, SceneI(..))
-import WAGSI.Plumbing.FromEnv (ORow(..), fromEnv)
+import WAGSI.Plumbing.FromEnv (fromEnv)
 import WAGSI.Plumbing.Types (Evt(..), Extern, Wag(..))
 
 type FrameTp a e p i o x
@@ -26,14 +26,14 @@ type SceneType
     }
 
 type InitialControl
-  = { fromTrigger :: Boolean, control :: ORow ( room0Rate0 :: ARate, room1Rate0 :: ARate ) }
+  = { fromTrigger :: Boolean, control :: { room0Rate0 :: ARate, room1Rate0 :: ARate } }
 
 createFrame ::
   Extern -> FrameTp RunAudio RunEngine Frame0 {} SceneType InitialControl
 createFrame e =
   ipatch
     $> { fromTrigger: false
-      , control: ORow { room0Rate0: fromEnv e, room1Rate0: fromEnv e }
+      , control: { room0Rate0: fromEnv e, room1Rate0: fromEnv e }
       }
 
 piece ::

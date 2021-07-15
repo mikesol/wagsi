@@ -18,12 +18,13 @@ import Prim.Row as Row
 import Prim.RowList as RowList
 import Record as Record
 import Type.Proxy (Proxy(..))
+import WAGS.Lib.Blip (ABlip, makeBlip)
 import WAGS.Lib.BufferPool (ABufferPool, AHotBufferPool, ASnappyBufferPool, makeBufferPool, makeHotBufferPool, makeSnappyBufferPool)
 import WAGS.Lib.Emitter (AnEmitter, makeEmitter)
-import WAGS.Lib.Trigger (makeTrigger, makeSnappyTrigger, ATrigger, ASnappyTrigger)
 import WAGS.Lib.Impulse (AnImpulse, makeImpulse)
-import WAGS.Lib.Blip (ABlip, makeBlip)
+import WAGS.Lib.Latch (ALatchAP, makeLatchAP)
 import WAGS.Lib.Rate (ARate, makeRate)
+import WAGS.Lib.Trigger (makeTrigger, makeSnappyTrigger, ATrigger, ASnappyTrigger)
 import WAGS.Run (SceneI(..))
 import WAGSI.Plumbing.Types (Extern)
 
@@ -66,13 +67,8 @@ instance fromEnvRowCons :: (IsSymbol sym, Row.Lacks sym restRow, FromEnv res, Fr
 instance fromEnvRowNil :: FromEnvRow' (RowList.Nil) () where
   fromEnvRow' _ _ = {}
 
--- ORow short for OrthogonalRow, meaning a row where the entires are orthogonal
-newtype ORow (r :: Row Type) = ORow { | r }
-
-derive instance newtypeORow :: Newtype (ORow r) _
-
-instance fromEnvORow :: (RowList.RowToList o rl, FromEnvRow' rl o) => FromEnv (ORow o) where
-  fromEnv e = ORow (fromEnvRow' (Proxy :: _ rl) e)
+instance fromEnvRow :: (RowList.RowToList o rl, FromEnvRow' rl o) => FromEnv { | o } where
+  fromEnv e = fromEnvRow' (Proxy :: _ rl) e
 
 newtype Marker = Marker Extern
 
@@ -109,3 +105,6 @@ instance fromEnvImpulse :: FromEnv AnImpulse where
 
 instance fromEnvBlip :: FromEnv ABlip where
   fromEnv _ = makeBlip
+
+instance fromEnvLatch :: Eq v => FromEnv (ALatchAP v) where
+  fromEnv _ = makeLatchAP
