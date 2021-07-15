@@ -15,7 +15,7 @@ import Math as Math
 import WAGS.Graph.AudioUnit (OnOff(..))
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Blip (ABlip)
-import WAGS.Lib.BufferPool (ABufferPool, bGain, bOnOff)
+import WAGS.Lib.BufferPool (ABufferPool, bOnOff)
 import WAGS.Lib.Rate (ARate)
 import WAGS.Run (SceneI(..))
 import WAGSI.Plumbing.Hack ((/@\))
@@ -110,11 +110,11 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
               , bufUnit0Player0:
                   gain 1.3
                     { bufUnit0G0Player0:
-                        gain (bGain (V.index (extract newPlayer0BP0) d0))
+                        gain 1.0
                           { bufUnit0B0Player0:
                               playBuf
                                 { playbackRate: 1.3 + sin (pi * time) * 0.4
-                                , onOff: (bOnOff (V.index (extract newPlayer0BP0) d0))
+                                , onOff: (bOnOff time (V.index (extract newPlayer0BP0) d0))
                                 }
                                 "lowpad"
                           , bufUnit0B0Playerrrrrrr0:
@@ -124,7 +124,7 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
                                       { origPad:
                                           playBuf
                                             { playbackRate: 2.0 + sin (pi * time) * 0.4
-                                            , onOff: (bOnOff (V.index (extract newPlayer1BP0) d0))
+                                            , onOff: (bOnOff time (V.index (extract newPlayer1BP0) d0))
                                             }
                                             "paddd"
                                       }
@@ -140,11 +140,11 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
               , bufUnit0Player1:
                   gain 0.2
                     { bufUnit0G0Player1:
-                        gain (bGain (V.index (extract newPlayer1BP0) d0))
+                        gain 1.0
                           { bufUnit0B0Player1:
                               playBuf
                                 { playbackRate: 1.1 + sin (pi * time) * 0.4
-                                , onOff: (bOnOff (V.index (extract newPlayer1BP0) d0))
+                                , onOff: (bOnOff time (V.index (extract newPlayer1BP0) d0))
                                 }
                                 "hi-hat"
                           , bufUnit0B0Player3LBxxg:
@@ -179,11 +179,11 @@ wagsi (SceneI { time, headroom: headroom' } :: Extern) (a :: Acc) =
               , bufUnit0Player2:
                   gain 0.15
                     { bufUnit0G0Player2:
-                        gain (bGain (V.index (extract newPlayer2BP0) d0))
+                        gain 1.0
                           { bufUnit0B0Player2:
                               playBuf
                                 { playbackRate: 1.0
-                                , onOff: (bOnOff (V.index (extract newPlayer2BP0) d0))
+                                , onOff: (bOnOff time (V.index (extract newPlayer2BP0) d0))
                                 }
                                 "kick1"
                           }

@@ -9,7 +9,7 @@ import Data.Typelevel.Num (D3)
 import Type.Proxy (Proxy(..))
 import WAGS.Graph.AudioUnit (OnOff(..))
 import WAGS.Graph.Parameter (ff)
-import WAGS.Lib.BufferPool (ASnappyBufferPool, bGain, bOnOff)
+import WAGS.Lib.BufferPool (ASnappyBufferPool, bOnOff)
 import WAGS.Lib.Cofree (actualizes, heads, tails)
 import WAGS.Run (SceneI(..))
 import WAGS.Template (fromTemplate)
@@ -61,11 +61,11 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
                   gain 1.3
                     { bufUnit0G0Player0:
                         fromTemplate (Proxy :: _ "bufUnit0B0Player0") (headz.player0BP0) \_ ipt ->
-                          gain (bGain ipt)
+                          gain 1.0
                             { onePad:
                                 playBuf
                                   { playbackRate: 1.3 + sin (pi * time) * 0.4
-                                  , onOff: (bOnOff ipt)
+                                  , onOff: (bOnOff time ipt)
                                   }
                                   "lowpad"
                             , twoPad:
@@ -73,7 +73,7 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
                                   ( gain 0.2
                                       ( playBuf
                                           { playbackRate: 2.0 + sin (pi * time) * 0.4
-                                          , onOff: (bOnOff ipt)
+                                          , onOff: (bOnOff time ipt)
                                           }
                                           "paddd"
                                       )
@@ -90,10 +90,10 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
                   gain 0.2
                     { bufUnit0G0Player1:
                         fromTemplate (Proxy :: _ "bufUnit0B0Player1") (headz.player1BP0) \_ ipt ->
-                          gain (bGain ipt)
+                          gain 1.0
                             ( playBuf
                                 { playbackRate: 1.1 + sin (pi * time) * 0.4
-                                , onOff: (bOnOff ipt)
+                                , onOff: (bOnOff time ipt)
                                 }
                                 "hi-hat"
                             )
@@ -127,10 +127,10 @@ wagsi (e@(SceneI { time }) :: Extern) (a :: Acc) =
                   gain 0.15
                     { bufUnit0G0Player2:
                         fromTemplate (Proxy :: _ "bufUnit0B0Player2") (headz.player2BP0) \_ ipt ->
-                          gain (bGain ipt)
+                          gain 1.0
                             ( playBuf
                                 { playbackRate: 1.0
-                                , onOff: (bOnOff ipt)
+                                , onOff: (bOnOff time ipt)
                                 }
                                 "kick1"
                             )
