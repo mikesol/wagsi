@@ -6,18 +6,18 @@ stash :: Stash
 stash =
   stashable
     { buffers:
-        { kick1: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/kick1.mp3"
-        , sideStick: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/sideStick.mp3"
-        , snare: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/snare.mp3"
-        , clap: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/clap.mp3"
-        , snareRoll: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/snareRoll.mp3"
-        , kick2: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/kick2.mp3"
-        , closedHH: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/closedHH.mp3"
-        , shaker: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/shaker.mp3"
-        , openHH: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/openHH.mp3"
-        , tamb: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/tamb.mp3"
-        , crash: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/crash.mp3"
-        , ride: "https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/smplxmpl/ride.mp3"
+        { kick1: "http://localhost:8000/kick1.mp3"
+        , sideStick: "http://localhost:8000/sideStick.mp3"
+        , snare: "http://localhost:8000/snare.mp3"
+        , clap: "http://localhost:8000/clap.mp3"
+        , snareRoll: "http://localhost:8000/snareRoll.mp3"
+        , kick2: "http://localhost:8000/kick2.mp3"
+        , closedHH: "http://localhost:8000/closedHH.mp3"
+        , shaker: "http://localhost:8000/shaker.mp3"
+        , openHH: "http://localhost:8000/openHH.mp3"
+        , tamb: "http://localhost:8000/tamb.mp3"
+        , crash: "http://localhost:8000/crash.mp3"
+        , ride: "http://localhost:8000/ride.mp3"
         }
     , periodicWaves: {}
     , floatArrays: {}

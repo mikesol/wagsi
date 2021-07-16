@@ -55,7 +55,7 @@ notes = { kick1: Note 127 0 12 :| [ Note 127 24 36, Note 127 72 84, Note 127 144
 
 ticksInBeat = 96.0 :: Number
 
-tempo = 90.1 :: Number
+tempo = 90.0 :: Number
 
 tmul = 60.0 / tempo :: Number
 
