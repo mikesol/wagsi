@@ -34,14 +34,13 @@ wagsi (e :: Extern) (a :: { | Acc }) =
 
   --------------------------------------------
   actualized =
-    actualizes a e
-      ( Record.build
-          ( Record.union (Room0.actualizer e)
-              >>> Record.union (Room1.actualizer e)
-          )
-          actualizer
+    Record.build
+      ( Record.union (Room0.actualizer e a)
+          >>> Record.union (Room1.actualizer e a)
       )
+      actualizer
 
   headz = heads actualized
 
   tailed = tails actualized
+
