@@ -26,14 +26,30 @@ type SceneType
     }
 
 type InitialControl
-  = { fromTrigger :: Boolean, control :: { room0Rate0 :: ARate, room1Rate0 :: ARate } }
+  = { fromTrigger :: Boolean
+    , control ::
+        { room0Rate0 :: ARate
+        , room1Rate0 :: ARate
+        , room2Rate0 :: ARate
+        , room3Rate0 :: ARate
+        , room4Rate0 :: ARate
+        , room5Rate0 :: ARate
+        }
+    }
 
 createFrame ::
   Extern -> FrameTp RunAudio RunEngine Frame0 {} SceneType InitialControl
 createFrame e =
   ipatch
     $> { fromTrigger: false
-      , control: { room0Rate0: fromEnv e, room1Rate0: fromEnv e }
+      , control:
+          { room0Rate0: fromEnv e
+          , room1Rate0: fromEnv e
+          , room2Rate0: fromEnv e
+          , room3Rate0: fromEnv e
+          , room4Rate0: fromEnv e
+          , room5Rate0: fromEnv e
+          }
       }
 
 piece ::
