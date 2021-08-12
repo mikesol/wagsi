@@ -25,9 +25,9 @@ You can check out the above video, a summary of which is provided below:
 1. Run `npm run ide:codespaces` to install a forked version of PureScript IDE.
 1. **Exit and re-enter codespaces** for the PureScript IDE installation to take effect. You only need to do this after the first install.
 1. Go to the **Ports** tab and add a new port **8080**, making sure it is set to **Public** (the default is _private_, so you'll have to change this).
-1. Still in the **Ports** tab, copy the URL under "local address" into the `codespacesPublicUrl` field of your package.json.
+1. Still in the **Ports** tab, copy the URL under "local address". Then, replace the URL in the script `start:codespaces` in `package.json` with this URL.
 1. Run `npm run start:codespaces` to start the webpage.
-1. Navigate to the same page as the one you copied to `codespacesPublicUrl`.
+1. Navigate to the same page as the one you copied to `package.json`.
 1. Once the page with the local address loads, click **Start audio**.
 1. Back in the online editor, open up `Wagged.purs` and start making some music! For inspiration, you can use this `graph`:
 
