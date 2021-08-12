@@ -31,8 +31,6 @@ type Acc r
     | r
     )
 
-kicks = fEmitter 1.0 :: { headroom :: Number, time :: Number } -> Maybe Number
-
 globalFF = 0.03 :: Number
 
 actualizer ::
@@ -53,6 +51,8 @@ actualizer e@(SceneI e') a =
             { offset: _, rest: unit } <$> fromEmitter
   }
   where
+  kicks = fEmitter 0.5
+
   fromEmitter = kicks { time: e'.time, headroom: e'.headroomInSeconds }
 
   room0KickBlip = actualize a.room0KickBlip e (isJust fromEmitter)
@@ -62,7 +62,7 @@ graph (SceneI { time }) { room0KickBuffers } =
   { room0Kick:
       fromTemplate (Proxy :: _ "room0KickBuffs") room0KickBuffers \_ -> case _ of
         Just (Buffy { starting, startTime }) ->
-          gain 1.0
+          gain 1.00
             ( playBuf
                 { onOff:
                     ff globalFF
