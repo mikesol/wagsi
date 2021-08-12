@@ -14,7 +14,7 @@ import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Blip (ABlip, CfBlip, MakeBlip, Blip)
 import WAGS.Lib.BufferPool (ABufferPool, Buffy(..), BuffyVec, CfBufferPool, MakeBufferPoolWithRest)
 import WAGS.Lib.Cofree (actualize)
-import WAGS.Lib.Emitter (fEmitter)
+import WAGS.Lib.Emitter (fEmitter, fEmitter')
 import WAGS.Run (SceneI(..))
 import WAGS.Template (fromTemplate)
 import WAGSI.Plumbing.Types (Extern)
@@ -51,7 +51,14 @@ actualizer e@(SceneI e') a =
             { offset: _, rest: unit } <$> fromEmitter
   }
   where
-  kicks = fEmitter 0.5
+  tmod2 = e'.time % 2.0
+
+  freq
+    | tmod2 < 0.75 = 0.0000001
+    | tmod2 > 1.75 = 0.0000001
+    | otherwise = 2.0
+
+  kicks = fEmitter' { sensitivity: 0.08 } freq
 
   fromEmitter = kicks { time: e'.time, headroom: e'.headroomInSeconds }
 

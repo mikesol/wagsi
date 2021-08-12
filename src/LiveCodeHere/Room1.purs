@@ -2,6 +2,7 @@ module WAGSI.LiveCodeHere.Room1 where
 
 import Prelude
 import WAGS.Create.Optionals
+
 import Control.Alternative (guard)
 import Control.Comonad (extract)
 import Data.Maybe (Maybe(..), isJust)
@@ -14,7 +15,7 @@ import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Blip (ABlip, CfBlip, MakeBlip, Blip)
 import WAGS.Lib.BufferPool (ABufferPool, Buffy(..), BuffyVec, CfBufferPool, MakeBufferPoolWithRest)
 import WAGS.Lib.Cofree (actualize)
-import WAGS.Lib.Emitter (fEmitter)
+import WAGS.Lib.Emitter (fEmitter, fEmitter')
 import WAGS.Run (SceneI(..))
 import WAGS.Template (fromTemplate)
 import WAGSI.Plumbing.Types (Extern)
@@ -51,7 +52,7 @@ actualizer e@(SceneI e') a =
             { offset: _, rest: unit } <$> fromEmitter
   }
   where
-  claps = fEmitter 1.0
+  claps = fEmitter' { sensitivity: 0.08 } 0.5
 
   fromEmitter = claps { time: e'.time, headroom: e'.headroomInSeconds }
 
