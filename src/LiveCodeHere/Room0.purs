@@ -56,7 +56,7 @@ actualizer e@(SceneI e') a =
   freq
     | tmod2 < 0.75 = 0.0000001
     | tmod2 > 1.75 = 0.0000001
-    | otherwise = 2.0
+    | otherwise = 2.00
 
   kicks = fEmitter' { sensitivity: 0.08 } freq
 
@@ -69,7 +69,7 @@ graph (SceneI { time }) { room0KickBuffers } =
   { room0Kick:
       fromTemplate (Proxy :: _ "room0KickBuffs") room0KickBuffers \_ -> case _ of
         Just (Buffy { starting, startTime }) ->
-          gain 1.00
+          gain 1.0
             ( playBuf
                 { onOff:
                     ff globalFF
