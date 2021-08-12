@@ -9,6 +9,7 @@ import Data.List ((:), List(..))
 import Data.Maybe (Maybe(..), isJust)
 import Data.NonEmpty ((:|))
 import Data.Tuple.Nested ((/\))
+import Data.Tuple (Tuple(..))
 import Data.Typelevel.Num (D3)
 import Data.Unfoldable as UF
 import Math (pi, sin, cos, (%))
@@ -60,8 +61,8 @@ actualizer e@(SceneI e') a =
   where
   kicks =
     makeLoopingTerracedR
-      $ ( (0.0 /\ Just true)
-            :| (0.5 /\ Just false)
+      $ ( (Tuple 0.0 (Just true))
+            :| (0.832 /\ Just false)
             : (2.0 /\ Just true)
             : Nil
         )

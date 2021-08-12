@@ -53,8 +53,11 @@ actualizer e@(SceneI e') a =
         a.room1ClapBuffers
         e
         $ UF.fromMaybe do
+            -- param (Maybe v)
+            -- v = Maybe Boolean
+            -- param (Maybe (Maybe Boolean))
             AudioParameter { param, timeOffset } <- extract room1ClapLatch
-            void $ join param
+            void $ join param -- Maybe (Maybe Boolean) -> Maybe Boolean
             pure { offset: timeOffset, rest: unit }
   }
   where
@@ -85,7 +88,7 @@ graph (SceneI { time }) { room1ClapBuffers } =
                           pure Off
                         else
                           pure On
-                , playbackRate: 1.0
+                , playbackRate: 1.2 + sin (pi * time * 0.7) * 0.5
                 }
                 "clap"
             )

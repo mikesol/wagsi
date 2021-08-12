@@ -18,6 +18,9 @@ stash =
         , tamb: "https://freesound.org/data/previews/207/207925_19852-hq.mp3"
         , crash: "https://freesound.org/data/previews/528/528490_3797507-hq.mp3"
         , ride: "https://freesound.org/data/previews/270/270138_1125482-hq.mp3"
+        , trumpet: "https://freesound.org/data/previews/331/331146_3931578-hq.mp3"
+        , pad: "https://freesound.org/data/previews/110/110212_1751865-hq.mp3"
+        , impulse0: "https://freesound.org/data/previews/382/382907_2812020-hq.mp3" 
         }
     , periodicWaves: {}
     , floatArrays: {}

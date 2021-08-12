@@ -25,8 +25,7 @@ type Acc
 
 wagsi (e :: Extern) (a :: { | Acc }) =
   tailed
-    /@\ speaker
-        ( Record.build
+    /@\ speaker { masterGain: gain 0.5 ( Record.build
             ( Record.union (Room0.graph e headz)
                 >>> Record.union (Room1.graph e headz)
                 >>> Record.union (Room2.graph e headz)
@@ -35,7 +34,8 @@ wagsi (e :: Extern) (a :: { | Acc }) =
                 >>> Record.union (Room5.graph e headz)
             )
             { zeros: constant 0.0 }
-        )
+        ) }
+        
   where
   actualizer = {}
 
