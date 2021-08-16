@@ -32,7 +32,15 @@ diagnosticsRunning = case _ of
   _ -> false
 
 buildFileCache :: String -> Array String -> Effect (Map String String)
-buildFileCache pathForLiveCodeHere files = Map.fromFoldable <$> (traverse (\f -> Tuple f <$> ((readFile $ Path.concat [ pathForLiveCodeHere, f ]) >>= Buffer.toString UTF8)) files)
+buildFileCache pathForLiveCodeHere files =
+  Map.fromFoldable
+    <$> ( files
+          # traverse \f ->
+              Tuple f
+                <$> ( (readFile $ Path.concat [ pathForLiveCodeHere, f ])
+                      >>= Buffer.toString UTF8
+                  )
+      )
 
 pastIsMissing :: Map String String -> String -> String -> Boolean
 pastIsMissing filezPast file content = case Map.lookup file filezPast of
