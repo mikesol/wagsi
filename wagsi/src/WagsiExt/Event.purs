@@ -1,7 +1,6 @@
 module WagsiExt.Event where
 
 import Prelude
-
 import Data.Array (replicate)
 import Data.Maybe (isNothing, maybe)
 import Data.Traversable (fold, traverse)
@@ -12,22 +11,16 @@ import FRP.Event (Event, fix, gateBy, makeEvent)
 onlyFirst :: forall a. Eq a => Event a -> Event a
 onlyFirst e =
   fix \i ->
-    let
-      o = gateBy (\a -> const $ isNothing a) i e
-    in
-      { input: o
-      , output: i
-      }
+    { input: gateBy (\a -> const $ isNothing a) i e
+    , output: i
+    }
 
 dedup :: forall a. Eq a => Event a -> Event a
 dedup e =
   fix \i ->
-    let
-      o = gateBy (\a b ->  maybe true ((/=) b) a) i e
-    in
-      { input: o
-      , output: i
-      }
+    { input: gateBy (\a b -> maybe true ((/=) b) a) i e
+    , output: i
+    }
 
 makeCbEvent ::
   forall store r.
