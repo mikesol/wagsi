@@ -10,14 +10,14 @@ const removeCb = <V>(store: Record<string, V>) => (key: string) => (): void => {
 }
 
 export const setDidSaveCallback = addCb;
-export const setHandleDiagnosticsCallbacks = addCb;
-export const setStartLoopCallbacks = addCb;
-export const setStopLoopCallbacks = addCb;
-export const setDiagnosticsBeginCallbacks = addCb;
-export const setDiagnosticsEndCallbacks = addCb;
+export const setHandleDiagnosticsCallback = addCb;
+export const setStartLoopCallback = addCb;
+export const setStopLoopCallback = addCb;
+export const setDiagnosticsBeginCallback = addCb;
+export const setDiagnosticsEndCallback = addCb;
 export const removeDidSaveCallback = addCb;
-export const removeHandleDiagnosticsCallbacks = addCb;
-export const removeStartLoopCallbacks = addCb;
-export const removeStopLoopCallbacks = addCb;
-export const removeDiagnosticsBeginCallbacks = addCb;
-export const removeDiagnosticsEndCallbacks = addCb;
+export const removeHandleDiagnosticsCallback = addCb;
+export const removeStartLoopCallback = addCb;
+export const removeStopLoopCallback = addCb;
+export const removeDiagnosticsBeginCallback = addCb;
+export const removeDiagnosticsEndCallback = addCb;

@@ -14,8 +14,10 @@ to generate this file without the comments in this block.
 , dependencies =
   [ "arrays"
   , "console"
+  , "control"
   , "effect"
   , "event"
+  , "filterable"
   , "foldable-traversable"
   , "prelude"
   , "psci-support"

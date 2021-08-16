@@ -16,3 +16,4 @@
 /src/Plumbing/Gopher.purs
 ide-purescript-*.vsix
 language-purescript-*.vsix
+.purs-repl
