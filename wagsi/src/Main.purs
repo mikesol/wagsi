@@ -36,7 +36,7 @@ buildFileCache pathForLiveCodeHere files = Map.fromFoldable <$> (traverse (\f ->
 
 pastIsMissing :: Map String String -> String -> String -> Boolean
 pastIsMissing filezPast file content = case Map.lookup file filezPast of
-  Just f -> (A.tail $ String.split (String.Pattern "\n") f) /= (A.tail $ String.split (String.Pattern "\n") content)
+  Just f -> putInPast content /= f
   Nothing -> true
 
 presentIsMissing :: Map String String -> String -> Boolean
