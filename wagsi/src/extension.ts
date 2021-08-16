@@ -62,7 +62,9 @@ export function activate(context: vscode.ExtensionContext) {
 			eff()();
   	}
   });
-	require('./bundle').main({ didSaveCallbacks, handleDiagnosticsCallbacks, startLoopCallbacks, stopLoopCallbacks, diagnosticsBeginCallbacks, diagnosticsEndCallbacks });
+	require('./bundle').main({ didSaveCallbacks, handleDiagnosticsCallbacks, startLoopCallbacks, stopLoopCallbacks, diagnosticsBeginCallbacks, diagnosticsEndCallbacks, launchCompilation: () => { 
+		vscode.commands.executeCommand("purescript.build");
+	} })();
 }
 
 // this method is called when your extension is deactivated
