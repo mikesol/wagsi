@@ -8,7 +8,7 @@ import Effect (Effect)
 import Effect.Random (randomInt)
 import FRP.Event (Event, fix, gateBy, makeEvent)
 
-onlyFirst :: forall a. Eq a => Event a -> Event a
+onlyFirst :: Event ~> Event
 onlyFirst e =
   fix \i ->
     { input: gateBy (\a -> const $ isNothing a) i e
