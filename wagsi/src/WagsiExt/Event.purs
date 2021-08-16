@@ -1,12 +1,23 @@
 module WagsiExt.Event where
 
 import Prelude
+
 import Data.Array (replicate)
-import Data.Maybe (maybe)
+import Data.Maybe (isNothing, maybe)
 import Data.Traversable (fold, traverse)
 import Effect (Effect)
 import Effect.Random (randomInt)
 import FRP.Event (Event, fix, gateBy, makeEvent)
+
+onlyFirst :: forall a. Eq a => Event a -> Event a
+onlyFirst e =
+  fix \i ->
+    let
+      o = gateBy (\a -> const $ isNothing a) i e
+    in
+      { input: o
+      , output: i
+      }
 
 dedup :: forall a. Eq a => Event a -> Event a
 dedup e =

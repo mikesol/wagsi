@@ -1,18 +1,23 @@
 module Main where
 
 import Prelude
-
 import Control.Alt ((<|>))
 import Data.Array as A
-import Data.Filterable (filter)
+import Data.Filterable (filter, filterMap)
 import Data.Map (Map)
-import Data.Maybe (Maybe(..), isJust)
+import Data.Map as Map
+import Data.Maybe (Maybe(..), fromMaybe, isNothing)
 import Data.String as String
+import Data.Traversable (for_, traverse)
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Ref as Ref
-import FRP.Event (EventIO, create, fold, subscribe)
-import Record as R
-import WagsiExt.Event (dedup, makeCbEvent)
+import FRP.Event (fold, subscribe)
+import Node.Buffer as Buffer
+import Node.Encoding (Encoding(..))
+import Node.FS.Sync (readFile, readdir, unlink, writeFile)
+import Node.Path as Path
+import WagsiExt.Event (dedup, makeCbEvent, onlyFirst)
 import WagsiExt.FFI (removeDiagnosticsBeginCallback, removeDiagnosticsEndCallback, removeDidSaveCallback, removeHandleDiagnosticsCallback, removeStartLoopCallback, removeStopLoopCallback, setDiagnosticsBeginCallback, setDiagnosticsEndCallback, setDidSaveCallback, setHandleDiagnosticsCallback, setStartLoopCallback, setStopLoopCallback)
 import WagsiExt.Types (DiagnosticsBeginCallbacks, DiagnosticsEndCallbacks, DiagnosticsHeartbeat(..), DiagnosticsInfo, DiagnosticsState(..), DidSaveCallbacks, HandleDiagnosticsCallbacks, LoopHeartbeat(..), LoopState(..), StartLoopCallbacks, StopLoopCallbacks)
 
@@ -23,6 +28,22 @@ diagnosticsRunning :: DiagnosticsState -> Boolean
 diagnosticsRunning = case _ of
   DiagnosticsStarted _ -> true
   _ -> false
+
+buildFileCache :: String -> Array String -> Effect (Map String String)
+buildFileCache pathForLiveCodeHere files = Map.fromFoldable <$> (traverse (\f -> Tuple f <$> ((readFile $ Path.concat [ pathForLiveCodeHere, f ]) >>= Buffer.toString UTF8)) files)
+
+pastIsMissing :: Map String String -> String -> String -> Boolean
+pastIsMissing filezPast file content = case Map.lookup file filezPast of
+  Just f -> (A.tail $ String.split (String.Pattern "\n") f) /= (A.tail $ String.split (String.Pattern "\n") content)
+  Nothing -> true
+
+presentIsMissing :: Map String String -> String -> Boolean
+presentIsMissing filezPresent file = isNothing $ Map.lookup file filezPresent
+
+putInPast :: String -> String
+putInPast =
+  String.replaceAll (String.Pattern "LiveCodeHere")
+    (String.Replacement "PutThePastBehindUs")
 
 main ::
   { didSaveCallbacks :: DidSaveCallbacks
@@ -45,19 +66,42 @@ main { didSaveCallbacks
   liveCodeHere :: Ref.Ref (Maybe (Map String String)) <- Ref.new Nothing
   -- starts with nothing as there has not been a successful compilation yet
   _ <-
-    subscribe events \{ startStop, diagnostics } -> do
+    subscribe events \{ startStop, diagnostics, pathForLiveCodeHere } -> do
       -- on successful compilation, copy to prev
-      when (diagnostics == DiagnosticsEnded { errorCount: 0 }) $ ?hole
+      when (diagnostics == DiagnosticsEnded { errorCount: 0 })
+        $ do
+            filezPast <-
+              readdir
+                ( String.replace (String.Pattern "LiveCodeHere")
+                    (String.Replacement "PutThePastBehindUs")
+                    pathForLiveCodeHere
+                )
+                >>= buildFileCache pathForLiveCodeHere
+            filezPresent <- fromMaybe Map.empty <$> (Ref.read liveCodeHere)
+            for_ (Map.toUnfoldable filezPresent :: Array (Tuple String String)) \(Tuple file content) ->
+              when (pastIsMissing filezPast file content)
+                (Buffer.fromString (putInPast content) UTF8 >>= writeFile (putInPast (Path.concat [ pathForLiveCodeHere, file ])))
+            for_ (Map.keys filezPast) \file ->
+              when (presentIsMissing filezPresent file)
+                (unlink (putInPast (Path.concat [ pathForLiveCodeHere, file ])))
       -- if diagnostics have ended and we are in started or restarted, launch compilation
       when
-        (not (diagnosticsRunning diagnostics) && (startStop == LoopStarted || startStop == LoopRestarted)) do
-        ?hole -- get current files
+        ( not (diagnosticsRunning diagnostics)
+            && (startStop == LoopStarted || startStop == LoopRestarted)
+        ) do
+        filezPresent <- readdir pathForLiveCodeHere >>= buildFileCache pathForLiveCodeHere
+        Ref.write (Just filezPresent) liveCodeHere
         launchCompilation
   pure unit
   where
-  didSaveEvent =
-    filter
-      (isJust <<< String.indexOf (String.Pattern "/LiveCodeHere/") <<< _.fileName)
+  pathForLiveCode =
+    onlyFirst
+      $ filterMap
+          ( map (flip append "src/LiveCodeHere")
+              <<< A.head
+              <<< String.split (String.Pattern "src/LiveCodeHere")
+              <<< _.fileName
+          )
       $ makeCbEvent setDidSaveCallback removeDidSaveCallback didSaveCallbacks
 
   handleDiagnosticsEvent = makeCbEvent setHandleDiagnosticsCallback removeHandleDiagnosticsCallback handleDiagnosticsCallbacks
@@ -112,8 +156,8 @@ main { didSaveCallbacks
     dedup
       $ { startStop: _
         , diagnostics: _
-        , representativeFile: _
+        , pathForLiveCodeHere: _
         }
       <$> loopStateEvent
       <*> diagnosticsEvent
-      <*> didSaveEvent
+      <*> pathForLiveCode
