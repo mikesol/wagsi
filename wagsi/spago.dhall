@@ -19,9 +19,13 @@ to generate this file without the comments in this block.
   , "event"
   , "filterable"
   , "foldable-traversable"
+  , "maybe"
+  , "ordered-collections"
   , "prelude"
   , "psci-support"
   , "random"
+  , "record"
+  , "strings"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

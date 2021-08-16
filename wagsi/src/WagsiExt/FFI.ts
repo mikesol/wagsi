@@ -1,6 +1,3 @@
-import { ThunkThunk, DidSaveCb, HandleDiagnosticsCallback } from './TSTypes';
-
-
 const addCb = <V>(store: Record<string, V>) => (key: string) => (cb: V) => (): void => {
   store[key] = cb;
 }
@@ -15,9 +12,9 @@ export const setStartLoopCallback = addCb;
 export const setStopLoopCallback = addCb;
 export const setDiagnosticsBeginCallback = addCb;
 export const setDiagnosticsEndCallback = addCb;
-export const removeDidSaveCallback = addCb;
-export const removeHandleDiagnosticsCallback = addCb;
-export const removeStartLoopCallback = addCb;
-export const removeStopLoopCallback = addCb;
-export const removeDiagnosticsBeginCallback = addCb;
-export const removeDiagnosticsEndCallback = addCb;
+export const removeDidSaveCallback = removeCb;
+export const removeHandleDiagnosticsCallback = removeCb;
+export const removeStartLoopCallback = removeCb;
+export const removeStopLoopCallback = removeCb;
+export const removeDiagnosticsBeginCallback = removeCb;
+export const removeDiagnosticsEndCallback = removeCb;

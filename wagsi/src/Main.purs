@@ -1,17 +1,28 @@
 module Main where
 
 import Prelude
+
 import Control.Alt ((<|>))
 import Data.Array as A
 import Data.Filterable (filter)
+import Data.Map (Map)
+import Data.Maybe (Maybe(..), isJust)
+import Data.String as String
 import Effect (Effect)
-import FRP.Event (fold)
-import WagsiExt.Event (makeCbEvent)
+import Effect.Ref as Ref
+import FRP.Event (EventIO, create, fold, subscribe)
+import Record as R
+import WagsiExt.Event (dedup, makeCbEvent)
 import WagsiExt.FFI (removeDiagnosticsBeginCallback, removeDiagnosticsEndCallback, removeDidSaveCallback, removeHandleDiagnosticsCallback, removeStartLoopCallback, removeStopLoopCallback, setDiagnosticsBeginCallback, setDiagnosticsEndCallback, setDidSaveCallback, setHandleDiagnosticsCallback, setStartLoopCallback, setStopLoopCallback)
-import WagsiExt.Types (DiagnosticsBeginCallbacks, DiagnosticsEndCallbacks, DiagnosticsHeartbeat(..), DiagnosticsInfo, DiagnosticsState(..), DidSaveCallbacks, HandleDiagnosticsCallbacks, LoopHeartbeat(..), LoopStartState(..), StartLoopCallbacks, StopLoopCallbacks)
+import WagsiExt.Types (DiagnosticsBeginCallbacks, DiagnosticsEndCallbacks, DiagnosticsHeartbeat(..), DiagnosticsInfo, DiagnosticsState(..), DidSaveCallbacks, HandleDiagnosticsCallbacks, LoopHeartbeat(..), LoopState(..), StartLoopCallbacks, StopLoopCallbacks)
 
 diagnosticsInfoToErrorCount :: DiagnosticsInfo -> Int
 diagnosticsInfoToErrorCount { diagnostics } = A.length $ filter (eq 0 <<< _.severity) diagnostics
+
+diagnosticsRunning :: DiagnosticsState -> Boolean
+diagnosticsRunning = case _ of
+  DiagnosticsStarted _ -> true
+  _ -> false
 
 main ::
   { didSaveCallbacks :: DidSaveCallbacks
@@ -20,6 +31,7 @@ main ::
   , stopLoopCallbacks :: StopLoopCallbacks
   , diagnosticsBeginCallbacks :: DiagnosticsBeginCallbacks
   , diagnosticsEndCallbacks :: DiagnosticsEndCallbacks
+  , launchCompilation :: Effect Unit
   } ->
   Effect Unit
 main { didSaveCallbacks
@@ -28,9 +40,25 @@ main { didSaveCallbacks
 , stopLoopCallbacks
 , diagnosticsBeginCallbacks
 , diagnosticsEndCallbacks
-} = pure unit
+, launchCompilation
+} = do
+  liveCodeHere :: Ref.Ref (Maybe (Map String String)) <- Ref.new Nothing
+  -- starts with nothing as there has not been a successful compilation yet
+  _ <-
+    subscribe events \{ startStop, diagnostics } -> do
+      -- on successful compilation, copy to prev
+      when (diagnostics == DiagnosticsEnded { errorCount: 0 }) $ ?hole
+      -- if diagnostics have ended and we are in started or restarted, launch compilation
+      when
+        (not (diagnosticsRunning diagnostics) && (startStop == LoopStarted || startStop == LoopRestarted)) do
+        ?hole -- get current files
+        launchCompilation
+  pure unit
   where
-  didSaveEvent = makeCbEvent setDidSaveCallback removeDidSaveCallback didSaveCallbacks
+  didSaveEvent =
+    filter
+      (isJust <<< String.indexOf (String.Pattern "/LiveCodeHere/") <<< _.fileName)
+      $ makeCbEvent setDidSaveCallback removeDidSaveCallback didSaveCallbacks
 
   handleDiagnosticsEvent = makeCbEvent setHandleDiagnosticsCallback removeHandleDiagnosticsCallback handleDiagnosticsCallbacks
 
@@ -43,37 +71,49 @@ main { didSaveCallbacks
   diagnosticsEndEvent = makeCbEvent setDiagnosticsEndCallback removeDiagnosticsEndCallback diagnosticsEndCallbacks
 
   loopStateEvent =
-    fold
-      ( \heartbeat state -> case heartbeat, state of
-          LoopStart, LoopNotStartedYet -> LoopStarted
-          LoopStart, LoopStarted -> LoopRestarted
-          LoopStart, LoopRestarted -> LoopRestarted
-          LoopStart, LoopStopped -> LoopStarted
-          LoopStart, LoopRestopped -> LoopStarted
-          LoopStop, LoopNotStartedYet -> LoopStopped
-          LoopStop, LoopStarted -> LoopStopped
-          LoopStop, LoopRestarted -> LoopStopped
-          LoopStop, LoopStopped -> LoopRestopped
-          LoopStop, LoopRestopped -> LoopRestopped
-      )
-      (startLoopEvent $> LoopStart <|> stopLoopEvent $> LoopStop)
-      LoopNotStartedYet
+    dedup
+      $ fold
+          ( \heartbeat state -> case heartbeat, state of
+              LoopStart, LoopNotStartedYet -> LoopStarted
+              LoopStart, LoopStarted -> LoopRestarted
+              LoopStart, LoopRestarted -> LoopRestarted
+              LoopStart, LoopStopped -> LoopStarted
+              LoopStart, LoopRestopped -> LoopStarted
+              LoopStop, LoopNotStartedYet -> LoopStopped
+              LoopStop, LoopStarted -> LoopStopped
+              LoopStop, LoopRestarted -> LoopStopped
+              LoopStop, LoopStopped -> LoopRestopped
+              LoopStop, LoopRestopped -> LoopRestopped
+          )
+          (startLoopEvent $> LoopStart <|> stopLoopEvent $> LoopStop)
+          LoopNotStartedYet
 
   diagnosticsEvent =
-    fold
-      ( \heartbeat state -> case heartbeat, state of
-          DiagnosticsStart, _ -> DiagnosticsStarted { errorCount: 0 }
-          DiagnosticsEnd, DiagnosticsStarted { errorCount } -> DiagnosticsEnded { errorCount }
-          DiagnosticsEnd, DiagnosticsEnded { errorCount } -> DiagnosticsEnded { errorCount }
-          DiagnosticsEnd, _ -> DiagnosticsEnded { errorCount: 0 }
-          DiagnosticsErrors i, DiagnosticsStarted { errorCount } -> DiagnosticsStarted { errorCount: errorCount + i }
-          -- shouldn't happen
-          DiagnosticsErrors i, DiagnosticsNotStartedYet -> DiagnosticsStarted { errorCount: i }
-          -- shouldn't happen
-          DiagnosticsErrors i, x -> x
-      )
-      ( (handleDiagnosticsEvent <#> (DiagnosticsErrors <<< diagnosticsInfoToErrorCount))
-          <|> (diagnosticsBeginEvent $> DiagnosticsStart)
-          <|> (diagnosticsEndEvent $> DiagnosticsEnd)
-      )
-      DiagnosticsNotStartedYet
+    dedup
+      $ fold
+          ( \heartbeat state -> case heartbeat, state of
+              DiagnosticsStart, _ -> DiagnosticsStarted { errorCount: 0 }
+              DiagnosticsEnd, DiagnosticsStarted { errorCount } -> DiagnosticsEnded { errorCount }
+              DiagnosticsEnd, DiagnosticsEnded { errorCount } -> DiagnosticsEnded { errorCount }
+              DiagnosticsEnd, _ -> DiagnosticsEnded { errorCount: 0 }
+              DiagnosticsErrors i, DiagnosticsStarted { errorCount } -> DiagnosticsStarted { errorCount: errorCount + i }
+              -- shouldn't happen
+              DiagnosticsErrors i, DiagnosticsNotStartedYet -> DiagnosticsStarted { errorCount: i }
+              -- shouldn't happen
+              DiagnosticsErrors _, x -> x
+          )
+          ( (handleDiagnosticsEvent <#> (DiagnosticsErrors <<< diagnosticsInfoToErrorCount))
+              <|> (diagnosticsBeginEvent $> DiagnosticsStart)
+              <|> (diagnosticsEndEvent $> DiagnosticsEnd)
+          )
+          DiagnosticsNotStartedYet
+
+  events =
+    dedup
+      $ { startStop: _
+        , diagnostics: _
+        , representativeFile: _
+        }
+      <$> loopStateEvent
+      <*> diagnosticsEvent
+      <*> didSaveEvent

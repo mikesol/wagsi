@@ -1,10 +1,11 @@
 module WagsiExt.FFI where
 
 import Prelude
-import Effect (Effect)
-import WagsiExt.Types (DiagnosticsBeginCallbacks, DiagnosticsEndCallbacks, DidSaveCallbacks, DiagnosticsInfo, HandleDiagnosticsCallbacks, StartLoopCallbacks, StopLoopCallbacks)
 
-foreign import setDidSaveCallback :: DidSaveCallbacks -> String -> (Unit -> Effect Unit) -> Effect Unit
+import Effect (Effect)
+import WagsiExt.Types (DiagnosticsBeginCallbacks, DiagnosticsEndCallbacks, DiagnosticsInfo, DidSaveCallbacks, HandleDiagnosticsCallbacks, StartLoopCallbacks, StopLoopCallbacks, TextDocument)
+
+foreign import setDidSaveCallback :: DidSaveCallbacks -> String -> (TextDocument -> Effect Unit) -> Effect Unit
 
 foreign import setHandleDiagnosticsCallback :: HandleDiagnosticsCallbacks -> String -> (DiagnosticsInfo -> Effect Unit) -> Effect Unit
 
