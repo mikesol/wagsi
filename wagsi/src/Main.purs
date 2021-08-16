@@ -4,18 +4,20 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array as A
 import Data.Filterable (filter, filterMap)
+import Data.Foldable as Foldable
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, isNothing)
 import Data.String as String
-import Data.Traversable (for_, traverse)
+import Data.Traversable (for_, intercalate, traverse)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.Random (randomInt)
 import Effect.Ref as Ref
 import FRP.Event (fold, subscribe)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
-import Node.FS.Sync (readFile, readdir, unlink, writeFile)
+import Node.FS.Sync (readFile, readdir, unlink, writeTextFile)
 import Node.Path as Path
 import WagsiExt.Event (dedup, makeCbEvent, onlyFirst)
 import WagsiExt.FFI (removeDiagnosticsBeginCallback, removeDiagnosticsEndCallback, removeDidSaveCallback, removeHandleDiagnosticsCallback, removeStartLoopCallback, removeStopLoopCallback, setDiagnosticsBeginCallback, setDiagnosticsEndCallback, setDidSaveCallback, setHandleDiagnosticsCallback, setStartLoopCallback, setStopLoopCallback)
@@ -44,6 +46,19 @@ putInPast :: String -> String
 putInPast =
   String.replaceAll (String.Pattern "LiveCodeHere")
     (String.Replacement "PutThePastBehindUs")
+
+rebuildGopher :: String -> Effect Unit
+rebuildGopher gopherUri = do
+  nonce' <- traverse (\_ -> show <$> randomInt 0 9) (A.replicate 64 unit)
+  writeTextFile UTF8 gopherUri
+    $ intercalate "\n"
+        [ "module WAGSI.PutThePastBehindUs.Gopher where"
+        , "import WAGSI.Plumbing.Hack (cont___w444g)"
+        , "import WAGSI.PutThePastBehindUs.Wagged as Passsssssssttttttt"
+        , "import WAGSI.LiveCodeHere.Wagged as Wagggggggeeeeeddddddd"
+        , "nonce = \"" <> Foldable.fold nonce' <> "\" :: String"
+        , "w_4_4_gg_ = cont___w444g Passsssssssttttttt.wagsi Wagggggggeeeeeddddddd.wagsi"
+        ]
 
 main ::
   { didSaveCallbacks :: DidSaveCallbacks
@@ -80,7 +95,10 @@ main { didSaveCallbacks
             filezPresent <- fromMaybe Map.empty <$> (Ref.read liveCodeHere)
             for_ (Map.toUnfoldable filezPresent :: Array (Tuple String String)) \(Tuple file content) ->
               when (pastIsMissing filezPast file content)
-                (Buffer.fromString (putInPast content) UTF8 >>= writeFile (putInPast (Path.concat [ pathForLiveCodeHere, file ])))
+                ( writeTextFile UTF8
+                    (putInPast (Path.concat [ pathForLiveCodeHere, file ]))
+                    (putInPast content)
+                )
             for_ (Map.keys filezPast) \file ->
               when (presentIsMissing filezPresent file)
                 (unlink (putInPast (Path.concat [ pathForLiveCodeHere, file ])))
@@ -91,6 +109,7 @@ main { didSaveCallbacks
         ) do
         filezPresent <- readdir pathForLiveCodeHere >>= buildFileCache pathForLiveCodeHere
         Ref.write (Just filezPresent) liveCodeHere
+        rebuildGopher (putInPast (Path.concat [ pathForLiveCodeHere, "Gopher.purs" ]))
         launchCompilation
   pure unit
   where
