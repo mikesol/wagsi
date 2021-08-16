@@ -108,7 +108,7 @@ main { didSaveCallbacks
                     (putInPast content)
                 )
             for_ (Map.keys filezPast) \file ->
-              when (presentIsMissing filezPresent file)
+              when (file /= "Gopher.purs" && presentIsMissing filezPresent file)
                 (unlink (putInPast (Path.concat [ pathForLiveCodeHere, file ])))
       -- if diagnostics have ended and we are in started or restarted, launch compilation
       when
