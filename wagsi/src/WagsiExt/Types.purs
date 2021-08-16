@@ -1,0 +1,8 @@
+module WagsiExt.Types where
+
+data DidSaveCallbacks
+data HandleDiagnosticsCallbacks
+data StartLoopCallbacks
+data StopLoopCallbacks
+data DiagnosticsBeginCallbacks
+data DiagnosticsEndCallbacks
