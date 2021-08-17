@@ -126,6 +126,9 @@ main { didSaveCallbacks
         launchCompilation
   pure unit
   where
+  -- we take only the first event so that it is guaranteed to be present
+  -- before any processing starts but is also guaranteed not to re-trigger
+  -- processing
   pathForLiveCode =
     onlyFirst $ filterMap
       ( map (flip append "src/LiveCodeHere")
