@@ -1,6 +1,7 @@
 module Main where
 
 import Prelude
+
 import Control.Alt ((<|>))
 import Data.Array as A
 import Data.Filterable (filter, filterMap)
@@ -15,12 +16,12 @@ import Effect (Effect)
 import Effect.Class.Console as Log
 import Effect.Random (randomInt)
 import Effect.Ref as Ref
-import FRP.Event (fold, sampleOn, subscribe)
+import FRP.Event (fold, subscribe)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync (readFile, readdir, unlink, writeTextFile)
 import Node.Path as Path
-import WagsiExt.Event (dedup, makeCbEvent)
+import WagsiExt.Event (dedup, makeCbEvent, onlyFirst)
 import WagsiExt.FFI (removeDiagnosticsBeginCallback, removeDiagnosticsEndCallback, removeDidSaveCallback, removeHandleDiagnosticsCallback, removeStartLoopCallback, removeStopLoopCallback, setDiagnosticsBeginCallback, setDiagnosticsEndCallback, setDidSaveCallback, setHandleDiagnosticsCallback, setStartLoopCallback, setStopLoopCallback)
 import WagsiExt.Types (DiagnosticsBeginCallbacks, DiagnosticsEndCallbacks, DiagnosticsHeartbeat(..), DiagnosticsInfo, DiagnosticsState(..), DidSaveCallbacks, HandleDiagnosticsCallbacks, LoopHeartbeat(..), LoopState(..), StartLoopCallbacks, StopLoopCallbacks)
 
@@ -126,7 +127,7 @@ main { didSaveCallbacks
   pure unit
   where
   pathForLiveCode =
-    filterMap
+    onlyFirst $ filterMap
       ( map (flip append "src/LiveCodeHere")
           <<< A.head
           <<< String.split (String.Pattern "src/LiveCodeHere")
@@ -184,10 +185,10 @@ main { didSaveCallbacks
 
   events =
     dedup
-      $ sampleOn pathForLiveCode
       $ { startStop: _
         , diagnostics: _
         , pathForLiveCodeHere: _
         }
       <$> loopStateEvent
       <*> diagnosticsEvent
+      <*> pathForLiveCode
