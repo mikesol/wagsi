@@ -1,7 +1,6 @@
 module Main where
 
 import Prelude
-
 import Control.Alt ((<|>))
 import Data.Array as A
 import Data.Filterable (filter, filterMap)
@@ -126,12 +125,13 @@ main { didSaveCallbacks
         launchCompilation
   pure unit
   where
-  pathForLiveCode = filterMap
-          ( map (flip append "src/LiveCodeHere")
-              <<< A.head
-              <<< String.split (String.Pattern "src/LiveCodeHere")
-              <<< _.fileName
-          )
+  pathForLiveCode =
+    filterMap
+      ( map (flip append "src/LiveCodeHere")
+          <<< A.head
+          <<< String.split (String.Pattern "src/LiveCodeHere")
+          <<< _.fileName
+      )
       $ makeCbEvent setDidSaveCallback removeDidSaveCallback didSaveCallbacks
 
   handleDiagnosticsEvent = makeCbEvent setHandleDiagnosticsCallback removeHandleDiagnosticsCallback handleDiagnosticsCallbacks
@@ -184,7 +184,8 @@ main { didSaveCallbacks
 
   events =
     dedup
-      $ sampleOn pathForLiveCode $ { startStop: _
+      $ sampleOn pathForLiveCode
+      $ { startStop: _
         , diagnostics: _
         , pathForLiveCodeHere: _
         }
