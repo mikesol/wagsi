@@ -1,6 +1,7 @@
 module Main where
 
 import Prelude
+
 import Control.Alt ((<|>))
 import Data.Array as A
 import Data.Filterable (filter, filterMap)
@@ -12,14 +13,15 @@ import Data.String as String
 import Data.Traversable (for_, intercalate, traverse)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.Class.Console as Log
 import Effect.Random (randomInt)
 import Effect.Ref as Ref
-import FRP.Event (fold, subscribe)
+import FRP.Event (fold, sampleOn, subscribe)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync (readFile, readdir, unlink, writeTextFile)
 import Node.Path as Path
-import WagsiExt.Event (dedup, makeCbEvent, onlyFirst)
+import WagsiExt.Event (dedup, makeCbEvent)
 import WagsiExt.FFI (removeDiagnosticsBeginCallback, removeDiagnosticsEndCallback, removeDidSaveCallback, removeHandleDiagnosticsCallback, removeStartLoopCallback, removeStopLoopCallback, setDiagnosticsBeginCallback, setDiagnosticsEndCallback, setDidSaveCallback, setHandleDiagnosticsCallback, setStartLoopCallback, setStopLoopCallback)
 import WagsiExt.Types (DiagnosticsBeginCallbacks, DiagnosticsEndCallbacks, DiagnosticsHeartbeat(..), DiagnosticsInfo, DiagnosticsState(..), DidSaveCallbacks, HandleDiagnosticsCallbacks, LoopHeartbeat(..), LoopState(..), StartLoopCallbacks, StopLoopCallbacks)
 
@@ -67,6 +69,9 @@ rebuildGopher gopherUri = do
         , "nonce = \"" <> Foldable.fold nonce' <> "\" :: String"
         , "w_4_4_gg_ = cont___w444g Passsssssssttttttt.wagsi Wagggggggeeeeeddddddd.wagsi"
         ]
+
+log :: String -> Effect Unit
+log = Log.info
 
 main ::
   { didSaveCallbacks :: DidSaveCallbacks
@@ -121,9 +126,7 @@ main { didSaveCallbacks
         launchCompilation
   pure unit
   where
-  pathForLiveCode =
-    onlyFirst
-      $ filterMap
+  pathForLiveCode = filterMap
           ( map (flip append "src/LiveCodeHere")
               <<< A.head
               <<< String.split (String.Pattern "src/LiveCodeHere")
@@ -181,10 +184,9 @@ main { didSaveCallbacks
 
   events =
     dedup
-      $ { startStop: _
+      $ sampleOn pathForLiveCode $ { startStop: _
         , diagnostics: _
         , pathForLiveCodeHere: _
         }
       <$> loopStateEvent
       <*> diagnosticsEvent
-      <*> pathForLiveCode
