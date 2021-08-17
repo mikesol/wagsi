@@ -129,6 +129,8 @@ main { didSaveCallbacks
   -- we take only the first event so that it is guaranteed to be present
   -- before any processing starts but is also guaranteed not to re-trigger
   -- processing
+  -- dedup would work here as well, but in the bizarre case that someone adds a new
+  -- path matching these criteria, we don't want to pick it up
   pathForLiveCode =
     onlyFirst $ filterMap
       ( map (flip append "src/LiveCodeHere")
