@@ -20,6 +20,7 @@ to generate this file without the comments in this block.
   , "filterable"
   , "foldable-traversable"
   , "maybe"
+  , "node-buffer"
   , "node-fs"
   , "node-path"
   , "ordered-collections"
@@ -27,7 +28,9 @@ to generate this file without the comments in this block.
   , "psci-support"
   , "random"
   , "record"
+  , "refs"
   , "strings"
+  , "tuples"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

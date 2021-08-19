@@ -8,5 +8,5 @@ node_modules/
 /.psc-package/
 .spago/
 .psc-ide-port
-/src/WagsiExt/**/*.js
+/src/**/*.js
 .purs-repl

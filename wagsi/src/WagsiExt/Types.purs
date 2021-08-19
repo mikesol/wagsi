@@ -24,6 +24,8 @@ data DiagnosticsBeginCallbacks
 
 data DiagnosticsEndCallbacks
 
+data OutputChannel
+
 data LoopHeartbeat
   = LoopStart
   | LoopStop

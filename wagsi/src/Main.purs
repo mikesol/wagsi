@@ -23,7 +23,7 @@ import Node.FS.Sync (readFile, readdir, unlink, writeTextFile)
 import Node.Path as Path
 import WagsiExt.Event (dedup, makeCbEvent, onlyFirst)
 import WagsiExt.FFI (removeDiagnosticsBeginCallback, removeDiagnosticsEndCallback, removeDidSaveCallback, removeHandleDiagnosticsCallback, removeStartLoopCallback, removeStopLoopCallback, setDiagnosticsBeginCallback, setDiagnosticsEndCallback, setDidSaveCallback, setHandleDiagnosticsCallback, setStartLoopCallback, setStopLoopCallback)
-import WagsiExt.Types (DiagnosticsBeginCallbacks, DiagnosticsEndCallbacks, DiagnosticsHeartbeat(..), DiagnosticsInfo, DiagnosticsState(..), DidSaveCallbacks, HandleDiagnosticsCallbacks, LoopHeartbeat(..), LoopState(..), StartLoopCallbacks, StopLoopCallbacks)
+import WagsiExt.Types (DiagnosticsBeginCallbacks, DiagnosticsEndCallbacks, DiagnosticsHeartbeat(..), DiagnosticsInfo, DiagnosticsState(..), DidSaveCallbacks, HandleDiagnosticsCallbacks, LoopHeartbeat(..), LoopState(..), OutputChannel, StartLoopCallbacks, StopLoopCallbacks)
 
 diagnosticsInfoToErrorCount :: DiagnosticsInfo -> Int
 diagnosticsInfoToErrorCount { diagnostics } = A.length $ filter (eq 0 <<< _.severity) diagnostics
@@ -70,8 +70,7 @@ rebuildGopher gopherUri = do
         , "w_4_4_gg_ = cont___w444g Passsssssssttttttt.wagsi Wagggggggeeeeeddddddd.wagsi"
         ]
 
-log :: String -> Effect Unit
-log = Log.info
+foreign import log_ :: OutputChannel -> String  -> Effect Unit
 
 main ::
   { didSaveCallbacks :: DidSaveCallbacks
@@ -81,6 +80,7 @@ main ::
   , diagnosticsBeginCallbacks :: DiagnosticsBeginCallbacks
   , diagnosticsEndCallbacks :: DiagnosticsEndCallbacks
   , launchCompilation :: Effect Unit
+  , outputChannel :: OutputChannel
   } ->
   Effect Unit
 main { didSaveCallbacks
@@ -90,14 +90,17 @@ main { didSaveCallbacks
 , diagnosticsBeginCallbacks
 , diagnosticsEndCallbacks
 , launchCompilation
+, outputChannel
 } = do
   liveCodeHere :: Ref.Ref (Maybe (Map String String)) <- Ref.new Nothing
   -- starts with nothing as there has not been a successful compilation yet
   _ <-
     subscribe events \{ startStop, diagnostics, pathForLiveCodeHere } -> do
       -- on successful compilation, copy to prev
+      log $ show ("Kicking off compilation for " <> show { startStop, diagnostics, pathForLiveCodeHere })
       when (diagnostics == DiagnosticsEnded { errorCount: 0 })
         $ do
+            log $ show ("Diagnostics ended with error count 0")
             filezPast <-
               readdir
                 ( String.replace (String.Pattern "LiveCodeHere")
@@ -120,12 +123,15 @@ main { didSaveCallbacks
         ( not (diagnosticsRunning diagnostics)
             && (startStop == LoopStarted || startStop == LoopRestarted)
         ) do
+        log $ show ("Compilation triggered")
         filezPresent <- readdir pathForLiveCodeHere >>= buildFileCache pathForLiveCodeHere
         Ref.write (Just filezPresent) liveCodeHere
         rebuildGopher (putInPast (Path.concat [ pathForLiveCodeHere, "Gopher.purs" ]))
         launchCompilation
   pure unit
   where
+  log :: String -> Effect Unit
+  log = log_ outputChannel
   -- we take only the first event so that it is guaranteed to be present
   -- before any processing starts but is also guaranteed not to re-trigger
   -- processing
