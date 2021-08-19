@@ -10,8 +10,8 @@ export function activate(context: vscode.ExtensionContext) {
 		return;
 	}
 	let importedApi = ext ? ext.exports : { setMiddleware: () => { } };
-	const output = vscode.window.createOutputChannel("wagsi");
-	output.appendLine('Wagsi has been activated.');
+	const outputChannel = vscode.window.createOutputChannel("wagsi");
+	outputChannel.appendLine('Wagsi has been activated.');
 	let didSaveCallbacks: Record<string, DidSaveCb> = {};
 	let handleDiagnosticsCallbacks: Record<string, HandleDiagnosticsCallback> = {};
 	let diagnosticsBeginCallbacks: Record<string, ThunkThunk> = {};
@@ -66,11 +66,11 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	require('./bundle').main({
-		didSaveCallbacks, handleDiagnosticsCallbacks, startLoopCallbacks, stopLoopCallbacks, diagnosticsBeginCallbacks, diagnosticsEndCallbacks, launchCompilation: () => {
+		didSaveCallbacks, handleDiagnosticsCallbacks, startLoopCallbacks, stopLoopCallbacks, diagnosticsBeginCallbacks, diagnosticsEndCallbacks, outputChannel, launchCompilation: () => {
 			vscode.commands.executeCommand("purescript.build");
 		}
 	})();
-	output.appendLine('Invoke the start loop command to start the Wagsi loop.');
+	outputChannel.appendLine('Invoke the start loop command to start the Wagsi loop.');
 }
 
 // this method is called when your extension is deactivated

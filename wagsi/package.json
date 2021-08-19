@@ -36,7 +36,8 @@
     "tsc:ffi": "tsc -p src/WagsiExt/ && tsc -p src/",
     "tsc:extension": "tsc -p ./",
     "psc:src": "mkdirp out/src",
-    "psc:build": "spago bundle-module --to out/src/bundle.js"
+    "psc:build": "spago bundle-module --to out/src/bundle.js",
+    "refresh": "code --uninstall-extension mikesol.wagsi && npx vsce package && code --install-extension wagsi-0.0.0.vsix"
   },
   "extensionDependencies": [
     "nwolverson.ide-purescript"
