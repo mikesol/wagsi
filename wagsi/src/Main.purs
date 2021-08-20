@@ -1,19 +1,19 @@
 module Main where
 
 import Prelude
-
 import Control.Alt ((<|>))
+import Control.Monad.Error.Class (throwError, try)
 import Data.Array as A
+import Data.Either (Either(..))
 import Data.Filterable (filter, filterMap)
 import Data.Foldable as Foldable
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, isNothing)
+import Data.Maybe (Maybe(..), isNothing)
 import Data.String as String
 import Data.Traversable (for_, intercalate, traverse)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Effect.Class.Console as Log
 import Effect.Random (randomInt)
 import Effect.Ref as Ref
 import FRP.Event (fold, subscribe)
@@ -34,12 +34,12 @@ diagnosticsRunning = case _ of
   _ -> false
 
 buildFileCache :: String -> Array String -> Effect (Map String String)
-buildFileCache pathForLiveCodeHere files =
+buildFileCache path files =
   Map.fromFoldable
     <$> ( files
           # traverse \f ->
               Tuple f
-                <$> ( (readFile $ Path.concat [ pathForLiveCodeHere, f ])
+                <$> ( (readFile $ Path.concat [ path, f ])
                       >>= Buffer.toString UTF8
                   )
       )
@@ -70,7 +70,7 @@ rebuildGopher gopherUri = do
         , "w_4_4_gg_ = cont___w444g Passsssssssttttttt.wagsi Wagggggggeeeeeddddddd.wagsi"
         ]
 
-foreign import log_ :: OutputChannel -> String  -> Effect Unit
+foreign import log_ :: OutputChannel -> String -> Effect Unit
 
 main ::
   { didSaveCallbacks :: DidSaveCallbacks
@@ -79,7 +79,6 @@ main ::
   , stopLoopCallbacks :: StopLoopCallbacks
   , diagnosticsBeginCallbacks :: DiagnosticsBeginCallbacks
   , diagnosticsEndCallbacks :: DiagnosticsEndCallbacks
-  , launchCompilation :: Effect Unit
   , outputChannel :: OutputChannel
   } ->
   Effect Unit
@@ -89,61 +88,69 @@ main { didSaveCallbacks
 , stopLoopCallbacks
 , diagnosticsBeginCallbacks
 , diagnosticsEndCallbacks
-, launchCompilation
 , outputChannel
 } = do
-  liveCodeHere :: Ref.Ref (Maybe (Map String String)) <- Ref.new Nothing
+  liveCodeHere :: Ref.Ref (Map String String) <- Ref.new Map.empty
   -- starts with nothing as there has not been a successful compilation yet
   _ <-
     subscribe events \{ startStop, diagnostics, pathForLiveCodeHere } -> do
       -- on successful compilation, copy to prev
-      log $ show ("Kicking off compilation for " <> show { startStop, diagnostics, pathForLiveCodeHere })
-      when (diagnostics == DiagnosticsEnded { errorCount: 0 })
-        $ do
-            log $ show ("Diagnostics ended with error count 0")
-            filezPast <-
-              readdir
-                ( String.replace (String.Pattern "LiveCodeHere")
-                    (String.Replacement "PutThePastBehindUs")
-                    pathForLiveCodeHere
-                )
-                >>= buildFileCache pathForLiveCodeHere
-            filezPresent <- fromMaybe Map.empty <$> (Ref.read liveCodeHere)
-            for_ (Map.toUnfoldable filezPresent :: Array (Tuple String String)) \(Tuple file content) ->
-              when (pastIsMissing filezPast file content)
-                ( writeTextFile UTF8
-                    (putInPast (Path.concat [ pathForLiveCodeHere, file ]))
-                    (putInPast content)
-                )
-            for_ (Map.keys filezPast) \file ->
-              when (file /= "Gopher.purs" && presentIsMissing filezPresent file)
-                (unlink (putInPast (Path.concat [ pathForLiveCodeHere, file ])))
-      -- if diagnostics have ended and we are in started or restarted, launch compilation
-      when
-        ( not (diagnosticsRunning diagnostics)
-            && (startStop == LoopStarted || startStop == LoopRestarted)
-        ) do
-        log $ show ("Compilation triggered")
-        filezPresent <- readdir pathForLiveCodeHere >>= buildFileCache pathForLiveCodeHere
-        Ref.write (Just filezPresent) liveCodeHere
-        rebuildGopher (putInPast (Path.concat [ pathForLiveCodeHere, "Gopher.purs" ]))
-        launchCompilation
+      if (startStop == LoopStarted || startStop == LoopRestarted) then do
+        log $ show ("Kicking off compilation for " <> show { startStop, diagnostics, pathForLiveCodeHere })
+        let
+          pathForPast =
+            String.replace (String.Pattern "LiveCodeHere")
+              (String.Replacement "PutThePastBehindUs")
+              pathForLiveCodeHere
+        when (diagnosticsRunning diagnostics) do
+          log $ show ("Compilation triggered, caching the present in the past")
+          filezPresent <- readdir pathForLiveCodeHere >>= buildFileCache pathForLiveCodeHere
+          Ref.write filezPresent liveCodeHere
+        when (diagnostics == DiagnosticsEnded { errorCount: 0 })
+          $ try
+              ( do
+                  log $ show ("Re-writing the past")
+                  filezPast <- readdir pathForPast >>= buildFileCache pathForPast
+                  filezPresent <- Ref.read liveCodeHere
+                  for_ (Map.toUnfoldable filezPresent :: Array (Tuple String String)) \(Tuple file content) ->
+                    when (pastIsMissing filezPast file content)
+                      ( writeTextFile UTF8
+                          (putInPast (Path.concat [ pathForLiveCodeHere, file ]))
+                          (putInPast content)
+                      )
+                  for_ (Map.keys filezPast) \file ->
+                    when (file /= "Gopher.purs" && presentIsMissing filezPresent file)
+                      (unlink (putInPast (Path.concat [ pathForLiveCodeHere, file ])))
+              )
+          >>= case _ of
+              Left err -> do
+                log (show err)
+                throwError err
+              Right r -> pure r
+        -- if diagnostics have ended and we are in started or restarted, launch compilation
+        when (not (diagnosticsRunning diagnostics)) do
+          log $ show ("Gopher rebuild triggered")
+          rebuildGopher (putInPast (Path.concat [ pathForLiveCodeHere, "Gopher.purs" ]))
+      else
+        log $ show "Wagsi is stopped. If you expect it to do something, start it via the command bar and save again."
   pure unit
   where
   log :: String -> Effect Unit
   log = log_ outputChannel
+
   -- we take only the first event so that it is guaranteed to be present
   -- before any processing starts but is also guaranteed not to re-trigger
   -- processing
   -- dedup would work here as well, but in the bizarre case that someone adds a new
   -- path matching these criteria, we don't want to pick it up
   pathForLiveCode =
-    onlyFirst $ filterMap
-      ( map (flip append "src/LiveCodeHere")
-          <<< A.head
-          <<< String.split (String.Pattern "src/LiveCodeHere")
-          <<< _.fileName
-      )
+    onlyFirst
+      $ filterMap
+          ( map (flip append "src/LiveCodeHere")
+              <<< A.head
+              <<< String.split (String.Pattern "src/LiveCodeHere")
+              <<< _.fileName
+          )
       $ makeCbEvent setDidSaveCallback removeDidSaveCallback didSaveCallbacks
 
   handleDiagnosticsEvent = makeCbEvent setHandleDiagnosticsCallback removeHandleDiagnosticsCallback handleDiagnosticsCallbacks

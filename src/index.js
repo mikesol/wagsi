@@ -32,6 +32,7 @@ if (module.hot) {
   module.hot.accept(
     "../output/WAGSI.PutThePastBehindUs.Gopher/index.js",
     function (i) {
+      console.log("HMR Gopher");
       if (gopher.w_4_4_gg_ && gopher.nonce !== nonce) {
         nonce = gopher.nonce;
         console.log("Hello wags 🐕");
@@ -44,6 +45,7 @@ if (module.hot) {
     }
   );
   module.hot.accept("../output/WAGSI.LiveCodeHere.Stash/index.js", function () {
+    console.log("HMR Stash");
     if (stash.stash) {
       console.log("Hello stash 📚");
       main.storeStash.stash = stash.stash;

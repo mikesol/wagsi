@@ -55,4 +55,3 @@ wagsi (e :: Extern) (a :: { | Acc }) =
   headz = heads actualized
 
   tailed = tails actualized
-

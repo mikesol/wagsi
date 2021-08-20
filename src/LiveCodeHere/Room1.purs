@@ -52,7 +52,7 @@ actualizer e@(SceneI e') a =
             { offset: _, rest: unit } <$> fromEmitter
   }
   where
-  claps = fEmitter' { sensitivity: 0.08 } 0.5
+  claps = fEmitter' { sensitivity: 0.08 } 2.0
 
   fromEmitter = claps { time: e'.time, headroom: e'.headroomInSeconds }
 

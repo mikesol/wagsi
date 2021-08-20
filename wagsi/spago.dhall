@@ -16,6 +16,7 @@ to generate this file without the comments in this block.
   , "console"
   , "control"
   , "effect"
+  , "either"
   , "event"
   , "filterable"
   , "foldable-traversable"
@@ -30,6 +31,7 @@ to generate this file without the comments in this block.
   , "record"
   , "refs"
   , "strings"
+  , "transformers"
   , "tuples"
   ]
 , packages = ./packages.dhall

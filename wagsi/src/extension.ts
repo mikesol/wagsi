@@ -18,14 +18,11 @@ export function activate(context: vscode.ExtensionContext) {
 	let diagnosticsEndCallbacks: Record<string, ThunkThunk> = {};
 
 	let middleware: Middleware = {
-		didSave(this, data, _) {
+		didSave(this, data, next) {
 			for (const eff of Object.values(didSaveCallbacks)) {
 				eff(data)();
 			}
-			// Do not call next as we do not want saving to retrigger a rebuild in wagsi mode
-		},
-		didOpen(this, _, __) {
-			// Do not call next as we do not want opening to retrigger a rebuild in wagsi mode
+			next(data);
 		},
 		handleDiagnostics(this, uri, diagnostics, next) {
 			for (const eff of Object.values(handleDiagnosticsCallbacks)) {
