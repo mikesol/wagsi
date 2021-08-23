@@ -15,7 +15,7 @@ import Data.Nullable (toNullable)
 import Data.Traversable (sequence)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
-import Data.Typelevel.Num (class Pos)
+import Data.Typelevel.Num (class Pos, toInt')
 import Data.Vec as V
 import Effect (Effect)
 import Effect.Aff (Aff, forkAff, joinFiber, launchAff_, parallel, sequential, try)
@@ -39,12 +39,15 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
+import Record as R
+import Type.Proxy (Proxy(..))
 import WAGS.Interpret (AudioContext, BrowserAudioBuffer, BrowserFloatArray, BrowserPeriodicWave, FFIAudio(..), close, context, decodeAudioDataFromUri, defaultFFIAudio, getMicrophoneAndCamera, makeFloatArray, makePeriodicWave, makeUnitCache)
 import WAGS.Run (run)
 import WAGSI.Plumbing.Audio (piece)
 import WAGSI.Plumbing.FFIStuff (Stash)
 import WAGSI.Plumbing.Hack (stash, wag)
-import WAGSI.Plumbing.Types (Evt(..), Wag(..))
+import WAGSI.Plumbing.Types (NKeys, NSliders, NSwitches, NKnobs)
+import WAGSI.Plumbing.Types as Types
 
 main :: Effect Unit
 main =
@@ -142,7 +145,7 @@ render { audioStarted, canStopAudio, stashInfo } =
                 , HH.div [ classes [ "flex", "flex-col" ], classes [ "p-2" ] ]
                     [ HH.p [ classes [ "text-center" ] ] [ HH.text "keyboard" ]
                     , HH.element (HH.ElemName "webaudio-keyboard")
-                        [ HP.attr (H.AttrName "keys") "48"
+                        [ HP.attr (H.AttrName "keys") (show $ toInt' (Proxy :: _ Types.NKeys))
                         , HP.attr (H.AttrName "width") "800"
                         , HP.id "keyboard"
                         ]
@@ -181,7 +184,8 @@ easingAlgorithm =
   in
     fOf 15
 
-foreign import cachedScene :: Maybe Wag -> (Wag -> Maybe Wag) -> Effect (Maybe Wag)
+foreign import cachedScene ::
+  Maybe Types.Wag -> (Types.Wag -> Maybe Types.Wag) -> Effect (Maybe Types.Wag)
 
 foreign import storeWag :: Foreign
 
@@ -233,6 +237,14 @@ handleAction = case _ of
     { ctx, unsubscribeFromWags, unsubscribeFromStash } <-
       H.liftAff do
         ctx <- H.liftEffect context
+        let
+          dashboard =
+            pure
+              { keyboard: V.fill (const true) :: V.Vec NKeys Boolean
+              , knobs: V.fill (const 0.0) :: V.Vec NKnobs Number
+              , sliders: V.fill (const 0.0) :: V.Vec NSliders Number
+              , switches: V.fill (const true) :: V.Vec NSwitches Boolean
+              }
         (stashRef :: Ref.Ref CachedStash) <- H.liftEffect $ Ref.new { buffers: O.empty, periodicWaves: O.empty, floatArrays: O.empty }
         unsubscribeFromStash <-
           H.liftEffect
@@ -282,17 +294,17 @@ handleAction = case _ of
             maybeWag <- cachedScene Nothing Just
             subscribe
               ( run
-                  ( pure InitialEvent
-                      <|> (HotReload <$> wag)
-                      <|> (MouseDown <$> Mouse.down)
-                      <|> (MouseUp <$> Mouse.up)
-                      <|> (KeyboardDown <$> Keyboard.down)
-                      <|> (KeyboardUp <$> Keyboard.up)
+                  ( pure Types.InitialEvent
+                      <|> (Types.HotReload <$> wag)
+                      <|> (Types.MouseDown <$> Mouse.down)
+                      <|> (Types.MouseUp <$> Mouse.up)
+                      <|> (Types.KeyboardDown <$> Keyboard.down)
+                      <|> (Types.KeyboardUp <$> Keyboard.up)
                   )
-                  ({ mousePosition: _ } <$> position mouse)
+                  (R.union <$> ({ mousePosition: _ } <$> position mouse) <*> dashboard)
                   { easingAlgorithm }
                   (FFIAudio ffiAudio)
-                  (fromMaybe piece ((\(Wag wg) -> fst wg) <$> maybeWag))
+                  (fromMaybe piece ((\(Types.Wag wg) -> fst wg) <$> maybeWag))
               )
               (const (pure unit)) -- (Log.info <<< show)
         pure { ctx, unsubscribeFromWags, unsubscribeFromStash }
