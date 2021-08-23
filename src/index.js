@@ -1,4 +1,5 @@
 import "./style.css";
+import "./webaudio-controls";
 import main from "../output/WAGSI.Main/index.js";
 import gopher from "../output/WAGSI.PutThePastBehindUs.Gopher/index.js";
 import stash from "../output/WAGSI.LiveCodeHere.Stash/index.js";

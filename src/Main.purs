@@ -1,11 +1,10 @@
 module WAGSI.Main where
 
 import Prelude
-
-import WAGSI.Plumbing.Audio (piece)
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Promise (toAffE)
+import Data.Array ((..))
 import Data.Compactable (compact)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
@@ -24,7 +23,6 @@ import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console as Log
 import Effect.Ref as Ref
-import WAGSI.Plumbing.FFIStuff (Stash)
 import FRP.Behavior (Behavior, behavior)
 import FRP.Behavior.Mouse (position)
 import FRP.Event (Event, makeEvent, subscribe)
@@ -34,8 +32,6 @@ import FRP.Event.Mouse as Mouse
 import Foreign (Foreign)
 import Foreign.Object (Object)
 import Foreign.Object as O
-import WAGSI.Plumbing.Hack (stash, wag)
-import Halogen (ClassName(..), SubscriptionId)
 import Halogen as H
 import Halogen.Aff (awaitBody, runHalogenAff)
 import Halogen.HTML as HH
@@ -45,6 +41,9 @@ import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
 import WAGS.Interpret (AudioContext, BrowserAudioBuffer, BrowserFloatArray, BrowserPeriodicWave, FFIAudio(..), close, context, decodeAudioDataFromUri, defaultFFIAudio, getMicrophoneAndCamera, makeFloatArray, makePeriodicWave, makeUnitCache)
 import WAGS.Run (run)
+import WAGSI.Plumbing.Audio (piece)
+import WAGSI.Plumbing.FFIStuff (Stash)
+import WAGSI.Plumbing.Hack (stash, wag)
 import WAGSI.Plumbing.Types (Evt(..), Wag(..))
 
 main :: Effect Unit
@@ -61,7 +60,7 @@ type State
     , audioCtx :: Maybe AudioContext
     , audioStarted :: Boolean
     , canStopAudio :: Boolean
-    , unsubscribeFromHalogen :: Maybe SubscriptionId
+    , unsubscribeFromHalogen :: Maybe H.SubscriptionId
     , stashInfo :: StashInfo
     }
 
@@ -98,7 +97,30 @@ initialState _ =
   }
 
 classes :: forall r p. Array String -> HP.IProp ( class :: String | r ) p
-classes = HP.classes <<< map ClassName
+classes = HP.classes <<< map H.ClassName
+
+knob :: forall w i. String -> HH.HTML w i
+knob id =
+  HH.div [ classes [ "flex", "flex-col", "p-2" ] ]
+    [ HH.p [ classes [ "text-center" ] ] [ HH.text id ]
+    , HH.element (HH.ElemName "webaudio-knob") [ HP.id id ] []
+    ]
+
+switch :: forall w i. String -> HH.HTML w i
+switch id =
+  HH.div [ classes [ "flex", "flex-col", "p-2" ] ]
+    [ HH.p [ classes [ "text-center" ] ] [ HH.text id ]
+    , HH.element (HH.ElemName "webaudio-switch") [ HP.id id ] []
+    ]
+
+slider :: forall w i. String -> HH.HTML w i
+slider id =
+  HH.div [ classes [ "flex", "flex-col" ], classes [ "p-2" ] ]
+    [ HH.p [ classes [ "text-center" ] ] [ HH.text id ]
+    , HH.element (HH.ElemName "webaudio-slider")
+        [ HP.attr (H.AttrName "direction") "vert", HP.id id ]
+        []
+    ]
 
 render :: forall m. State -> H.ComponentHTML Action () m
 render { audioStarted, canStopAudio, stashInfo } =
@@ -108,9 +130,24 @@ render { audioStarted, canStopAudio, stashInfo } =
         , HH.div [ classes [ "flex-grow-0", "flex", "flex-row" ] ]
             [ HH.div [ classes [ "flex-grow" ] ]
                 []
-            , HH.div_
+            , HH.div [ classes [ "flex", "flex-col" ] ]
                 [ HH.h1 [ classes [ "text-center", "text-3xl", "font-bold" ] ]
                     [ HH.text "wagsi" ]
+                , HH.div [ classes [ "flex", "flex-row" ] ]
+                    (map (knob <<< append "knob" <<< show <<< add 1) (0 .. 9))
+                , HH.div [ classes [ "flex", "flex-row" ] ]
+                    (map (slider <<< append "slider" <<< show <<< add 1) (0 .. 9))
+                , HH.div [ classes [ "flex", "flex-row" ] ]
+                    (map (switch <<< append "switch" <<< show <<< add 1) (0 .. 9))
+                , HH.div [ classes [ "flex", "flex-col" ], classes [ "p-2" ] ]
+                    [ HH.p [ classes [ "text-center" ] ] [ HH.text "keyboard" ]
+                    , HH.element (HH.ElemName "webaudio-keyboard")
+                        [ HP.attr (H.AttrName "keys") "48"
+                        , HP.attr (H.AttrName "width") "800"
+                        , HP.id "keyboard"
+                        ]
+                        []
+                    ]
                 , if not audioStarted then
                     HH.button
                       [ classes [ "text-2xl", "m-5", "bg-indigo-500", "p-3", "rounded-lg", "text-white", "hover:bg-indigo-400" ], HE.onClick \_ -> StartAudio ]
@@ -153,7 +190,7 @@ foreign import cachedStash :: Maybe Stash -> (Stash -> Maybe Stash) -> Effect (M
 foreign import storeStash :: Foreign
 
 oe :: forall a b. (a -> b -> Boolean) -> (a -> Aff b) -> Object a -> Object b -> Aff (Object b)
-oe isEq trans template current = O.union <$> (sequential (sequence (map (parallel <<< trans) newStuff))) <*> pure filtered 
+oe isEq trans template current = O.union <$> (sequential (sequence (map (parallel <<< trans) newStuff))) <*> pure filtered
   where
   -- things from the old to keep. as the above operation is left biased
   -- it will ignore anything in newStuff
@@ -175,12 +212,13 @@ arrrr = identity
 toMap :: forall a. Object a -> Map String a
 toMap = Map.fromFoldable <<< arrrr <<< O.toUnfoldable
 
-fromMap :: forall a. Map String a -> Object a 
+fromMap :: forall a. Map String a -> Object a
 fromMap = O.fromFoldable <<< arrrr <<< Map.toUnfoldable
 
-type CachedStash = { buffers :: Object (String /\ BrowserAudioBuffer)
+type CachedStash
+  = { buffers :: Object (String /\ BrowserAudioBuffer)
     , floatArrays :: Object ((Array Number) /\ BrowserFloatArray)
-    , periodicWaves :: Object ((Array Number /\ Array Number) /\ BrowserPeriodicWave )
+    , periodicWaves :: Object ((Array Number /\ Array Number) /\ BrowserPeriodicWave)
     }
 
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
@@ -201,9 +239,16 @@ handleAction = case _ of
             $ subscribe (cs <|> stash) \newStash -> do
                 oldStash <- Ref.read stashRef
                 let
-                  newBuffers = oe (\a b -> Just a == map fst b) (\uri -> (try $ toAffE $ decodeAudioDataFromUri ctx uri) >>= case _ of
-                    Left e -> Log.error ("Could not download " <> uri <> ", error: " <> show e) $> Nothing
-                    Right a -> pure (Just (uri /\ a))) newStash.buffers (map Just oldStash.buffers)
+                  newBuffers =
+                    oe (\a b -> Just a == map fst b)
+                      ( \uri ->
+                          (try $ toAffE $ decodeAudioDataFromUri ctx uri)
+                            >>= case _ of
+                                Left e -> Log.error ("Could not download " <> uri <> ", error: " <> show e) $> Nothing
+                                Right a -> pure (Just (uri /\ a))
+                      )
+                      newStash.buffers
+                      (map Just oldStash.buffers)
 
                   newFloatArrays = oe (\a b -> a == fst b) (\a -> map ((/\) a) (H.liftEffect (makeFloatArray a))) newStash.floatArrays oldStash.floatArrays
 
