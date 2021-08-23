@@ -8,17 +8,18 @@ import Data.Array ((..))
 import Data.Compactable (compact)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
+import Data.FunctorWithIndex (mapWithIndex)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Nullable (toNullable)
-import Data.Traversable (sequence)
+import Data.Traversable (sequence, traverse)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
-import Data.Typelevel.Num (class Pos, toInt')
+import Data.Typelevel.Num (class Nat, class Pos, toInt')
 import Data.Vec as V
 import Effect (Effect)
-import Effect.Aff (Aff, forkAff, joinFiber, launchAff_, parallel, sequential, try)
+import Effect.Aff (Aff, error, forkAff, joinFiber, launchAff_, parallel, sequential, throwError, try)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console as Log
@@ -48,6 +49,8 @@ import WAGSI.Plumbing.FFIStuff (Stash)
 import WAGSI.Plumbing.Hack (stash, wag)
 import WAGSI.Plumbing.Types (NKeys, NSliders, NSwitches, NKnobs)
 import WAGSI.Plumbing.Types as Types
+import Wagsi.Behavior (ref2Behavior)
+import Wagsi.Vec (mapWithTypedIndex, proxyToNat)
 
 main :: Effect Unit
 main =
@@ -65,6 +68,7 @@ type State
     , canStopAudio :: Boolean
     , unsubscribeFromHalogen :: Maybe H.SubscriptionId
     , stashInfo :: StashInfo
+    , musicRef :: Maybe (Ref.Ref { | Types.Music })
     }
 
 data Action
@@ -89,6 +93,36 @@ cs =
         pure (pure unit)
     )
 
+vRange :: forall n. Nat n => V.Vec n Int
+vRange = V.fill identity
+
+-- todo: avoid code dup in lens decl?
+lenses ::
+  Ref.Ref { | Types.Music } ->
+  { | Types.Music' (Number -> Effect Unit) (Number -> Effect Unit) (Boolean -> Effect Unit) (Boolean -> Effect Unit) }
+lenses rf =
+  { knobs: mapWithTypedIndex (\px -> let p2n = proxyToNat px in \_ v -> void $ Ref.modify (\r -> r { knobs = V.updateAt p2n v r.knobs }) rf) vRange
+  , sliders: mapWithTypedIndex (\px -> let p2n = proxyToNat px in \_ v -> void $ Ref.modify (\r -> r { sliders = V.updateAt p2n v r.sliders }) rf) vRange
+  , switches: mapWithTypedIndex (\px -> let p2n = proxyToNat px in \_ v -> void $ Ref.modify (\r -> r { switches = V.updateAt p2n v r.switches }) rf) vRange
+  , keyboard: mapWithTypedIndex (\px -> let p2n = proxyToNat px in \_ v -> void $ Ref.modify (\r -> r { keyboard = V.updateAt p2n v r.keyboard }) rf) vRange
+  }
+
+foreign import knobCb :: String -> (Number -> Effect Unit) -> Effect Unit
+
+foreign import sliderCb :: String -> (Number -> Effect Unit) -> Effect Unit
+
+foreign import switchCb :: String -> (Boolean -> Effect Unit) -> Effect Unit
+
+foreign import keyboardCb :: String -> Array (Boolean -> Effect Unit) -> Effect Unit
+
+initialMusic :: { | Types.Music }
+initialMusic =
+  { keyboard: V.fill (const false) :: V.Vec NKeys Boolean
+  , knobs: V.fill (const 0.0) :: V.Vec NKnobs Number
+  , sliders: V.fill (const 0.0) :: V.Vec NSliders Number
+  , switches: V.fill (const false) :: V.Vec NSwitches Boolean
+  }
+
 initialState :: forall input. input -> State
 initialState _ =
   { unsubscribe: pure unit
@@ -97,6 +131,7 @@ initialState _ =
   , canStopAudio: false
   , unsubscribeFromHalogen: Nothing
   , stashInfo: mempty
+  , musicRef: Nothing
   }
 
 classes :: forall r p. Array String -> HP.IProp ( class :: String | r ) p
@@ -227,24 +262,38 @@ type CachedStash
 
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
-  Initialize -> pure unit
+  Initialize -> do
+    musicRef <- H.liftEffect $ Ref.new initialMusic
+    let
+      lzs = lenses musicRef
+    _ <-
+      H.liftEffect
+        $ sequence
+        $ mapWithIndex (\i a -> knobCb ("knob" <> show (i + 1)) a) lzs.knobs
+    _ <-
+      H.liftEffect
+        $ sequence
+        $ mapWithIndex (\i a -> sliderCb ("slider" <> show (i + 1)) a) lzs.sliders
+    _ <-
+      H.liftEffect
+        $ sequence
+        $ mapWithIndex (\i a -> switchCb ("switch" <> show (i + 1)) a) lzs.switches
+    _ <- H.liftEffect $ keyboardCb "keyboard" (V.toArray lzs.keyboard)
+    H.modify_ _ { musicRef = Just musicRef }
   UpdateStashInfo s -> H.modify_ _ { stashInfo = s }
   StartAudio -> do
     handleAction StopAudio
     H.modify_ _ { audioStarted = true, canStopAudio = false }
+    musicRef <-
+      H.gets _.musicRef
+        >>= case _ of
+            Nothing -> H.liftEffect $ throwError (error "Cannot get music ref")
+            Just x -> pure x
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
     { ctx, unsubscribeFromWags, unsubscribeFromStash } <-
       H.liftAff do
         ctx <- H.liftEffect context
-        let
-          dashboard =
-            pure
-              { keyboard: V.fill (const true) :: V.Vec NKeys Boolean
-              , knobs: V.fill (const 0.0) :: V.Vec NKnobs Number
-              , sliders: V.fill (const 0.0) :: V.Vec NSliders Number
-              , switches: V.fill (const true) :: V.Vec NSwitches Boolean
-              }
         (stashRef :: Ref.Ref CachedStash) <- H.liftEffect $ Ref.new { buffers: O.empty, periodicWaves: O.empty, floatArrays: O.empty }
         unsubscribeFromStash <-
           H.liftEffect
@@ -301,7 +350,7 @@ handleAction = case _ of
                       <|> (Types.KeyboardDown <$> Keyboard.down)
                       <|> (Types.KeyboardUp <$> Keyboard.up)
                   )
-                  (R.union <$> ({ mousePosition: _ } <$> position mouse) <*> dashboard)
+                  (R.union <$> ({ mousePosition: _ } <$> position mouse) <*> ref2Behavior musicRef)
                   { easingAlgorithm }
                   (FFIAudio ffiAudio)
                   (fromMaybe piece ((\(Types.Wag wg) -> fst wg) <$> maybeWag))

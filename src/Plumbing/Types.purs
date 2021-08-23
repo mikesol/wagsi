@@ -41,12 +41,20 @@ type NSwitches
 type NKeys
   = D48
 
+type Music' knobs sliders switches keyboard
+  = ( knobs :: V.Vec NKnobs knobs
+    , sliders :: V.Vec NKnobs sliders
+    , switches :: V.Vec NKnobs switches
+    , keyboard :: V.Vec NKeys keyboard
+    )
+
+
+type Music
+  = Music' Number Number Boolean Boolean
+
 type Wld
   = { mousePosition :: Maybe { x :: Int, y :: Int }
-    , knobs :: V.Vec NKnobs Number
-    , sliders :: V.Vec NKnobs Number
-    , switches :: V.Vec NKnobs Boolean
-    , keyboard :: V.Vec NKeys Boolean
+    | Music
     }
 
 type Extern
