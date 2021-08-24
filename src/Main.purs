@@ -153,7 +153,7 @@ switch id =
 
 slider :: forall w i. String -> HH.HTML w i
 slider id =
-  HH.div [ classes [ "flex", "flex-col" ], classes [ "p-2" ] ]
+  HH.div [ classes [ "flex", "flex-col", "p-2" ] ]
     [ HH.p [ classes [ "text-center" ] ] [ HH.text id ]
     , HH.element (HH.ElemName "webaudio-slider")
         [ HP.attr (H.AttrName "direction") "vert", HP.id id ]
@@ -174,9 +174,9 @@ render { audioStarted, canStopAudio, stashInfo } =
                 , HH.div [ classes [ "flex", "flex-row" ] ]
                     (map (knob <<< append "knob" <<< show <<< add 1) (0 .. 9))
                 , HH.div [ classes [ "flex", "flex-row" ] ]
-                    (map (slider <<< append "slider" <<< show <<< add 1) (0 .. 9))
+                    ([ HH.div [ classes [ "flex-grow" ] ] [] ] <> (map (slider <<< append "slider" <<< show <<< add 1) (0 .. 9)) <> [ HH.div [ classes [ "flex-grow" ] ] [] ])
                 , HH.div [ classes [ "flex", "flex-row" ] ]
-                    (map (switch <<< append "switch" <<< show <<< add 1) (0 .. 9))
+                    ([ HH.div [ classes [ "flex-grow" ] ] [] ] <> (map (switch <<< append "switch" <<< show <<< add 1) (0 .. 9))  <> [ HH.div [ classes [ "flex-grow" ] ] [] ])
                 , HH.div [ classes [ "flex", "flex-col" ], classes [ "p-2" ] ]
                     [ HH.p [ classes [ "text-center" ] ] [ HH.text "keyboard" ]
                     , HH.element (HH.ElemName "webaudio-keyboard")

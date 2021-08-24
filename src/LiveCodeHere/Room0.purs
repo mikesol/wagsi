@@ -56,7 +56,7 @@ actualizer e@(SceneI e') a =
   freq
     | tmod2 < 0.75 = 0.02
     | tmod2 > 1.75 = 1.4
-    | otherwise = 2.0
+    | otherwise = 2.00
 
   kicks = fEmitter' { sensitivity: 0.08 } freq
 

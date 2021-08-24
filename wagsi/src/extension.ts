@@ -51,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(stopLoop);
 
-	importedApi.setMiddleware(middleware);
+	importedApi.registerMiddleware("wagsi", middleware);
 	importedApi.setDiagnosticsBegin(() => {
 		for (const eff of Object.values(diagnosticsBeginCallbacks)) {
 			eff()();
