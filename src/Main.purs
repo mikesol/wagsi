@@ -13,7 +13,7 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Nullable (toNullable)
-import Data.Traversable (sequence, traverse)
+import Data.Traversable (sequence)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Nat, class Pos, toInt')
