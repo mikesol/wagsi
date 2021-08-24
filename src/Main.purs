@@ -50,7 +50,7 @@ import WAGSI.Plumbing.Hack (stash, wag)
 import WAGSI.Plumbing.Types (NKeys, NSliders, NSwitches, NKnobs)
 import WAGSI.Plumbing.Types as Types
 import Wagsi.Behavior (ref2Behavior)
-import Wagsi.Vec (mapWithTypedIndex, proxyToNat)
+import Wagsi.Vec (mapWithTypedIndex)
 
 main :: Effect Unit
 main =
@@ -101,10 +101,10 @@ lenses ::
   Ref.Ref { | Types.Music } ->
   { | Types.Music' (Number -> Effect Unit) (Number -> Effect Unit) (Boolean -> Effect Unit) (Boolean -> Effect Unit) }
 lenses rf =
-  { knobs: mapWithTypedIndex (\px -> let p2n = proxyToNat px in \_ v -> void $ Ref.modify (\r -> r { knobs = V.updateAt p2n v r.knobs }) rf) vRange
-  , sliders: mapWithTypedIndex (\px -> let p2n = proxyToNat px in \_ v -> void $ Ref.modify (\r -> r { sliders = V.updateAt p2n v r.sliders }) rf) vRange
-  , switches: mapWithTypedIndex (\px -> let p2n = proxyToNat px in \_ v -> void $ Ref.modify (\r -> r { switches = V.updateAt p2n v r.switches }) rf) vRange
-  , keyboard: mapWithTypedIndex (\px -> let p2n = proxyToNat px in \_ v -> void $ Ref.modify (\r -> r { keyboard = V.updateAt p2n v r.keyboard }) rf) vRange
+  { knobs: mapWithTypedIndex (\p2n _ v -> void $ Ref.modify (\r -> r { knobs = V.updateAt p2n v r.knobs }) rf) vRange
+  , sliders: mapWithTypedIndex (\p2n _ v -> void $ Ref.modify (\r -> r { sliders = V.updateAt p2n v r.sliders }) rf) vRange
+  , switches: mapWithTypedIndex (\p2n _ v -> void $ Ref.modify (\r -> r { switches = V.updateAt p2n v r.switches }) rf) vRange
+  , keyboard: mapWithTypedIndex (\p2n _ v -> void $ Ref.modify (\r -> r { keyboard = V.updateAt p2n v r.keyboard }) rf) vRange
   }
 
 foreign import knobCb :: String -> (Number -> Effect Unit) -> Effect Unit

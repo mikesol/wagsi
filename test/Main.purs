@@ -11,7 +11,7 @@ import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (runSpec)
-import Wagsi.Vec (mapWithTypedIndex, proxyToNat)
+import Wagsi.Vec (mapWithTypedIndex)
 
 main :: Effect Unit
 main = do
@@ -19,4 +19,4 @@ main = do
     $ runSpec [ consoleReporter ] do
         describe "mapWithTypedIndex" do
           it "works" do
-            mapWithTypedIndex (\i a -> Tuple (toInt (proxyToNat i)) a) (true +> true +> false +> empty) `shouldEqual` (Tuple 0 true +> Tuple 1 true +> Tuple 2 false +> empty)
+            mapWithTypedIndex (\i a -> Tuple (toInt i) a) (true +> true +> false +> empty) `shouldEqual` (Tuple 0 true +> Tuple 1 true +> Tuple 2 false +> empty)
