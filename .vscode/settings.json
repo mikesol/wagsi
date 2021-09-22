@@ -1,5 +1,4 @@
 {
   "purescript.addNpmPath": true,
-  "purescript.censorWarnings": ["MissingTypeDeclaration"],
-  "purescript.fullBuildOnSave": true
+  "purescript.censorWarnings": ["MissingTypeDeclaration"]
 }

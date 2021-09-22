@@ -66,8 +66,9 @@ rebuildGopher gopherUri = do
         , "import WAGSI.Plumbing.Hack (cont___w444g)"
         , "import WAGSI.PutThePastBehindUs.Wagged as Passsssssssttttttt"
         , "import WAGSI.LiveCodeHere.Wagged as Wagggggggeeeeeddddddd"
+        , "import WAGSI.LiveCodeHere.Stash as Staaaaasssshhhhhhhhhh"
         , "nonce = \"" <> Foldable.fold nonce' <> "\" :: String"
-        , "w_4_4_gg_ = cont___w444g Passsssssssttttttt.wagsi Wagggggggeeeeeddddddd.wagsi"
+        , "w_4_4_gg_ = cont___w444g Staaaaasssshhhhhhhhhh.stash Passsssssssttttttt.wagsi Wagggggggeeeeeddddddd.wagsi"
         ]
 
 foreign import log_ :: OutputChannel -> String -> Effect Unit

@@ -10,6 +10,7 @@
     "postcss-loader": "^5.2.0",
     "postcss-preset-env": "^6.7.0",
     "purescript": "^0.14.2",
+    "purs-tidy": "^0.5.3",
     "purty": "^6.3.1",
     "spago": "^0.19.1",
     "style-loader": "^2.0.0",
@@ -25,6 +26,5 @@
     "start:gitpod": "node makeEngine.js && webpack serve --mode=development --open --public \"$(gp url 8080 | sed 's+https://++'):443\"",
     "start:codespaces": "node makeEngine.js && webpack serve --mode=development --open --public \"$npm_package_codespacesPublicUrl\"",
     "build": "webpack"
-  },
-  "dependencies": {}
+  }
 }

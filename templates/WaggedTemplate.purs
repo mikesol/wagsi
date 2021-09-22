@@ -5,8 +5,10 @@ import Prelude
 import WAGS.Create.Optionals
 
 import Record.Builder as Record
+import Type.Proxy (Proxy(..))
 import Type.Row (type (+))
 import WAGS.Lib.Cofree (heads, tails)
+import WAGSI.Plubming.Newtype (newtypify')
 import WAGSI.Plumbing.Hack ((/@\))
 import WAGSI.Plumbing.Types (Extern)
 import WAGSI.PutThePastBehindUs.Room0 as Room0
@@ -24,8 +26,9 @@ type Acc
     | Room0.Acc + Room1.Acc + Room2.Acc + Room3.Acc + Room4.Acc + Room5.Acc + ()
     )
 
-wagsi (e :: Extern) (a :: { | Acc }) =
-  tailed
+wagsi :: forall buffers floatArrays periodicWaves. Extern buffers floatArrays periodicWaves -> { | Acc } -> _
+wagsi e a =
+  nted
     /@\ speaker
         ( Record.build
             ( Record.union (Room0.graph e headz)
@@ -55,3 +58,5 @@ wagsi (e :: Extern) (a :: { | Acc }) =
   headz = heads actualized
 
   tailed = tails actualized
+
+  nted = newtypify' (Proxy :: _ Acc) tailed

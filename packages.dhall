@@ -177,15 +177,33 @@ let additions =
           , "typelevel-prelude"
           ]
         , repo = "https://github.com/mikesol/purescript-wags.git"
-        , version = "v0.3.14"
+        , version = "v0.4.8"
+        }
+      , free =
+        { dependencies =
+          [ "catenable-lists"
+          , "control"
+          , "distributive"
+          , "either"
+          , "exists"
+          , "foldable-traversable"
+          , "invariant"
+          , "lazy"
+          , "maybe"
+          , "prelude"
+          , "tailrec"
+          , "transformers"
+          , "tuples"
+          , "unsafe-coerce"
+          ]
+        , repo = "https://github.com/mikesol/purescript-free.git"
+        , version = "master"
         }
       , wags-lib =
-      { dependencies =
-        [ "wags"
-        ]
-      , repo = "https://github.com/mikesol/purescript-wags-lib.git"
-      , version = "v0.0.14"
-      }
+        { dependencies = [ "wags", "run" ]
+        , repo = "https://github.com/mikesol/purescript-wags-lib.git"
+        , version = "v0.0.17"
+        }
       , painting =
         { dependencies =
           [ "canvas"

@@ -9,7 +9,8 @@ newtype VMHack (n :: Type) a b = VMHack (forall i. Nat i => Lt i n => i -> a -> 
 foreign import unsafeMapWithTypedIndex :: forall n a b. Int -> VMHack n a b -> V.Vec n a -> V.Vec n b
 
 class
-  Nat n <= VectorMap n where
+  Nat n <=
+  VectorMap n where
   mapWithTypedIndex :: forall a b. (forall i. Nat i => Lt i n => i -> a -> b) -> V.Vec n a -> V.Vec n b
 
 instance vectorMap :: Nat n => VectorMap n where

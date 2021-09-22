@@ -7,20 +7,19 @@ import Data.Array as A
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap, wrap)
 import Data.Profunctor (lcmap)
 import Data.Traversable (sequence)
 import Data.Tuple (snd)
 import Data.Tuple.Nested ((/\), type (/\))
-import WAGSI.Plumbing.EZCtrl (class EZCtrl, ezctrl)
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Random (randomInt)
-import WAGSI.Plumbing.FFIStuff (Stash)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
-import WAGSI.Plumbing.FromEnv (class FromEnv, fromEnv)
+import Prim.RowList as RowList
+import Type.Row.Homogeneous (class Homogeneous)
 import WAGS.Change (class Change, ichange)
-import WAGS.Control.Functions.Validated (ibranch, (@!>))
+import WAGS.Control.Functions (ibranch, (@!>))
 import WAGS.Control.Indexed (IxWAG)
 import WAGS.Control.Types (Frame0, Scene, WAG)
 import WAGS.CreateT (class CreateT)
@@ -28,7 +27,11 @@ import WAGS.Interpret (class AudioInterpret)
 import WAGS.Patch (class Patch, ipatch, patch)
 import WAGS.Run (SceneI(..))
 import WAGS.Validation (class GraphIsRenderable)
-import WAGSI.Plumbing.Types (Wag(..), Extern, Evt(..), Wld)
+import WAGS.WebAPI (BrowserAudioBuffer, BrowserFloatArray, BrowserPeriodicWave)
+import WAGSI.Plumbing.EZCtrl (class EZCtrl, ezctrl)
+import WAGSI.Plumbing.FromEnv (class FromEnv, fromEnv)
+import WAGSI.Plumbing.StashStuff (class ToAudioBufferRL, class ToFloatArrayRL, class ToPeriodicWaveRL, StashedSig)
+import WAGSI.Plumbing.Types (Wag(..), Extern, Evt(..))
 
 foreign import handlers :: Effect (Object (Wag -> Effect Unit))
 
@@ -36,28 +39,30 @@ foreign import wag_ :: String -> (Wag -> Effect Unit) -> Effect Unit
 
 foreign import dewag_ :: String -> Effect Unit
 
-foreign import ffiHandlers :: Effect (Object (Stash -> Effect Unit))
+foreign import stashHandlers :: forall buffers floatArrays periodicWaves. Effect (Object (StashedSig buffers floatArrays periodicWaves -> Effect Unit))
 
-foreign import ffi_ :: String -> (Stash -> Effect Unit) -> Effect Unit
+foreign import stash_ :: forall buffers floatArrays periodicWaves. String -> (StashedSig buffers floatArrays periodicWaves -> Effect Unit) -> Effect Unit
 
-foreign import deffi_ :: String -> Effect Unit
+foreign import deStash_ :: String -> Effect Unit
 
-wagsableTuple ::
-  forall controlNew b c.
-  FromEnv { | controlNew } =>
-  CreateT b () c =>
-  GraphIsRenderable c =>
-  { | controlNew } -> { | b } -> { | controlNew } /\ { | b }
+wagsableTuple
+  :: forall controlNew b c
+   . FromEnv { | controlNew }
+  => CreateT b () c
+  => GraphIsRenderable c
+  => { | controlNew }
+  -> { | b }
+  -> { | controlNew } /\ { | b }
 wagsableTuple = (/\)
 
 infixr 6 wagsableTuple as /@\
 
-stash :: Event Stash
+stash :: forall buffers floatArrays periodicWaves. Event (StashedSig buffers floatArrays periodicWaves)
 stash =
   makeEvent \f -> do
     id <- (fold <<< map show) <$> (sequence $ A.replicate 24 (randomInt 0 9))
-    ffi_ id f
-    pure (deffi_ id)
+    stash_ id f
+    pure (deStash_ id)
 
 wag :: Event Wag
 wag =
@@ -66,6 +71,7 @@ wag =
     wag_ id f
     pure (dewag_ id)
 
+class GetRAlphaAndControlAlpha :: forall k1 k2 k3. k1 -> k2 -> k3 -> Constraint
 class GetRAlphaAndControlAlpha wagsi rAlpha controlAlpha | wagsi -> rAlpha controlAlpha
 
 instance getRAlphaAndControlAlpha ::
@@ -77,61 +83,89 @@ instance getRAlphaAndControlAlpha ::
 type WTrigger control
   = { control :: control, fromTrigger :: Boolean }
 
-cont___w444g ::
-  forall wagsi rAlpha audio engine proof res outGraphAlpha controlAlpha rBeta outGraphBeta controlBeta.
+cont___w444g
+  :: forall wagsi rAlpha audio engine proof res outGraphAlpha controlAlpha rBeta outGraphBeta controlBeta periodicWavesRL periodicWavesI periodicWavesO buffersRL buffersI buffersO floatArraysRL floatArraysI floatArraysO
+   .
   -- the residual always has to be a monoid
-  Monoid res =>
+  Monoid res
+  =>
   -- the audio needs to be renderable
-  AudioInterpret audio engine =>
+  AudioInterpret audio engine
+  =>
   -- gets an r alpha from the input term. this is usually a graph
-  GetRAlphaAndControlAlpha wagsi rAlpha controlAlpha =>
+  GetRAlphaAndControlAlpha wagsi rAlpha controlAlpha
+  =>
   -- computes the input graph from rAlpha, used for patching
-  CreateT rAlpha () outGraphAlpha =>
+  CreateT rAlpha () outGraphAlpha
+  =>
   -----
   -- validation step for the output graph
-  GraphIsRenderable outGraphBeta =>
+  -- we skip because the /@\ operation guarantees it for now
+  -- add back if we get rid of that flow
+  -- GraphIsRenderable outGraphBeta
+  -- => 
   -- computes the output graph from the input term
-  CreateT rBeta () outGraphBeta =>
+  CreateT rBeta () outGraphBeta
+  =>
   -- allows the output graph to be changed by rBeta
-  Change rBeta outGraphBeta =>
+  Change rBeta outGraphBeta
+  =>
   -- the transition from alpha to beta
-  Patch outGraphAlpha outGraphBeta =>
+  Patch outGraphAlpha outGraphBeta
+  =>
   -- the transition from the first scene to beta in case we start in the middle
-  Patch () outGraphBeta =>
+  Patch () outGraphBeta
+  =>
   -- controlBeta has to be a FromEnv in case we start in the middle
-  FromEnv { | controlBeta } =>
-  EZCtrl controlAlpha controlBeta =>
-  wagsi ->
-  (Extern -> { | controlBeta } -> { | controlBeta } /\ { | rBeta }) ->
-  ( Scene Extern audio engine Frame0 res
-      /\ ( Extern ->
-        WAG audio engine proof res { | outGraphAlpha } { control :: { | controlAlpha }, fromTrigger :: Boolean } ->
-        Scene Extern audio engine proof res
-      )
-  )
-cont___w444g _ newGraph =
+  FromEnv { | controlBeta }
+  => EZCtrl controlAlpha controlBeta
+  -- stash stuff
+  => RowList.RowToList periodicWavesI periodicWavesRL
+  => RowList.RowToList buffersI buffersRL
+  => RowList.RowToList floatArraysI floatArraysRL
+  => ToFloatArrayRL floatArraysRL floatArraysI floatArraysO
+  => ToAudioBufferRL buffersRL buffersI buffersO
+  => ToPeriodicWaveRL periodicWavesRL periodicWavesI periodicWavesO
+  => Homogeneous floatArraysO BrowserFloatArray
+  => Homogeneous periodicWavesO BrowserPeriodicWave
+  => Homogeneous buffersO BrowserAudioBuffer
+  -- ends stash stuff
+  -- the first argument is from the stash
+  => StashedSig periodicWavesO buffersO floatArraysO
+  -- the second argument is the previous wagsi
+  -> wagsi
+  -> (Extern buffersO floatArraysO periodicWavesO -> { | controlBeta } -> { | controlBeta } /\ { | rBeta })
+  -> ( Scene (Extern buffersO floatArraysO periodicWavesO) audio engine Frame0 res
+         /\
+           ( Extern buffersO floatArraysO periodicWavesO
+             -> WAG audio engine proof res outGraphAlpha { control :: { | controlAlpha }, fromTrigger :: Boolean }
+             -> Scene (Extern buffersO floatArraysO periodicWavesO) audio engine proof res
+           )
+     )
+cont___w444g _ _ newGraph =
   (createFrame @!> branchingLogic)
     /\ \env w ->
-        let
-          controlAlpha = extract w
+      let
+        controlAlpha = extract w
 
-          controlBeta = ezctrl env controlAlpha.control
+        controlBeta = ezctrl env controlAlpha.control
 
-          (wBeta :: WAG audio engine proof res { | outGraphBeta } (WTrigger { | controlAlpha })) = patch w
+        (wBeta :: WAG audio engine proof res outGraphBeta (WTrigger { | controlAlpha })) = patch { microphone: Nothing } w
 
-          wagBeta = wBeta $> { control: controlBeta, fromTrigger: controlAlpha.fromTrigger }
-        in
-          branchingLogic wagBeta
+        wagBeta = wBeta $> { control: controlBeta, fromTrigger: controlAlpha.fromTrigger }
+      in
+        branchingLogic wagBeta
   where
-  createFrame ::
-    Extern ->
-    IxWAG audio engine Frame0 res {} { | outGraphBeta } { fromTrigger :: Boolean, control :: { | controlBeta } }
-  createFrame e = ipatch $> { fromTrigger: false, control: fromEnv e }
+  createFrame
+    :: (Extern buffersO floatArraysO periodicWavesO)
+    -> IxWAG audio engine Frame0 res () outGraphBeta { fromTrigger :: Boolean, control :: { | controlBeta } }
+  -- todo: enable microphone?
+  createFrame e = ipatch { microphone: Nothing } $> { fromTrigger: false, control: fromEnv e }
 
-  branchingLogic ::
-    forall proofB.
-    WAG audio engine proofB res { | outGraphBeta } { control :: { | controlBeta }, fromTrigger :: Boolean } ->
-    Scene Extern audio engine proofB res
+  branchingLogic
+    :: forall proofB
+     . WAG audio engine proofB res outGraphBeta { control :: { | controlBeta }, fromTrigger :: Boolean }
+    -> Scene (Extern buffersO floatArraysO periodicWavesO) audio engine proofB res
   branchingLogic =
     ( ibranch
         ( \e@(SceneI { trigger }) a ->

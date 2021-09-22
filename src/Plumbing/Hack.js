@@ -16,22 +16,22 @@ exports.dewag_ = function (id) {
     delete handlers[id];
   };
 };
-var ffiHandlers = {};
+var stashHandlers = {};
 
-exports.ffiHandlers = function () {
-  return ffiHandlers;
+exports.stashHandlers = function () {
+  return stashHandlers;
 };
 
-exports.ffi_ = function (id) {
+exports.stash_ = function (id) {
   return function (f) {
     return function () {
-      ffiHandlers[id] = f;
+      stashHandlers[id] = f;
     };
   };
 };
 
-exports.deffi_ = function (id) {
+exports.deStash_ = function (id) {
   return function () {
-    delete ffiHandlers[id];
+    delete stashHandlers[id];
   };
 };

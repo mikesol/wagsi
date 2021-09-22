@@ -1,6 +1,7 @@
 module WAGSI.Main where
 
 import Prelude
+
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Promise (toAffE)
@@ -12,11 +13,13 @@ import Data.FunctorWithIndex (mapWithIndex)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Newtype (unwrap)
 import Data.Nullable (toNullable)
 import Data.Traversable (sequence)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Nat, class Pos, toInt')
+import Data.Typelevel.Undefined (undefined)
 import Data.Vec as V
 import Effect (Effect)
 import Effect.Aff (Aff, error, forkAff, joinFiber, launchAff_, parallel, sequential, throwError, try)
@@ -42,12 +45,15 @@ import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
 import Record as R
 import Type.Proxy (Proxy(..))
-import WAGS.Interpret (AudioContext, BrowserAudioBuffer, BrowserFloatArray, BrowserPeriodicWave, FFIAudio(..), close, context, decodeAudioDataFromUri, defaultFFIAudio, getMicrophoneAndCamera, makeFloatArray, makePeriodicWave, makeUnitCache)
-import WAGS.Run (run)
+import Unsafe.Coerce (unsafeCoerce)
+import WAGS.Interpret (close, context, decodeAudioDataFromUri, defaultFFIAudio, getMicrophoneAndCamera, makeFloatArray, makePeriodicWave, makeUnitCache)
+import WAGS.Run (Run, run)
+import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserFloatArray, BrowserPeriodicWave)
 import WAGSI.Plumbing.Audio (piece)
-import WAGSI.Plumbing.FFIStuff (Stash)
 import WAGSI.Plumbing.Hack (stash, wag)
-import WAGSI.Plumbing.Types (NKeys, NSliders, NSwitches, NKnobs)
+import WAGSI.Plumbing.StashStuff (CacheStash, StashedSig)
+import WAGSI.Plumbing.Types (NKeys, NKnobs, NSliders, NSwitches, Stash(..))
+import WAGSI.Plumbing.Types (Stash)
 import WAGSI.Plumbing.Types as Types
 import Wagsi.Behavior (ref2Behavior)
 import Wagsi.Vec (mapWithTypedIndex)
@@ -62,14 +68,15 @@ type StashInfo
   = { buffers :: Array String, periodicWaves :: Array String, floatArrays :: Array String }
 
 type State
-  = { unsubscribe :: Effect Unit
-    , audioCtx :: Maybe AudioContext
-    , audioStarted :: Boolean
-    , canStopAudio :: Boolean
-    , unsubscribeFromHalogen :: Maybe H.SubscriptionId
-    , stashInfo :: StashInfo
-    , musicRef :: Maybe (Ref.Ref { | Types.Music })
-    }
+  =
+  { unsubscribe :: Effect Unit
+  , audioCtx :: Maybe AudioContext
+  , audioStarted :: Boolean
+  , canStopAudio :: Boolean
+  , unsubscribeFromHalogen :: Maybe H.SubscriptionId
+  , stashInfo :: StashInfo
+  , musicRef :: Maybe (Ref.Ref { | Types.Music })
+  }
 
 data Action
   = Initialize
@@ -85,7 +92,7 @@ component =
     , eval: H.mkEval $ H.defaultEval { initialize = Just Initialize, handleAction = handleAction }
     }
 
-cs :: Event Stash
+cs :: forall buffers floatArrays periodicWaves. Event (StashedSig buffers floatArrays periodicWaves)
 cs =
   compact
     ( makeEvent \k -> do
@@ -97,9 +104,9 @@ vRange :: forall n. Nat n => V.Vec n Int
 vRange = V.fill identity
 
 -- todo: avoid code dup in lens decl?
-lenses ::
-  Ref.Ref { | Types.Music } ->
-  { | Types.Music' (Number -> Effect Unit) (Number -> Effect Unit) (Boolean -> Effect Unit) (Boolean -> Effect Unit) }
+lenses
+  :: Ref.Ref { | Types.Music }
+  -> { | Types.Music' (Number -> Effect Unit) (Number -> Effect Unit) (Boolean -> Effect Unit) (Boolean -> Effect Unit) }
 lenses rf =
   { knobs: mapWithTypedIndex (\p2n _ v -> void $ Ref.modify (\r -> r { knobs = V.updateAt p2n v r.knobs }) rf) vRange
   , sliders: mapWithTypedIndex (\p2n _ v -> void $ Ref.modify (\r -> r { sliders = V.updateAt p2n v r.sliders }) rf) vRange
@@ -134,7 +141,7 @@ initialState _ =
   , musicRef: Nothing
   }
 
-classes :: forall r p. Array String -> HP.IProp ( class :: String | r ) p
+classes :: forall r p. Array String -> HP.IProp (class :: String | r) p
 classes = HP.classes <<< map H.ClassName
 
 knob :: forall w i. String -> HH.HTML w i
@@ -176,7 +183,7 @@ render { audioStarted, canStopAudio, stashInfo } =
                 , HH.div [ classes [ "flex", "flex-row" ] ]
                     ([ HH.div [ classes [ "flex-grow" ] ] [] ] <> (map (slider <<< append "slider" <<< show <<< add 1) (0 .. 9)) <> [ HH.div [ classes [ "flex-grow" ] ] [] ])
                 , HH.div [ classes [ "flex", "flex-row" ] ]
-                    ([ HH.div [ classes [ "flex-grow" ] ] [] ] <> (map (switch <<< append "switch" <<< show <<< add 1) (0 .. 9))  <> [ HH.div [ classes [ "flex-grow" ] ] [] ])
+                    ([ HH.div [ classes [ "flex-grow" ] ] [] ] <> (map (switch <<< append "switch" <<< show <<< add 1) (0 .. 9)) <> [ HH.div [ classes [ "flex-grow" ] ] [] ])
                 , HH.div [ classes [ "flex", "flex-col" ], classes [ "p-2" ] ]
                     [ HH.p [ classes [ "text-center" ] ] [ HH.text "keyboard" ]
                     , HH.element (HH.ElemName "webaudio-keyboard")
@@ -201,13 +208,13 @@ render { audioStarted, canStopAudio, stashInfo } =
         ]
     ]
 
-makeOsc ::
-  ∀ m s.
-  MonadEffect m =>
-  Pos s =>
-  AudioContext ->
-  (V.Vec s Number) /\ (V.Vec s Number) ->
-  m BrowserPeriodicWave
+makeOsc
+  :: ∀ m s
+   . MonadEffect m
+  => Pos s
+  => AudioContext
+  -> (V.Vec s Number) /\ (V.Vec s Number)
+  -> m BrowserPeriodicWave
 makeOsc ctx o =
   H.liftEffect
     $ makePeriodicWave ctx (fst o) (snd o)
@@ -219,12 +226,12 @@ easingAlgorithm =
   in
     fOf 15
 
-foreign import cachedScene ::
-  Maybe Types.Wag -> (Types.Wag -> Maybe Types.Wag) -> Effect (Maybe Types.Wag)
+foreign import cachedScene
+  :: Maybe Types.Wag -> (Types.Wag -> Maybe Types.Wag) -> Effect (Maybe Types.Wag)
 
 foreign import storeWag :: Foreign
 
-foreign import cachedStash :: Maybe Stash -> (Stash -> Maybe Stash) -> Effect (Maybe Stash)
+foreign import cachedStash :: forall buffers floatArrays periodicWaves. Maybe (StashedSig buffers floatArrays periodicWaves) -> (StashedSig buffers floatArrays periodicWaves -> Maybe (StashedSig buffers floatArrays periodicWaves)) -> Effect (Maybe (StashedSig buffers floatArrays periodicWaves))
 
 foreign import storeStash :: Foreign
 
@@ -239,11 +246,11 @@ oe isEq trans template current = O.union <$> (sequential (sequence (map (paralle
   -- if it is not eq, then it is new
   newStuff = O.filterWithKey (\k v -> maybe true (\v' -> not (isEq v v')) (O.lookup k current)) template
 
-ffiBehavior :: forall a b. Ref.Ref a -> (a -> b) -> Behavior b
-ffiBehavior stashRef f =
+stashBehavior :: forall a b. Ref.Ref a -> (a -> b) -> Behavior b
+stashBehavior internalStashRef f =
   behavior \eAToB ->
     makeEvent \fB ->
-      subscribe eAToB \aToB -> Ref.read stashRef >>= fB <<< aToB <<< f
+      subscribe eAToB \aToB -> Ref.read internalStashRef >>= fB <<< aToB <<< f
 
 arrrr :: Array ~> Array
 arrrr = identity
@@ -254,11 +261,8 @@ toMap = Map.fromFoldable <<< arrrr <<< O.toUnfoldable
 fromMap :: forall a. Map String a -> Object a
 fromMap = O.fromFoldable <<< arrrr <<< Map.toUnfoldable
 
-type CachedStash
-  = { buffers :: Object (String /\ BrowserAudioBuffer)
-    , floatArrays :: Object ((Array Number) /\ BrowserFloatArray)
-    , periodicWaves :: Object ((Array Number /\ Array Number) /\ BrowserPeriodicWave)
-    }
+unsafeCoerceStash :: forall a b c d e f. Stash { | a } { | b } { | c } -> Stash { | d } { | e } { | f }
+unsafeCoerceStash = unsafeCoerce
 
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
@@ -284,59 +288,44 @@ handleAction = case _ of
   StartAudio -> do
     handleAction StopAudio
     H.modify_ _ { audioStarted = true, canStopAudio = false }
+    { microphone } <- H.liftAff $ getMicrophoneAndCamera true false
     musicRef <-
       H.gets _.musicRef
         >>= case _ of
-            Nothing -> H.liftEffect $ throwError (error "Cannot get music ref")
-            Just x -> pure x
+          Nothing -> H.liftEffect $ throwError (error "Cannot get music ref")
+          Just x -> pure x
+    -- for now, this is completely unsafe as the type safety is managed in the live coding session
+    -- may be worth it to make this a bit safer
+    behaviorStashRef <- H.liftEffect $ Ref.new $ unsafeCoerceStash $ Stash
+      { buffers: {}
+      , floatArrays: {}
+      , periodicWaves: {}
+      }
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
     { ctx, unsubscribeFromWags, unsubscribeFromStash } <-
       H.liftAff do
         ctx <- H.liftEffect context
-        (stashRef :: Ref.Ref CachedStash) <- H.liftEffect $ Ref.new { buffers: O.empty, periodicWaves: O.empty, floatArrays: O.empty }
+        (internalStashRef :: Ref.Ref CacheStash) <- H.liftEffect $ Ref.new $ Stash { buffers: O.empty, periodicWaves: O.empty, floatArrays: O.empty }
         unsubscribeFromStash <-
           H.liftEffect
-            $ subscribe (cs <|> stash) \newStash -> do
-                oldStash <- Ref.read stashRef
-                let
-                  newBuffers =
-                    oe (\a b -> Just a == map fst b)
-                      ( \uri ->
-                          (try $ toAffE $ decodeAudioDataFromUri ctx uri)
-                            >>= case _ of
-                                Left e -> Log.error ("Could not download " <> uri <> ", error: " <> show e) $> Nothing
-                                Right a -> pure (Just (uri /\ a))
-                      )
-                      newStash.buffers
-                      (map Just oldStash.buffers)
+            $ subscribe (cs <|> stash) \stashMaker -> launchAff_ do
+                oldStash <- H.liftEffect $ Ref.read internalStashRef
+                -- Aff { cache :: CacheStash, stash :: Stash { | buffers } { | floatArrays } { | periodicWaves } }
+                stashFromMaker <- stashMaker ctx oldStash
+                H.liftEffect $ Ref.write stashFromMaker.cache internalStashRef
+                H.liftEffect $ Ref.write (unsafeCoerceStash stashFromMaker.stash) behaviorStashRef
+                H.liftEffect
+                  ( HS.notify listener $ UpdateStashInfo
+                      { buffers: O.keys (unwrap stashFromMaker.cache).buffers
+                      , floatArrays: O.keys (unwrap stashFromMaker.cache).floatArrays
+                      , periodicWaves: O.keys (unwrap stashFromMaker.cache).periodicWaves
+                      }
+                  )
 
-                  newFloatArrays = oe (\a b -> a == fst b) (\a -> map ((/\) a) (H.liftEffect (makeFloatArray a))) newStash.floatArrays oldStash.floatArrays
-
-                  newPeriodicWaves = oe (\a b -> fst a == fst b) (\(t /\ f) -> map ((/\) t) (H.liftEffect (f ctx))) newStash.periodicWaves oldStash.periodicWaves
-                launchAff_ do
-                  buffersF <- forkAff newBuffers
-                  floatArraysF <- forkAff newFloatArrays
-                  periodicWavesF <- forkAff newPeriodicWaves
-                  { buffers, floatArrays, periodicWaves } <- { buffers: _, floatArrays: _, periodicWaves: _ } <$> joinFiber buffersF <*> joinFiber floatArraysF <*> joinFiber periodicWavesF
-                  H.liftEffect (Ref.write { buffers: (fromMap $ compact $ toMap $ buffers), floatArrays, periodicWaves } stashRef)
-                  H.liftEffect (HS.notify listener $ UpdateStashInfo { buffers: O.keys buffers, floatArrays: O.keys floatArrays, periodicWaves: O.keys periodicWaves })
-        let
-          behaviorBuffers = ffiBehavior stashRef (map snd <<< _.buffers)
-
-          behaviorFloatArrays = ffiBehavior stashRef (map snd <<< _.floatArrays)
-
-          behaviorPeriodicWaves = ffiBehavior stashRef (map snd <<< _.periodicWaves)
-        { microphone } <- H.liftAff $ getMicrophoneAndCamera true false
         unitCache <- H.liftEffect makeUnitCache
         let
-          ffiAudio =
-            (defaultFFIAudio ctx unitCache)
-              { microphone = pure (toNullable microphone)
-              , buffers = behaviorBuffers
-              , floatArrays = behaviorFloatArrays
-              , periodicWaves = behaviorPeriodicWaves
-              }
+          ffiAudio = defaultFFIAudio ctx unitCache
         mouse <- H.liftEffect getMouse
         unsubscribeFromWags <-
           H.liftEffect do
@@ -350,19 +339,19 @@ handleAction = case _ of
                       <|> (Types.KeyboardDown <$> Keyboard.down)
                       <|> (Types.KeyboardUp <$> Keyboard.up)
                   )
-                  (R.union <$> ({ mousePosition: _ } <$> position mouse) <*> ref2Behavior musicRef)
+                  (R.union <$> ({ mousePosition: _, stash: _ } <$> position mouse <*> ref2Behavior behaviorStashRef) <*> ref2Behavior musicRef)
                   { easingAlgorithm }
-                  (FFIAudio ffiAudio)
+                  ffiAudio
                   (fromMaybe piece ((\(Types.Wag wg) -> fst wg) <$> maybeWag))
               )
-              (const (pure unit)) -- (Log.info <<< show)
+              (\(_ :: Run Unit ()) -> pure unit) -- (Log.info <<< show)
         pure { ctx, unsubscribeFromWags, unsubscribeFromStash }
     H.modify_
       _
         { unsubscribe =
-          do
-            unsubscribeFromWags
-            unsubscribeFromStash
+            do
+              unsubscribeFromWags
+              unsubscribeFromStash
         , audioCtx = Just ctx
         , canStopAudio = true
         , unsubscribeFromHalogen = Just unsubscribeFromHalogen

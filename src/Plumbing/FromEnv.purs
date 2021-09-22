@@ -2,7 +2,6 @@ module WAGSI.Plumbing.FromEnv where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Data.Maybe.First (First)
 import Data.Maybe.Last (Last)
 import Data.Monoid.Additive (Additive)
@@ -29,7 +28,7 @@ import WAGS.Run (SceneI(..))
 import WAGSI.Plumbing.Types (Extern)
 
 class FromEnv val where
-  fromEnv :: Extern -> val
+  fromEnv :: forall buffers floatArrays periodicWaves. Extern buffers floatArrays periodicWaves -> val
 
 instance fromEnvUnit :: FromEnv Unit where
   fromEnv = const unit
@@ -59,7 +58,7 @@ instance fromEnvLast :: Monoid (Last a) => FromEnv (Last a) where
   fromEnv = const mempty
 
 class FromEnvRow' (rl :: RowList.RowList Type) (o :: Row Type) | rl -> o where
-  fromEnvRow' :: Proxy rl -> Extern -> { | o }
+  fromEnvRow' :: forall buffers floatArrays periodicWaves. Proxy rl -> Extern buffers floatArrays periodicWaves -> { | o }
 
 instance fromEnvRowCons :: (IsSymbol sym, Row.Lacks sym restRow, FromEnv res, FromEnvRow' restRL restRow, Row.Cons sym res restRow o) => FromEnvRow' (RowList.Cons sym res restRL) o where
   fromEnvRow' _ e = Record.insert (Proxy :: _ sym) (fromEnv e) (fromEnvRow' (Proxy :: _ restRL) e)
@@ -70,35 +69,49 @@ instance fromEnvRowNil :: FromEnvRow' (RowList.Nil) () where
 instance fromEnvRow :: (RowList.RowToList o rl, FromEnvRow' rl o) => FromEnv { | o } where
   fromEnv e = fromEnvRow' (Proxy :: _ rl) e
 
-newtype Marker = Marker Extern
-
-derive instance newtypeMarker :: Newtype Marker _
-
-instance fromEnvMarker :: FromEnv Marker where
-  fromEnv = Marker
-
 ---- lib wrap
 
-instance fromEnvRate :: FromEnv ARate where
-  fromEnv (SceneI { time }) = makeRate { prevTime: time, startsAt: time }
+newtype NTRate = NTRate ARate
 
-instance fromEnvEmitter :: FromEnv AnEmitter where
-  fromEnv (SceneI { time }) = makeEmitter { prevTime: time, startsAt: time }
+derive instance newtypeNTRate :: Newtype NTRate _
+instance fromEnvRate :: FromEnv NTRate where
+  fromEnv (SceneI { time }) = NTRate $ makeRate { prevTime: time, startsAt: time }
 
-instance fromEnvBufferPool :: Pos n => FromEnv (ABufferPool n r) where
-  fromEnv _ = makeBufferPool Nothing Nothing
+newtype NTEmitter = NTEmitter AnEmitter
 
-instance fromEnvHotBufferPool :: Pos n => FromEnv (AHotBufferPool n) where
-  fromEnv (SceneI { time }) = makeHotBufferPool { prevTime: time, startsAt: time } Nothing Nothing
+derive instance newtypeNTEmitter :: Newtype NTEmitter _
+instance fromEnvEmitter :: FromEnv NTEmitter where
+  fromEnv (SceneI { time }) = NTEmitter $ makeEmitter { startsAt: time }
 
-instance fromEnvSnappyBufferPool :: Pos n => FromEnv (ASnappyBufferPool n) where
-  fromEnv _ = makeSnappyBufferPool  Nothing Nothing
+newtype NTBufferPool n = NTBufferPool (ABufferPool n)
 
-instance fromEnvTrigger ::FromEnv (ATrigger) where
-  fromEnv _ = makeTrigger
+derive instance newtypeNTBufferPool :: Newtype (NTBufferPool n) _
+instance fromEnvBufferPool :: Pos n => FromEnv (NTBufferPool n) where
+  fromEnv _ = NTBufferPool makeBufferPool
 
-instance fromEnvSnappyTrigger :: FromEnv (ASnappyTrigger) where
-  fromEnv _ = makeSnappyTrigger
+newtype NTHotBufferPool n = NTHotBufferPool (AHotBufferPool n)
+
+derive instance newtypeNTHotBufferPool :: Newtype (NTHotBufferPool n) _
+instance fromEnvHotBufferPool :: Pos n => FromEnv (NTHotBufferPool n) where
+  fromEnv (SceneI { time }) = NTHotBufferPool $ makeHotBufferPool { startsAt: time }
+
+newtype NTSnappyBufferPool n = NTSnappyBufferPool (ASnappyBufferPool n)
+
+derive instance newtypeNTSnappyBufferPool :: Newtype (NTSnappyBufferPool n) _
+instance fromEnvSnappyBufferPool :: Pos n => FromEnv (NTSnappyBufferPool n) where
+  fromEnv _ = NTSnappyBufferPool makeSnappyBufferPool
+
+newtype NTTrigger = NTTrigger ATrigger
+
+derive instance newtypeNTTrigger :: Newtype NTTrigger _
+instance fromEnvTrigger :: FromEnv NTTrigger where
+  fromEnv _ = NTTrigger makeTrigger
+
+newtype NTSnappyTrigger = NTSnappyTrigger ASnappyTrigger
+
+derive instance newtypeNTSnappyTrigger :: Newtype NTSnappyTrigger _
+instance fromEnvSnappyTrigger :: FromEnv (NTSnappyTrigger) where
+  fromEnv _ = NTSnappyTrigger makeSnappyTrigger
 
 instance fromEnvImpulse :: FromEnv AnImpulse where
   fromEnv _ = makeImpulse

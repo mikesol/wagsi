@@ -12,13 +12,13 @@ import Type.Proxy (Proxy(..))
 
 class EZCtrl' :: RL.RowList Type -> RL.RowList Type -> Row Type -> Row Type -> Constraint
 class EZCtrl' rowInRL rowOutRL rowIn rowOut | rowInRL rowOutRL rowIn -> rowOut where
-  ezctrl' :: Proxy rowInRL -> Proxy rowOutRL -> Extern -> { | rowIn } -> { | rowOut }
+  ezctrl' :: forall buffers floatArrays periodicWaves. Proxy rowInRL -> Proxy rowOutRL -> Extern buffers floatArrays periodicWaves -> { | rowIn } -> { | rowOut }
 
 instance ezctrlRLNilNil :: EZCtrl' RL.Nil RL.Nil rowIn () where
-  ezctrl' _ _ _ _ = { }
+  ezctrl' _ _ _ _ = {}
 
 instance ezctrlRLConsNil :: EZCtrl' (RL.Cons a b c) RL.Nil rowIn () where
-  ezctrl' _ _ _ _ = { }
+  ezctrl' _ _ _ _ = {}
 
 instance ezctrl''LT :: (EZCtrl' oldRest (RL.Cons newSymbol newDef newRest) old new) => EZCtrl'' LT oldSymbol oldDef oldRest newSymbol newDef newRest old new where
   ezctrl'' _ = ezctrl' (Proxy :: _ oldRest) (Proxy :: _ (RL.Cons newSymbol newDef newRest))
@@ -58,7 +58,7 @@ else instance ezctrl''EQDiff :: (EZCtrl' oldRest newRest old tail, FromEnv newDe
 
 class EZCtrl'' :: Ordering -> Symbol -> Type -> RL.RowList Type -> Symbol -> Type -> RL.RowList Type -> Row Type -> Row Type -> Constraint
 class EZCtrl'' symComp oldSymbol oldDef oldRest newSymbol newDef newRest rowIn rowOut | symComp oldSymbol oldDef oldRest newSymbol newDef newRest rowIn -> rowOut where
-  ezctrl'' :: Proxy (Proxy symComp -> Proxy oldSymbol -> Proxy oldDef -> Proxy oldRest -> Proxy newSymbol -> Proxy newDef -> Proxy newRest) -> Extern -> { | rowIn } -> { | rowOut }
+  ezctrl'' :: forall buffers floatArrays periodicWaves. Proxy (Proxy symComp -> Proxy oldSymbol -> Proxy oldDef -> Proxy oldRest -> Proxy newSymbol -> Proxy newDef -> Proxy newRest) -> Extern buffers floatArrays periodicWaves -> { | rowIn } -> { | rowOut }
 
 instance ezctrlConsCons ::
   ( Sym.Compare oldSymbol newSymbol symComp
@@ -68,7 +68,7 @@ instance ezctrlConsCons ::
   ezctrl' _ _ = ezctrl'' (Proxy :: _ (Proxy symComp -> Proxy oldSymbol -> Proxy oldDef -> Proxy oldRest -> Proxy newSymbol -> Proxy newDef -> Proxy newRest))
 
 class EZCtrl rowIn rowOut where
-  ezctrl :: Extern -> { | rowIn } -> { | rowOut }
+  ezctrl :: forall buffers floatArrays periodicWaves. Extern buffers floatArrays periodicWaves -> { | rowIn } -> { | rowOut }
 
 instance ezctrlAll :: (RL.RowToList rowIn rowInRL, RL.RowToList rowOut rowOutRL, EZCtrl' rowInRL rowOutRL rowIn rowOut) => EZCtrl rowIn rowOut where
-  ezctrl = (ezctrl' :: Proxy rowInRL -> Proxy rowOutRL -> Extern -> { | rowIn } -> { | rowOut }) Proxy Proxy
+  ezctrl = ezctrl' (Proxy :: Proxy rowInRL) (Proxy :: Proxy rowOutRL)
