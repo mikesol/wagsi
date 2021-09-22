@@ -10,6 +10,7 @@ import Data.Vec as V
 import WAGS.Control.Types (Scene, WAG)
 import WAGS.Interpret (class AudioInterpret)
 import WAGS.Run (SceneI)
+import WAGS.WebAPI (BrowserMicrophone)
 
 newtype Wag
   = Wag
@@ -67,6 +68,7 @@ type Wld buffers floatArrays periodicWaves
   =
   { mousePosition :: Maybe { x :: Int, y :: Int }
   , stash :: Stash { | buffers } { | floatArrays } { | periodicWaves }
+  , microphone :: BrowserMicrophone
   | Music
   }
 

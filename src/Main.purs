@@ -4,28 +4,23 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
-import Control.Promise (toAffE)
 import Data.Array ((..))
 import Data.Compactable (compact)
-import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (unwrap)
-import Data.Nullable (toNullable)
 import Data.Traversable (sequence)
 import Data.Tuple (fst, snd)
-import Data.Tuple.Nested ((/\), type (/\))
+import Data.Tuple.Nested ( type (/\))
 import Data.Typelevel.Num (class Nat, class Pos, toInt')
-import Data.Typelevel.Undefined (undefined)
 import Data.Vec as V
 import Effect (Effect)
-import Effect.Aff (Aff, error, forkAff, joinFiber, launchAff_, parallel, sequential, throwError, try)
+import Effect.Aff (Aff, error, launchAff_, parallel, sequential, throwError)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Effect.Class.Console as Log
 import Effect.Ref as Ref
 import FRP.Behavior (Behavior, behavior)
 import FRP.Behavior.Mouse (position)
@@ -46,14 +41,13 @@ import Halogen.VDom.Driver (runUI)
 import Record as R
 import Type.Proxy (Proxy(..))
 import Unsafe.Coerce (unsafeCoerce)
-import WAGS.Interpret (close, context, decodeAudioDataFromUri, defaultFFIAudio, getMicrophoneAndCamera, makeFloatArray, makePeriodicWave, makeUnitCache)
+import WAGS.Interpret (close, context, defaultFFIAudio, getMicrophoneAndCamera, makePeriodicWave, makeUnitCache)
 import WAGS.Run (Run, run)
-import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserFloatArray, BrowserPeriodicWave)
+import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
 import WAGSI.Plumbing.Audio (piece)
 import WAGSI.Plumbing.Hack (stash, wag)
 import WAGSI.Plumbing.StashStuff (CacheStash, StashedSig)
 import WAGSI.Plumbing.Types (NKeys, NKnobs, NSliders, NSwitches, Stash(..))
-import WAGSI.Plumbing.Types (Stash)
 import WAGSI.Plumbing.Types as Types
 import Wagsi.Behavior (ref2Behavior)
 import Wagsi.Vec (mapWithTypedIndex)
@@ -288,7 +282,13 @@ handleAction = case _ of
   StartAudio -> do
     handleAction StopAudio
     H.modify_ _ { audioStarted = true, canStopAudio = false }
-    { microphone } <- H.liftAff $ getMicrophoneAndCamera true false
+    microphone <- H.liftAff
+      ( getMicrophoneAndCamera true false >>=
+          ( _.microphone >>> case _ of
+              Just i -> pure i
+              Nothing -> throwError $ error "Could not get the microphone"
+          )
+      )
     musicRef <-
       H.gets _.musicRef
         >>= case _ of
@@ -311,7 +311,6 @@ handleAction = case _ of
           H.liftEffect
             $ subscribe (cs <|> stash) \stashMaker -> launchAff_ do
                 oldStash <- H.liftEffect $ Ref.read internalStashRef
-                -- Aff { cache :: CacheStash, stash :: Stash { | buffers } { | floatArrays } { | periodicWaves } }
                 stashFromMaker <- stashMaker ctx oldStash
                 H.liftEffect $ Ref.write stashFromMaker.cache internalStashRef
                 H.liftEffect $ Ref.write (unsafeCoerceStash stashFromMaker.stash) behaviorStashRef
@@ -339,7 +338,7 @@ handleAction = case _ of
                       <|> (Types.KeyboardDown <$> Keyboard.down)
                       <|> (Types.KeyboardUp <$> Keyboard.up)
                   )
-                  (R.union <$> ({ mousePosition: _, stash: _ } <$> position mouse <*> ref2Behavior behaviorStashRef) <*> ref2Behavior musicRef)
+                  (R.union <$> ({ mousePosition: _, stash: _, microphone: _ } <$> position mouse <*> ref2Behavior behaviorStashRef <*> pure microphone) <*> ref2Behavior musicRef)
                   { easingAlgorithm }
                   ffiAudio
                   (fromMaybe piece ((\(Types.Wag wg) -> fst wg) <$> maybeWag))
