@@ -83,7 +83,7 @@ type WTrigger control
   = { control :: control, fromTrigger :: Boolean }
 
 cont___w444g
-  :: forall wagsi rAlpha audio engine proof res outGraphAlpha controlAlpha rBeta outGraphBeta controlBeta periodicWavesRL periodicWavesI periodicWavesO buffersRL buffersI buffersO floatArraysRL floatArraysI floatArraysO
+  :: forall wagsi rAlpha audio engine proof res outGraphAlpha controlAlpha rBeta outGraphBeta controlBeta periodicWavesO buffersO floatArraysO
    .
   -- the residual always has to be a monoid
   Monoid res
@@ -118,17 +118,6 @@ cont___w444g
   -- controlBeta has to be a FromEnv in case we start in the middle
   FromEnv { | controlBeta }
   => EZCtrl controlAlpha controlBeta
-  -- stash stuff
-  => RowList.RowToList periodicWavesI periodicWavesRL
-  => RowList.RowToList buffersI buffersRL
-  => RowList.RowToList floatArraysI floatArraysRL
-  => ToFloatArrayRL floatArraysRL floatArraysI floatArraysO
-  => ToAudioBufferRL buffersRL buffersI buffersO
-  => ToPeriodicWaveRL periodicWavesRL periodicWavesI periodicWavesO
-  => Homogeneous floatArraysO BrowserFloatArray
-  => Homogeneous periodicWavesO BrowserPeriodicWave
-  => Homogeneous buffersO BrowserAudioBuffer
-  -- ends stash stuff
   -- the first argument is from the stash
   => StashedSig periodicWavesO buffersO floatArraysO
   -- the second argument is the previous wagsi

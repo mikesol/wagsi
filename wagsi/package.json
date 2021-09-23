@@ -15,7 +15,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:wagsi.startLoop", "onCommand:wagsi.stopLoop"
+    "onCommand:wagsi.startLoop",
+    "onCommand:wagsi.stopLoop"
   ],
   "main": "./out/src/extension.js",
   "contributes": {
@@ -54,9 +55,11 @@
     "mocha": "^8.4.0",
     "npm-run-all": "^4.1.5",
     "purescript": "^0.14.3",
+    "purs-tidy": "^0.5.3",
     "purty": "^7.0.0",
     "spago": "^0.20.3",
     "typescript": "^4.3.2",
+    "vsce": "^1.100.0",
     "vscode-test": "^1.5.2"
   },
   "dependencies": {

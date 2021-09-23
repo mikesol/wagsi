@@ -1,4 +1,6 @@
 {
   "purescript.addNpmPath": true,
-  "purescript.censorWarnings": ["MissingTypeDeclaration"]
+  "purescript.censorWarnings": ["MissingTypeDeclaration"],
+  "purescript.fullBuildOnSave": true,
+  "purescript.buildCommand": "spago build --purs-args --json-errors"
 }

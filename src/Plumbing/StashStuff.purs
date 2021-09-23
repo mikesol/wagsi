@@ -137,7 +137,6 @@ type StashedSig periodicWaves buffers floatArrays =
   -> CacheStash
   -> Aff { cache :: CacheStash, stash :: Stash { | buffers } { | floatArrays } { | periodicWaves } }
 
-
 toStash
   :: forall periodicWavesRL periodicWavesI periodicWavesO buffersRL buffersI buffersO floatArraysRL floatArraysI floatArraysO
    . RowList.RowToList periodicWavesI periodicWavesRL

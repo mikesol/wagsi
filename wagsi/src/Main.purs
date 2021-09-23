@@ -36,10 +36,12 @@ diagnosticsRunning = case _ of
 buildFileCache :: String -> Array String -> Effect (Map String String)
 buildFileCache path files =
   Map.fromFoldable
-    <$> ( files
+    <$>
+      ( files
           # traverse \f ->
               Tuple f
-                <$> ( (readFile $ Path.concat [ path, f ])
+                <$>
+                  ( (readFile $ Path.concat [ path, f ])
                       >>= Buffer.toString UTF8
                   )
       )
@@ -73,29 +75,32 @@ rebuildGopher gopherUri = do
 
 foreign import log_ :: OutputChannel -> String -> Effect Unit
 
-main ::
-  { didSaveCallbacks :: DidSaveCallbacks
-  , handleDiagnosticsCallbacks :: HandleDiagnosticsCallbacks
-  , startLoopCallbacks :: StartLoopCallbacks
-  , stopLoopCallbacks :: StopLoopCallbacks
-  , diagnosticsBeginCallbacks :: DiagnosticsBeginCallbacks
-  , diagnosticsEndCallbacks :: DiagnosticsEndCallbacks
-  , outputChannel :: OutputChannel
-  } ->
-  Effect Unit
-main { didSaveCallbacks
-, handleDiagnosticsCallbacks
-, startLoopCallbacks
-, stopLoopCallbacks
-, diagnosticsBeginCallbacks
-, diagnosticsEndCallbacks
-, outputChannel
-} = do
+main
+  :: { didSaveCallbacks :: DidSaveCallbacks
+     , handleDiagnosticsCallbacks :: HandleDiagnosticsCallbacks
+     , startLoopCallbacks :: StartLoopCallbacks
+     , stopLoopCallbacks :: StopLoopCallbacks
+     , diagnosticsBeginCallbacks :: DiagnosticsBeginCallbacks
+     , diagnosticsEndCallbacks :: DiagnosticsEndCallbacks
+     , outputChannel :: OutputChannel
+     }
+  -> Effect Unit
+main
+  { didSaveCallbacks
+  , handleDiagnosticsCallbacks
+  , startLoopCallbacks
+  , stopLoopCallbacks
+  , diagnosticsBeginCallbacks
+  , diagnosticsEndCallbacks
+  , outputChannel
+  } = do
   liveCodeHere :: Ref.Ref (Map String String) <- Ref.new Map.empty
+  log "In wagsi main"
   -- starts with nothing as there has not been a successful compilation yet
   _ <-
     subscribe events \{ startStop, diagnostics, pathForLiveCodeHere } -> do
       -- on successful compilation, copy to prev
+      log "An event came in"
       if (startStop == LoopStarted || startStop == LoopRestarted) then do
         log $ show ("Kicking off compilation for " <> show { startStop, diagnostics, pathForLiveCodeHere })
         let
@@ -108,7 +113,8 @@ main { didSaveCallbacks
           filezPresent <- readdir pathForLiveCodeHere >>= buildFileCache pathForLiveCodeHere
           Ref.write filezPresent liveCodeHere
         when (diagnostics == DiagnosticsEnded { errorCount: 0 })
-          $ try
+          $
+            try
               ( do
                   log $ show ("Re-writing the past")
                   filezPast <- readdir pathForPast >>= buildFileCache pathForPast
@@ -123,11 +129,11 @@ main { didSaveCallbacks
                     when (file /= "Gopher.purs" && presentIsMissing filezPresent file)
                       (unlink (putInPast (Path.concat [ pathForLiveCodeHere, file ])))
               )
-          >>= case _ of
-              Left err -> do
-                log (show err)
-                throwError err
-              Right r -> pure r
+              >>= case _ of
+                Left err -> do
+                  log (show err)
+                  throwError err
+                Right r -> pure r
         -- if diagnostics have ended and we are in started or restarted, launch compilation
         when (not (diagnosticsRunning diagnostics)) do
           log $ show ("Gopher rebuild triggered")
@@ -152,17 +158,17 @@ main { didSaveCallbacks
               <<< String.split (String.Pattern "src/LiveCodeHere")
               <<< _.fileName
           )
-      $ makeCbEvent setDidSaveCallback removeDidSaveCallback didSaveCallbacks
+      $ makeCbEvent log setDidSaveCallback removeDidSaveCallback didSaveCallbacks
 
-  handleDiagnosticsEvent = makeCbEvent setHandleDiagnosticsCallback removeHandleDiagnosticsCallback handleDiagnosticsCallbacks
+  handleDiagnosticsEvent = makeCbEvent log setHandleDiagnosticsCallback removeHandleDiagnosticsCallback handleDiagnosticsCallbacks
 
-  startLoopEvent = makeCbEvent setStartLoopCallback removeStartLoopCallback startLoopCallbacks
+  startLoopEvent = makeCbEvent log setStartLoopCallback removeStartLoopCallback startLoopCallbacks
 
-  stopLoopEvent = makeCbEvent setStopLoopCallback removeStopLoopCallback stopLoopCallbacks
+  stopLoopEvent = makeCbEvent log setStopLoopCallback removeStopLoopCallback stopLoopCallbacks
 
-  diagnosticsBeginEvent = makeCbEvent setDiagnosticsBeginCallback removeDiagnosticsBeginCallback diagnosticsBeginCallbacks
+  diagnosticsBeginEvent = makeCbEvent log setDiagnosticsBeginCallback removeDiagnosticsBeginCallback diagnosticsBeginCallbacks
 
-  diagnosticsEndEvent = makeCbEvent setDiagnosticsEndCallback removeDiagnosticsEndCallback diagnosticsEndCallbacks
+  diagnosticsEndEvent = makeCbEvent log setDiagnosticsEndCallback removeDiagnosticsEndCallback diagnosticsEndCallbacks
 
   loopStateEvent =
     dedup
@@ -204,10 +210,11 @@ main { didSaveCallbacks
 
   events =
     dedup
-      $ { startStop: _
+      $
+        { startStop: _
         , diagnostics: _
         , pathForLiveCodeHere: _
         }
-      <$> loopStateEvent
-      <*> diagnosticsEvent
-      <*> pathForLiveCode
+          <$> loopStateEvent
+          <*> diagnosticsEvent
+          <*> pathForLiveCode

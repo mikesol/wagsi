@@ -22,24 +22,25 @@ import WAGSI.Plumbing.Types (Extern)
 -- for example, you can try:
 -- a /@\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
 type Acc
-  = (
-    | Room0.Acc + Room1.Acc + Room2.Acc + Room3.Acc + Room4.Acc + Room5.Acc + ()
-    )
+  =
+  (
+  | Room0.Acc + Room1.Acc + Room2.Acc + Room3.Acc + Room4.Acc + Room5.Acc + ()
+  )
 
 wagsi :: forall buffers floatArrays periodicWaves. Extern buffers floatArrays periodicWaves -> { | Acc } -> _
 wagsi e a =
   nted
     /@\ speaker
-        ( Record.build
-            ( Record.union (Room0.graph e headz)
-                >>> Record.union (Room1.graph e headz)
-                >>> Record.union (Room2.graph e headz)
-                >>> Record.union (Room3.graph e headz)
-                >>> Record.union (Room4.graph e headz)
-                >>> Record.union (Room5.graph e headz)
-            )
-            { zeros: constant 0.0 }
-        )
+      ( Record.build
+          ( Record.union (Room0.graph e headz)
+              >>> Record.union (Room1.graph e headz)
+              >>> Record.union (Room2.graph e headz)
+              >>> Record.union (Room3.graph e headz)
+              >>> Record.union (Room4.graph e headz)
+              >>> Record.union (Room5.graph e headz)
+          )
+          { zeros: constant 0.0 }
+      )
   where
   actualizer = {}
 

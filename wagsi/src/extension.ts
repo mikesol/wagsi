@@ -19,6 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let middleware: Middleware = {
 		didSave(this, data, next) {
+			console.log("THIS MW was called");
 			for (const eff of Object.values(didSaveCallbacks)) {
 				eff(data)();
 			}
@@ -35,7 +36,9 @@ export function activate(context: vscode.ExtensionContext) {
 	let startLoopCallbacks: Record<string, ThunkThunk> = {};
 
 	let startLoop = vscode.commands.registerCommand('wagsi.startLoop', () => {
+		outputChannel.appendLine('Starting loop.');
 		for (const eff of Object.values(startLoopCallbacks)) {
+			outputChannel.appendLine('Invoking callback.');
 			eff()();
 		}
 	});
@@ -51,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(stopLoop);
 
-	importedApi.registerMiddleware("wagsi", middleware);
+	importedApi.registerMiddleware(middleware);
 	importedApi.setDiagnosticsBegin(() => {
 		for (const eff of Object.values(diagnosticsBeginCallbacks)) {
 			eff()();
