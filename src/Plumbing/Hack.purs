@@ -15,8 +15,6 @@ import Effect (Effect)
 import Effect.Random (randomInt)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
-import Prim.RowList as RowList
-import Type.Row.Homogeneous (class Homogeneous)
 import WAGS.Change (class Change, ichange)
 import WAGS.Control.Functions (ibranch, (@!>))
 import WAGS.Control.Indexed (IxWAG)
@@ -26,10 +24,9 @@ import WAGS.Interpret (class AudioInterpret)
 import WAGS.Patch (class Patch, ipatch, patch)
 import WAGS.Run (SceneI(..))
 import WAGS.Validation (class GraphIsRenderable)
-import WAGS.WebAPI (BrowserAudioBuffer, BrowserFloatArray, BrowserPeriodicWave)
 import WAGSI.Plumbing.EZCtrl (class EZCtrl, ezctrl)
 import WAGSI.Plumbing.FromEnv (class FromEnv, fromEnv)
-import WAGSI.Plumbing.StashStuff (class ToAudioBufferRL, class ToFloatArrayRL, class ToPeriodicWaveRL, StashedSig)
+import WAGSI.Plumbing.StashStuff (StashedSig)
 import WAGSI.Plumbing.Types (Wag(..), Extern, Evt(..))
 
 foreign import handlers :: Effect (Object (Wag -> Effect Unit))
@@ -148,7 +145,7 @@ cont___w444g _ _ newGraph =
     :: (Extern buffersO floatArraysO periodicWavesO)
     -> IxWAG audio engine Frame0 res () outGraphBeta { fromTrigger :: Boolean, control :: { | controlBeta } }
   -- todo: enable microphone?
-  createFrame e = ipatch { microphone: Nothing } $> { fromTrigger: false, control: fromEnv e }
+  createFrame e@(SceneI { world: { microphone }}) = ipatch { microphone: Just microphone } $> { fromTrigger: false, control: fromEnv e }
 
   branchingLogic
     :: forall proofB

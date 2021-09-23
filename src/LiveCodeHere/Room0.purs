@@ -21,4 +21,4 @@ actualizer
 actualizer (SceneI { time }) { room0Rate0 } = { room0Rate0: unwrap room0Rate0 { time, rate: 1.0 } }
 
 graph :: forall buffers floatArrays periodicWaves r. Extern buffers floatArrays periodicWaves -> { room0Rate0 :: Additive Number | r } -> _
-graph _ _ = { gain: gain 0.3 (sinOsc 880.0)}
+graph _ _ = {}

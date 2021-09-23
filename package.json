@@ -22,9 +22,9 @@
   },
   "scripts": {
     "postinstall": "node makeEngine.js && spago install && spago build",
-    "start": "node makeEngine.js && spago install && spago build && webpack serve --mode=development --open",
-    "start:gitpod": "node makeEngine.js && webpack serve --mode=development --open --public \"$(gp url 8080 | sed 's+https://++'):443\"",
-    "start:codespaces": "node makeEngine.js && webpack serve --mode=development --open --public \"$npm_package_codespacesPublicUrl\"",
+    "start": "node makeEngine.js && spago install && spago build && webpack serve --mode=development",
+    "start:gitpod": "node makeEngine.js && webpack serve --mode=development --public \"$(gp url 8080 | sed 's+https://++'):443\"",
+    "start:codespaces": "node makeEngine.js && webpack serve --mode=development --public \"$npm_package_codespacesPublicUrl\"",
     "build": "webpack"
   }
 }

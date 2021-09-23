@@ -33,25 +33,6 @@ data Evt
   | KeyboardDown String
   | KeyboardUp String
 
-type NKnobs
-  = D10
-
-type NSliders
-  = D10
-
-type NSwitches
-  = D10
-
-type NKeys
-  = D48
-
-type Music' knobs sliders switches keyboard
-  =
-  ( knobs :: V.Vec NKnobs knobs
-  , sliders :: V.Vec NKnobs sliders
-  , switches :: V.Vec NKnobs switches
-  , keyboard :: V.Vec NKeys keyboard
-  )
 
 newtype Stash buffers floatArrays periodicWaves = Stash
   { buffers :: buffers
@@ -61,15 +42,11 @@ newtype Stash buffers floatArrays periodicWaves = Stash
 
 derive instance newtypeStash :: Newtype (Stash buffers floatArrays periodicWaves) _
 
-type Music
-  = Music' Number Number Boolean Boolean
-
 type Wld buffers floatArrays periodicWaves
   =
   { mousePosition :: Maybe { x :: Int, y :: Int }
   , stash :: Stash { | buffers } { | floatArrays } { | periodicWaves }
   , microphone :: BrowserMicrophone
-  | Music
   }
 
 type Extern buffers floatArrays periodicWaves

@@ -65,13 +65,12 @@ instance onlyContainsAudioBuffersRLNil :: ToAudioBufferRL RowList.Nil ri () wher
 
 instance onlyContainsAudioBuffersRLCons ::
   ( IsSymbol a
-  , Pos n
   , Row.Cons a String r' r
   , Row.Cons a BrowserAudioBuffer ro' ro
   , Lacks a ro'
   , ToAudioBufferRL c r ro'
   ) =>
-  ToAudioBufferRL (RowList.Cons a (V.Vec n Number /\ V.Vec n Number) c) r ro where
+  ToAudioBufferRL (RowList.Cons a String c) r ro where
   toAudioBufferRL _ ac obj r = do
     rest <- toAudioBufferRL (Proxy :: _ c) ac obj r
     pw <- case O.lookup (reflectSymbol (Proxy :: _ a)) obj of
@@ -99,13 +98,12 @@ instance onlyContainsFloatArraysRLNil :: ToFloatArrayRL RowList.Nil ri () where
 
 instance onlyContainsFloatArraysRLCons ::
   ( IsSymbol a
-  , Pos n
   , Row.Cons a (Array Number) r' r
   , Row.Cons a BrowserFloatArray ro' ro
   , Lacks a ro'
   , ToFloatArrayRL c r ro'
   ) =>
-  ToFloatArrayRL (RowList.Cons a (V.Vec n Number /\ V.Vec n Number) c) r ro where
+  ToFloatArrayRL (RowList.Cons a (Array Number) c) r ro where
   toFloatArrayRL _ obj r = do
     rest <- toFloatArrayRL (Proxy :: _ c) obj r
     pw <- case O.lookup (reflectSymbol (Proxy :: _ a)) obj of

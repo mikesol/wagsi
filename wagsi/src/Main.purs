@@ -1,6 +1,7 @@
 module Main where
 
 import Prelude
+
 import Control.Alt ((<|>))
 import Control.Monad.Error.Class (throwError, try)
 import Data.Array as A
@@ -153,10 +154,10 @@ main
   pathForLiveCode =
     onlyFirst
       $ filterMap
-          ( map (flip append "src/LiveCodeHere")
-              <<< A.head
-              <<< String.split (String.Pattern "src/LiveCodeHere")
-              <<< _.fileName
+          (\{fileName} -> if String.contains (String.Pattern "src/LiveCodeHere") fileName then map (flip append "src/LiveCodeHere")
+              $ A.head
+              $ String.split (String.Pattern "src/LiveCodeHere")
+              $ fileName else Nothing
           )
       $ makeCbEvent log setDidSaveCallback removeDidSaveCallback didSaveCallbacks
 
