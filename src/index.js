@@ -6,14 +6,6 @@ import hack from "../output/WAGSI.Plumbing.Tidal/foreign.js";
 
 main.main();
 
-if (gopher.wag) {
-  console.log("Found an initial wag 🐶");
-  var handlers = hack.handlers();
-  for (var item in handlers) {
-    handlers[item](gopher.wag)();
-  }
-}
-
 if (module.hot) {
   if (module.hot.status() === "ready") {
     module.hot
