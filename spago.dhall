@@ -29,6 +29,7 @@ You can edit this file as you like.
   , "refs"
   , "simple-json"
   , "sized-vectors"
+  , "string-parsers"
   , "transformers"
   , "typelevel"
   , "typelevel-peano"

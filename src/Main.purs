@@ -2,52 +2,28 @@ module WAGSI.Main where
 
 import Prelude
 
-import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
-import Data.Compactable (compact)
-import Data.Either (Either(..))
 import Data.Foldable (for_)
-import Data.Map (Map)
-import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
-import Data.Newtype (unwrap)
-import Data.Traversable (sequence)
+import Data.Maybe (Maybe(..))
 import Data.Tuple (fst, snd)
-import Data.Tuple.Nested (type (/\))
+import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Pos)
 import Data.Vec as V
 import Effect (Effect)
-import Effect.Aff (Aff, error, launchAff_, parallel, sequential, throwError, try)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Effect.Class.Console as Log
-import Effect.Ref as Ref
-import FRP.Behavior (Behavior, behavior)
-import FRP.Behavior.Mouse (position)
-import FRP.Event (Event, makeEvent, subscribe)
-import FRP.Event.Keyboard as Keyboard
-import FRP.Event.Mouse (getMouse)
-import FRP.Event.Mouse as Mouse
-import Foreign (Foreign)
-import Foreign.Object (Object)
-import Foreign.Object as O
+import FRP.Event (subscribe)
 import Halogen as H
 import Halogen.Aff (awaitBody, runHalogenAff)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
-import Unsafe.Coerce (unsafeCoerce)
-import WAGS.Interpret (close, context, defaultFFIAudio, getMicrophoneAndCamera, makePeriodicWave, makeUnitCache)
+import WAGS.Interpret (close, context, defaultFFIAudio, makePeriodicWave, makeUnitCache)
+import WAGS.Lib.Learn (FullSceneBuilder(..))
 import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
-import WAGSI.Plumbing.Audio (piece)
-import WAGSI.Plumbing.Hack (stash, wag)
-import WAGSI.Plumbing.StashStuff (CacheStash, StashedSig)
-import WAGSI.Plumbing.Types (Stash(..))
-import WAGSI.Plumbing.Types as Types
-import Wagsi.Behavior (ref2Behavior)
+import WAGSI.Plumbing.Tidal (tidal)
 
 main :: Effect Unit
 main =
@@ -64,13 +40,10 @@ type State
   , audioCtx :: Maybe AudioContext
   , audioStarted :: Boolean
   , canStopAudio :: Boolean
-  , unsubscribeFromHalogen :: Maybe H.SubscriptionId
-  , stashInfo :: StashInfo
   }
 
 data Action
   = Initialize
-  | UpdateStashInfo StashInfo
   | StartAudio
   | StopAudio
 
@@ -82,32 +55,22 @@ component =
     , eval: H.mkEval $ H.defaultEval { initialize = Just Initialize, handleAction = handleAction }
     }
 
-cs :: forall buffers floatArrays periodicWaves. Event (StashedSig buffers floatArrays periodicWaves)
-cs =
-  compact
-    ( makeEvent \k -> do
-        cachedStash Nothing Just >>= k
-        pure (pure unit)
-    )
-
 initialState :: forall input. input -> State
 initialState _ =
   { unsubscribe: pure unit
   , audioCtx: Nothing
   , audioStarted: false
   , canStopAudio: false
-  , unsubscribeFromHalogen: Nothing
-  , stashInfo: mempty
   }
 
 classes :: forall r p. Array String -> HP.IProp (class :: String | r) p
 classes = HP.classes <<< map H.ClassName
 
 render :: forall m. State -> H.ComponentHTML Action () m
-render { audioStarted, canStopAudio, stashInfo } =
+render { audioStarted, canStopAudio } =
   HH.div [ classes [ "w-screen", "h-screen" ] ]
     [ HH.div [ classes [ "flex", "flex-col", "w-full", "h-full" ] ]
-        [ HH.div [ classes [ "flex-grow" ] ] [ HH.div_ [ HH.p_ [ HH.text ("Stash info: " <> show stashInfo) ] ] ]
+        [ HH.div [ classes [ "flex-grow" ] ] [ HH.div_ [] ]
         , HH.div [ classes [ "flex-grow-0", "flex", "flex-row" ] ]
             [ HH.div [ classes [ "flex-grow" ] ]
                 []
@@ -147,138 +110,37 @@ easingAlgorithm =
   in
     fOf 15
 
-foreign import cachedScene
-  :: Maybe Types.Wag -> (Types.Wag -> Maybe Types.Wag) -> Effect (Maybe Types.Wag)
-
-foreign import storeWag :: Foreign
-
-foreign import cachedStash :: forall buffers floatArrays periodicWaves. Maybe (StashedSig buffers floatArrays periodicWaves) -> (StashedSig buffers floatArrays periodicWaves -> Maybe (StashedSig buffers floatArrays periodicWaves)) -> Effect (Maybe (StashedSig buffers floatArrays periodicWaves))
-
-foreign import storeStash :: Foreign
-
-oe :: forall a b. (a -> b -> Boolean) -> (a -> Aff b) -> Object a -> Object b -> Aff (Object b)
-oe isEq trans template current = O.union <$> (sequential (sequence (map (parallel <<< trans) newStuff))) <*> pure filtered
-  where
-  -- things from the old to keep. as the above operation is left biased
-  -- it will ignore anything in newStuff
-  filtered = O.filterKeys (flip O.member template) current
-
-  -- if it is not in current, then it is new
-  -- if it is not eq, then it is new
-  newStuff = O.filterWithKey (\k v -> maybe true (\v' -> not (isEq v v')) (O.lookup k current)) template
-
-stashBehavior :: forall a b. Ref.Ref a -> (a -> b) -> Behavior b
-stashBehavior internalStashRef f =
-  behavior \eAToB ->
-    makeEvent \fB ->
-      subscribe eAToB \aToB -> Ref.read internalStashRef >>= fB <<< aToB <<< f
-
-arrrr :: Array ~> Array
-arrrr = identity
-
-toMap :: forall a. Object a -> Map String a
-toMap = Map.fromFoldable <<< arrrr <<< O.toUnfoldable
-
-fromMap :: forall a. Map String a -> Object a
-fromMap = O.fromFoldable <<< arrrr <<< Map.toUnfoldable
-
-unsafeCoerceStash :: forall a b c d e f. Stash { | a } { | b } { | c } -> Stash { | d } { | e } { | f }
-unsafeCoerceStash = unsafeCoerce
-
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Initialize -> do
     pure unit
-  UpdateStashInfo s -> H.modify_ _ { stashInfo = s }
   StartAudio -> do
     handleAction StopAudio
     H.modify_ _ { audioStarted = true, canStopAudio = false }
-    microphone <- H.liftAff
-      ( getMicrophoneAndCamera true false >>=
-          ( _.microphone >>> case _ of
-              Just i -> pure i
-              Nothing -> throwError $ error "Could not get the microphone"
-          )
-      )
-    -- for now, this is completely unsafe as the type safety is managed in the live coding session
-    -- may be worth it to make this a bit safer
-    behaviorStashRef <- H.liftEffect $ Ref.new $ unsafeCoerceStash $ Stash
-      { buffers: {}
-      , floatArrays: {}
-      , periodicWaves: {}
-      }
-    { emitter, listener } <- H.liftEffect HS.create
-    unsubscribeFromHalogen <- H.subscribe emitter
-    { ctx, unsubscribeFromWags, unsubscribeFromStash } <-
+    { ctx, unsubscribeFromWags } <-
       H.liftAff do
         ctx <- H.liftEffect context
-        (internalStashRef :: Ref.Ref CacheStash) <- H.liftEffect $ Ref.new $ Stash { buffers: O.empty, periodicWaves: O.empty, floatArrays: O.empty }
-        unsubscribeFromStash <-
-          H.liftEffect
-            $ subscribe
-                ( (cs <#> { tag: "cached", stashMaker: _ })
-                    <|> (stash <#> { tag: "stash", stashMaker: _ })
-                )
-                \{ stashMaker } -> launchAff_ $
-                  try
-                    ( do
-                        -- Log.info $ "Processing new stash 0: " <> tag
-                        oldStash <- H.liftEffect $ Ref.read internalStashRef
-                        -- Log.info "Processing new stash 1"
-                        stashFromMaker <- stashMaker ctx oldStash
-                        -- Log.info "Processing new stash 2"
-                        H.liftEffect $ Ref.write stashFromMaker.cache internalStashRef
-                        -- Log.info "Processing new stash 3"
-                        H.liftEffect $ Ref.write (unsafeCoerceStash stashFromMaker.stash) behaviorStashRef
-                        -- Log.info "Processing new stash 4"
-                        H.liftEffect
-                          ( HS.notify listener $ UpdateStashInfo
-                              { buffers: O.keys (unwrap stashFromMaker.cache).buffers
-                              , floatArrays: O.keys (unwrap stashFromMaker.cache).floatArrays
-                              , periodicWaves: O.keys (unwrap stashFromMaker.cache).periodicWaves
-                              }
-                          )
-                    ) >>= case _ of
-                    Left e -> Log.error (show e)
-                    Right r -> pure r
-
         unitCache <- H.liftEffect makeUnitCache
         let
           ffiAudio = defaultFFIAudio ctx unitCache
-        mouse <- H.liftEffect getMouse
+        let FullSceneBuilder { triggerWorld, piece } = tidal
+        trigger /\ world <- snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
         unsubscribeFromWags <-
           H.liftEffect do
-            maybeWag <- cachedScene Nothing Just
-            -- if isJust maybeWag then Log.info "Operating from a cached scene" else Log.info "Operating from the piece"
             subscribe
-              ( run
-                  ( pure Types.InitialEvent
-                      <|> (Types.HotReload <$> wag)
-                      <|> (Types.MouseDown <$> Mouse.down)
-                      <|> (Types.MouseUp <$> Mouse.up)
-                      <|> (Types.KeyboardDown <$> Keyboard.down)
-                      <|> (Types.KeyboardUp <$> Keyboard.up)
-                  )
-                  ({ mousePosition: _, stash: _, microphone: _ } <$> position mouse <*> ref2Behavior behaviorStashRef <*> pure microphone)
-                  { easingAlgorithm }
-                  ffiAudio
-                  (fromMaybe piece ((\(Types.Wag wg) -> fst wg) <$> maybeWag))
-              )
+              (run trigger world { easingAlgorithm } ffiAudio piece)
               (\(_ :: Run Unit ()) -> pure unit) -- (Log.info <<< show)
-        pure { ctx, unsubscribeFromWags, unsubscribeFromStash }
+        pure { ctx, unsubscribeFromWags }
     H.modify_
       _
         { unsubscribe =
             do
               unsubscribeFromWags
-              unsubscribeFromStash
         , audioCtx = Just ctx
         , canStopAudio = true
-        , unsubscribeFromHalogen = Just unsubscribeFromHalogen
         }
   StopAudio -> do
-    { unsubscribe, unsubscribeFromHalogen, audioCtx } <- H.get
-    for_ unsubscribeFromHalogen H.unsubscribe
+    { unsubscribe, audioCtx } <- H.get
     H.liftEffect unsubscribe
     for_ audioCtx (H.liftEffect <<< close)
     H.modify_ _ { unsubscribe = pure unit, audioCtx = Nothing, audioStarted = false, canStopAudio = false }
