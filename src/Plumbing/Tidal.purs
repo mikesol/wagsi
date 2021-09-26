@@ -42,6 +42,10 @@ module WAGSI.Plumbing.Tidal
   , s
   , x
   ---
+  , lfn
+  , lfb
+  , lfl
+  , lfd
   , ltn
   , lts
   , ltd
@@ -52,12 +56,14 @@ module WAGSI.Plumbing.Tidal
   , when_
   , flattenCycle
   , reverse
+  , mapmap
   ---
   , cycleP
   , unrest
   , noteFromSample
   , CycleLength(..)
   , NoteInTime(..)
+  , NoteInFlattenedTime(..)
   , Voice(..)
   , Globals(..)
   , NextCycle(..)
@@ -97,7 +103,7 @@ import Data.Show.Generic (genericShow)
 import Data.String.CodeUnits (fromCharArray)
 import Data.Symbol (class IsSymbol)
 import Data.Traversable (class Foldable, class Traversable, foldMapDefaultR, sequence, sequenceDefault, traverse)
-import Data.Tuple (fst, snd, uncurry)
+import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Pos, D8)
 import Effect (Effect)
@@ -143,6 +149,12 @@ type RBuf
   { sampleF :: Instruments BrowserAudioBuffer -> BrowserAudioBuffer
   , rateFoT :: FoT
   , volumeFoT :: FoT
+  , cycleStartsAt :: Number
+  , bigCycleLength :: Number
+  , littleCycleLength :: Number
+  , currentCycle :: Int
+  , bigStartsAt :: Number
+  , littleStartsAt :: Number
   , duration :: Number
   }
 
@@ -159,7 +171,7 @@ newtype Voice = Voice { globals :: Globals, next :: NextCycle }
 
 derive instance newtypeVoice :: Newtype Voice _
 
-type EWF (v :: Type) = (earth :: v, wind :: v, fire :: v)
+type EWF (v :: Type) = (earth :: v) --, wind :: v, fire :: v)
 
 newtype TheFuture = TheFuture { | EWF Voice }
 
@@ -187,7 +199,13 @@ derive instance newtypeCycleLength :: Newtype CycleLength _
 derive instance eqCycleLength :: Eq CycleLength
 derive instance ordCycleLength :: Ord CycleLength
 
-type FoT = { clockTime :: Number, sampleTime :: Number } -> Number
+type FoT =
+  { clockTime :: Number
+  , sampleTime :: Number
+  , bigCycleTime :: Number
+  , littleCycleTime :: Number
+  }
+  -> Number
 
 newtype Note = Note
   { sample :: Sample
@@ -222,7 +240,38 @@ instance showNoteInTime :: Show note => Show (NoteInTime note) where
 
 derive instance functorNoteInTime :: Functor NoteInTime
 
+newtype NoteInFlattenedTime note = NoteInFlattenedTime
+  { note :: note
+  , bigStartsAt :: Number
+  , littleStartsAt :: Number
+  , currentCycle :: Int
+  , duration :: Number
+  , bigCycleLength :: Number
+  , littleCycleLength :: Number
+  }
+
+derive instance newtypeNoteInFlattenedTime :: Newtype (NoteInFlattenedTime note) _
+derive instance genericNoteInFlattenedTime :: Generic (NoteInFlattenedTime note) _
+derive instance eqNoteInFlattenedTime :: Eq note => Eq (NoteInFlattenedTime note)
+derive instance ordNoteInFlattenedTime :: Ord note => Ord (NoteInFlattenedTime note)
+instance showNoteInFlattenedTime :: Show note => Show (NoteInFlattenedTime note) where
+  show xx = genericShow xx
+
+derive instance functorNoteInFlattenedTime :: Functor NoteInFlattenedTime
+
 --- lenses
+lfn :: forall note. Lens' (NoteInFlattenedTime note) note
+lfn = unto NoteInFlattenedTime <<< prop (Proxy :: _ "note")
+
+lfb :: forall note. Lens' (NoteInFlattenedTime note) Number
+lfb = unto NoteInFlattenedTime <<< prop (Proxy :: _ "bigStartsAt")
+
+lfl :: forall note. Lens' (NoteInFlattenedTime note) Number
+lfl = unto NoteInFlattenedTime <<< prop (Proxy :: _ "littleStartsAt")
+
+lfd :: forall note. Lens' (NoteInFlattenedTime note) Number
+lfd = unto NoteInFlattenedTime <<< prop (Proxy :: _ "duration")
+
 ltn :: forall note. Lens' (NoteInTime note) note
 ltn = unto NoteInTime <<< prop (Proxy :: _ "note")
 
@@ -316,6 +365,9 @@ flattenCycle = case _ of
   Sequential { nel } -> join $ map flattenCycle nel
   Internal { nel } -> join $ map flattenCycle nel
   SingleNote { val } -> pure val
+
+mapmap :: forall f g a b. Functor f => Functor g => (a -> b) -> f (g a) -> f (g b)
+mapmap = map <<< map
 
 reverse :: Cycle ~> Cycle
 reverse l = go l
@@ -568,41 +620,52 @@ unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
           NoteInTime <<< { startsAt, duration, cycleLength, note: _ } <$> note
       ) <<< NEL.toList
 
-asScore :: NonEmptyList (NoteInTime Note) -> NextCycle
+asScore :: NonEmptyList (NoteInFlattenedTime Note) -> NextCycle
 asScore flattened = NextCycle scoreInput
   where
   scoreInput ccPce = go ccPce.currentCount ccPce.prevCycleEnded flattened
-  go currentCount prevCycleEnded (NonEmptyList (NoteInTime aa :| bb)) =
+  go currentCount prevCycleEnded (NonEmptyList (NoteInFlattenedTime aa :| bb)) =
     let
-      st = prevCycleEnded + aa.startsAt
-      args = case bb of
-        Nil -> (prevCycleEnded + aa.cycleLength) /\ flattened
-        (cc : dd) -> prevCycleEnded /\ NonEmptyList (cc :| dd)
+      st = prevCycleEnded + aa.bigStartsAt
     in
       { startsAfter: st - currentCount
       , rest:
           { sampleF: sampleToBuffers (unwrap aa.note).sample
+          , cycleStartsAt: prevCycleEnded
           , rateFoT: (unwrap aa.note).rateFoT
           , volumeFoT: (unwrap aa.note).volumeFoT
+          , bigCycleLength: aa.bigCycleLength
+          , littleCycleLength: aa.littleCycleLength
+          , currentCycle: aa.currentCycle
+          , bigStartsAt: aa.bigStartsAt
+          , littleStartsAt: aa.littleStartsAt
           , duration: aa.duration
           }
       } :<
         \{ time, headroomInSeconds, input: { next: (NextCycle nc) } } ->
-          case bb of
-            Nil -> nc { currentCount: st, prevCycleEnded: fst args, time, headroomInSeconds }
-            _ -> uncurry (go st) args
+          let
+            args = case bb of
+              Nil -> { a: prevCycleEnded + aa.bigCycleLength, b: flattened }
+              (cc : dd) -> { a: prevCycleEnded, b: NonEmptyList (cc :| dd) }
+          in
+            case bb of
+              Nil -> nc { currentCount: st, prevCycleEnded: args.a, time, headroomInSeconds }
+              _ -> go st args.a args.b
 
-flattenScore :: NonEmptyList (NonEmptyList (NoteInTime Note)) -> NonEmptyList (NoteInTime Note)
+flattenScore :: NonEmptyList (NonEmptyList (NoteInTime Note)) -> NonEmptyList (NoteInFlattenedTime Note)
 flattenScore l = flattened
   where
   ll = NEL.length l
   flattened = join $ mapWithIndex
     ( \i -> map
-        ( \(NoteInTime { note, duration, startsAt, cycleLength }) -> NoteInTime
+        ( \(NoteInTime { note, duration, startsAt, cycleLength }) -> NoteInFlattenedTime
             { note
             , duration
-            , startsAt: startsAt + cycleLength * toNumber i
-            , cycleLength: cycleLength * toNumber ll
+            , bigStartsAt: startsAt + cycleLength * toNumber i
+            , currentCycle: i
+            , littleStartsAt: startsAt
+            , littleCycleLength: cycleLength
+            , bigCycleLength: cycleLength * toNumber ll
             }
         )
     )
@@ -622,14 +685,20 @@ type Acc
 emptyPool :: forall n. Pos n => AScoredBufferPool Next n RBuf
 emptyPool = makeScoredBufferPool
   { startsAt: 0.0
-  , noteStream: \_ -> ((#) { currentCount: 0.0, prevCycleEnded: 0.0, time: 0.0
-    , headroomInSeconds: 0.03 } $ unwrap $ asScore (pure intentionalSilenceForInternalUseOnly)) # map \{ startsAfter, rest } ->
-      { startsAfter
-      , rest:
-          { rest: const rest
-          , duration: const $ const $ const Just rest.duration
-          }
-      }
+  , noteStream: \_ ->
+      ( (#)
+          { currentCount: 0.0
+          , prevCycleEnded: 0.0
+          , time: 0.0
+          , headroomInSeconds: 0.03
+          } $ unwrap $ asScore (pure intentionalSilenceForInternalUseOnly)
+      ) # map \{ startsAfter, rest } ->
+        { startsAfter
+        , rest:
+            { rest: const rest
+            , duration: const $ const $ const Just rest.duration
+            }
+        }
   }
 
 openVoice :: Voice
@@ -689,16 +758,19 @@ thePresent
   -> AudioContext /\ Aff (Event { theFuture :: TheFuture | trigger } /\ Behavior { | world })
 thePresent ev = (map <<< map) (over _1 (\e -> Record.insert (Proxy :: _ "theFuture") <$> ev <*> e))
 
-intentionalSilenceForInternalUseOnly :: (NoteInTime Note)
-intentionalSilenceForInternalUseOnly = NoteInTime
+intentionalSilenceForInternalUseOnly :: (NoteInFlattenedTime Note)
+intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
   { note: Note
       { sample: IntentionalSilenceForInternalUseOnly
       , rateFoT: const 1.0
       , volumeFoT: const 1.0
       }
-  , startsAt: 0.0
+  , bigStartsAt: 0.0
+  , littleStartsAt: 0.0
   , duration: 0.25
-  , cycleLength: 0.25
+  , currentCycle: 0
+  , bigCycleLength: 0.25
+  , littleCycleLength: 0.25
   }
 
 parse' :: String -> Cycle (Maybe Note)
@@ -796,12 +868,23 @@ tidal = usingc
                                   , rateFoT
                                   , volumeFoT
                                   , duration
+                                  , cycleStartsAt
+                                  , currentCycle
+                                  , littleCycleLength
                                   }
                               }
                           ) ->
                           let
                             sampleTime = time - startTime
-                            vol = ff globalFF $ pure $ (volumeFoT { sampleTime, clockTime: time })
+                            bigCycleTime = time - cycleStartsAt
+                            littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleLength))
+                            thisIsTime =
+                              { sampleTime
+                              , bigCycleTime
+                              , littleCycleTime
+                              , clockTime: time
+                              }
+                            vol = ff globalFF $ pure $ volumeFoT thisIsTime
                           in
                             gain
                               ( if time > startTime + duration then
@@ -819,7 +902,7 @@ tidal = usingc
                                             ff (max 0.0 (startTime - time)) (pure OffOn)
                                           else
                                             pure On
-                                  , playbackRate: ff globalFF $ pure $ (rateFoT { sampleTime, clockTime: time })
+                                  , playbackRate: ff globalFF $ pure $ rateFoT thisIsTime
                                   }
                                   (sampleF buffers)
                               )

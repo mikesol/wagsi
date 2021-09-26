@@ -133,11 +133,11 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import Data.Lens (set)
-import WAGSI.Plumbing.Tidal (TheFuture, lnr, make, parse', plainly, rend)
+import WAGSI.Plumbing.Tidal (TheFuture, lnr, make, parse', plainly, rend, mapmap)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly $ rend $ map (set lnr (const 1.5)) $ parse' "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
+  { earth: plainly $ rend $ mapmap (set lnr (const 1.5)) $ parse' "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
   }
 ```
 
@@ -149,11 +149,11 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import Data.Lens (set)
-import WAGSI.Plumbing.Tidal (TheFuture, b, clap, kick, kick1, lnr, make, plainly, r, rend, roll, s, x)
+import WAGSI.Plumbing.Tidal (TheFuture, mapmap, b, clap, kick, kick1, lnr, make, plainly, r, rend, roll, s, x)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly $ rend $ x (s (map (set lnr (const 0.5)) kick) [clap, s kick1 [kick1], clap]) [b (s r [roll, r, roll]) [r]]
+  { earth: plainly $ rend $ x (s (mapmap (set lnr (const 0.5)) kick) [clap, s kick1 [kick1], clap]) [b (s r [roll, r, roll]) [r]]
   }
 ```
 
@@ -165,13 +165,13 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import Data.Lens (set, view)
-import WAGSI.Plumbing.Tidal (Sample(..), TheFuture, lnr, lns, make, parse', plainly, rend, when_)
+import WAGSI.Plumbing.Tidal (Sample(..), TheFuture, mapmap, lnr, lns, make, parse', plainly, rend, when_)
 
 wag :: TheFuture
 wag = make 2.0
   { earth: plainly
       $ rend
-      $ map (when_ (eq Kick0 <$> view lns) (set lnr (const 0.5)))
+      $ mapmap (when_ (eq Kick0 <$> view lns) (set lnr (const 0.5)))
       $ parse' "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
   }
 ```
