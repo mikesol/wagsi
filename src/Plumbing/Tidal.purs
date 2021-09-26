@@ -49,6 +49,8 @@ module WAGSI.Plumbing.Tidal
   , lnr
   ---
   , when_
+  , flattenCycle
+  , reverse
   ---
   , CycleLength(..)
   , NoteInTime(..)
@@ -304,6 +306,17 @@ flattenCycle = case _ of
     Sequential nel -> join $ map flattenCycle nel
     Internal nel -> join $ map flattenCycle nel
     SingleNote sn -> pure sn
+
+reverse :: Cycle ~> Cycle
+reverse l = go l
+  where
+  go' f nel = f $ NEL.reverse (map reverse nel)
+  go = case _ of
+    Branching nel -> go' Branching nel
+    Simultaneous nel -> go' Simultaneous nel
+    Sequential nel -> go' Sequential nel
+    Internal nel -> go' Internal nel
+    SingleNote sn -> SingleNote sn
 
 notes :: Array (String /\ Maybe Note)
 notes =
