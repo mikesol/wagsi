@@ -1,6 +1,6 @@
 # WagsI
 
-Interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
+Collaborative nteractive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
 
 ## Jam sessions!
 
