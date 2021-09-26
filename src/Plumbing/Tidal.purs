@@ -47,6 +47,7 @@ module WAGSI.Plumbing.Tidal
   , ltd
   , lns
   , lnr
+  , lnv
   ---
   , when_
   , flattenCycle
@@ -66,6 +67,7 @@ module WAGSI.Plumbing.Tidal
   , Instruments'
   , Instruments''
   , TheFuture
+  , FoT
   ) where
 
 import Prelude hiding (between)
@@ -139,8 +141,8 @@ type Instruments a
 type RBuf
   =
   { sampleF :: Instruments BrowserAudioBuffer -> BrowserAudioBuffer
-  , rateFoT :: Number -> Number
-  , volumeFoT :: Number -> Number
+  , rateFoT :: FoT
+  , volumeFoT :: FoT
   , duration :: Number
   }
 
@@ -185,10 +187,12 @@ derive instance newtypeCycleLength :: Newtype CycleLength _
 derive instance eqCycleLength :: Eq CycleLength
 derive instance ordCycleLength :: Ord CycleLength
 
+type FoT = { clockTime :: Number, sampleTime :: Number } -> Number
+
 newtype Note = Note
   { sample :: Sample
-  , rateFoT :: Number -> Number
-  , volumeFoT :: Number -> Number
+  , rateFoT :: FoT
+  , volumeFoT :: FoT
   }
 
 derive instance newtypeNote :: Newtype Note _
@@ -231,8 +235,11 @@ ltd = unto NoteInTime <<< prop (Proxy :: _ "duration")
 lns :: Lens' Note Sample
 lns = unto Note <<< prop (Proxy :: _ "sample")
 
-lnr :: Lens' Note (Number -> Number)
+lnr :: Lens' Note FoT
 lnr = unto Note <<< prop (Proxy :: _ "rateFoT")
+
+lnv :: Lens' Note FoT
+lnv = unto Note <<< prop (Proxy :: _ "volumeFoT")
 
 ---
 
@@ -792,7 +799,8 @@ tidal = usingc
                               }
                           ) ->
                           let
-                            vol = ff globalFF $ pure $ (volumeFoT (time - startTime))
+                            sampleTime = time - startTime
+                            vol = ff globalFF $ pure $ (volumeFoT { sampleTime, clockTime: time })
                           in
                             gain
                               ( if time > startTime + duration then
@@ -810,7 +818,7 @@ tidal = usingc
                                             ff (max 0.0 (startTime - time)) (pure OffOn)
                                           else
                                             pure On
-                                  , playbackRate: ff globalFF $ pure $ (rateFoT (time - startTime))
+                                  , playbackRate: ff globalFF $ pure $ (rateFoT { sampleTime, clockTime: time })
                                   }
                                   (sampleF buffers)
                               )
