@@ -290,11 +290,11 @@ instance foldableCycle :: Foldable Cycle where
 
 instance traversableCycle :: Traversable Cycle where
   traverse ff = case _ of
-    Branching nel -> Branching <$> (sequence $ map (traverse ff) nel)
-    Simultaneous nel -> Simultaneous <$> (sequence $ map (traverse ff) nel)
-    Sequential nel -> Sequential <$> (sequence $ map (traverse ff) nel)
-    Internal nel -> Internal <$> (sequence $ map (traverse ff) nel)
-    SingleNote sn -> SingleNote <$> (sequence $ ff <$> sn)
+    Branching nel -> Branching <$> (traverse (traverse ff) nel)
+    Simultaneous nel -> Simultaneous <$> (traverse (traverse ff) nel)
+    Sequential nel -> Sequential <$> (traverse (traverse ff) nel)
+    Internal nel -> Internal <$> (traverse (traverse ff) nel)
+    SingleNote sn -> SingleNote <$> (traverse ff sn)
   sequence = sequenceDefault
 
 flattenCycle :: Cycle ~> List
