@@ -72,13 +72,13 @@ import Data.Array as A
 import Data.Either (Either(..), hush)
 import Data.Filterable (compact, filter, filterMap)
 import Data.Function (on)
-import Data.FunctorWithIndex (mapWithIndex)
+import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
 import Data.Generic.Rep (class Generic)
 import Data.Int (toNumber)
 import Data.Lens (Lens', _1, _2, over, traversed)
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
-import Data.List (List(..), fold, (:))
+import Data.List (List(..), fold, foldl, foldr, (:))
 import Data.List as L
 import Data.List.NonEmpty (sortBy)
 import Data.List.NonEmpty as NEL
@@ -89,10 +89,10 @@ import Data.NonEmpty ((:|))
 import Data.Show.Generic (genericShow)
 import Data.String.CodeUnits (fromCharArray)
 import Data.Symbol (class IsSymbol)
-import Data.Traversable (sequence, traverse)
+import Data.Traversable (class Foldable, class Traversable, foldMapDefaultR, sequence, sequenceDefault, traverse)
 import Data.Tuple (fst, snd, uncurry)
 import Data.Tuple.Nested ((/\), type (/\))
-import Data.Typelevel.Num (D8)
+import Data.Typelevel.Num (class Pos, D8)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Random (randomInt)
@@ -233,6 +233,7 @@ lnr = unto Note <<< prop (Proxy :: _ "rateFoT")
 
 when_ :: forall a. (a -> Boolean) -> (a -> a) -> a -> a
 when_ cond func aa = if cond aa then func aa else aa
+
 ---
 
 data Sample
@@ -270,6 +271,41 @@ instance showCycle :: Show a => Show (Cycle a) where
   show xx = genericShow xx
 
 derive instance functorCycle :: Functor Cycle
+
+instance functorWithIndexCycle :: FunctorWithIndex Int Cycle where
+  mapWithIndex f v = (go 0 v).val
+    where
+    go' ff ii nel = let folded = foldl (\axc cyc -> axc <> (pure (go (NEL.last axc).i cyc))) (pure (go ii (NEL.head nel))) nel in { i: _.i $ NEL.last folded, val: ff $ map _.val folded }
+    go ii = case _ of
+      Branching nel -> go' Branching ii nel
+      Simultaneous nel -> go' Simultaneous ii nel
+      Sequential nel -> go' Sequential ii nel
+      Internal nel -> go' Internal ii nel
+      SingleNote sn -> { i: ii + 1, val: SingleNote (f ii <$> sn) }
+
+instance foldableCycle :: Foldable Cycle where
+  foldl fba aa fbb = foldl fba aa (flattenCycle fbb)
+  foldr fab aa fbb = foldr fab aa (flattenCycle fbb)
+  foldMap = foldMapDefaultR
+
+instance traversableCycle :: Traversable Cycle where
+  traverse ff = case _ of
+    Branching nel -> Branching <$> (sequence $ map (traverse ff) nel)
+    Simultaneous nel -> Simultaneous <$> (sequence $ map (traverse ff) nel)
+    Sequential nel -> Sequential <$> (sequence $ map (traverse ff) nel)
+    Internal nel -> Internal <$> (sequence $ map (traverse ff) nel)
+    SingleNote sn -> SingleNote <$> (sequence $ ff <$> sn)
+  sequence = sequenceDefault
+
+flattenCycle :: Cycle ~> List
+flattenCycle l = compact $ NEL.toList $ go l
+  where
+  go = case _ of
+    Branching nel -> join $ map go nel
+    Simultaneous nel -> join $ map go nel
+    Sequential nel -> join $ map go nel
+    Internal nel -> join $ map go nel
+    SingleNote sn -> pure sn
 
 notes :: Array (String /\ Maybe Note)
 notes =
@@ -559,8 +595,7 @@ type Acc
   , backToTheFuture :: TheFuture
   }
 
--- type Actualzied 
-
+emptyPool :: forall n. Pos n => AScoredBufferPool Next n RBuf
 emptyPool = makeScoredBufferPool
   { startsAt: 0.0
   , noteStream: \_ -> ((#) { currentCount: 0.0, prevCycleEnded: 0.0 } $ unwrap $ asScore (pure intentionalSilenceForInternalUseOnly)) # map \{ startsAfter, rest } ->
