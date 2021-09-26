@@ -147,7 +147,7 @@ type RBuf
   }
 
 newtype NextCycle = NextCycle
-  ( { currentCount :: Number, prevCycleEnded :: Number }
+  ( { currentCount :: Number, prevCycleEnded :: Number, time :: Number, headroomInSeconds :: Number }
     -> CfNoteStream' RBuf Next
   )
 
@@ -587,9 +587,9 @@ asScore flattened = NextCycle scoreInput
           , duration: aa.duration
           }
       } :<
-        \{ input: { next: (NextCycle nc) } } ->
+        \{ time, headroomInSeconds, input: { next: (NextCycle nc) } } ->
           case bb of
-            Nil -> nc { currentCount: st, prevCycleEnded: fst args }
+            Nil -> nc { currentCount: st, prevCycleEnded: fst args, time, headroomInSeconds }
             _ -> uncurry (go st) args
 
 flattenScore :: NonEmptyList (NonEmptyList (NoteInTime Note)) -> NonEmptyList (NoteInTime Note)
@@ -622,7 +622,8 @@ type Acc
 emptyPool :: forall n. Pos n => AScoredBufferPool Next n RBuf
 emptyPool = makeScoredBufferPool
   { startsAt: 0.0
-  , noteStream: \_ -> ((#) { currentCount: 0.0, prevCycleEnded: 0.0 } $ unwrap $ asScore (pure intentionalSilenceForInternalUseOnly)) # map \{ startsAfter, rest } ->
+  , noteStream: \_ -> ((#) { currentCount: 0.0, prevCycleEnded: 0.0, time: 0.0
+    , headroomInSeconds: 0.03 } $ unwrap $ asScore (pure intentionalSilenceForInternalUseOnly)) # map \{ startsAfter, rest } ->
       { startsAfter
       , rest:
           { rest: const rest
