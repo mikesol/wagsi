@@ -1,6 +1,8 @@
 # WagsI
 
-Interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
+> The tidal branch
+
+Collaborative interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags). This branch emulates a [Tidal](https://tidalcycles.org/)-like system in the browser.
 
 ## Jam sessions!
 
