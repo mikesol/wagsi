@@ -262,7 +262,7 @@ data Cycle a
   | Simultaneous (NonEmptyList (Cycle a))
   | Sequential (NonEmptyList (Cycle a))
   | Internal (NonEmptyList (Cycle a))
-  | SingleNote (Maybe a)
+  | SingleNote a
 
 derive instance genericCycle :: Generic (Cycle a) _
 derive instance eqCycle :: Eq a => Eq (Cycle a)
@@ -281,7 +281,7 @@ instance functorWithIndexCycle :: FunctorWithIndex Int Cycle where
       Simultaneous nel -> go' Simultaneous ii nel
       Sequential nel -> go' Sequential ii nel
       Internal nel -> go' Internal ii nel
-      SingleNote sn -> { i: ii + 1, val: SingleNote (f ii <$> sn) }
+      SingleNote sn -> { i: ii + 1, val: SingleNote (f ii sn) }
 
 instance foldableCycle :: Foldable Cycle where
   foldl fba aa fbb = foldl fba aa (flattenCycle fbb)
@@ -294,17 +294,15 @@ instance traversableCycle :: Traversable Cycle where
     Simultaneous nel -> Simultaneous <$> (traverse (traverse ff) nel)
     Sequential nel -> Sequential <$> (traverse (traverse ff) nel)
     Internal nel -> Internal <$> (traverse (traverse ff) nel)
-    SingleNote sn -> SingleNote <$> (traverse ff sn)
+    SingleNote sn -> SingleNote <$> ff sn
   sequence = sequenceDefault
 
-flattenCycle :: Cycle ~> List
-flattenCycle l = compact $ NEL.toList $ go l
-  where
-  go = case _ of
-    Branching nel -> join $ map go nel
-    Simultaneous nel -> join $ map go nel
-    Sequential nel -> join $ map go nel
-    Internal nel -> join $ map go nel
+flattenCycle :: Cycle ~> NonEmptyList
+flattenCycle = case _ of
+    Branching nel -> join $ map flattenCycle nel
+    Simultaneous nel -> join $ map flattenCycle nel
+    Sequential nel -> join $ map flattenCycle nel
+    Internal nel -> join $ map flattenCycle nel
     SingleNote sn -> pure sn
 
 notes :: Array (String /\ Maybe Note)
@@ -337,89 +335,89 @@ notes =
     ] <> [ "~" /\ Nothing ]
 
 ---
-r :: Cycle Note
+r :: Cycle (Maybe Note)
 r = SingleNote Nothing
 
-kick0 :: Cycle Note
+kick0 :: Cycle (Maybe Note)
 kick0 = SingleNote (Just (Note { sample: Kick0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-kick1 :: Cycle Note
+kick1 :: Cycle (Maybe Note)
 kick1 = SingleNote (Just (Note { sample: Kick1, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-kick :: Cycle Note
+kick :: Cycle (Maybe Note)
 kick = SingleNote (Just (Note { sample: Kick0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-ss0 :: Cycle Note
+ss0 :: Cycle (Maybe Note)
 ss0 = SingleNote (Just (Note { sample: SideStick0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-ss :: Cycle Note
+ss :: Cycle (Maybe Note)
 ss = SingleNote (Just (Note { sample: SideStick0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-snare0 :: Cycle Note
+snare0 :: Cycle (Maybe Note)
 snare0 = SingleNote (Just (Note { sample: Snare0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-snare :: Cycle Note
+snare :: Cycle (Maybe Note)
 snare = SingleNote (Just (Note { sample: Snare0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-clap0 :: Cycle Note
+clap0 :: Cycle (Maybe Note)
 clap0 = SingleNote (Just (Note { sample: Clap0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-clap :: Cycle Note
+clap :: Cycle (Maybe Note)
 clap = SingleNote (Just (Note { sample: Clap0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-roll0 :: Cycle Note
+roll0 :: Cycle (Maybe Note)
 roll0 = SingleNote (Just (Note { sample: SnareRoll0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-roll :: Cycle Note
+roll :: Cycle (Maybe Note)
 roll = SingleNote (Just (Note { sample: SnareRoll0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-hh0 :: Cycle Note
+hh0 :: Cycle (Maybe Note)
 hh0 = SingleNote (Just (Note { sample: ClosedHH0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-hh :: Cycle Note
+hh :: Cycle (Maybe Note)
 hh = SingleNote (Just (Note { sample: ClosedHH0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-shaker0 :: Cycle Note
+shaker0 :: Cycle (Maybe Note)
 shaker0 = SingleNote (Just (Note { sample: Shaker0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-shaker :: Cycle Note
+shaker :: Cycle (Maybe Note)
 shaker = SingleNote (Just (Note { sample: Shaker0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-ohh0 :: Cycle Note
+ohh0 :: Cycle (Maybe Note)
 ohh0 = SingleNote (Just (Note { sample: OpenHH0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-ohh :: Cycle Note
+ohh :: Cycle (Maybe Note)
 ohh = SingleNote (Just (Note { sample: OpenHH0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-tamb0 :: Cycle Note
+tamb0 :: Cycle (Maybe Note)
 tamb0 = SingleNote (Just (Note { sample: Tamb0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-tamb :: Cycle Note
+tamb :: Cycle (Maybe Note)
 tamb = SingleNote (Just (Note { sample: Tamb0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-crash0 :: Cycle Note
+crash0 :: Cycle (Maybe Note)
 crash0 = SingleNote (Just (Note { sample: Crash0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-crash :: Cycle Note
+crash :: Cycle (Maybe Note)
 crash = SingleNote (Just (Note { sample: Crash0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-ride0 :: Cycle Note
+ride0 :: Cycle (Maybe Note)
 ride0 = SingleNote (Just (Note { sample: Ride0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-ride :: Cycle Note
+ride :: Cycle (Maybe Note)
 ride = SingleNote (Just (Note { sample: Ride0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
-intentionalSilenceForInternalUseOnly_ :: Cycle Note
+intentionalSilenceForInternalUseOnly_ :: Cycle (Maybe Note)
 intentionalSilenceForInternalUseOnly_ = SingleNote (Just (Note { sample: IntentionalSilenceForInternalUseOnly, rateFoT: const 1.0, volumeFoT: const 1.0 }))
 
 ---
-b :: Cycle Note -> Array (Cycle Note) -> Cycle Note
+b :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
 b bx by = Branching (NonEmptyList (bx :| L.fromFoldable by))
 
-s :: Cycle Note -> Array (Cycle Note) -> Cycle Note
+s :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
 s sx sy = Internal (NonEmptyList (sx :| L.fromFoldable sy))
 
-x :: Cycle Note -> Array (Cycle Note) -> Cycle Note
+x :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
 x xx xy = Simultaneous (NonEmptyList (xx :| L.fromFoldable xy))
 
 ---
@@ -429,7 +427,7 @@ sampleP = go $ L.fromFoldable notes
   go (aa : bb) = (try (string (fst aa)) $> snd aa) <|> go bb
   go Nil = fail "Could not find a note"
 
-internalcyclePInternal :: Parser (Cycle Note)
+internalcyclePInternal :: Parser (Cycle (Maybe Note))
 internalcyclePInternal = Internal <$>
   between (skipSpaces *> char '[' *> skipSpaces) (skipSpaces *> char ']' *> skipSpaces) do
     pure unit -- breaks recursion
@@ -438,7 +436,7 @@ internalcyclePInternal = Internal <$>
       Sequential l -> pure l
       xx -> pure (pure xx)
 
-branchingcyclePInternal :: Parser (Cycle Note)
+branchingcyclePInternal :: Parser (Cycle (Maybe Note))
 branchingcyclePInternal = Branching <$>
   between (skipSpaces *> char '<' *> skipSpaces) (skipSpaces *> char '>' *> skipSpaces) do
     pure unit -- breaks recursion
@@ -447,7 +445,7 @@ branchingcyclePInternal = Branching <$>
       Sequential l -> pure l
       xx -> pure (pure xx)
 
-simultaneouscyclePInternal :: Unit -> Parser (Cycle Note)
+simultaneouscyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
 simultaneouscyclePInternal _ = Simultaneous <$> do
   sep <- sepBy ((fromCharArray <<< A.fromFoldable) <$> many (satisfy (not <<< eq ','))) (string ",")
   case sep of
@@ -468,7 +466,7 @@ joinSequential Nil = Nil
 joinSequential (Sequential (NonEmptyList (aa :| bb)) : cc) = (aa : joinSequential bb) <> joinSequential cc
 joinSequential (aa : bb) = aa : joinSequential bb
 
-sequentialcyclePInternal :: Parser (Cycle Note)
+sequentialcyclePInternal :: Parser (Cycle (Maybe Note))
 sequentialcyclePInternal = Sequential <$> do
   skipSpaces
   leadsWith <- try internalcyclePInternal <|> singleSampleP
@@ -476,21 +474,21 @@ sequentialcyclePInternal = Sequential <$> do
   rest <- joinSequential <$> many (cyclePInternal unit)
   pure (NonEmptyList (leadsWith :| rest))
 
-singleSampleP :: Parser (Cycle Note)
+singleSampleP :: Parser (Cycle (Maybe Note))
 singleSampleP = SingleNote <$> do
   skipSpaces
   sample <- sampleP
   skipSpaces
   pure sample
 
-cyclePInternal :: Unit -> Parser (Cycle Note)
+cyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
 cyclePInternal _ = try branchingcyclePInternal
   <|> try (simultaneouscyclePInternal unit)
   <|> try sequentialcyclePInternal
   <|> try singleSampleP
   <|> fail "Could not parse cycle"
 
-cycleP :: Parser (Cycle Note)
+cycleP :: Parser (Cycle (Maybe Note))
 cycleP = go <$> cyclePInternal unit
   where
   go (Branching (NonEmptyList (a :| Nil))) = go a
@@ -507,7 +505,7 @@ flatMap :: NonEmptyList (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) 
 flatMap (NonEmptyList (aa :| Nil)) = aa
 flatMap (NonEmptyList (aa :| bb : cc)) = join $ aa # map \a' -> flatMap (wrap (bb :| cc)) # map \b' -> a' <> b'
 
-cycleToSequence :: CycleLength -> Cycle Note -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
+cycleToSequence :: CycleLength -> Cycle (Maybe Note) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength, currentOffset: 0.0 }
   where
   go state (Branching nel) = join $ map (go state) nel
@@ -676,7 +674,7 @@ intentionalSilenceForInternalUseOnly = NoteInTime
   , cycleLength: 0.25
   }
 
-parse' :: String -> Cycle Note
+parse' :: String -> Cycle (Maybe Note)
 parse' = fromMaybe intentionalSilenceForInternalUseOnly_ <<< hush <<< runParser cycleP
 
 parse :: String -> CycleLength -> NextCycle
@@ -692,7 +690,7 @@ parse str dur = asScore
   $ hush
   $ runParser cycleP str
 
-rend :: Cycle Note -> CycleLength -> NextCycle
+rend :: Cycle (Maybe Note) -> CycleLength -> NextCycle
 rend cyn dur = asScore
   $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
   $ NEL.fromList
@@ -711,7 +709,7 @@ rendT cyn = asScore
   $ unrest
   $ cyn
 
-c2s :: CycleLength -> Cycle Note -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
+c2s :: CycleLength -> Cycle (Maybe Note) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 c2s = cycleToSequence
 
 newtype ZipProps fns = ZipProps { | fns }
