@@ -41,10 +41,14 @@ module WAGSI.Plumbing.Tidal
   , b
   , s
   , x
+  , b_
+  , s_
+  , x_
   ---
   , lfn
   , lfb
   , lfl
+  , lfc
   , lfd
   , ltn
   , lts
@@ -269,6 +273,9 @@ lfb = unto NoteInFlattenedTime <<< prop (Proxy :: _ "bigStartsAt")
 lfl :: forall note. Lens' (NoteInFlattenedTime note) Number
 lfl = unto NoteInFlattenedTime <<< prop (Proxy :: _ "littleStartsAt")
 
+lfc :: forall note. Lens' (NoteInFlattenedTime note) Int
+lfc = unto NoteInFlattenedTime <<< prop (Proxy :: _ "currentCycle")
+
 lfd :: forall note. Lens' (NoteInFlattenedTime note) Number
 lfd = unto NoteInFlattenedTime <<< prop (Proxy :: _ "duration")
 
@@ -492,11 +499,20 @@ intentionalSilenceForInternalUseOnly_ = noteFromSample IntentionalSilenceForInte
 b :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
 b bx by = Branching { nel: NonEmptyList (bx :| L.fromFoldable by) }
 
+b_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
+b_ bx = b bx []
+
 s :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
 s sx sy = Internal { nel: NonEmptyList (sx :| L.fromFoldable sy) }
 
+s_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
+s_ sx = s sx []
+
 x :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
 x xx xy = Simultaneous { nel: NonEmptyList (xx :| L.fromFoldable xy) }
+
+x_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
+x_ sx = x sx []
 
 ---
 sampleP :: Parser (Maybe Note)
