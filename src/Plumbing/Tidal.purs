@@ -1,12 +1,55 @@
 module WAGSI.Plumbing.Tidal
   ( make
   , parse
+  , parse'
   , tidal
   , plainly
+  , rend
+  , rendT
+  , c2s
   , wag
   , openFuture
   --
+  , r
+  , kick0
+  , kick1
+  , kick
+  , ss0
+  , ss
+  , snare0
+  , snare
+  , clap0
+  , clap
+  , roll0
+  , roll
+  , hh0
+  , hh
+  , shaker0
+  , shaker
+  , ohh0
+  , ohh
+  , tamb0
+  , tamb
+  , crash0
+  , crash
+  , ride0
+  , ride
+  , Cycle(..)
+  , Note(..)
+  , Sample(..)
+  ---
+  , b
+  , s
+  , x
+  ---
+  , ltn
+  , lts
+  , ltd
+  , lns
+  , lnr
+  ---
   , CycleLength(..)
+  , NoteInTime(..)
   , Voice(..)
   , Globals(..)
   , NextCycle(..)
@@ -30,13 +73,15 @@ import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Generic.Rep (class Generic)
 import Data.Int (toNumber)
-import Data.Lens (_1, _2, over, traversed)
+import Data.Lens (Lens', _1, _2, over, traversed)
+import Data.Lens.Iso.Newtype (unto)
+import Data.Lens.Record (prop)
 import Data.List (List(..), fold, (:))
 import Data.List as L
 import Data.List.NonEmpty (sortBy)
 import Data.List.NonEmpty as NEL
 import Data.List.Types (NonEmptyList(..))
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.NonEmpty ((:|))
 import Data.Show.Generic (genericShow)
@@ -85,7 +130,12 @@ type Instruments a
   = { | Instruments' a }
 
 type RBuf
-  = { sampleF :: Instruments BrowserAudioBuffer -> BrowserAudioBuffer, duration :: Number }
+  =
+  { sampleF :: Instruments BrowserAudioBuffer -> BrowserAudioBuffer
+  , rateFoT :: Number -> Number
+  , volumeFoT :: Number -> Number
+  , duration :: Number
+  }
 
 newtype NextCycle = NextCycle
   ( { currentCount :: Number, prevCycleEnded :: Number }
@@ -114,9 +164,9 @@ make
   => Number
   -> { | inRec }
   -> TheFuture
-make cl r = TheFuture $ hmapWithIndex (ZipProps z) (hmap (\(_ :: (CycleLength -> Voice)) -> (wrap cl)) z)
+make cl rr = TheFuture $ hmapWithIndex (ZipProps z) (hmap (\(_ :: (CycleLength -> Voice)) -> (wrap cl)) z)
   where
-  z = Record.merge r openVoices :: { | EWF (CycleLength -> Voice) }
+  z = Record.merge rr openVoices :: { | EWF (CycleLength -> Voice) }
 
 plainly :: forall f. Functor f => f NextCycle -> f Voice
 plainly = map (Voice <<< { globals: Globals unit, next: _ })
@@ -128,33 +178,56 @@ derive instance newtypeCycleLength :: Newtype CycleLength _
 derive instance eqCycleLength :: Eq CycleLength
 derive instance ordCycleLength :: Ord CycleLength
 
-newtype Note = Note { sample :: Sample }
+newtype Note = Note
+  { sample :: Sample
+  , rateFoT :: Number -> Number
+  , volumeFoT :: Number -> Number
+  }
 
 derive instance newtypeNote :: Newtype Note _
 derive instance genericNote :: Generic Note _
-derive instance eqNote :: Eq Note
-derive instance ordNote :: Ord Note
-instance showNote :: Show Note where
-  show x = genericShow x
+instance eqNote :: Eq Note where
+  eq = eq `on` (unwrap >>> _.sample)
 
-newtype NoteInTime' note = NoteInTime
+instance ordNote :: Ord Note where
+  compare = compare `on` (unwrap >>> _.sample)
+
+instance showNote :: Show Note where
+  show (Note { sample }) = "Note <" <> show sample <> ">"
+
+newtype NoteInTime note = NoteInTime
   { note :: note
   , startsAt :: Number
   , duration :: Number
   , cycleLength :: Number
   }
 
-type NoteInTime = NoteInTime' (Maybe Note)
-type NoteInTime_ = NoteInTime' Note
+derive instance newtypeNoteInTime :: Newtype (NoteInTime note) _
+derive instance genericNoteInTime :: Generic (NoteInTime note) _
+derive instance eqNoteInTime :: Eq note => Eq (NoteInTime note)
+derive instance ordNoteInTime :: Ord note => Ord (NoteInTime note)
+instance showNoteInTime :: Show note => Show (NoteInTime note) where
+  show xx = genericShow xx
 
-derive instance newtypeNoteInTime :: Newtype (NoteInTime' note) _
-derive instance genericNoteInTime :: Generic (NoteInTime' note) _
-derive instance eqNoteInTime :: Eq note => Eq (NoteInTime' note)
-derive instance ordNoteInTime :: Ord note => Ord (NoteInTime' note)
-instance showNoteInTime :: Show note => Show (NoteInTime' note) where
-  show x = genericShow x
+derive instance functorNoteInTime :: Functor NoteInTime
 
-derive instance functorNoteInTime :: Functor NoteInTime'
+--- lenses
+ltn :: forall note. Lens' (NoteInTime note) note
+ltn = unto NoteInTime <<< prop (Proxy :: _ "note")
+
+lts :: forall note. Lens' (NoteInTime note) Number
+lts = unto NoteInTime <<< prop (Proxy :: _ "startsAt")
+
+ltd :: forall note. Lens' (NoteInTime note) Number
+ltd = unto NoteInTime <<< prop (Proxy :: _ "duration")
+
+lns :: Lens' Note Sample
+lns = unto Note <<< prop (Proxy :: _ "sample")
+
+lnr :: Lens' Note (Number -> Number)
+lnr = unto Note <<< prop (Proxy :: _ "rateFoT")
+
+---
 
 data Sample
   = Kick0
@@ -175,24 +248,26 @@ derive instance genericSample :: Generic Sample _
 derive instance eqSample :: Eq Sample
 derive instance ordSample :: Ord Sample
 instance showSample :: Show Sample where
-  show x = genericShow x
+  show xx = genericShow xx
 
-data Cycle
-  = Branching (NonEmptyList Cycle)
-  | Simultaneous (NonEmptyList Cycle)
-  | Sequential (NonEmptyList Cycle)
-  | Internal (NonEmptyList Cycle)
-  | SingleNote (Maybe Note)
+data Cycle a
+  = Branching (NonEmptyList (Cycle a))
+  | Simultaneous (NonEmptyList (Cycle a))
+  | Sequential (NonEmptyList (Cycle a))
+  | Internal (NonEmptyList (Cycle a))
+  | SingleNote (Maybe a)
 
-derive instance genericCycle :: Generic Cycle _
-derive instance eqCycle :: Eq Cycle
-derive instance ordCycle :: Ord Cycle
-instance showCycle :: Show Cycle where
-  show x = genericShow x
+derive instance genericCycle :: Generic (Cycle a) _
+derive instance eqCycle :: Eq a => Eq (Cycle a)
+derive instance ordCycle :: Ord a => Ord (Cycle a)
+instance showCycle :: Show a => Show (Cycle a) where
+  show xx = genericShow xx
+
+derive instance functorCycle :: Functor Cycle
 
 notes :: Array (String /\ Maybe Note)
 notes =
-  over (traversed <<< _2) (Just <<< Note <<< { sample: _ })
+  over (traversed <<< _2) (Just <<< Note <<< { sample: _, rateFoT: const 1.0, volumeFoT: const 1.0 })
     [ "kick:0" /\ Kick0
     , "kick:1" /\ Kick1
     , "kick" /\ Kick0
@@ -219,39 +294,126 @@ notes =
     , "intentionalSilenceForInternalUseOnly" /\ IntentionalSilenceForInternalUseOnly
     ] <> [ "~" /\ Nothing ]
 
+---
+r :: Cycle Note
+r = SingleNote Nothing
+
+kick0 :: Cycle Note
+kick0 = SingleNote (Just (Note { sample: Kick0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+kick1 :: Cycle Note
+kick1 = SingleNote (Just (Note { sample: Kick1, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+kick :: Cycle Note
+kick = SingleNote (Just (Note { sample: Kick0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+ss0 :: Cycle Note
+ss0 = SingleNote (Just (Note { sample: SideStick0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+ss :: Cycle Note
+ss = SingleNote (Just (Note { sample: SideStick0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+snare0 :: Cycle Note
+snare0 = SingleNote (Just (Note { sample: Snare0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+snare :: Cycle Note
+snare = SingleNote (Just (Note { sample: Snare0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+clap0 :: Cycle Note
+clap0 = SingleNote (Just (Note { sample: Clap0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+clap :: Cycle Note
+clap = SingleNote (Just (Note { sample: Clap0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+roll0 :: Cycle Note
+roll0 = SingleNote (Just (Note { sample: SnareRoll0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+roll :: Cycle Note
+roll = SingleNote (Just (Note { sample: SnareRoll0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+hh0 :: Cycle Note
+hh0 = SingleNote (Just (Note { sample: ClosedHH0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+hh :: Cycle Note
+hh = SingleNote (Just (Note { sample: ClosedHH0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+shaker0 :: Cycle Note
+shaker0 = SingleNote (Just (Note { sample: Shaker0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+shaker :: Cycle Note
+shaker = SingleNote (Just (Note { sample: Shaker0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+ohh0 :: Cycle Note
+ohh0 = SingleNote (Just (Note { sample: OpenHH0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+ohh :: Cycle Note
+ohh = SingleNote (Just (Note { sample: OpenHH0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+tamb0 :: Cycle Note
+tamb0 = SingleNote (Just (Note { sample: Tamb0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+tamb :: Cycle Note
+tamb = SingleNote (Just (Note { sample: Tamb0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+crash0 :: Cycle Note
+crash0 = SingleNote (Just (Note { sample: Crash0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+crash :: Cycle Note
+crash = SingleNote (Just (Note { sample: Crash0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+ride0 :: Cycle Note
+ride0 = SingleNote (Just (Note { sample: Ride0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+ride :: Cycle Note
+ride = SingleNote (Just (Note { sample: Ride0, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+intentionalSilenceForInternalUseOnly_ :: Cycle Note
+intentionalSilenceForInternalUseOnly_ = SingleNote (Just (Note { sample: IntentionalSilenceForInternalUseOnly, rateFoT: const 1.0, volumeFoT: const 1.0 }))
+
+---
+b :: Cycle Note -> Array (Cycle Note) -> Cycle Note
+b bx by = Branching (NonEmptyList (bx :| L.fromFoldable by))
+
+s :: Cycle Note -> Array (Cycle Note) -> Cycle Note
+s sx sy = Internal (NonEmptyList (sx :| L.fromFoldable sy))
+
+x :: Cycle Note -> Array (Cycle Note) -> Cycle Note
+x xx xy = Simultaneous (NonEmptyList (xx :| L.fromFoldable xy))
+
+---
 sampleP :: Parser (Maybe Note)
 sampleP = go $ L.fromFoldable notes
   where
-  go (a : b) = (try (string (fst a)) $> snd a) <|> go b
+  go (aa : bb) = (try (string (fst aa)) $> snd aa) <|> go bb
   go Nil = fail "Could not find a note"
 
-internalcyclePInternal :: Parser Cycle
+internalcyclePInternal :: Parser (Cycle Note)
 internalcyclePInternal = Internal <$>
   between (skipSpaces *> char '[' *> skipSpaces) (skipSpaces *> char ']' *> skipSpaces) do
     pure unit -- breaks recursion
     cyc <- cyclePInternal unit
     case cyc of
       Sequential l -> pure l
-      x -> pure (pure x)
+      xx -> pure (pure xx)
 
-branchingcyclePInternal :: Parser Cycle
+branchingcyclePInternal :: Parser (Cycle Note)
 branchingcyclePInternal = Branching <$>
   between (skipSpaces *> char '<' *> skipSpaces) (skipSpaces *> char '>' *> skipSpaces) do
     pure unit -- breaks recursion
     cyc <- cyclePInternal unit
     case cyc of
       Sequential l -> pure l
-      x -> pure (pure x)
+      xx -> pure (pure xx)
 
-simultaneouscyclePInternal :: Unit -> Parser Cycle
+simultaneouscyclePInternal :: Unit -> Parser (Cycle Note)
 simultaneouscyclePInternal _ = Simultaneous <$> do
   sep <- sepBy ((fromCharArray <<< A.fromFoldable) <$> many (satisfy (not <<< eq ','))) (string ",")
   case sep of
     Nil -> fail "Lacks comma"
     (_ : Nil) -> fail "Lacks comma"
-    (a : b : c) -> case traverse (runParser reducedP) (NonEmptyList (a :| b : c)) of
+    (aa : bb : cc) -> case traverse (runParser reducedP) (NonEmptyList (aa :| bb : cc)) of
       Left e -> fail $ show e
-      Right r -> pure r
+      Right rr -> pure rr
   where
   reducedP = try branchingcyclePInternal
     <|> try sequentialcyclePInternal
@@ -259,12 +421,12 @@ simultaneouscyclePInternal _ = Simultaneous <$> do
     <|> try singleSampleP
     <|> fail "Could not parse cycle"
 
-joinSequential :: List Cycle -> List Cycle
+joinSequential :: forall a. List (Cycle a) -> List (Cycle a)
 joinSequential Nil = Nil
-joinSequential (Sequential (NonEmptyList (a :| b)) : c) = (a : joinSequential b) <> joinSequential c
-joinSequential (a : b) = a : joinSequential b
+joinSequential (Sequential (NonEmptyList (aa :| bb)) : cc) = (aa : joinSequential bb) <> joinSequential cc
+joinSequential (aa : bb) = aa : joinSequential bb
 
-sequentialcyclePInternal :: Parser Cycle
+sequentialcyclePInternal :: Parser (Cycle Note)
 sequentialcyclePInternal = Sequential <$> do
   skipSpaces
   leadsWith <- try internalcyclePInternal <|> singleSampleP
@@ -272,21 +434,21 @@ sequentialcyclePInternal = Sequential <$> do
   rest <- joinSequential <$> many (cyclePInternal unit)
   pure (NonEmptyList (leadsWith :| rest))
 
-singleSampleP :: Parser Cycle
+singleSampleP :: Parser (Cycle Note)
 singleSampleP = SingleNote <$> do
   skipSpaces
   sample <- sampleP
   skipSpaces
   pure sample
 
-cyclePInternal :: Unit -> Parser Cycle
+cyclePInternal :: Unit -> Parser (Cycle Note)
 cyclePInternal _ = try branchingcyclePInternal
   <|> try (simultaneouscyclePInternal unit)
   <|> try sequentialcyclePInternal
   <|> try singleSampleP
   <|> fail "Could not parse cycle"
 
-cycleP :: Parser Cycle
+cycleP :: Parser (Cycle Note)
 cycleP = go <$> cyclePInternal unit
   where
   go (Branching (NonEmptyList (a :| Nil))) = go a
@@ -297,13 +459,13 @@ cycleP = go <$> cyclePInternal unit
   go (Simultaneous nel) = Simultaneous (map go nel)
   go (Sequential nel) = Sequential (map go nel)
   go (Internal nel) = Internal (map go nel)
-  go (SingleNote sample) = SingleNote sample
+  go (SingleNote note) = SingleNote note
 
-flatMap :: NonEmptyList (NonEmptyList (NonEmptyList NoteInTime)) -> NonEmptyList (NonEmptyList NoteInTime)
-flatMap (NonEmptyList (a :| Nil)) = a
-flatMap (NonEmptyList (a :| b : c)) = join $ a # map \a' -> flatMap (wrap (b :| c)) # map \b' -> a' <> b'
+flatMap :: NonEmptyList (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
+flatMap (NonEmptyList (aa :| Nil)) = aa
+flatMap (NonEmptyList (aa :| bb : cc)) = join $ aa # map \a' -> flatMap (wrap (bb :| cc)) # map \b' -> a' <> b'
 
-cycleToSequence :: CycleLength -> Cycle -> NonEmptyList (NonEmptyList NoteInTime)
+cycleToSequence :: CycleLength -> Cycle Note -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength, currentOffset: 0.0 }
   where
   go state (Branching nel) = join $ map (go state) nel
@@ -331,7 +493,7 @@ cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength
         )
         nel
 
-unrest :: NonEmptyList (NonEmptyList NoteInTime) -> List (List NoteInTime_)
+unrest :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> List (List (NoteInTime Note))
 unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
   where
   go =
@@ -340,24 +502,31 @@ unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
           NoteInTime <<< { startsAt, duration, cycleLength, note: _ } <$> note
       ) <<< NEL.toList
 
-asScore :: NonEmptyList NoteInTime_ -> NextCycle
+asScore :: NonEmptyList (NoteInTime Note) -> NextCycle
 asScore flattened = NextCycle scoreInput
   where
   scoreInput ccPce = go ccPce.currentCount ccPce.prevCycleEnded flattened
-  go currentCount prevCycleEnded (NonEmptyList (NoteInTime a :| b)) =
+  go currentCount prevCycleEnded (NonEmptyList (NoteInTime aa :| bb)) =
     let
-      st = prevCycleEnded + a.startsAt
-      args = case b of
-        Nil -> (prevCycleEnded + a.cycleLength) /\ flattened
-        (c : d) -> prevCycleEnded /\ NonEmptyList (c :| d)
+      st = prevCycleEnded + aa.startsAt
+      args = case bb of
+        Nil -> (prevCycleEnded + aa.cycleLength) /\ flattened
+        (cc : dd) -> prevCycleEnded /\ NonEmptyList (cc :| dd)
     in
-      { startsAfter: st - currentCount, rest: { sampleF: sampleToBuffers (unwrap a.note).sample, duration: a.duration } } :<
+      { startsAfter: st - currentCount
+      , rest:
+          { sampleF: sampleToBuffers (unwrap aa.note).sample
+          , rateFoT: (unwrap aa.note).rateFoT
+          , volumeFoT: (unwrap aa.note).volumeFoT
+          , duration: aa.duration
+          }
+      } :<
         \{ input: { next: (NextCycle nc) } } ->
-          case b of
+          case bb of
             Nil -> nc { currentCount: st, prevCycleEnded: fst args }
             _ -> uncurry (go st) args
 
-flattenScore :: NonEmptyList (NonEmptyList NoteInTime_) -> NonEmptyList NoteInTime_
+flattenScore :: NonEmptyList (NonEmptyList (NoteInTime Note)) -> NonEmptyList (NoteInTime Note)
 flattenScore l = flattened
   where
   ll = NEL.length l
@@ -454,16 +623,23 @@ thePresent
   -> AudioContext /\ Aff (Event { theFuture :: TheFuture | trigger } /\ Behavior { | world })
 thePresent ev = (map <<< map) (over _1 (\e -> Record.insert (Proxy :: _ "theFuture") <$> ev <*> e))
 
-intentionalSilenceForInternalUseOnly :: NoteInTime_
+intentionalSilenceForInternalUseOnly :: (NoteInTime Note)
 intentionalSilenceForInternalUseOnly = NoteInTime
-  { note: Note { sample: IntentionalSilenceForInternalUseOnly }
+  { note: Note
+      { sample: IntentionalSilenceForInternalUseOnly
+      , rateFoT: const 1.0
+      , volumeFoT: const 1.0
+      }
   , startsAt: 0.0
   , duration: 0.25
   , cycleLength: 0.25
   }
 
+parse' :: String -> Cycle Note
+parse' = fromMaybe intentionalSilenceForInternalUseOnly_ <<< hush <<< runParser cycleP
+
 parse :: String -> CycleLength -> NextCycle
-parse s dur = asScore
+parse str dur = asScore
   $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
   $ join
   $ map
@@ -473,7 +649,29 @@ parse s dur = asScore
           <<< (unrest <<< cycleToSequence dur)
       )
   $ hush
-  $ runParser cycleP s
+  $ runParser cycleP str
+
+rend :: Cycle Note -> CycleLength -> NextCycle
+rend cyn dur = asScore
+  $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
+  $ NEL.fromList
+  $ compact
+  $ map NEL.fromList
+  $ unrest
+  $ cycleToSequence dur
+  $ cyn
+
+rendT :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> NextCycle
+rendT cyn = asScore
+  $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
+  $ NEL.fromList
+  $ compact
+  $ map NEL.fromList
+  $ unrest
+  $ cyn
+
+c2s :: CycleLength -> Cycle Note -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
+c2s = cycleToSequence
 
 newtype ZipProps fns = ZipProps { | fns }
 
@@ -523,24 +721,41 @@ tidal = usingc
               ( fromTemplate (Proxy :: _ "voices") actualized \_ future ->
                   gain 1.0
                     ( fromTemplate (Proxy :: _ "instruments") (extract future) \_ -> case _ of
-                        Just (Buffy { starting, startTime, rest: { sampleF, duration } }) ->
-                          gain
-                            ( ff globalFF $ pure $
-                                if time > startTime + duration then
-                                  calcSlope (startTime + duration) 1.0 (startTime + duration + 0.5) 0.0 time
-                                else 1.0
-                            )
-                            ( playBuf
-                                { onOff:
-                                    ff globalFF
-                                      $
-                                        if starting then
-                                          ff (max 0.0 (startTime - time)) (pure OffOn)
-                                        else
-                                          pure On
-                                }
-                                (sampleF buffers)
-                            )
+                        Just
+                          ( Buffy
+                              { starting
+                              , startTime
+                              , rest:
+                                  { sampleF
+                                  , rateFoT
+                                  , volumeFoT
+                                  , duration
+                                  }
+                              }
+                          ) ->
+                          let
+                            vol = ff globalFF $ pure $ (volumeFoT (time - startTime))
+                          in
+                            gain
+                              ( if time > startTime + duration then
+                                  let
+                                    cs2 x0 x1 y1 t y0 = calcSlope x0 y0 x1 y1 t
+                                  in
+                                    cs2 (startTime + duration) (startTime + duration + 0.5) 0.0 time <$> vol
+                                else vol
+                              )
+                              ( playBuf
+                                  { onOff:
+                                      ff globalFF
+                                        $
+                                          if starting then
+                                            ff (max 0.0 (startTime - time)) (pure OffOn)
+                                          else
+                                            pure On
+                                  , playbackRate: ff globalFF $ pure $ (rateFoT (time - startTime))
+                                  }
+                                  (sampleF buffers)
+                              )
                         Nothing -> gain 0.0 (playBuf { onOff: Off } buffers.kick1)
                     )
               )

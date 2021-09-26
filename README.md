@@ -4,97 +4,153 @@
 
 Collaborative interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags). This branch emulates a [Tidal](https://tidalcycles.org/)-like system in the browser.
 
+**The first tidal jam session is on October 3 at 9PM Finnish time, 8PM in Berlin, 11AM in LA. More info on the `#music` channel of the [PureScript Discord](https://purescript.org/chat).**
+
 ## Jam sessions!
 
 [Link to the first wagsi jam session](https://twitter.com/stronglynormal/status/1409566300452577286)
 
 If you're attending a wagsi Jam session, please make sure to follow these instructions.
 
-1. Install VSCode and the VSCode Live Share extension. Once the extension is installed, click on the Live Share button on the left bar (the arrow bending counterclockwise around a circle). To use Live Share, you'll need to sign in with GitHub or a Microsoft account, so make sure to have one of those as well.
-1. Make sure to join the live chat on the `#music` channel of [PureScript Discord](https://purescript.org/chat) from a **different** device than the one making the music you're listening to. For example, you can use your computer to render the audio and the phone for joining the meetup or vice versa. It's generally a good idea to use headphones.
-1. If you're not already familiar with PureScript, check out some of the [existing resources on PureScript](https://leanpub.com/fp-made-easier) to get started. If you're a noob or novice and on the fence about joining a jam session, fear not - other folks will be there that can help you out.
+1. Either:
+  - Install VSCode, the PureScript IDE extension, and the VSCode Live Share extension. Once the extension is installed, click on the Live Share button on the left bar (the arrow bending counterclockwise around a circle). To use Live Share, you'll need to sign in with GitHub account, so make sure to have one of those as well.
+  - Find a link to the live-coding session the `#music` channel of [PureScript Discord](https://purescript.org/chat). You can join right from the browser without installing VSCode. However, you'll still need a GitHub account. 
+2. Make sure to join the live chat on the `#music` channel of [PureScript Discord](https://purescript.org/chat) from a **different** device than the one making the music you're listening to. For example, you can use your computer to render the audio and the phone for joining the meetup or vice versa. It's generally a good idea to use headphones.
+3. If you're not already familiar with PureScript, check out some of the [existing resources on PureScript](https://leanpub.com/fp-made-easier) to get started. If you're a noob or novice and on the fence about joining a jam session, fear not - other folks will be there that can help you out.
+4. When you update your code, make sure to **save** the file, otherwise it will not re-render!
 
-## Github Codespaces
+## Practicing before the jam
 
-[![Wags](https://img.youtube.com/vi/tHa7Eh9Ktyo/0.jpg)](https://www.youtube.com/watch?v=tHa7Eh9Ktyo)
+Practice makes perfect! To try WagsI tidal out:
 
-You can check out the above video, a summary of which is provided below:
-
-1. Sign up for [GitHub Codespaces](https://github.com/codespaces).
-1. Fork https://github.com/mikesol/wagsi.
-1. On the [Codespaces page](https://github.com/codespaces), create a new codespace for this repo.
-1. From the terminal on the bottom of the screen, run `npm install`.
-1. Run `npm run ide:codespaces` to install a forked version of PureScript IDE.
-1. **Exit and re-enter codespaces** for the PureScript IDE installation to take effect. You only need to do this after the first install.
-1. Go to the **Ports** tab and add a new port **8080**, making sure it is set to **Public** (the default is _private_, so you'll have to change this).
-1. Still in the **Ports** tab, copy the URL under "local address" into the `codespacesPublicUrl` field of your package.json.
-1. Run `npm run start:codespaces` to start the webpage.
-1. Navigate to the same page as the one you copied to `codespacesPublicUrl`.
-1. Once the page with the local address loads, click **Start audio**.
-1. Back in the online editor, open up `Wagged.purs` and start making some music! For inspiration, you can use this `graph`:
-
-```purescript
-graph e (a :: Unit) = a /\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
-```
-
-Then, you can change the graph and, whenever you save the document, the audio will update after a short pause. When restarting, you always need to _change_ some value in `Wagged.purs` (ie add a frivolous toplevel declaration) so that it will compile. This is a known issue & hopefully will be fixed soon.
-
-## Gitpod.io
-
-1. Sign up for an account.
-1. Navigate to https://www.gitpod.io/#https://github.com/mikesol/wagsi. This will automatically provision your gitpod environment. Note that you only need to do this once - you can reboot the environment after creating it for the first time.
-1. From the terminal on the bottom of the screen, run `npm install`.
-1. Run `npm run ide:gitpod` to install a forked version of PureScript IDE.
-1. Press `Ctrl+Shift+P` and look for the command **PureScript: Restart/Reconnect purs IDE server**. Select this. You can monitor the output of the purescript ide server by clicking on the output tab. Eventually, yellow (or red) squigglies should show up in your source files.
-1. Run `npm run start:gitpod` to start the webpage.
-1. You'll see a pop-up asking to open a port and to open the page in your browser. Click on both. This will open a new page for your audio session.
-1. On the new page, click **Start audio**.
-1. Back in the online editor, open up Wagged and start making some music! For inspiration, you can use this `graph`:
-
-```purescript
-graph e (a :: Unit) = a /\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
-```
-
-Then, you can change the graph and, whenever you save the document, the audio will update after a short pause. When restarting, you always need to _change_ some value in `Wagged.purs` (ie add a frivolous toplevel declaration) so that it will compile. This is a known issue & hopefully will be fixed soon.
+1. Clone this repo.
+2. Open this repo with VSCode. Make sure the PureScript IDE extension is installed.
+3. Run `npm install && npm start`.
+4. Navigate to `localhost:8080` in Chrome or Firefox.
+5. In VSCode, open `src/LiveCodeHere/Wagged.purs`. Start editing & save the file to render. You should hear some beats! If not, file an issue on this repo.
+6. Keep editing, keep saving, and listen to your creation!
 
 ## API
 
-The entire workspace for building a live session lives in a `src/LiveCodeHere/Wagged.purs`. There's only one top-level declaration that needs a specific type: `wagsi`. If you use the constructor `/@\`, it'll perform most of the necessary checks to make sure the type is correct.
+WagsI Tidal implements a subset of the [tidal](https://tidalcycles.org/) API + a couple additional bells and whistles.
+
+## Top-level
+
+When you start, the top-level file has the following code:
 
 ```purescript
-wagsi (e :: Extern) (a :: {}) =
-  a /@\ speaker { unit0: gain (cos (pi * e.time) * -0.02 + 0.02) { osc0: sinOsc 440.0 } }
+module WAGSI.LiveCodeHere.Wagged where
+
+import Prelude
+
+import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly)
+
+wag :: TheFuture
+wag = make 1.0
+  { earth: plainly $ parse ""
+  }
 ```
 
-`wagsi` is a function that accepts the the external environment and a control parameter and outputs a tuple with the control parameter and a valid audio graph. The control parameter must be a `Record` whose elements implement the typeclass `FromEnv`. Currently, `FromEnv` has implementations for most "classic" monoids (`Endo`, `Conj`) as well as stuff from `wags-lib` defined in `LibWrap.purs` (`ARate`, `AnEmitter`, etc).
+The record has three channels to make music on - `earth`, `wind`, and `fire`. You can use all of them or none of them. `plainly` means that we're not adding any effects, and `parse` will parse a string of mini-notation and fail on silence.
 
-A _valid_ audio graph is one that conforms to the typeclass `GraphIsRenderable`. This will check, amongst other things, that you only have one microphone and one speaker, that there are no orphaned audio nodes, etc. This check is performed every time you save, and if the graph is not renderable, you'll see an error message.
+## Mini-notation
 
-Because the types of the output of `graph` are monstrous, it is advised not to try to write them out. There'll be a Yellow Squiggly of Triumph under the term in VSCode to signify that it compiles cleanly.
-
-### Other declarations
-
-Besides `wagsi`, you can add whatever other top-level declarations you want. In the example below, we abstract out the gain calculation of `unit0` to a separate function.
+Here's an example that uses mini-notation.
 
 ```purescript
-myFuncOfTime :: Number -> Number
-myFuncOfTime t = (cos (pi * t) * -0.02 + 0.02)
+module WAGSI.LiveCodeHere.Wagged where
 
-wagsi (e :: Extern) (a :: {}) =
-  a /\ speaker { unit0: gain (myFuncOfTime e.time) { osc0: sinOsc 440.0 } }
+import Prelude
+
+import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly)
+
+wag :: TheFuture
+wag = make 2.0
+  { earth: plainly $ parse "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
+  }
 ```
 
-## Cheat-sheet
+Wagsi tidal supports the following mini-notation. A big thanks to whoever wrote [the Tidal documentation](http://tidalcycles.org/docs/reference/mini_notation/), which was dutifully copied.
 
-Check out the Wags [cheat sheet](https://github.com/mikesol/purescript-wags/blob/main/CHEATSHEET.md), the [examples in `purescript-wags`](https://github.com/mikesol/purescript-wags/tree/main/examples), and the Pursuit documentation for constructing audio units like `sinOsc`, `highpass`, `loopBuf`, `convolver` etc (https://pursuit.purescript.org/packages/purescript-wags/0.3.2/docs/WAGS.Create.Optionals). Otherwise, the world's your oyster. It's vanilla PureScript. Go to town with monads, applicative functors, comonads, exotic typeclasses...
+| Symbol | Description                              | Example                                     |
+|--------|------------------------------------------|---------------------------------------------|
+| `hh`   | A single note.                           | `kick clap kick clap`                       |
+| `~`    | A rest.                                  | `kick ~ kick clap`                          |
+| `[ ]`  | Create a pattern grouping.               | `[kick kick] clap`                          |
+| `,`    | Play multiple patterns at the same time. | `kick clap , hh hh hh hh`                   |
+| `< >`  | Alternate between patterns.              | `[hh hh hh] [clap roll clap <roll shaker>]` |
 
-## Local start
+## Not-mini notation
 
-It is also possible to run this repo locally.  Here are the steps:
+You can also use PureScript terms to create notation. Here is the same example above using PureScript terms.
 
-1. If you have PureScript IDE installed globally, make sure to uninstall it.
-1. Download the custom PureScript IDE needed for working with wags from [this URL](https://meeshkan-public-assets.s3.eu-west-1.amazonaws.com/wags/ide-purescript-0.25.0.vsix). In the future, it may be possible to use the main PureScript IDE package, but for now a fork is required. Move the extension to the root directory of this repo, and for all remaining commands, make sure to run them from the VSCode integrated terminal.
-1. Run `code --install-extension ide-purescript-0.25.0.vsix` from the command line.
-1. You may be asked to install the **PureScript Language Support** package. If so, click on **Install and Reload**.
-1. Run `npm install`. _Always_ use the `npm install` command to build the project, as it will also take care of writing and cleaning up temp files.
-1. Launch the project by running `npm start`.
+```purescript
+module WAGSI.LiveCodeHere.Wagged where
+
+import Prelude
+
+import WAGSI.Plumbing.Tidal (TheFuture, b, make, plainly, r, rend, s, x, kick, kick1, clap, roll)
+
+wag :: TheFuture
+wag = make 2.0
+  -- "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
+  { earth: plainly $ rend $ x (s kick [clap, s kick1 [kick1], clap]) [b (s r [roll, r, roll]) [r]]
+  }
+```
+
+| Symbol     | Description                              | Example                                                    |
+|------------|------------------------------------------|------------------------------------------------------------|
+| `hh`       | A single note.                           | `s kick [clap, kick, clap]`                                |
+| `r`        | A rest.                                  | `s kick [r, kick, clap]`                                   |
+| `s _ [ ]`  | Create a pattern grouping.               | `s (s kick [kick]) [clap]`                                 |
+| `x _ [ ]`  | Play multiple patterns at the same time. | `x (s kick [clap]) [s hh [hh, hh, hh]]`                    |
+| `b _ [ ]`  | Alternate between patterns.              | `s (s hh [hh, hh]) [s clap [roll, clap, b roll [shaker]]]` |
+
+It's often useful to create an initial beat with a string and then modify it using PureScript functions. To do this, you can use `parse'` instead of parse. This will give you low-level access to the underlying notes, which we'll take advantage of in the examples below.
+
+```purescript
+module WAGSI.LiveCodeHere.Wagged where
+
+import Prelude
+
+import WAGSI.Plumbing.Tidal (TheFuture, make, parse', plainly, rend)
+
+wag :: TheFuture
+wag = make 2.0
+  { earth: plainly $ rend $ parse' "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
+  }
+```
+
+## Manipulating notes
+
+You can manipulate the pitch and volume of notes. Let's pitch-shift everything up a fifth:
+
+```purescript
+module WAGSI.LiveCodeHere.Wagged where
+
+import Prelude
+
+import Data.Lens (set)
+import WAGSI.Plumbing.Tidal (TheFuture, lnr, make, parse', plainly, rend)
+
+wag :: TheFuture
+wag = make 2.0
+  { earth: plainly $ rend $ map (set lnr (const 1.5)) $ parse' "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
+  }
+```
+
+The same works on individual notes. Let's drop the first kick down an octave.
+
+```purescript
+module WAGSI.LiveCodeHere.Wagged where
+
+import Prelude
+
+import Data.Lens (set)
+import WAGSI.Plumbing.Tidal (TheFuture, b, clap, kick, kick1, lnr, make, plainly, r, rend, roll, s, x)
+
+wag :: TheFuture
+wag = make 2.0
+  { earth: plainly $ rend $ x (s (map (set lnr (const 0.5)) kick) [clap, s kick1 [kick1], clap]) [b (s r [roll, r, roll]) [r]]
+  }
+```
