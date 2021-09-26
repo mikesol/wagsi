@@ -26,9 +26,11 @@ Practice makes perfect! To try WagsI tidal out:
 1. Clone this repo.
 2. Open this repo with VSCode. Make sure the PureScript IDE extension is installed.
 3. Run `npm install && npm start`.
-4. Navigate to `localhost:8080` in Chrome or Firefox.
+4. Navigate to `localhost:8080` in Chrome or Firefox and click on **Start Audio**.
 5. In VSCode, open `src/LiveCodeHere/Wagged.purs`. Start editing & save the file to render. You should hear some beats! If not, file an issue on this repo.
 6. Keep editing, keep saving, and listen to your creation!
+
+> Due to a glitch, when you start editing `Wagged.purs`, save it a couple times before you make any edits. This will help avoid pops on the first render. Hopefully this will be fixed soon.
 
 ## API
 
@@ -152,5 +154,24 @@ import WAGSI.Plumbing.Tidal (TheFuture, b, clap, kick, kick1, lnr, make, plainly
 wag :: TheFuture
 wag = make 2.0
   { earth: plainly $ rend $ x (s (map (set lnr (const 0.5)) kick) [clap, s kick1 [kick1], clap]) [b (s r [roll, r, roll]) [r]]
+  }
+```
+
+The same can been achieved using the string syntax, like this:
+
+```purescript
+module WAGSI.LiveCodeHere.Wagged where
+
+import Prelude
+
+import Data.Lens (set, view)
+import WAGSI.Plumbing.Tidal (Sample(..), TheFuture, lnr, lns, make, parse', plainly, rend, when_)
+
+wag :: TheFuture
+wag = make 2.0
+  { earth: plainly
+      $ rend
+      $ map (when_ (eq Kick0 <$> view lns) (set lnr (const 0.5)))
+      $ parse' "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
   }
 ```

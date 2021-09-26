@@ -48,6 +48,8 @@ module WAGSI.Plumbing.Tidal
   , lns
   , lnr
   ---
+  , when_
+  ---
   , CycleLength(..)
   , NoteInTime(..)
   , Voice(..)
@@ -227,6 +229,10 @@ lns = unto Note <<< prop (Proxy :: _ "sample")
 lnr :: Lens' Note (Number -> Number)
 lnr = unto Note <<< prop (Proxy :: _ "rateFoT")
 
+---
+
+when_ :: forall a. (a -> Boolean) -> (a -> a) -> a -> a
+when_ cond func aa = if cond aa then func aa else aa
 ---
 
 data Sample
@@ -756,7 +762,7 @@ tidal = usingc
                                   }
                                   (sampleF buffers)
                               )
-                        Nothing -> gain 0.0 (playBuf { onOff: Off } buffers.kick1)
+                        Nothing -> gain 0.0 (playBuf { onOff: Off } buffers.intentionalSilenceForInternalUseOnly)
                     )
               )
           )

@@ -6,5 +6,5 @@ import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly $ parse ""
+  { earth: plainly $ parse "kick"
   }
