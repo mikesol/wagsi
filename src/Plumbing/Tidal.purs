@@ -58,6 +58,7 @@ module WAGSI.Plumbing.Tidal
   , lnv
   ---
   , when_
+  , prune
   , flattenCycle
   , reverse
   , mapmap
@@ -87,12 +88,12 @@ import Control.Comonad (extract)
 import Control.Comonad.Cofree ((:<))
 import Data.Array as A
 import Data.Either (Either(..), hush)
-import Data.Filterable (compact, filter, filterMap)
+import Data.Filterable (compact, filter, filterMap, maybeBool)
 import Data.Function (on)
 import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
 import Data.Generic.Rep (class Generic)
 import Data.Int (toNumber)
-import Data.Lens (Lens', _1, _2, over, traversed)
+import Data.Lens (Lens', Prism', _1, _2, over, prism', traversed)
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.List (List(..), fold, foldl, foldr, (:))
@@ -301,6 +302,9 @@ lnv = unto Note <<< prop (Proxy :: _ "volumeFoT")
 
 when_ :: forall a. (a -> Boolean) -> (a -> a) -> a -> a
 when_ cond func aa = if cond aa then func aa else aa
+
+prune :: forall a. (a -> Boolean) -> Prism' a a
+prune = prism' identity <<< maybeBool
 
 ---
 
