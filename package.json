@@ -1,4 +1,5 @@
 {
+  "name": "wagsi",
   "codespacesPublicUrl": "https://mikesol-wagsi-wr55r4429r6v-8080.githubpreview.dev/",
   "devDependencies": {
     "@babel/core": "^7.13.10",
