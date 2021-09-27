@@ -6,6 +6,7 @@ module WAGSI.Plumbing.Tidal
   , parse'
   , tidal
   , plainly
+  , s
   , rend
   , rendT
   , c2s
@@ -13,10 +14,10 @@ module WAGSI.Plumbing.Tidal
   , openFuture
   ---
   , b
-  , s
+  , i
   , x
   , b_
-  , s_
+  , i_
   , x_
   ---
   , lfn
@@ -169,6 +170,8 @@ make cl rr = TheFuture $ hmapWithIndex (ZipProps z) (hmap (\(_ :: (CycleLength -
 plainly :: forall f. Functor f => f NextCycle -> f Voice
 plainly = map (Voice <<< { globals: Globals unit, next: _ })
 
+s = plainly <<< parse
+
 --- @@ ---
 newtype CycleLength = CycleLength Number
 
@@ -268,11 +271,11 @@ b bx by = Branching { weight: 1.0, nel: NonEmptyList (bx :| L.fromFoldable by) }
 b_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
 b_ bx = b bx []
 
-s :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
-s sx sy = Internal { weight: 1.0, nel: NonEmptyList (sx :| L.fromFoldable sy) }
+i :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
+i sx sy = Internal { weight: 1.0, nel: NonEmptyList (sx :| L.fromFoldable sy) }
 
-s_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
-s_ sx = s sx []
+i_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
+i_ sx = i sx []
 
 x :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
 x xx xy = Simultaneous { weight: 1.0, nel: NonEmptyList (xx :| L.fromFoldable xy) }
@@ -286,14 +289,14 @@ sampleName = map (fromCharArray <<< A.fromFoldable <<< NEL.toList) (many1 $ oneO
 ---
 whiteSpace1 :: Parser String
 whiteSpace1 = do
-  cs <- many1 (satisfy \ c -> c == '\n' || c == '\r' || c == ' ' || c == '\t')
+  cs <- many1 (satisfy \c -> c == '\n' || c == '\r' || c == ' ' || c == '\t')
   pure (foldMap singleton cs)
 
 weightP :: Parser Number
 weightP = do
   _ <- skipSpaces
   add 1.0 <<< toNumber <<< L.length <$> sepEndBy (char '_') whiteSpace1
-  
+
 sampleP :: Parser (Maybe Note)
 sampleP = do
   possiblySample <- sampleName
@@ -302,7 +305,7 @@ sampleP = do
     Just foundSample -> pure foundSample
 
 internalcyclePInternal :: Parser (Cycle (Maybe Note))
-internalcyclePInternal = Internal  <$> do
+internalcyclePInternal = Internal <$> do
   nel <- between (skipSpaces *> char '[' *> skipSpaces) (skipSpaces *> char ']' *> skipSpaces) do
     pure unit -- breaks recursion
     cyc <- cyclePInternal unit
@@ -411,12 +414,12 @@ cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength
       allWeights = foldl (+) 0.0 (map getWeight nel)
       withStateInfo = evalState
         ( ( traverse \vv -> do
-              i <- get
+              ii <- get
               let wt = getWeight vv
-              put $ i + wt
+              put $ ii + wt
               pure
                 { currentSubdivision: state.currentSubdivision * wt / allWeights
-                , currentOffset: state.currentOffset + state.currentSubdivision * i / allWeights
+                , currentOffset: state.currentOffset + state.currentSubdivision * ii / allWeights
                 , vv
                 }
           ) nel
@@ -480,15 +483,15 @@ flattenScore l = flattened
   where
   ll = NEL.length l
   flattened = join $ mapWithIndex
-    ( \i -> mapWithIndex
-        ( \j (NoteInTime { note, duration, startsAt, cycleLength }) -> NoteInFlattenedTime
+    ( \ii -> mapWithIndex
+        ( \jj (NoteInTime { note, duration, startsAt, cycleLength }) -> NoteInFlattenedTime
             { note
             , duration
-            , bigStartsAt: startsAt + cycleLength * toNumber i
-            , currentCycle: i
+            , bigStartsAt: startsAt + cycleLength * toNumber ii
+            , currentCycle: ii
             , elementsInCycle: NEL.length (NEL.head l)
             , nCycles: NEL.length l
-            , positionInCycle: j
+            , positionInCycle: jj
             , littleStartsAt: startsAt
             , littleCycleLength: cycleLength
             , bigCycleLength: cycleLength * toNumber ll
@@ -669,6 +672,7 @@ tidal = usingc
                                   , cycleStartsAt
                                   , currentCycle
                                   , littleCycleLength
+                                  , bigCycleLength
                                   }
                               }
                           ) ->
@@ -681,6 +685,10 @@ tidal = usingc
                               , bigCycleTime
                               , littleCycleTime
                               , clockTime: time
+                              , normalizedClockTime: 0.0 -- cuz it's infinite :-P
+                              , normalizedSampleTime: sampleTime / duration
+                              , normalizedBigCycleTime: bigCycleTime / bigCycleLength
+                              , normalizedLittleCycleTime: littleCycleTime / littleCycleLength
                               }
                             vol = ff globalFF $ pure $ volumeFoT thisIsTime
                           in

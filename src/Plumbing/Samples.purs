@@ -6100,6 +6100,10 @@ type FoT =
   , sampleTime :: Number
   , bigCycleTime :: Number
   , littleCycleTime :: Number
+  , normalizedClockTime :: Number
+  , normalizedSampleTime :: Number
+  , normalizedBigCycleTime :: Number
+  , normalizedLittleCycleTime :: Number
   }
   -> Number
 

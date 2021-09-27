@@ -49,7 +49,7 @@ import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly)
 
 wag :: TheFuture
 wag = make 1.0
-  { earth: plainly $ parse ""
+  { earth: s ""
   }
 ```
 
@@ -68,7 +68,7 @@ import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
+  { earth: s "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
 
@@ -100,17 +100,17 @@ import WAGSI.Plumbing.Tidal (TheFuture, b, make, plainly, r, rend, s, x, kick, k
 wag :: TheFuture
 wag = make 2.0
   -- "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
-  { earth: plainly $ rend $ x (s bassdm [hh27, s kick1 [kick1], hh27]) [b (s r [gab, r, gab]) [r]]
+  { earth: plainly $ rend $ x (i bassdm [hh27, i kick1 [kick1], hh27]) [b (i r [gab, r, gab]) [r]]
   }
 ```
 
 | Symbol     | Description                              | Example                                              |
 |------------|------------------------------------------|------------------------------------------------------|
-| `hh`       | A single note.                           | `s bassdm [hh27, kick, hh27]`                        |
-| `r`        | A rest.                                  | `s bassdm [r, kick, hh27]`                           |
-| `s _ [ ]`  | Create a pattern grouping.               | `s (s bassdm [kick]) [hh27]`                         |
-| `x _ [ ]`  | Play multiple patterns at the same time. | `x (s bassdm [hh27]) [s cr [cr, cr, cr]]`            |
-| `b _ [ ]`  | Alternate between patterns.              | `s (s cr [cr, cr]) [s hh27 [gab, hh27, b gab [cr]]]` |
+| `hh`       | A single note.                           | `i bassdm [hh27, kick, hh27]`                        |
+| `r`        | A rest.                                  | `i bassdm [r, kick, hh27]`                           |
+| `i _ [ ]`  | Create a pattern grouping.               | `i (i bassdm [kick]) [hh27]`                         |
+| `x _ [ ]`  | Play multiple patterns at the same time. | `x (i bassdm [hh27]) [i cr [cr, cr, cr]]`            |
+| `b _ [ ]`  | Alternate between patterns.              | `i (i cr [cr, cr]) [i hh27 [gab, hh27, b gab [cr]]]` |
 
 It's often useful to create an initial beat with a string and then modify it using PureScript functions. To do this, you can use `parse'` instead of parse. This will give you low-level access to the underlying notes, which we'll take advantage of in the examples below.
 
@@ -164,10 +164,10 @@ wag = make 2.0
   { earth: plainly
       $ rend
       $ x
-          ( s (set (traversed <<< _Just <<< lnr) (const 0.5) bassdm)
-              [ hh27, s bassdm [ bassdm ], hh27 ]
+          ( i (set (traversed <<< _Just <<< lnr) (const 0.5) bassdm)
+              [ hh27, i bassdm [ bassdm ], hh27 ]
           )
-          [ b (s r [ gab, r, gab ]) [ r ] ]
+          [ b (i r [ gab, r, gab ]) [ r ] ]
   }
 ```
 
@@ -192,3 +192,9 @@ wag = make 2.0
       $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
+
+## Gotchyas from tidal
+
+Coming from tidal? There are a couple gotchyas to watch out for.
+
+1. The top-level is always `make n <stuff...>`. The `n` is the cycle length for the whole session. This keeps all of the cycles somewhat in phase. It is possible to hack around this restriction, but usually it's good to start with everyone in sync.
