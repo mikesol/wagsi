@@ -156,15 +156,16 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import Data.Lens (_Just, set, traversed)
-import WAGSI.Plumbing.Tidal (TheFuture, b, hh27, kick, kick1, lnr, make, plainly, r, rend, gab, s, x)
+import WAGSI.Plumbing.Cycle (hh27, bassdm, r, gab)
+import WAGSI.Plumbing.Tidal (TheFuture, b, lnr, make, plainly, rend, s, x)
 
 wag :: TheFuture
 wag = make 2.0
   { earth: plainly
       $ rend
       $ x
-          ( s (set (traversed <<< _Just <<< lnr) (const 0.5) kick)
-              [ hh27, s kick1 [ kick1 ], hh27 ]
+          ( s (set (traversed <<< _Just <<< lnr) (const 0.5) bassdm)
+              [ hh27, s bassdm [ bassdm ], hh27 ]
           )
           [ b (s r [ gab, r, gab ]) [ r ] ]
   }
@@ -178,16 +179,16 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import Data.Lens (_Just, set, traversed, view)
-import WAGSI.Plumbing.Tidal (Sample(..), TheFuture, prune, lnr, lns, make, parse', plainly, rend)
+import WAGSI.Plumbing.Samples as S
+import WAGSI.Plumbing.Tidal (TheFuture, prune, lnr, lns, make, parse', plainly, rend)
 
 wag :: TheFuture
 wag = make 2.0
   { earth: plainly
       $ rend
       $ set
-          (traversed <<< _Just <<< prune (eq Kick0 <<< view lns) <<< lnr)
-          (const 0.5)
+          (traversed <<< _Just <<< prune (eq S.gab_0__Sample <<< view lns) <<< lnr)
+          (const 1.5)
       $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
-
 ```

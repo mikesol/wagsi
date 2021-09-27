@@ -2,6 +2,7 @@ module WAGSI.Plumbing.Tidal
   ( module WAGSI.Plumbing.Cycle
   , make
   , parse
+  , impatient
   , parse'
   , tidal
   , plainly
@@ -124,11 +125,21 @@ type RBuf
   }
 
 newtype NextCycle = NextCycle
-  ( { currentCount :: Number, prevCycleEnded :: Number, time :: Number, headroomInSeconds :: Number }
-    -> CfNoteStream' RBuf Next
-  )
+  { force :: Boolean
+  , func ::
+      { currentCount :: Number
+      , prevCycleEnded :: Number
+      , time :: Number
+      , headroomInSeconds :: Number
+      }
+      -> CfNoteStream' RBuf Next
+  }
 
 derive instance newtypeNextCycle :: Newtype NextCycle _
+
+-- | Only play the first cycle, and truncate/interrupt the playing cycle at the next sub-ending.
+impatient :: NextCycle -> NextCycle
+impatient = over (unto NextCycle <<< prop (Proxy :: _ "force")) (const true)
 
 newtype Globals = Globals Unit
 
@@ -185,6 +196,9 @@ newtype NoteInFlattenedTime note = NoteInFlattenedTime
   , bigStartsAt :: Number
   , littleStartsAt :: Number
   , currentCycle :: Int
+  , positionInCycle :: Int
+  , elementsInCycle :: Int
+  , nCycles :: Int
   , duration :: Number
   , bigCycleLength :: Number
   , littleCycleLength :: Number
@@ -391,8 +405,8 @@ unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
           NoteInTime <<< { startsAt, duration, cycleLength, note: _ } <$> note
       ) <<< NEL.toList
 
-asScore :: NonEmptyList (NoteInFlattenedTime Note) -> NextCycle
-asScore flattened = NextCycle scoreInput
+asScore :: Boolean -> NonEmptyList (NoteInFlattenedTime Note) -> NextCycle
+asScore force flattened = NextCycle { force, func: scoreInput }
   where
   scoreInput ccPce = go ccPce.currentCount ccPce.prevCycleEnded flattened
   go currentCount prevCycleEnded (NonEmptyList (NoteInFlattenedTime aa :| bb)) =
@@ -414,26 +428,36 @@ asScore flattened = NextCycle scoreInput
           }
       } :<
         \{ time, headroomInSeconds, input: { next: (NextCycle nc) } } ->
-          let
-            args = case bb of
-              Nil -> { a: prevCycleEnded + aa.bigCycleLength, b: flattened }
-              (cc : dd) -> { a: prevCycleEnded, b: NonEmptyList (cc :| dd) }
-          in
-            case bb of
-              Nil -> nc { currentCount: st, prevCycleEnded: args.a, time, headroomInSeconds }
-              _ -> go st args.a args.b
+          case bb of
+            Nil -> nc.func
+              { currentCount: st
+              , prevCycleEnded: prevCycleEnded + aa.bigCycleLength
+              , time
+              , headroomInSeconds
+              }
+            cc : dd ->
+              if nc.force && aa.positionInCycle == aa.elementsInCycle - 1 then nc.func
+                { currentCount: st
+                , prevCycleEnded: prevCycleEnded + aa.littleCycleLength * toNumber (aa.currentCycle + 1)
+                , time
+                , headroomInSeconds
+                }
+              else go st prevCycleEnded (NonEmptyList (cc :| dd))
 
 flattenScore :: NonEmptyList (NonEmptyList (NoteInTime Note)) -> NonEmptyList (NoteInFlattenedTime Note)
 flattenScore l = flattened
   where
   ll = NEL.length l
   flattened = join $ mapWithIndex
-    ( \i -> map
-        ( \(NoteInTime { note, duration, startsAt, cycleLength }) -> NoteInFlattenedTime
+    ( \i -> mapWithIndex
+        ( \j (NoteInTime { note, duration, startsAt, cycleLength }) -> NoteInFlattenedTime
             { note
             , duration
             , bigStartsAt: startsAt + cycleLength * toNumber i
             , currentCycle: i
+            , elementsInCycle: NEL.length (NEL.head l)
+            , nCycles: NEL.length l
+            , positionInCycle: j
             , littleStartsAt: startsAt
             , littleCycleLength: cycleLength
             , bigCycleLength: cycleLength * toNumber ll
@@ -462,7 +486,7 @@ emptyPool = makeScoredBufferPool
           , prevCycleEnded: 0.0
           , time: 0.0
           , headroomInSeconds: 0.03
-          } $ unwrap $ asScore (pure intentionalSilenceForInternalUseOnly)
+          } $ _.func $ unwrap $ asScore false (pure intentionalSilenceForInternalUseOnly)
       ) # map \{ startsAfter, rest } ->
         { startsAfter
         , rest:
@@ -475,7 +499,7 @@ emptyPool = makeScoredBufferPool
 openVoice :: Voice
 openVoice = Voice
   { globals: Globals unit
-  , next: asScore (pure intentionalSilenceForInternalUseOnly)
+  , next: asScore false (pure intentionalSilenceForInternalUseOnly)
   }
 
 openVoices :: { | EWF (CycleLength -> Voice) }
@@ -523,6 +547,9 @@ intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
   , bigStartsAt: 0.0
   , littleStartsAt: 0.0
   , duration: 0.25
+  , elementsInCycle: 1
+  , nCycles: 1
+  , positionInCycle: 0
   , currentCycle: 0
   , bigCycleLength: 0.25
   , littleCycleLength: 0.25
@@ -532,7 +559,7 @@ parse' :: String -> Cycle (Maybe Note)
 parse' = fromMaybe intentionalSilenceForInternalUseOnly_ <<< hush <<< runParser cycleP
 
 parse :: String -> CycleLength -> NextCycle
-parse str dur = asScore
+parse str dur = asScore false
   $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
   $ join
   $ map
@@ -545,7 +572,7 @@ parse str dur = asScore
   $ runParser cycleP str
 
 rend :: Cycle (Maybe Note) -> CycleLength -> NextCycle
-rend cyn dur = asScore
+rend cyn dur = asScore false
   $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
   $ NEL.fromList
   $ compact
@@ -555,7 +582,7 @@ rend cyn dur = asScore
   $ cyn
 
 rendT :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> NextCycle
-rendT cyn = asScore
+rendT cyn = asScore false
   $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
   $ NEL.fromList
   $ compact
