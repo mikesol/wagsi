@@ -48,7 +48,6 @@ module WAGSI.Plumbing.Tidal
   ) where
 
 import Prelude hiding (between)
-import WAGSI.Plumbing.Cycle
 
 import Control.Alt ((<|>))
 import Control.Comonad (extract)
@@ -57,13 +56,13 @@ import Data.Array as A
 import Data.Either (Either(..), hush)
 import Data.Filterable (compact, filter, filterMap, maybeBool)
 import Data.Function (on)
-import Data.FunctorWithIndex (class FunctorWithIndex, mapWithIndex)
+import Data.FunctorWithIndex (mapWithIndex)
 import Data.Generic.Rep (class Generic)
 import Data.Int (toNumber)
-import Data.Lens (Lens', Prism', _1, _2, over, prism', traversed)
+import Data.Lens (Lens', Prism', _1, over, prism')
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
-import Data.List (List(..), fold, foldl, foldr, (:))
+import Data.List (List(..), fold, (:))
 import Data.List as L
 import Data.List.NonEmpty (sortBy)
 import Data.List.NonEmpty as NEL
@@ -74,9 +73,8 @@ import Data.NonEmpty ((:|))
 import Data.Show.Generic (genericShow)
 import Data.String.CodeUnits (fromCharArray)
 import Data.Symbol (class IsSymbol)
-import Data.Traversable (class Foldable, class Traversable, foldMapDefaultR, sequence, sequenceDefault, traverse)
-import Data.Tuple (fst, snd)
-import Data.Tuple.Nested ((/\), type (/\))
+import Data.Traversable (sequence, traverse)
+import Data.Tuple.Nested (type (/\))
 import Data.Typelevel.Num (class Pos, D8)
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -90,7 +88,7 @@ import Prim.Row (class Lacks, class Nub, class Union)
 import Prim.Row as Row
 import Record as Record
 import Text.Parsing.StringParser (Parser, fail, runParser, try)
-import Text.Parsing.StringParser.CodeUnits (satisfy, alphaNum, oneOf, skipSpaces, string, char)
+import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, char)
 import Text.Parsing.StringParser.Combinators (between, many, many1, sepBy)
 import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (speaker, gain, playBuf)
@@ -98,14 +96,15 @@ import WAGS.Graph.AudioUnit (OnOff(..))
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.BufferPool (AScoredBufferPool, Buffy(..), makeScoredBufferPool)
 import WAGS.Lib.Cofree (tails)
-import WAGS.Lib.Learn (FullSceneBuilder, buffers, usingc)
+import WAGS.Lib.Learn (FullSceneBuilder, usingc)
 import WAGS.Lib.Score (CfNoteStream')
 import WAGS.Math (calcSlope)
 import WAGS.Run (SceneI(..))
 import WAGS.Template (fromTemplate)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
-import WAGSI.Plumbing.Cycle (Cycle(..), reverse, flattenCycle)
-import WAGSI.Plumbing.Samples (Sample(..), Note(..), FoT)
+import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
+import WAGSI.Plumbing.Download (downloadFiles)
+import WAGSI.Plumbing.Samples (Sample, Note(..), FoT)
 import WAGSI.Plumbing.Samples as S
 
 --- @@ ---
@@ -267,7 +266,7 @@ x_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
 x_ sx = x sx []
 
 sampleName :: Parser String
-sampleName = map (fromCharArray <<< A.fromFoldable <<< NEL.toList) (many1 $ oneOf [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':' ])
+sampleName = map (fromCharArray <<< A.fromFoldable <<< NEL.toList) (many1 $ oneOf [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', '~' ])
 
 ---
 sampleP :: Parser (Maybe Note)
@@ -578,7 +577,7 @@ instance zipProps ::
 
 tidal :: FullSceneBuilder (theFuture :: TheFuture) (buffers :: { | S.Samples BrowserAudioBuffer }) Unit
 tidal = usingc
-  (thePresent wag <<< S.urls S.urls)
+  (thePresent wag <<< downloadFiles)
   acc
   \(SceneI { time, headroomInSeconds, trigger, world: { buffers } }) control ->
     let

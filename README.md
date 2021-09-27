@@ -68,19 +68,19 @@ import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly $ parse "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
+  { earth: plainly $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
 
 Wagsi tidal supports the following mini-notation. A big thanks to whoever wrote [the Tidal documentation](http://tidalcycles.org/docs/reference/mini_notation/), which was dutifully copied.
 
-| Symbol | Description                              | Example                                     |
-|--------|------------------------------------------|---------------------------------------------|
-| `hh`   | A single note.                           | `kick clap kick clap`                       |
-| `~`    | A rest.                                  | `kick ~ kick clap`                          |
-| `[ ]`  | Create a pattern grouping.               | `[kick kick] clap`                          |
-| `,`    | Play multiple patterns at the same time. | `kick clap , hh hh hh hh`                   |
-| `< >`  | Alternate between patterns.              | `[hh hh hh] [clap roll clap <roll shaker>]` |
+| Symbol | Description                              | Example                               |
+|--------|------------------------------------------|---------------------------------------|
+| `hh27` | A single note.                           | `bassdm hh27 bassdm hh27`             |
+| `~`    | A rest.                                  | `bassdm ~ bassdm hh27`                |
+| `[ ]`  | Create a pattern grouping.               | `[bassdm kick] hh27`                  |
+| `,`    | Play multiple patterns at the same time. | `bassdm hh27 , cr cr cr cr`           |
+| `< >`  | Alternate between patterns.              | `[hh hh hh] [hh27 gab hh27 <gab cr>]` |
 
 ## Not-mini notation
 
@@ -91,22 +91,22 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Tidal (TheFuture, b, make, plainly, r, rend, s, x, kick, kick1, clap, roll)
+import WAGSI.Plumbing.Tidal (TheFuture, b, make, plainly, r, rend, s, x, kick, kick1, hh27, gab)
 
 wag :: TheFuture
 wag = make 2.0
-  -- "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
-  { earth: plainly $ rend $ x (s kick [clap, s kick1 [kick1], clap]) [b (s r [roll, r, roll]) [r]]
+  -- "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
+  { earth: plainly $ rend $ x (s bassdm [hh27, s kick1 [kick1], hh27]) [b (s r [gab, r, gab]) [r]]
   }
 ```
 
-| Symbol     | Description                              | Example                                                    |
-|------------|------------------------------------------|------------------------------------------------------------|
-| `hh`       | A single note.                           | `s kick [clap, kick, clap]`                                |
-| `r`        | A rest.                                  | `s kick [r, kick, clap]`                                   |
-| `s _ [ ]`  | Create a pattern grouping.               | `s (s kick [kick]) [clap]`                                 |
-| `x _ [ ]`  | Play multiple patterns at the same time. | `x (s kick [clap]) [s hh [hh, hh, hh]]`                    |
-| `b _ [ ]`  | Alternate between patterns.              | `s (s hh [hh, hh]) [s clap [roll, clap, b roll [shaker]]]` |
+| Symbol     | Description                              | Example                                              |
+|------------|------------------------------------------|------------------------------------------------------|
+| `hh`       | A single note.                           | `s bassdm [hh27, kick, hh27]`                        |
+| `r`        | A rest.                                  | `s bassdm [r, kick, hh27]`                           |
+| `s _ [ ]`  | Create a pattern grouping.               | `s (s bassdm [kick]) [hh27]`                         |
+| `x _ [ ]`  | Play multiple patterns at the same time. | `x (s bassdm [hh27]) [s cr [cr, cr, cr]]`            |
+| `b _ [ ]`  | Alternate between patterns.              | `s (s cr [cr, cr]) [s hh27 [gab, hh27, b gab [cr]]]` |
 
 It's often useful to create an initial beat with a string and then modify it using PureScript functions. To do this, you can use `parse'` instead of parse. This will give you low-level access to the underlying notes, which we'll take advantage of in the examples below.
 
@@ -119,7 +119,7 @@ import WAGSI.Plumbing.Tidal (TheFuture, make, parse', plainly, rend)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly $ rend $ parse' "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
+  { earth: plainly $ rend $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
 
@@ -140,11 +140,11 @@ wag = make 2.0
   { earth: plainly
       $ rend
       $ (set (traversed <<< _Just <<< lnr) (const 1.5))
-      $ parse' "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
+      $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
 
-The same works on individual notes. Let's drop the first kick down an octave.
+The same works on individual notes. Let's drop the first bassdm down an octave.
 
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
@@ -152,7 +152,7 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import Data.Lens (_Just, set, traversed)
-import WAGSI.Plumbing.Tidal (TheFuture, b, clap, kick, kick1, lnr, make, plainly, r, rend, roll, s, x)
+import WAGSI.Plumbing.Tidal (TheFuture, b, hh27, kick, kick1, lnr, make, plainly, r, rend, gab, s, x)
 
 wag :: TheFuture
 wag = make 2.0
@@ -160,9 +160,9 @@ wag = make 2.0
       $ rend
       $ x
           ( s (set (traversed <<< _Just <<< lnr) (const 0.5) kick)
-              [ clap, s kick1 [ kick1 ], clap ]
+              [ hh27, s kick1 [ kick1 ], hh27 ]
           )
-          [ b (s r [ roll, r, roll ]) [ r ] ]
+          [ b (s r [ gab, r, gab ]) [ r ] ]
   }
 ```
 
@@ -183,7 +183,7 @@ wag = make 2.0
       $ set
           (traversed <<< _Just <<< prune (eq Kick0 <<< view lns) <<< lnr)
           (const 0.5)
-      $ parse' "kick clap [kick:1 kick:1] clap , <[~ roll ~ roll] ~>"
+      $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 
 ```

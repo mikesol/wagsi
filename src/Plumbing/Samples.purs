@@ -1,4 +1,2032 @@
-module WAGSI.Plumbing.Samples where
+module WAGSI.Plumbing.Samples
+  ( Samples
+  , Sample
+  , sampleToBuffers
+  , urls
+  , Note(..)
+  , FoT
+  , nameToSampleMNO
+  , intentionalSilenceForInternalUseOnly__Sample
+  , kicklinn_0__Sample
+  , msg_0__Sample
+  , msg_1__Sample
+  , msg_2__Sample
+  , msg_3__Sample
+  , msg_4__Sample
+  , msg_5__Sample
+  , msg_6__Sample
+  , msg_7__Sample
+  , msg_8__Sample
+  , gabbalouder_0__Sample
+  , gabbalouder_1__Sample
+  , gabbalouder_2__Sample
+  , gabbalouder_3__Sample
+  , kurt_0__Sample
+  , kurt_1__Sample
+  , kurt_2__Sample
+  , kurt_3__Sample
+  , kurt_4__Sample
+  , kurt_5__Sample
+  , kurt_6__Sample
+  , bassdm_0__Sample
+  , bassdm_1__Sample
+  , bassdm_2__Sample
+  , bassdm_3__Sample
+  , bassdm_4__Sample
+  , bassdm_5__Sample
+  , bassdm_6__Sample
+  , bassdm_7__Sample
+  , bassdm_8__Sample
+  , bassdm_9__Sample
+  , bassdm_10__Sample
+  , bassdm_11__Sample
+  , bassdm_12__Sample
+  , bassdm_13__Sample
+  , bassdm_14__Sample
+  , bassdm_15__Sample
+  , bassdm_16__Sample
+  , bassdm_17__Sample
+  , bassdm_18__Sample
+  , bassdm_19__Sample
+  , bassdm_20__Sample
+  , bassdm_21__Sample
+  , bassdm_22__Sample
+  , bassdm_23__Sample
+  , tabla2_0__Sample
+  , tabla2_1__Sample
+  , tabla2_2__Sample
+  , tabla2_3__Sample
+  , tabla2_4__Sample
+  , tabla2_5__Sample
+  , tabla2_6__Sample
+  , tabla2_7__Sample
+  , tabla2_8__Sample
+  , tabla2_9__Sample
+  , tabla2_10__Sample
+  , tabla2_11__Sample
+  , tabla2_12__Sample
+  , tabla2_13__Sample
+  , tabla2_14__Sample
+  , tabla2_15__Sample
+  , tabla2_16__Sample
+  , tabla2_17__Sample
+  , tabla2_18__Sample
+  , tabla2_19__Sample
+  , tabla2_20__Sample
+  , tabla2_21__Sample
+  , tabla2_22__Sample
+  , tabla2_23__Sample
+  , tabla2_24__Sample
+  , tabla2_25__Sample
+  , tabla2_26__Sample
+  , tabla2_27__Sample
+  , tabla2_28__Sample
+  , tabla2_29__Sample
+  , tabla2_30__Sample
+  , tabla2_31__Sample
+  , tabla2_32__Sample
+  , tabla2_33__Sample
+  , tabla2_34__Sample
+  , tabla2_35__Sample
+  , tabla2_36__Sample
+  , tabla2_37__Sample
+  , tabla2_38__Sample
+  , tabla2_39__Sample
+  , tabla2_40__Sample
+  , tabla2_41__Sample
+  , tabla2_42__Sample
+  , tabla2_43__Sample
+  , tabla2_44__Sample
+  , tabla2_45__Sample
+  , chin_0__Sample
+  , chin_1__Sample
+  , chin_2__Sample
+  , chin_3__Sample
+  , mp3_0__Sample
+  , mp3_1__Sample
+  , mp3_2__Sample
+  , mp3_3__Sample
+  , tablex_0__Sample
+  , tablex_1__Sample
+  , tablex_2__Sample
+  , sf_0__Sample
+  , sf_1__Sample
+  , sf_2__Sample
+  , sf_3__Sample
+  , sf_4__Sample
+  , sf_5__Sample
+  , sf_6__Sample
+  , sf_7__Sample
+  , sf_8__Sample
+  , sf_9__Sample
+  , sf_10__Sample
+  , sf_11__Sample
+  , sf_12__Sample
+  , sf_13__Sample
+  , sf_14__Sample
+  , sf_15__Sample
+  , sf_16__Sample
+  , sf_17__Sample
+  , speakspell_0__Sample
+  , speakspell_1__Sample
+  , speakspell_2__Sample
+  , speakspell_3__Sample
+  , speakspell_4__Sample
+  , speakspell_5__Sample
+  , speakspell_6__Sample
+  , speakspell_7__Sample
+  , speakspell_8__Sample
+  , speakspell_9__Sample
+  , speakspell_10__Sample
+  , speakspell_11__Sample
+  , cc_0__Sample
+  , cc_1__Sample
+  , cc_2__Sample
+  , cc_3__Sample
+  , cc_4__Sample
+  , cc_5__Sample
+  , gabbaloud_0__Sample
+  , gabbaloud_1__Sample
+  , gabbaloud_2__Sample
+  , gabbaloud_3__Sample
+  , ades2_0__Sample
+  , ades2_1__Sample
+  , ades2_2__Sample
+  , ades2_3__Sample
+  , ades2_4__Sample
+  , ades2_5__Sample
+  , ades2_6__Sample
+  , ades2_7__Sample
+  , ades2_8__Sample
+  , space_0__Sample
+  , space_1__Sample
+  , space_2__Sample
+  , space_3__Sample
+  , space_4__Sample
+  , space_5__Sample
+  , space_6__Sample
+  , space_7__Sample
+  , space_8__Sample
+  , space_9__Sample
+  , space_10__Sample
+  , space_11__Sample
+  , space_12__Sample
+  , space_13__Sample
+  , space_14__Sample
+  , space_15__Sample
+  , space_16__Sample
+  , space_17__Sample
+  , battles_0__Sample
+  , battles_1__Sample
+  , voodoo_0__Sample
+  , voodoo_1__Sample
+  , voodoo_2__Sample
+  , voodoo_3__Sample
+  , voodoo_4__Sample
+  , ravemono_0__Sample
+  , ravemono_1__Sample
+  , psr_0__Sample
+  , psr_1__Sample
+  , psr_2__Sample
+  , psr_3__Sample
+  , psr_4__Sample
+  , psr_5__Sample
+  , psr_6__Sample
+  , psr_7__Sample
+  , psr_8__Sample
+  , psr_9__Sample
+  , psr_10__Sample
+  , psr_11__Sample
+  , psr_12__Sample
+  , psr_13__Sample
+  , psr_14__Sample
+  , psr_15__Sample
+  , psr_16__Sample
+  , psr_17__Sample
+  , psr_18__Sample
+  , psr_19__Sample
+  , psr_20__Sample
+  , psr_21__Sample
+  , psr_22__Sample
+  , psr_23__Sample
+  , psr_24__Sample
+  , psr_25__Sample
+  , psr_26__Sample
+  , psr_27__Sample
+  , psr_28__Sample
+  , psr_29__Sample
+  , metal_0__Sample
+  , metal_1__Sample
+  , metal_2__Sample
+  , metal_3__Sample
+  , metal_4__Sample
+  , metal_5__Sample
+  , metal_6__Sample
+  , metal_7__Sample
+  , metal_8__Sample
+  , metal_9__Sample
+  , hardcore_0__Sample
+  , hardcore_1__Sample
+  , hardcore_2__Sample
+  , hardcore_3__Sample
+  , hardcore_4__Sample
+  , hardcore_5__Sample
+  , hardcore_6__Sample
+  , hardcore_7__Sample
+  , hardcore_8__Sample
+  , hardcore_9__Sample
+  , hardcore_10__Sample
+  , hardcore_11__Sample
+  , mouth_0__Sample
+  , mouth_1__Sample
+  , mouth_2__Sample
+  , mouth_3__Sample
+  , mouth_4__Sample
+  , mouth_5__Sample
+  , mouth_6__Sample
+  , mouth_7__Sample
+  , mouth_8__Sample
+  , mouth_9__Sample
+  , mouth_10__Sample
+  , mouth_11__Sample
+  , mouth_12__Sample
+  , mouth_13__Sample
+  , mouth_14__Sample
+  , sugar_0__Sample
+  , sugar_1__Sample
+  , odx_0__Sample
+  , odx_1__Sample
+  , odx_2__Sample
+  , odx_3__Sample
+  , odx_4__Sample
+  , odx_5__Sample
+  , odx_6__Sample
+  , odx_7__Sample
+  , odx_8__Sample
+  , odx_9__Sample
+  , odx_10__Sample
+  , odx_11__Sample
+  , odx_12__Sample
+  , odx_13__Sample
+  , odx_14__Sample
+  , x_808lc_0__Sample
+  , x_808lc_1__Sample
+  , x_808lc_2__Sample
+  , x_808lc_3__Sample
+  , x_808lc_4__Sample
+  , mt_0__Sample
+  , mt_1__Sample
+  , mt_2__Sample
+  , mt_3__Sample
+  , mt_4__Sample
+  , mt_5__Sample
+  , mt_6__Sample
+  , mt_7__Sample
+  , mt_8__Sample
+  , mt_9__Sample
+  , mt_10__Sample
+  , mt_11__Sample
+  , mt_12__Sample
+  , mt_13__Sample
+  , mt_14__Sample
+  , mt_15__Sample
+  , drumtraks_0__Sample
+  , drumtraks_1__Sample
+  , drumtraks_2__Sample
+  , drumtraks_3__Sample
+  , drumtraks_4__Sample
+  , drumtraks_5__Sample
+  , drumtraks_6__Sample
+  , drumtraks_7__Sample
+  , drumtraks_8__Sample
+  , drumtraks_9__Sample
+  , drumtraks_10__Sample
+  , drumtraks_11__Sample
+  , drumtraks_12__Sample
+  , print_0__Sample
+  , print_1__Sample
+  , print_2__Sample
+  , print_3__Sample
+  , print_4__Sample
+  , print_5__Sample
+  , print_6__Sample
+  , print_7__Sample
+  , print_8__Sample
+  , print_9__Sample
+  , print_10__Sample
+  , blip_0__Sample
+  , blip_1__Sample
+  , wobble_0__Sample
+  , made_0__Sample
+  , made_1__Sample
+  , made_2__Sample
+  , made_3__Sample
+  , made_4__Sample
+  , made_5__Sample
+  , made_6__Sample
+  , bass3_0__Sample
+  , bass3_1__Sample
+  , bass3_2__Sample
+  , bass3_3__Sample
+  , bass3_4__Sample
+  , bass3_5__Sample
+  , bass3_6__Sample
+  , bass3_7__Sample
+  , bass3_8__Sample
+  , bass3_9__Sample
+  , bass3_10__Sample
+  , speechless_0__Sample
+  , speechless_1__Sample
+  , speechless_2__Sample
+  , speechless_3__Sample
+  , speechless_4__Sample
+  , speechless_5__Sample
+  , speechless_6__Sample
+  , speechless_7__Sample
+  , speechless_8__Sample
+  , speechless_9__Sample
+  , sine_0__Sample
+  , sine_1__Sample
+  , sine_2__Sample
+  , sine_3__Sample
+  , sine_4__Sample
+  , sine_5__Sample
+  , noise_0__Sample
+  , x_808lt_0__Sample
+  , x_808lt_1__Sample
+  , x_808lt_2__Sample
+  , x_808lt_3__Sample
+  , x_808lt_4__Sample
+  , sd_0__Sample
+  , sd_1__Sample
+  , alphabet_0__Sample
+  , alphabet_1__Sample
+  , alphabet_2__Sample
+  , alphabet_3__Sample
+  , alphabet_4__Sample
+  , alphabet_5__Sample
+  , alphabet_6__Sample
+  , alphabet_7__Sample
+  , alphabet_8__Sample
+  , alphabet_9__Sample
+  , alphabet_10__Sample
+  , alphabet_11__Sample
+  , alphabet_12__Sample
+  , alphabet_13__Sample
+  , alphabet_14__Sample
+  , alphabet_15__Sample
+  , alphabet_16__Sample
+  , alphabet_17__Sample
+  , alphabet_18__Sample
+  , alphabet_19__Sample
+  , alphabet_20__Sample
+  , alphabet_21__Sample
+  , alphabet_22__Sample
+  , alphabet_23__Sample
+  , alphabet_24__Sample
+  , alphabet_25__Sample
+  , baa2_0__Sample
+  , baa2_1__Sample
+  , baa2_2__Sample
+  , baa2_3__Sample
+  , baa2_4__Sample
+  , baa2_5__Sample
+  , baa2_6__Sample
+  , tok_0__Sample
+  , tok_1__Sample
+  , tok_2__Sample
+  , tok_3__Sample
+  , ades3_0__Sample
+  , ades3_1__Sample
+  , ades3_2__Sample
+  , ades3_3__Sample
+  , ades3_4__Sample
+  , ades3_5__Sample
+  , ades3_6__Sample
+  , x_909_0__Sample
+  , sid_0__Sample
+  , sid_1__Sample
+  , sid_2__Sample
+  , sid_3__Sample
+  , sid_4__Sample
+  , sid_5__Sample
+  , sid_6__Sample
+  , sid_7__Sample
+  , sid_8__Sample
+  , sid_9__Sample
+  , sid_10__Sample
+  , sid_11__Sample
+  , jungbass_0__Sample
+  , jungbass_1__Sample
+  , jungbass_2__Sample
+  , jungbass_3__Sample
+  , jungbass_4__Sample
+  , jungbass_5__Sample
+  , jungbass_6__Sample
+  , jungbass_7__Sample
+  , jungbass_8__Sample
+  , jungbass_9__Sample
+  , jungbass_10__Sample
+  , jungbass_11__Sample
+  , jungbass_12__Sample
+  , jungbass_13__Sample
+  , jungbass_14__Sample
+  , jungbass_15__Sample
+  , jungbass_16__Sample
+  , jungbass_17__Sample
+  , jungbass_18__Sample
+  , jungbass_19__Sample
+  , gabba_0__Sample
+  , gabba_1__Sample
+  , gabba_2__Sample
+  , gabba_3__Sample
+  , crow_0__Sample
+  , crow_1__Sample
+  , crow_2__Sample
+  , crow_3__Sample
+  , birds3_0__Sample
+  , birds3_1__Sample
+  , birds3_2__Sample
+  , birds3_3__Sample
+  , birds3_4__Sample
+  , birds3_5__Sample
+  , birds3_6__Sample
+  , birds3_7__Sample
+  , birds3_8__Sample
+  , birds3_9__Sample
+  , birds3_10__Sample
+  , birds3_11__Sample
+  , birds3_12__Sample
+  , birds3_13__Sample
+  , birds3_14__Sample
+  , birds3_15__Sample
+  , birds3_16__Sample
+  , birds3_17__Sample
+  , birds3_18__Sample
+  , auto_0__Sample
+  , auto_1__Sample
+  , auto_2__Sample
+  , auto_3__Sample
+  , auto_4__Sample
+  , auto_5__Sample
+  , auto_6__Sample
+  , auto_7__Sample
+  , auto_8__Sample
+  , auto_9__Sample
+  , auto_10__Sample
+  , mute_0__Sample
+  , mute_1__Sample
+  , mute_2__Sample
+  , mute_3__Sample
+  , mute_4__Sample
+  , mute_5__Sample
+  , mute_6__Sample
+  , mute_7__Sample
+  , mute_8__Sample
+  , mute_9__Sample
+  , mute_10__Sample
+  , mute_11__Sample
+  , mute_12__Sample
+  , mute_13__Sample
+  , mute_14__Sample
+  , mute_15__Sample
+  , mute_16__Sample
+  , mute_17__Sample
+  , mute_18__Sample
+  , mute_19__Sample
+  , mute_20__Sample
+  , mute_21__Sample
+  , mute_22__Sample
+  , mute_23__Sample
+  , mute_24__Sample
+  , mute_25__Sample
+  , mute_26__Sample
+  , mute_27__Sample
+  , sheffield_0__Sample
+  , casio_0__Sample
+  , casio_1__Sample
+  , casio_2__Sample
+  , sax_0__Sample
+  , sax_1__Sample
+  , sax_2__Sample
+  , sax_3__Sample
+  , sax_4__Sample
+  , sax_5__Sample
+  , sax_6__Sample
+  , sax_7__Sample
+  , sax_8__Sample
+  , sax_9__Sample
+  , sax_10__Sample
+  , sax_11__Sample
+  , sax_12__Sample
+  , sax_13__Sample
+  , sax_14__Sample
+  , sax_15__Sample
+  , sax_16__Sample
+  , sax_17__Sample
+  , sax_18__Sample
+  , sax_19__Sample
+  , sax_20__Sample
+  , sax_21__Sample
+  , circus_0__Sample
+  , circus_1__Sample
+  , circus_2__Sample
+  , yeah_0__Sample
+  , yeah_1__Sample
+  , yeah_2__Sample
+  , yeah_3__Sample
+  , yeah_4__Sample
+  , yeah_5__Sample
+  , yeah_6__Sample
+  , yeah_7__Sample
+  , yeah_8__Sample
+  , yeah_9__Sample
+  , yeah_10__Sample
+  , yeah_11__Sample
+  , yeah_12__Sample
+  , yeah_13__Sample
+  , yeah_14__Sample
+  , yeah_15__Sample
+  , yeah_16__Sample
+  , yeah_17__Sample
+  , yeah_18__Sample
+  , yeah_19__Sample
+  , yeah_20__Sample
+  , yeah_21__Sample
+  , yeah_22__Sample
+  , yeah_23__Sample
+  , yeah_24__Sample
+  , yeah_25__Sample
+  , yeah_26__Sample
+  , yeah_27__Sample
+  , yeah_28__Sample
+  , yeah_29__Sample
+  , yeah_30__Sample
+  , oc_0__Sample
+  , oc_1__Sample
+  , oc_2__Sample
+  , oc_3__Sample
+  , alex_0__Sample
+  , alex_1__Sample
+  , can_0__Sample
+  , can_1__Sample
+  , can_2__Sample
+  , can_3__Sample
+  , can_4__Sample
+  , can_5__Sample
+  , can_6__Sample
+  , can_7__Sample
+  , can_8__Sample
+  , can_9__Sample
+  , can_10__Sample
+  , can_11__Sample
+  , can_12__Sample
+  , can_13__Sample
+  , jungle_0__Sample
+  , jungle_1__Sample
+  , jungle_2__Sample
+  , jungle_3__Sample
+  , jungle_4__Sample
+  , jungle_5__Sample
+  , jungle_6__Sample
+  , jungle_7__Sample
+  , jungle_8__Sample
+  , jungle_9__Sample
+  , jungle_10__Sample
+  , jungle_11__Sample
+  , jungle_12__Sample
+  , moog_0__Sample
+  , moog_1__Sample
+  , moog_2__Sample
+  , moog_3__Sample
+  , moog_4__Sample
+  , moog_5__Sample
+  , moog_6__Sample
+  , h_0__Sample
+  , h_1__Sample
+  , h_2__Sample
+  , h_3__Sample
+  , h_4__Sample
+  , h_5__Sample
+  , h_6__Sample
+  , wind_0__Sample
+  , wind_1__Sample
+  , wind_2__Sample
+  , wind_3__Sample
+  , wind_4__Sample
+  , wind_5__Sample
+  , wind_6__Sample
+  , wind_7__Sample
+  , wind_8__Sample
+  , wind_9__Sample
+  , rs_0__Sample
+  , em2_0__Sample
+  , em2_1__Sample
+  , em2_2__Sample
+  , em2_3__Sample
+  , em2_4__Sample
+  , em2_5__Sample
+  , noise2_0__Sample
+  , noise2_1__Sample
+  , noise2_2__Sample
+  , noise2_3__Sample
+  , noise2_4__Sample
+  , noise2_5__Sample
+  , noise2_6__Sample
+  , noise2_7__Sample
+  , foo_0__Sample
+  , foo_1__Sample
+  , foo_2__Sample
+  , foo_3__Sample
+  , foo_4__Sample
+  , foo_5__Sample
+  , foo_6__Sample
+  , foo_7__Sample
+  , foo_8__Sample
+  , foo_9__Sample
+  , foo_10__Sample
+  , foo_11__Sample
+  , foo_12__Sample
+  , foo_13__Sample
+  , foo_14__Sample
+  , foo_15__Sample
+  , foo_16__Sample
+  , foo_17__Sample
+  , foo_18__Sample
+  , foo_19__Sample
+  , foo_20__Sample
+  , foo_21__Sample
+  , foo_22__Sample
+  , foo_23__Sample
+  , foo_24__Sample
+  , foo_25__Sample
+  , foo_26__Sample
+  , armora_0__Sample
+  , armora_1__Sample
+  , armora_2__Sample
+  , armora_3__Sample
+  , armora_4__Sample
+  , armora_5__Sample
+  , armora_6__Sample
+  , bend_0__Sample
+  , bend_1__Sample
+  , bend_2__Sample
+  , bend_3__Sample
+  , newnotes_0__Sample
+  , newnotes_1__Sample
+  , newnotes_2__Sample
+  , newnotes_3__Sample
+  , newnotes_4__Sample
+  , newnotes_5__Sample
+  , newnotes_6__Sample
+  , newnotes_7__Sample
+  , newnotes_8__Sample
+  , newnotes_9__Sample
+  , newnotes_10__Sample
+  , newnotes_11__Sample
+  , newnotes_12__Sample
+  , newnotes_13__Sample
+  , newnotes_14__Sample
+  , pebbles_0__Sample
+  , mash2_0__Sample
+  , mash2_1__Sample
+  , mash2_2__Sample
+  , mash2_3__Sample
+  , diphone2_0__Sample
+  , diphone2_1__Sample
+  , diphone2_2__Sample
+  , diphone2_3__Sample
+  , diphone2_4__Sample
+  , diphone2_5__Sample
+  , diphone2_6__Sample
+  , diphone2_7__Sample
+  , diphone2_8__Sample
+  , diphone2_9__Sample
+  , diphone2_10__Sample
+  , diphone2_11__Sample
+  , e_0__Sample
+  , e_1__Sample
+  , e_2__Sample
+  , e_3__Sample
+  , e_4__Sample
+  , e_5__Sample
+  , e_6__Sample
+  , e_7__Sample
+  , bubble_0__Sample
+  , bubble_1__Sample
+  , bubble_2__Sample
+  , bubble_3__Sample
+  , bubble_4__Sample
+  , bubble_5__Sample
+  , bubble_6__Sample
+  , bubble_7__Sample
+  , insect_0__Sample
+  , insect_1__Sample
+  , insect_2__Sample
+  , ade_0__Sample
+  , ade_1__Sample
+  , ade_2__Sample
+  , ade_3__Sample
+  , ade_4__Sample
+  , ade_5__Sample
+  , ade_6__Sample
+  , ade_7__Sample
+  , ade_8__Sample
+  , ade_9__Sample
+  , glitch_0__Sample
+  , glitch_1__Sample
+  , glitch_2__Sample
+  , glitch_3__Sample
+  , glitch_4__Sample
+  , glitch_5__Sample
+  , glitch_6__Sample
+  , glitch_7__Sample
+  , haw_0__Sample
+  , haw_1__Sample
+  , haw_2__Sample
+  , haw_3__Sample
+  , haw_4__Sample
+  , haw_5__Sample
+  , popkick_0__Sample
+  , popkick_1__Sample
+  , popkick_2__Sample
+  , popkick_3__Sample
+  , popkick_4__Sample
+  , popkick_5__Sample
+  , popkick_6__Sample
+  , popkick_7__Sample
+  , popkick_8__Sample
+  , popkick_9__Sample
+  , breaks157_0__Sample
+  , gtr_0__Sample
+  , gtr_1__Sample
+  , gtr_2__Sample
+  , clubkick_0__Sample
+  , clubkick_1__Sample
+  , clubkick_2__Sample
+  , clubkick_3__Sample
+  , clubkick_4__Sample
+  , breaks152_0__Sample
+  , x_808bd_0__Sample
+  , x_808bd_1__Sample
+  , x_808bd_2__Sample
+  , x_808bd_3__Sample
+  , x_808bd_4__Sample
+  , x_808bd_5__Sample
+  , x_808bd_6__Sample
+  , x_808bd_7__Sample
+  , x_808bd_8__Sample
+  , x_808bd_9__Sample
+  , x_808bd_10__Sample
+  , x_808bd_11__Sample
+  , x_808bd_12__Sample
+  , x_808bd_13__Sample
+  , x_808bd_14__Sample
+  , x_808bd_15__Sample
+  , x_808bd_16__Sample
+  , x_808bd_17__Sample
+  , x_808bd_18__Sample
+  , x_808bd_19__Sample
+  , x_808bd_20__Sample
+  , x_808bd_21__Sample
+  , x_808bd_22__Sample
+  , x_808bd_23__Sample
+  , x_808bd_24__Sample
+  , miniyeah_0__Sample
+  , miniyeah_1__Sample
+  , miniyeah_2__Sample
+  , miniyeah_3__Sample
+  , if_0__Sample
+  , if_1__Sample
+  , if_2__Sample
+  , if_3__Sample
+  , if_4__Sample
+  , x_808oh_0__Sample
+  , x_808oh_1__Sample
+  , x_808oh_2__Sample
+  , x_808oh_3__Sample
+  , x_808oh_4__Sample
+  , house_0__Sample
+  , house_1__Sample
+  , house_2__Sample
+  , house_3__Sample
+  , house_4__Sample
+  , house_5__Sample
+  , house_6__Sample
+  , house_7__Sample
+  , dr_0__Sample
+  , dr_1__Sample
+  , dr_2__Sample
+  , dr_3__Sample
+  , dr_4__Sample
+  , dr_5__Sample
+  , dr_6__Sample
+  , dr_7__Sample
+  , dr_8__Sample
+  , dr_9__Sample
+  , dr_10__Sample
+  , dr_11__Sample
+  , dr_12__Sample
+  , dr_13__Sample
+  , dr_14__Sample
+  , dr_15__Sample
+  , dr_16__Sample
+  , dr_17__Sample
+  , dr_18__Sample
+  , dr_19__Sample
+  , dr_20__Sample
+  , dr_21__Sample
+  , dr_22__Sample
+  , dr_23__Sample
+  , dr_24__Sample
+  , dr_25__Sample
+  , dr_26__Sample
+  , dr_27__Sample
+  , dr_28__Sample
+  , dr_29__Sample
+  , dr_30__Sample
+  , dr_31__Sample
+  , dr_32__Sample
+  , dr_33__Sample
+  , dr_34__Sample
+  , dr_35__Sample
+  , dr_36__Sample
+  , dr_37__Sample
+  , dr_38__Sample
+  , dr_39__Sample
+  , dr_40__Sample
+  , dr_41__Sample
+  , dr55_0__Sample
+  , dr55_1__Sample
+  , dr55_2__Sample
+  , dr55_3__Sample
+  , bass_0__Sample
+  , bass_1__Sample
+  , bass_2__Sample
+  , bass_3__Sample
+  , ho_0__Sample
+  , ho_1__Sample
+  , ho_2__Sample
+  , ho_3__Sample
+  , ho_4__Sample
+  , ho_5__Sample
+  , hardkick_0__Sample
+  , hardkick_1__Sample
+  , hardkick_2__Sample
+  , hardkick_3__Sample
+  , hardkick_4__Sample
+  , hardkick_5__Sample
+  , x_808hc_0__Sample
+  , x_808hc_1__Sample
+  , x_808hc_2__Sample
+  , x_808hc_3__Sample
+  , x_808hc_4__Sample
+  , hit_0__Sample
+  , hit_1__Sample
+  , hit_2__Sample
+  , hit_3__Sample
+  , hit_4__Sample
+  , hit_5__Sample
+  , breaks165_0__Sample
+  , dr2_0__Sample
+  , dr2_1__Sample
+  , dr2_2__Sample
+  , dr2_3__Sample
+  , dr2_4__Sample
+  , dr2_5__Sample
+  , tabla_0__Sample
+  , tabla_1__Sample
+  , tabla_2__Sample
+  , tabla_3__Sample
+  , tabla_4__Sample
+  , tabla_5__Sample
+  , tabla_6__Sample
+  , tabla_7__Sample
+  , tabla_8__Sample
+  , tabla_9__Sample
+  , tabla_10__Sample
+  , tabla_11__Sample
+  , tabla_12__Sample
+  , tabla_13__Sample
+  , tabla_14__Sample
+  , tabla_15__Sample
+  , tabla_16__Sample
+  , tabla_17__Sample
+  , tabla_18__Sample
+  , tabla_19__Sample
+  , tabla_20__Sample
+  , tabla_21__Sample
+  , tabla_22__Sample
+  , tabla_23__Sample
+  , tabla_24__Sample
+  , tabla_25__Sample
+  , dork2_0__Sample
+  , dork2_1__Sample
+  , dork2_2__Sample
+  , dork2_3__Sample
+  , hc_0__Sample
+  , hc_1__Sample
+  , hc_2__Sample
+  , hc_3__Sample
+  , hc_4__Sample
+  , hc_5__Sample
+  , bassfoo_0__Sample
+  , bassfoo_1__Sample
+  , bassfoo_2__Sample
+  , seawolf_0__Sample
+  , seawolf_1__Sample
+  , seawolf_2__Sample
+  , cp_0__Sample
+  , cp_1__Sample
+  , jazz_0__Sample
+  , jazz_1__Sample
+  , jazz_2__Sample
+  , jazz_3__Sample
+  , jazz_4__Sample
+  , jazz_5__Sample
+  , jazz_6__Sample
+  , jazz_7__Sample
+  , juno_0__Sample
+  , juno_1__Sample
+  , juno_2__Sample
+  , juno_3__Sample
+  , juno_4__Sample
+  , juno_5__Sample
+  , juno_6__Sample
+  , juno_7__Sample
+  , juno_8__Sample
+  , juno_9__Sample
+  , juno_10__Sample
+  , juno_11__Sample
+  , birds_0__Sample
+  , birds_1__Sample
+  , birds_2__Sample
+  , birds_3__Sample
+  , birds_4__Sample
+  , birds_5__Sample
+  , birds_6__Sample
+  , birds_7__Sample
+  , birds_8__Sample
+  , birds_9__Sample
+  , glasstap_0__Sample
+  , glasstap_1__Sample
+  , glasstap_2__Sample
+  , bass1_0__Sample
+  , bass1_1__Sample
+  , bass1_2__Sample
+  , bass1_3__Sample
+  , bass1_4__Sample
+  , bass1_5__Sample
+  , bass1_6__Sample
+  , bass1_7__Sample
+  , bass1_8__Sample
+  , bass1_9__Sample
+  , bass1_10__Sample
+  , bass1_11__Sample
+  , bass1_12__Sample
+  , bass1_13__Sample
+  , bass1_14__Sample
+  , bass1_15__Sample
+  , bass1_16__Sample
+  , bass1_17__Sample
+  , bass1_18__Sample
+  , bass1_19__Sample
+  , bass1_20__Sample
+  , bass1_21__Sample
+  , bass1_22__Sample
+  , bass1_23__Sample
+  , bass1_24__Sample
+  , bass1_25__Sample
+  , bass1_26__Sample
+  , bass1_27__Sample
+  , bass1_28__Sample
+  , bass1_29__Sample
+  , hh27_0__Sample
+  , hh27_1__Sample
+  , hh27_2__Sample
+  , hh27_3__Sample
+  , hh27_4__Sample
+  , hh27_5__Sample
+  , hh27_6__Sample
+  , hh27_7__Sample
+  , hh27_8__Sample
+  , hh27_9__Sample
+  , hh27_10__Sample
+  , hh27_11__Sample
+  , hh27_12__Sample
+  , x_808_0__Sample
+  , x_808_1__Sample
+  , x_808_2__Sample
+  , x_808_3__Sample
+  , x_808_4__Sample
+  , x_808_5__Sample
+  , notes_0__Sample
+  , notes_1__Sample
+  , notes_2__Sample
+  , notes_3__Sample
+  , notes_4__Sample
+  , notes_5__Sample
+  , notes_6__Sample
+  , notes_7__Sample
+  , notes_8__Sample
+  , notes_9__Sample
+  , notes_10__Sample
+  , notes_11__Sample
+  , notes_12__Sample
+  , notes_13__Sample
+  , notes_14__Sample
+  , xmas_0__Sample
+  , erk_0__Sample
+  , x_808mt_0__Sample
+  , x_808mt_1__Sample
+  , x_808mt_2__Sample
+  , x_808mt_3__Sample
+  , x_808mt_4__Sample
+  , lighter_0__Sample
+  , lighter_1__Sample
+  , lighter_2__Sample
+  , lighter_3__Sample
+  , lighter_4__Sample
+  , lighter_5__Sample
+  , lighter_6__Sample
+  , lighter_7__Sample
+  , lighter_8__Sample
+  , lighter_9__Sample
+  , lighter_10__Sample
+  , lighter_11__Sample
+  , lighter_12__Sample
+  , lighter_13__Sample
+  , lighter_14__Sample
+  , lighter_15__Sample
+  , lighter_16__Sample
+  , lighter_17__Sample
+  , lighter_18__Sample
+  , lighter_19__Sample
+  , lighter_20__Sample
+  , lighter_21__Sample
+  , lighter_22__Sample
+  , lighter_23__Sample
+  , lighter_24__Sample
+  , lighter_25__Sample
+  , lighter_26__Sample
+  , lighter_27__Sample
+  , lighter_28__Sample
+  , lighter_29__Sample
+  , lighter_30__Sample
+  , lighter_31__Sample
+  , lighter_32__Sample
+  , cb_0__Sample
+  , subroc3d_0__Sample
+  , subroc3d_1__Sample
+  , subroc3d_2__Sample
+  , subroc3d_3__Sample
+  , subroc3d_4__Sample
+  , subroc3d_5__Sample
+  , subroc3d_6__Sample
+  , subroc3d_7__Sample
+  , subroc3d_8__Sample
+  , subroc3d_9__Sample
+  , subroc3d_10__Sample
+  , ul_0__Sample
+  , ul_1__Sample
+  , ul_2__Sample
+  , ul_3__Sample
+  , ul_4__Sample
+  , ul_5__Sample
+  , ul_6__Sample
+  , ul_7__Sample
+  , ul_8__Sample
+  , ul_9__Sample
+  , gab_0__Sample
+  , gab_1__Sample
+  , gab_2__Sample
+  , gab_3__Sample
+  , gab_4__Sample
+  , gab_5__Sample
+  , gab_6__Sample
+  , gab_7__Sample
+  , gab_8__Sample
+  , gab_9__Sample
+  , monsterb_0__Sample
+  , monsterb_1__Sample
+  , monsterb_2__Sample
+  , monsterb_3__Sample
+  , monsterb_4__Sample
+  , monsterb_5__Sample
+  , diphone_0__Sample
+  , diphone_1__Sample
+  , diphone_2__Sample
+  , diphone_3__Sample
+  , diphone_4__Sample
+  , diphone_5__Sample
+  , diphone_6__Sample
+  , diphone_7__Sample
+  , diphone_8__Sample
+  , diphone_9__Sample
+  , diphone_10__Sample
+  , diphone_11__Sample
+  , diphone_12__Sample
+  , diphone_13__Sample
+  , diphone_14__Sample
+  , diphone_15__Sample
+  , diphone_16__Sample
+  , diphone_17__Sample
+  , diphone_18__Sample
+  , diphone_19__Sample
+  , diphone_20__Sample
+  , diphone_21__Sample
+  , diphone_22__Sample
+  , diphone_23__Sample
+  , diphone_24__Sample
+  , diphone_25__Sample
+  , diphone_26__Sample
+  , diphone_27__Sample
+  , diphone_28__Sample
+  , diphone_29__Sample
+  , diphone_30__Sample
+  , diphone_31__Sample
+  , diphone_32__Sample
+  , diphone_33__Sample
+  , diphone_34__Sample
+  , diphone_35__Sample
+  , diphone_36__Sample
+  , diphone_37__Sample
+  , clak_0__Sample
+  , clak_1__Sample
+  , sitar_0__Sample
+  , sitar_1__Sample
+  , sitar_2__Sample
+  , sitar_3__Sample
+  , sitar_4__Sample
+  , sitar_5__Sample
+  , sitar_6__Sample
+  , sitar_7__Sample
+  , ab_0__Sample
+  , ab_1__Sample
+  , ab_2__Sample
+  , ab_3__Sample
+  , ab_4__Sample
+  , ab_5__Sample
+  , ab_6__Sample
+  , ab_7__Sample
+  , ab_8__Sample
+  , ab_9__Sample
+  , ab_10__Sample
+  , ab_11__Sample
+  , cr_0__Sample
+  , cr_1__Sample
+  , cr_2__Sample
+  , cr_3__Sample
+  , cr_4__Sample
+  , cr_5__Sample
+  , tacscan_0__Sample
+  , tacscan_1__Sample
+  , tacscan_2__Sample
+  , tacscan_3__Sample
+  , tacscan_4__Sample
+  , tacscan_5__Sample
+  , tacscan_6__Sample
+  , tacscan_7__Sample
+  , tacscan_8__Sample
+  , tacscan_9__Sample
+  , tacscan_10__Sample
+  , tacscan_11__Sample
+  , tacscan_12__Sample
+  , tacscan_13__Sample
+  , tacscan_14__Sample
+  , tacscan_15__Sample
+  , tacscan_16__Sample
+  , tacscan_17__Sample
+  , tacscan_18__Sample
+  , tacscan_19__Sample
+  , tacscan_20__Sample
+  , tacscan_21__Sample
+  , v_0__Sample
+  , v_1__Sample
+  , v_2__Sample
+  , v_3__Sample
+  , v_4__Sample
+  , v_5__Sample
+  , bd_0__Sample
+  , bd_1__Sample
+  , bd_2__Sample
+  , bd_3__Sample
+  , bd_4__Sample
+  , bd_5__Sample
+  , bd_6__Sample
+  , bd_7__Sample
+  , bd_8__Sample
+  , bd_9__Sample
+  , bd_10__Sample
+  , bd_11__Sample
+  , bd_12__Sample
+  , bd_13__Sample
+  , bd_14__Sample
+  , bd_15__Sample
+  , bd_16__Sample
+  , bd_17__Sample
+  , bd_18__Sample
+  , bd_19__Sample
+  , bd_20__Sample
+  , bd_21__Sample
+  , bd_22__Sample
+  , bd_23__Sample
+  , rm_0__Sample
+  , rm_1__Sample
+  , blue_0__Sample
+  , blue_1__Sample
+  , latibro_0__Sample
+  , latibro_1__Sample
+  , latibro_2__Sample
+  , latibro_3__Sample
+  , latibro_4__Sample
+  , latibro_5__Sample
+  , latibro_6__Sample
+  , latibro_7__Sample
+  , dr_few_0__Sample
+  , dr_few_1__Sample
+  , dr_few_2__Sample
+  , dr_few_3__Sample
+  , dr_few_4__Sample
+  , dr_few_5__Sample
+  , dr_few_6__Sample
+  , dr_few_7__Sample
+  , rave2_0__Sample
+  , rave2_1__Sample
+  , rave2_2__Sample
+  , rave2_3__Sample
+  , rave2_4__Sample
+  , rave2_5__Sample
+  , koy_0__Sample
+  , koy_1__Sample
+  , glitch2_0__Sample
+  , glitch2_1__Sample
+  , glitch2_2__Sample
+  , glitch2_3__Sample
+  , glitch2_4__Sample
+  , glitch2_5__Sample
+  , glitch2_6__Sample
+  , glitch2_7__Sample
+  , hmm_0__Sample
+  , arp_0__Sample
+  , arp_1__Sample
+  , made2_0__Sample
+  , uxay_0__Sample
+  , uxay_1__Sample
+  , uxay_2__Sample
+  , stomp_0__Sample
+  , stomp_1__Sample
+  , stomp_2__Sample
+  , stomp_3__Sample
+  , stomp_4__Sample
+  , stomp_5__Sample
+  , stomp_6__Sample
+  , stomp_7__Sample
+  , stomp_8__Sample
+  , stomp_9__Sample
+  , tech_0__Sample
+  , tech_1__Sample
+  , tech_2__Sample
+  , tech_3__Sample
+  , tech_4__Sample
+  , tech_5__Sample
+  , tech_6__Sample
+  , tech_7__Sample
+  , tech_8__Sample
+  , tech_9__Sample
+  , tech_10__Sample
+  , tech_11__Sample
+  , tech_12__Sample
+  , sn_0__Sample
+  , sn_1__Sample
+  , sn_2__Sample
+  , sn_3__Sample
+  , sn_4__Sample
+  , sn_5__Sample
+  , sn_6__Sample
+  , sn_7__Sample
+  , sn_8__Sample
+  , sn_9__Sample
+  , sn_10__Sample
+  , sn_11__Sample
+  , sn_12__Sample
+  , sn_13__Sample
+  , sn_14__Sample
+  , sn_15__Sample
+  , sn_16__Sample
+  , sn_17__Sample
+  , sn_18__Sample
+  , sn_19__Sample
+  , sn_20__Sample
+  , sn_21__Sample
+  , sn_22__Sample
+  , sn_23__Sample
+  , sn_24__Sample
+  , sn_25__Sample
+  , sn_26__Sample
+  , sn_27__Sample
+  , sn_28__Sample
+  , sn_29__Sample
+  , sn_30__Sample
+  , sn_31__Sample
+  , sn_32__Sample
+  , sn_33__Sample
+  , sn_34__Sample
+  , sn_35__Sample
+  , sn_36__Sample
+  , sn_37__Sample
+  , sn_38__Sample
+  , sn_39__Sample
+  , sn_40__Sample
+  , sn_41__Sample
+  , sn_42__Sample
+  , sn_43__Sample
+  , sn_44__Sample
+  , sn_45__Sample
+  , sn_46__Sample
+  , sn_47__Sample
+  , sn_48__Sample
+  , sn_49__Sample
+  , sn_50__Sample
+  , sn_51__Sample
+  , less_0__Sample
+  , less_1__Sample
+  , less_2__Sample
+  , less_3__Sample
+  , off_0__Sample
+  , x_808sd_0__Sample
+  , x_808sd_1__Sample
+  , x_808sd_2__Sample
+  , x_808sd_3__Sample
+  , x_808sd_4__Sample
+  , x_808sd_5__Sample
+  , x_808sd_6__Sample
+  , x_808sd_7__Sample
+  , x_808sd_8__Sample
+  , x_808sd_9__Sample
+  , x_808sd_10__Sample
+  , x_808sd_11__Sample
+  , x_808sd_12__Sample
+  , x_808sd_13__Sample
+  , x_808sd_14__Sample
+  , x_808sd_15__Sample
+  , x_808sd_16__Sample
+  , x_808sd_17__Sample
+  , x_808sd_18__Sample
+  , x_808sd_19__Sample
+  , x_808sd_20__Sample
+  , x_808sd_21__Sample
+  , x_808sd_22__Sample
+  , x_808sd_23__Sample
+  , x_808sd_24__Sample
+  , trump_0__Sample
+  , trump_1__Sample
+  , trump_2__Sample
+  , trump_3__Sample
+  , trump_4__Sample
+  , trump_5__Sample
+  , trump_6__Sample
+  , trump_7__Sample
+  , trump_8__Sample
+  , trump_9__Sample
+  , trump_10__Sample
+  , bev_0__Sample
+  , bev_1__Sample
+  , pad_0__Sample
+  , pad_1__Sample
+  , pad_2__Sample
+  , led_0__Sample
+  , perc_0__Sample
+  , perc_1__Sample
+  , perc_2__Sample
+  , perc_3__Sample
+  , perc_4__Sample
+  , perc_5__Sample
+  , pluck_0__Sample
+  , pluck_1__Sample
+  , pluck_2__Sample
+  , pluck_3__Sample
+  , pluck_4__Sample
+  , pluck_5__Sample
+  , pluck_6__Sample
+  , pluck_7__Sample
+  , pluck_8__Sample
+  , pluck_9__Sample
+  , pluck_10__Sample
+  , pluck_11__Sample
+  , pluck_12__Sample
+  , pluck_13__Sample
+  , pluck_14__Sample
+  , pluck_15__Sample
+  , pluck_16__Sample
+  , bleep_0__Sample
+  , bleep_1__Sample
+  , bleep_2__Sample
+  , bleep_3__Sample
+  , bleep_4__Sample
+  , bleep_5__Sample
+  , bleep_6__Sample
+  , bleep_7__Sample
+  , bleep_8__Sample
+  , bleep_9__Sample
+  , bleep_10__Sample
+  , bleep_11__Sample
+  , bleep_12__Sample
+  , ht_0__Sample
+  , ht_1__Sample
+  , ht_2__Sample
+  , ht_3__Sample
+  , ht_4__Sample
+  , ht_5__Sample
+  , ht_6__Sample
+  , ht_7__Sample
+  , ht_8__Sample
+  , ht_9__Sample
+  , ht_10__Sample
+  , ht_11__Sample
+  , ht_12__Sample
+  , ht_13__Sample
+  , ht_14__Sample
+  , ht_15__Sample
+  , ades4_0__Sample
+  , ades4_1__Sample
+  , ades4_2__Sample
+  , ades4_3__Sample
+  , ades4_4__Sample
+  , ades4_5__Sample
+  , proc_0__Sample
+  , proc_1__Sample
+  , gretsch_0__Sample
+  , gretsch_1__Sample
+  , gretsch_2__Sample
+  , gretsch_3__Sample
+  , gretsch_4__Sample
+  , gretsch_5__Sample
+  , gretsch_6__Sample
+  , gretsch_7__Sample
+  , gretsch_8__Sample
+  , gretsch_9__Sample
+  , gretsch_10__Sample
+  , gretsch_11__Sample
+  , gretsch_12__Sample
+  , gretsch_13__Sample
+  , gretsch_14__Sample
+  , gretsch_15__Sample
+  , gretsch_16__Sample
+  , gretsch_17__Sample
+  , gretsch_18__Sample
+  , gretsch_19__Sample
+  , gretsch_20__Sample
+  , gretsch_21__Sample
+  , gretsch_22__Sample
+  , gretsch_23__Sample
+  , outdoor_0__Sample
+  , outdoor_1__Sample
+  , outdoor_2__Sample
+  , outdoor_3__Sample
+  , outdoor_4__Sample
+  , outdoor_5__Sample
+  , techno_0__Sample
+  , techno_1__Sample
+  , techno_2__Sample
+  , techno_3__Sample
+  , techno_4__Sample
+  , techno_5__Sample
+  , techno_6__Sample
+  , ulgab_0__Sample
+  , ulgab_1__Sample
+  , ulgab_2__Sample
+  , ulgab_3__Sample
+  , ulgab_4__Sample
+  , breaks125_0__Sample
+  , breaks125_1__Sample
+  , bin_0__Sample
+  , bin_1__Sample
+  , x_808mc_0__Sample
+  , x_808mc_1__Sample
+  , x_808mc_2__Sample
+  , x_808mc_3__Sample
+  , x_808mc_4__Sample
+  , lt_0__Sample
+  , lt_1__Sample
+  , lt_2__Sample
+  , lt_3__Sample
+  , lt_4__Sample
+  , lt_5__Sample
+  , lt_6__Sample
+  , lt_7__Sample
+  , lt_8__Sample
+  , lt_9__Sample
+  , lt_10__Sample
+  , lt_11__Sample
+  , lt_12__Sample
+  , lt_13__Sample
+  , lt_14__Sample
+  , lt_15__Sample
+  , amencutup_0__Sample
+  , amencutup_1__Sample
+  , amencutup_2__Sample
+  , amencutup_3__Sample
+  , amencutup_4__Sample
+  , amencutup_5__Sample
+  , amencutup_6__Sample
+  , amencutup_7__Sample
+  , amencutup_8__Sample
+  , amencutup_9__Sample
+  , amencutup_10__Sample
+  , amencutup_11__Sample
+  , amencutup_12__Sample
+  , amencutup_13__Sample
+  , amencutup_14__Sample
+  , amencutup_15__Sample
+  , amencutup_16__Sample
+  , amencutup_17__Sample
+  , amencutup_18__Sample
+  , amencutup_19__Sample
+  , amencutup_20__Sample
+  , amencutup_21__Sample
+  , amencutup_22__Sample
+  , amencutup_23__Sample
+  , amencutup_24__Sample
+  , amencutup_25__Sample
+  , amencutup_26__Sample
+  , amencutup_27__Sample
+  , amencutup_28__Sample
+  , amencutup_29__Sample
+  , amencutup_30__Sample
+  , amencutup_31__Sample
+  , drum_0__Sample
+  , drum_1__Sample
+  , drum_2__Sample
+  , drum_3__Sample
+  , drum_4__Sample
+  , drum_5__Sample
+  , coins_0__Sample
+  , industrial_0__Sample
+  , industrial_1__Sample
+  , industrial_2__Sample
+  , industrial_3__Sample
+  , industrial_4__Sample
+  , industrial_5__Sample
+  , industrial_6__Sample
+  , industrial_7__Sample
+  , industrial_8__Sample
+  , industrial_9__Sample
+  , industrial_10__Sample
+  , industrial_11__Sample
+  , industrial_12__Sample
+  , industrial_13__Sample
+  , industrial_14__Sample
+  , industrial_15__Sample
+  , industrial_16__Sample
+  , industrial_17__Sample
+  , industrial_18__Sample
+  , industrial_19__Sample
+  , industrial_20__Sample
+  , industrial_21__Sample
+  , industrial_22__Sample
+  , industrial_23__Sample
+  , industrial_24__Sample
+  , industrial_25__Sample
+  , industrial_26__Sample
+  , industrial_27__Sample
+  , industrial_28__Sample
+  , industrial_29__Sample
+  , industrial_30__Sample
+  , industrial_31__Sample
+  , tink_0__Sample
+  , tink_1__Sample
+  , tink_2__Sample
+  , tink_3__Sample
+  , tink_4__Sample
+  , co_0__Sample
+  , co_1__Sample
+  , co_2__Sample
+  , co_3__Sample
+  , fest_0__Sample
+  , feelfx_0__Sample
+  , feelfx_1__Sample
+  , feelfx_2__Sample
+  , feelfx_3__Sample
+  , feelfx_4__Sample
+  , feelfx_5__Sample
+  , feelfx_6__Sample
+  , feelfx_7__Sample
+  , x_808cy_0__Sample
+  , x_808cy_1__Sample
+  , x_808cy_2__Sample
+  , x_808cy_3__Sample
+  , x_808cy_4__Sample
+  , x_808cy_5__Sample
+  , x_808cy_6__Sample
+  , x_808cy_7__Sample
+  , x_808cy_8__Sample
+  , x_808cy_9__Sample
+  , x_808cy_10__Sample
+  , x_808cy_11__Sample
+  , x_808cy_12__Sample
+  , x_808cy_13__Sample
+  , x_808cy_14__Sample
+  , x_808cy_15__Sample
+  , x_808cy_16__Sample
+  , x_808cy_17__Sample
+  , x_808cy_18__Sample
+  , x_808cy_19__Sample
+  , x_808cy_20__Sample
+  , x_808cy_21__Sample
+  , x_808cy_22__Sample
+  , x_808cy_23__Sample
+  , x_808cy_24__Sample
+  , world_0__Sample
+  , world_1__Sample
+  , world_2__Sample
+  , f_0__Sample
+  , numbers_0__Sample
+  , numbers_1__Sample
+  , numbers_2__Sample
+  , numbers_3__Sample
+  , numbers_4__Sample
+  , numbers_5__Sample
+  , numbers_6__Sample
+  , numbers_7__Sample
+  , numbers_8__Sample
+  , d_0__Sample
+  , d_1__Sample
+  , d_2__Sample
+  , d_3__Sample
+  , padlong_0__Sample
+  , sequential_0__Sample
+  , sequential_1__Sample
+  , sequential_2__Sample
+  , sequential_3__Sample
+  , sequential_4__Sample
+  , sequential_5__Sample
+  , sequential_6__Sample
+  , sequential_7__Sample
+  , stab_0__Sample
+  , stab_1__Sample
+  , stab_2__Sample
+  , stab_3__Sample
+  , stab_4__Sample
+  , stab_5__Sample
+  , stab_6__Sample
+  , stab_7__Sample
+  , stab_8__Sample
+  , stab_9__Sample
+  , stab_10__Sample
+  , stab_11__Sample
+  , stab_12__Sample
+  , stab_13__Sample
+  , stab_14__Sample
+  , stab_15__Sample
+  , stab_16__Sample
+  , stab_17__Sample
+  , stab_18__Sample
+  , stab_19__Sample
+  , stab_20__Sample
+  , stab_21__Sample
+  , stab_22__Sample
+  , electro1_0__Sample
+  , electro1_1__Sample
+  , electro1_2__Sample
+  , electro1_3__Sample
+  , electro1_4__Sample
+  , electro1_5__Sample
+  , electro1_6__Sample
+  , electro1_7__Sample
+  , electro1_8__Sample
+  , electro1_9__Sample
+  , electro1_10__Sample
+  , electro1_11__Sample
+  , electro1_12__Sample
+  , ifdrums_0__Sample
+  , ifdrums_1__Sample
+  , ifdrums_2__Sample
+  , invaders_0__Sample
+  , invaders_1__Sample
+  , invaders_2__Sample
+  , invaders_3__Sample
+  , invaders_4__Sample
+  , invaders_5__Sample
+  , invaders_6__Sample
+  , invaders_7__Sample
+  , invaders_8__Sample
+  , invaders_9__Sample
+  , invaders_10__Sample
+  , invaders_11__Sample
+  , invaders_12__Sample
+  , invaders_13__Sample
+  , invaders_14__Sample
+  , invaders_15__Sample
+  , invaders_16__Sample
+  , invaders_17__Sample
+  , dist_0__Sample
+  , dist_1__Sample
+  , dist_2__Sample
+  , dist_3__Sample
+  , dist_4__Sample
+  , dist_5__Sample
+  , dist_6__Sample
+  , dist_7__Sample
+  , dist_8__Sample
+  , dist_9__Sample
+  , dist_10__Sample
+  , dist_11__Sample
+  , dist_12__Sample
+  , dist_13__Sample
+  , dist_14__Sample
+  , dist_15__Sample
+  , sundance_0__Sample
+  , sundance_1__Sample
+  , sundance_2__Sample
+  , sundance_3__Sample
+  , sundance_4__Sample
+  , sundance_5__Sample
+  , speech_0__Sample
+  , speech_1__Sample
+  , speech_2__Sample
+  , speech_3__Sample
+  , speech_4__Sample
+  , speech_5__Sample
+  , speech_6__Sample
+  , toys_0__Sample
+  , toys_1__Sample
+  , toys_2__Sample
+  , toys_3__Sample
+  , toys_4__Sample
+  , toys_5__Sample
+  , toys_6__Sample
+  , toys_7__Sample
+  , toys_8__Sample
+  , toys_9__Sample
+  , toys_10__Sample
+  , toys_11__Sample
+  , toys_12__Sample
+  , bass0_0__Sample
+  , bass0_1__Sample
+  , bass0_2__Sample
+  , realclaps_0__Sample
+  , realclaps_1__Sample
+  , realclaps_2__Sample
+  , realclaps_3__Sample
+  , dorkbot_0__Sample
+  , dorkbot_1__Sample
+  , arpy_0__Sample
+  , arpy_1__Sample
+  , arpy_2__Sample
+  , arpy_3__Sample
+  , arpy_4__Sample
+  , arpy_5__Sample
+  , arpy_6__Sample
+  , arpy_7__Sample
+  , arpy_8__Sample
+  , arpy_9__Sample
+  , arpy_10__Sample
+  , fire_0__Sample
+  , hoover_0__Sample
+  , hoover_1__Sample
+  , hoover_2__Sample
+  , hoover_3__Sample
+  , hoover_4__Sample
+  , hoover_5__Sample
+  , breath_0__Sample
+  , rave_0__Sample
+  , rave_1__Sample
+  , rave_2__Sample
+  , rave_3__Sample
+  , rave_4__Sample
+  , rave_5__Sample
+  , rave_6__Sample
+  , rave_7__Sample
+  , bottle_0__Sample
+  , bottle_1__Sample
+  , bottle_2__Sample
+  , bottle_3__Sample
+  , bottle_4__Sample
+  , bottle_5__Sample
+  , bottle_6__Sample
+  , bottle_7__Sample
+  , bottle_8__Sample
+  , bottle_9__Sample
+  , bottle_10__Sample
+  , bottle_11__Sample
+  , bottle_12__Sample
+  , east_0__Sample
+  , east_1__Sample
+  , east_2__Sample
+  , east_3__Sample
+  , east_4__Sample
+  , east_5__Sample
+  , east_6__Sample
+  , east_7__Sample
+  , east_8__Sample
+  , linnhats_0__Sample
+  , linnhats_1__Sample
+  , linnhats_2__Sample
+  , linnhats_3__Sample
+  , linnhats_4__Sample
+  , linnhats_5__Sample
+  , speedupdown_0__Sample
+  , speedupdown_1__Sample
+  , speedupdown_2__Sample
+  , speedupdown_3__Sample
+  , speedupdown_4__Sample
+  , speedupdown_5__Sample
+  , speedupdown_6__Sample
+  , speedupdown_7__Sample
+  , speedupdown_8__Sample
+  , cosmicg_0__Sample
+  , cosmicg_1__Sample
+  , cosmicg_2__Sample
+  , cosmicg_3__Sample
+  , cosmicg_4__Sample
+  , cosmicg_5__Sample
+  , cosmicg_6__Sample
+  , cosmicg_7__Sample
+  , cosmicg_8__Sample
+  , cosmicg_9__Sample
+  , cosmicg_10__Sample
+  , cosmicg_11__Sample
+  , cosmicg_12__Sample
+  , cosmicg_13__Sample
+  , cosmicg_14__Sample
+  , jvbass_0__Sample
+  , jvbass_1__Sample
+  , jvbass_2__Sample
+  , jvbass_3__Sample
+  , jvbass_4__Sample
+  , jvbass_5__Sample
+  , jvbass_6__Sample
+  , jvbass_7__Sample
+  , jvbass_8__Sample
+  , jvbass_9__Sample
+  , jvbass_10__Sample
+  , jvbass_11__Sample
+  , jvbass_12__Sample
+  , mash_0__Sample
+  , mash_1__Sample
+  , feel_0__Sample
+  , feel_1__Sample
+  , feel_2__Sample
+  , feel_3__Sample
+  , feel_4__Sample
+  , feel_5__Sample
+  , feel_6__Sample
+  , short_0__Sample
+  , short_1__Sample
+  , short_2__Sample
+  , short_3__Sample
+  , short_4__Sample
+  , incoming_0__Sample
+  , incoming_1__Sample
+  , incoming_2__Sample
+  , incoming_3__Sample
+  , incoming_4__Sample
+  , incoming_5__Sample
+  , incoming_6__Sample
+  , incoming_7__Sample
+  , flick_0__Sample
+  , flick_1__Sample
+  , flick_2__Sample
+  , flick_3__Sample
+  , flick_4__Sample
+  , flick_5__Sample
+  , flick_6__Sample
+  , flick_7__Sample
+  , flick_8__Sample
+  , flick_9__Sample
+  , flick_10__Sample
+  , flick_11__Sample
+  , flick_12__Sample
+  , flick_13__Sample
+  , flick_14__Sample
+  , flick_15__Sample
+  , flick_16__Sample
+  , reverbkick_0__Sample
+  , bass2_0__Sample
+  , bass2_1__Sample
+  , bass2_2__Sample
+  , bass2_3__Sample
+  , bass2_4__Sample
+  , baa_0__Sample
+  , baa_1__Sample
+  , baa_2__Sample
+  , baa_3__Sample
+  , baa_4__Sample
+  , baa_5__Sample
+  , baa_6__Sample
+  , fm_0__Sample
+  , fm_1__Sample
+  , fm_2__Sample
+  , fm_3__Sample
+  , fm_4__Sample
+  , fm_5__Sample
+  , fm_6__Sample
+  , fm_7__Sample
+  , fm_8__Sample
+  , fm_9__Sample
+  , fm_10__Sample
+  , fm_11__Sample
+  , fm_12__Sample
+  , fm_13__Sample
+  , fm_14__Sample
+  , fm_15__Sample
+  , fm_16__Sample
+  , click_0__Sample
+  , click_1__Sample
+  , click_2__Sample
+  , click_3__Sample
+  , control_0__Sample
+  , control_1__Sample
+  , peri_0__Sample
+  , peri_1__Sample
+  , peri_2__Sample
+  , peri_3__Sample
+  , peri_4__Sample
+  , peri_5__Sample
+  , peri_6__Sample
+  , peri_7__Sample
+  , peri_8__Sample
+  , peri_9__Sample
+  , peri_10__Sample
+  , peri_11__Sample
+  , peri_12__Sample
+  , peri_13__Sample
+  , peri_14__Sample
+  , procshort_0__Sample
+  , procshort_1__Sample
+  , procshort_2__Sample
+  , procshort_3__Sample
+  , procshort_4__Sample
+  , procshort_5__Sample
+  , procshort_6__Sample
+  , procshort_7__Sample
+  , hand_0__Sample
+  , hand_1__Sample
+  , hand_2__Sample
+  , hand_3__Sample
+  , hand_4__Sample
+  , hand_5__Sample
+  , hand_6__Sample
+  , hand_7__Sample
+  , hand_8__Sample
+  , hand_9__Sample
+  , hand_10__Sample
+  , hand_11__Sample
+  , hand_12__Sample
+  , hand_13__Sample
+  , hand_14__Sample
+  , hand_15__Sample
+  , hand_16__Sample
+  , future_0__Sample
+  , future_1__Sample
+  , future_2__Sample
+  , future_3__Sample
+  , future_4__Sample
+  , future_5__Sample
+  , future_6__Sample
+  , future_7__Sample
+  , future_8__Sample
+  , future_9__Sample
+  , future_10__Sample
+  , future_11__Sample
+  , future_12__Sample
+  , future_13__Sample
+  , future_14__Sample
+  , future_15__Sample
+  , future_16__Sample
+  , hh_0__Sample
+  , hh_1__Sample
+  , hh_2__Sample
+  , hh_3__Sample
+  , hh_4__Sample
+  , hh_5__Sample
+  , hh_6__Sample
+  , hh_7__Sample
+  , hh_8__Sample
+  , hh_9__Sample
+  , hh_10__Sample
+  , hh_11__Sample
+  , hh_12__Sample
+  , x_808ht_0__Sample
+  , x_808ht_1__Sample
+  , x_808ht_2__Sample
+  , x_808ht_3__Sample
+  , x_808ht_4__Sample
+  , db_0__Sample
+  , db_1__Sample
+  , db_2__Sample
+  , db_3__Sample
+  , db_4__Sample
+  , db_5__Sample
+  , db_6__Sample
+  , db_7__Sample
+  , db_8__Sample
+  , db_9__Sample
+  , db_10__Sample
+  , db_11__Sample
+  , db_12__Sample
+  ) where
 
 import Prelude
 
@@ -4060,12 +6088,10 @@ urls =
   , db_12: "https://klank-share.s3.amazonaws.com/dirt-samples/db/dbs12snare2.ogg"
   }
 
-newtype Sample = Sample Int
+newtype Sample = Sample String
 
-derive instance newtypeSample :: Newtype Sample _
-derive instance genericSample :: Generic Sample _
-derive newtype instance sampleEq :: Eq Sample
-derive newtype instance sampleOrd :: Ord Sample
+derive instance sampleEq :: Eq Sample
+derive instance sampleOrd :: Ord Sample
 instance sampleShow :: Show Sample where
   show (Sample i) = "Sample <" <> show i <> ">"
 
@@ -4094,2026 +6120,2026 @@ instance ordNote :: Ord Note where
 instance showNote :: Show Note where
   show (Note { sample }) = "Note <" <> show sample <> ">"
 
-intentionalSilenceForInternalUseOnly__Sample = Sample (-1) :: Sample
-kicklinn_0__Sample = Sample 0 :: Sample
-msg_0__Sample = Sample 1 :: Sample
-msg_1__Sample = Sample 2 :: Sample
-msg_2__Sample = Sample 3 :: Sample
-msg_3__Sample = Sample 4 :: Sample
-msg_4__Sample = Sample 5 :: Sample
-msg_5__Sample = Sample 6 :: Sample
-msg_6__Sample = Sample 7 :: Sample
-msg_7__Sample = Sample 8 :: Sample
-msg_8__Sample = Sample 9 :: Sample
-gabbalouder_0__Sample = Sample 10 :: Sample
-gabbalouder_1__Sample = Sample 11 :: Sample
-gabbalouder_2__Sample = Sample 12 :: Sample
-gabbalouder_3__Sample = Sample 13 :: Sample
-kurt_0__Sample = Sample 14 :: Sample
-kurt_1__Sample = Sample 15 :: Sample
-kurt_2__Sample = Sample 16 :: Sample
-kurt_3__Sample = Sample 17 :: Sample
-kurt_4__Sample = Sample 18 :: Sample
-kurt_5__Sample = Sample 19 :: Sample
-kurt_6__Sample = Sample 20 :: Sample
-bassdm_0__Sample = Sample 21 :: Sample
-bassdm_1__Sample = Sample 22 :: Sample
-bassdm_2__Sample = Sample 23 :: Sample
-bassdm_3__Sample = Sample 24 :: Sample
-bassdm_4__Sample = Sample 25 :: Sample
-bassdm_5__Sample = Sample 26 :: Sample
-bassdm_6__Sample = Sample 27 :: Sample
-bassdm_7__Sample = Sample 28 :: Sample
-bassdm_8__Sample = Sample 29 :: Sample
-bassdm_9__Sample = Sample 30 :: Sample
-bassdm_10__Sample = Sample 31 :: Sample
-bassdm_11__Sample = Sample 32 :: Sample
-bassdm_12__Sample = Sample 33 :: Sample
-bassdm_13__Sample = Sample 34 :: Sample
-bassdm_14__Sample = Sample 35 :: Sample
-bassdm_15__Sample = Sample 36 :: Sample
-bassdm_16__Sample = Sample 37 :: Sample
-bassdm_17__Sample = Sample 38 :: Sample
-bassdm_18__Sample = Sample 39 :: Sample
-bassdm_19__Sample = Sample 40 :: Sample
-bassdm_20__Sample = Sample 41 :: Sample
-bassdm_21__Sample = Sample 42 :: Sample
-bassdm_22__Sample = Sample 43 :: Sample
-bassdm_23__Sample = Sample 44 :: Sample
-tabla2_0__Sample = Sample 45 :: Sample
-tabla2_1__Sample = Sample 46 :: Sample
-tabla2_2__Sample = Sample 47 :: Sample
-tabla2_3__Sample = Sample 48 :: Sample
-tabla2_4__Sample = Sample 49 :: Sample
-tabla2_5__Sample = Sample 50 :: Sample
-tabla2_6__Sample = Sample 51 :: Sample
-tabla2_7__Sample = Sample 52 :: Sample
-tabla2_8__Sample = Sample 53 :: Sample
-tabla2_9__Sample = Sample 54 :: Sample
-tabla2_10__Sample = Sample 55 :: Sample
-tabla2_11__Sample = Sample 56 :: Sample
-tabla2_12__Sample = Sample 57 :: Sample
-tabla2_13__Sample = Sample 58 :: Sample
-tabla2_14__Sample = Sample 59 :: Sample
-tabla2_15__Sample = Sample 60 :: Sample
-tabla2_16__Sample = Sample 61 :: Sample
-tabla2_17__Sample = Sample 62 :: Sample
-tabla2_18__Sample = Sample 63 :: Sample
-tabla2_19__Sample = Sample 64 :: Sample
-tabla2_20__Sample = Sample 65 :: Sample
-tabla2_21__Sample = Sample 66 :: Sample
-tabla2_22__Sample = Sample 67 :: Sample
-tabla2_23__Sample = Sample 68 :: Sample
-tabla2_24__Sample = Sample 69 :: Sample
-tabla2_25__Sample = Sample 70 :: Sample
-tabla2_26__Sample = Sample 71 :: Sample
-tabla2_27__Sample = Sample 72 :: Sample
-tabla2_28__Sample = Sample 73 :: Sample
-tabla2_29__Sample = Sample 74 :: Sample
-tabla2_30__Sample = Sample 75 :: Sample
-tabla2_31__Sample = Sample 76 :: Sample
-tabla2_32__Sample = Sample 77 :: Sample
-tabla2_33__Sample = Sample 78 :: Sample
-tabla2_34__Sample = Sample 79 :: Sample
-tabla2_35__Sample = Sample 80 :: Sample
-tabla2_36__Sample = Sample 81 :: Sample
-tabla2_37__Sample = Sample 82 :: Sample
-tabla2_38__Sample = Sample 83 :: Sample
-tabla2_39__Sample = Sample 84 :: Sample
-tabla2_40__Sample = Sample 85 :: Sample
-tabla2_41__Sample = Sample 86 :: Sample
-tabla2_42__Sample = Sample 87 :: Sample
-tabla2_43__Sample = Sample 88 :: Sample
-tabla2_44__Sample = Sample 89 :: Sample
-tabla2_45__Sample = Sample 90 :: Sample
-chin_0__Sample = Sample 91 :: Sample
-chin_1__Sample = Sample 92 :: Sample
-chin_2__Sample = Sample 93 :: Sample
-chin_3__Sample = Sample 94 :: Sample
-mp3_0__Sample = Sample 95 :: Sample
-mp3_1__Sample = Sample 96 :: Sample
-mp3_2__Sample = Sample 97 :: Sample
-mp3_3__Sample = Sample 98 :: Sample
-tablex_0__Sample = Sample 99 :: Sample
-tablex_1__Sample = Sample 100 :: Sample
-tablex_2__Sample = Sample 101 :: Sample
-sf_0__Sample = Sample 102 :: Sample
-sf_1__Sample = Sample 103 :: Sample
-sf_2__Sample = Sample 104 :: Sample
-sf_3__Sample = Sample 105 :: Sample
-sf_4__Sample = Sample 106 :: Sample
-sf_5__Sample = Sample 107 :: Sample
-sf_6__Sample = Sample 108 :: Sample
-sf_7__Sample = Sample 109 :: Sample
-sf_8__Sample = Sample 110 :: Sample
-sf_9__Sample = Sample 111 :: Sample
-sf_10__Sample = Sample 112 :: Sample
-sf_11__Sample = Sample 113 :: Sample
-sf_12__Sample = Sample 114 :: Sample
-sf_13__Sample = Sample 115 :: Sample
-sf_14__Sample = Sample 116 :: Sample
-sf_15__Sample = Sample 117 :: Sample
-sf_16__Sample = Sample 118 :: Sample
-sf_17__Sample = Sample 119 :: Sample
-speakspell_0__Sample = Sample 120 :: Sample
-speakspell_1__Sample = Sample 121 :: Sample
-speakspell_2__Sample = Sample 122 :: Sample
-speakspell_3__Sample = Sample 123 :: Sample
-speakspell_4__Sample = Sample 124 :: Sample
-speakspell_5__Sample = Sample 125 :: Sample
-speakspell_6__Sample = Sample 126 :: Sample
-speakspell_7__Sample = Sample 127 :: Sample
-speakspell_8__Sample = Sample 128 :: Sample
-speakspell_9__Sample = Sample 129 :: Sample
-speakspell_10__Sample = Sample 130 :: Sample
-speakspell_11__Sample = Sample 131 :: Sample
-cc_0__Sample = Sample 132 :: Sample
-cc_1__Sample = Sample 133 :: Sample
-cc_2__Sample = Sample 134 :: Sample
-cc_3__Sample = Sample 135 :: Sample
-cc_4__Sample = Sample 136 :: Sample
-cc_5__Sample = Sample 137 :: Sample
-gabbaloud_0__Sample = Sample 138 :: Sample
-gabbaloud_1__Sample = Sample 139 :: Sample
-gabbaloud_2__Sample = Sample 140 :: Sample
-gabbaloud_3__Sample = Sample 141 :: Sample
-ades2_0__Sample = Sample 142 :: Sample
-ades2_1__Sample = Sample 143 :: Sample
-ades2_2__Sample = Sample 144 :: Sample
-ades2_3__Sample = Sample 145 :: Sample
-ades2_4__Sample = Sample 146 :: Sample
-ades2_5__Sample = Sample 147 :: Sample
-ades2_6__Sample = Sample 148 :: Sample
-ades2_7__Sample = Sample 149 :: Sample
-ades2_8__Sample = Sample 150 :: Sample
-space_0__Sample = Sample 151 :: Sample
-space_1__Sample = Sample 152 :: Sample
-space_2__Sample = Sample 153 :: Sample
-space_3__Sample = Sample 154 :: Sample
-space_4__Sample = Sample 155 :: Sample
-space_5__Sample = Sample 156 :: Sample
-space_6__Sample = Sample 157 :: Sample
-space_7__Sample = Sample 158 :: Sample
-space_8__Sample = Sample 159 :: Sample
-space_9__Sample = Sample 160 :: Sample
-space_10__Sample = Sample 161 :: Sample
-space_11__Sample = Sample 162 :: Sample
-space_12__Sample = Sample 163 :: Sample
-space_13__Sample = Sample 164 :: Sample
-space_14__Sample = Sample 165 :: Sample
-space_15__Sample = Sample 166 :: Sample
-space_16__Sample = Sample 167 :: Sample
-space_17__Sample = Sample 168 :: Sample
-battles_0__Sample = Sample 169 :: Sample
-battles_1__Sample = Sample 170 :: Sample
-voodoo_0__Sample = Sample 171 :: Sample
-voodoo_1__Sample = Sample 172 :: Sample
-voodoo_2__Sample = Sample 173 :: Sample
-voodoo_3__Sample = Sample 174 :: Sample
-voodoo_4__Sample = Sample 175 :: Sample
-ravemono_0__Sample = Sample 176 :: Sample
-ravemono_1__Sample = Sample 177 :: Sample
-psr_0__Sample = Sample 178 :: Sample
-psr_1__Sample = Sample 179 :: Sample
-psr_2__Sample = Sample 180 :: Sample
-psr_3__Sample = Sample 181 :: Sample
-psr_4__Sample = Sample 182 :: Sample
-psr_5__Sample = Sample 183 :: Sample
-psr_6__Sample = Sample 184 :: Sample
-psr_7__Sample = Sample 185 :: Sample
-psr_8__Sample = Sample 186 :: Sample
-psr_9__Sample = Sample 187 :: Sample
-psr_10__Sample = Sample 188 :: Sample
-psr_11__Sample = Sample 189 :: Sample
-psr_12__Sample = Sample 190 :: Sample
-psr_13__Sample = Sample 191 :: Sample
-psr_14__Sample = Sample 192 :: Sample
-psr_15__Sample = Sample 193 :: Sample
-psr_16__Sample = Sample 194 :: Sample
-psr_17__Sample = Sample 195 :: Sample
-psr_18__Sample = Sample 196 :: Sample
-psr_19__Sample = Sample 197 :: Sample
-psr_20__Sample = Sample 198 :: Sample
-psr_21__Sample = Sample 199 :: Sample
-psr_22__Sample = Sample 200 :: Sample
-psr_23__Sample = Sample 201 :: Sample
-psr_24__Sample = Sample 202 :: Sample
-psr_25__Sample = Sample 203 :: Sample
-psr_26__Sample = Sample 204 :: Sample
-psr_27__Sample = Sample 205 :: Sample
-psr_28__Sample = Sample 206 :: Sample
-psr_29__Sample = Sample 207 :: Sample
-metal_0__Sample = Sample 208 :: Sample
-metal_1__Sample = Sample 209 :: Sample
-metal_2__Sample = Sample 210 :: Sample
-metal_3__Sample = Sample 211 :: Sample
-metal_4__Sample = Sample 212 :: Sample
-metal_5__Sample = Sample 213 :: Sample
-metal_6__Sample = Sample 214 :: Sample
-metal_7__Sample = Sample 215 :: Sample
-metal_8__Sample = Sample 216 :: Sample
-metal_9__Sample = Sample 217 :: Sample
-hardcore_0__Sample = Sample 218 :: Sample
-hardcore_1__Sample = Sample 219 :: Sample
-hardcore_2__Sample = Sample 220 :: Sample
-hardcore_3__Sample = Sample 221 :: Sample
-hardcore_4__Sample = Sample 222 :: Sample
-hardcore_5__Sample = Sample 223 :: Sample
-hardcore_6__Sample = Sample 224 :: Sample
-hardcore_7__Sample = Sample 225 :: Sample
-hardcore_8__Sample = Sample 226 :: Sample
-hardcore_9__Sample = Sample 227 :: Sample
-hardcore_10__Sample = Sample 228 :: Sample
-hardcore_11__Sample = Sample 229 :: Sample
-mouth_0__Sample = Sample 230 :: Sample
-mouth_1__Sample = Sample 231 :: Sample
-mouth_2__Sample = Sample 232 :: Sample
-mouth_3__Sample = Sample 233 :: Sample
-mouth_4__Sample = Sample 234 :: Sample
-mouth_5__Sample = Sample 235 :: Sample
-mouth_6__Sample = Sample 236 :: Sample
-mouth_7__Sample = Sample 237 :: Sample
-mouth_8__Sample = Sample 238 :: Sample
-mouth_9__Sample = Sample 239 :: Sample
-mouth_10__Sample = Sample 240 :: Sample
-mouth_11__Sample = Sample 241 :: Sample
-mouth_12__Sample = Sample 242 :: Sample
-mouth_13__Sample = Sample 243 :: Sample
-mouth_14__Sample = Sample 244 :: Sample
-sugar_0__Sample = Sample 245 :: Sample
-sugar_1__Sample = Sample 246 :: Sample
-odx_0__Sample = Sample 247 :: Sample
-odx_1__Sample = Sample 248 :: Sample
-odx_2__Sample = Sample 249 :: Sample
-odx_3__Sample = Sample 250 :: Sample
-odx_4__Sample = Sample 251 :: Sample
-odx_5__Sample = Sample 252 :: Sample
-odx_6__Sample = Sample 253 :: Sample
-odx_7__Sample = Sample 254 :: Sample
-odx_8__Sample = Sample 255 :: Sample
-odx_9__Sample = Sample 256 :: Sample
-odx_10__Sample = Sample 257 :: Sample
-odx_11__Sample = Sample 258 :: Sample
-odx_12__Sample = Sample 259 :: Sample
-odx_13__Sample = Sample 260 :: Sample
-odx_14__Sample = Sample 261 :: Sample
-x_808lc_0__Sample = Sample 262 :: Sample
-x_808lc_1__Sample = Sample 263 :: Sample
-x_808lc_2__Sample = Sample 264 :: Sample
-x_808lc_3__Sample = Sample 265 :: Sample
-x_808lc_4__Sample = Sample 266 :: Sample
-mt_0__Sample = Sample 267 :: Sample
-mt_1__Sample = Sample 268 :: Sample
-mt_2__Sample = Sample 269 :: Sample
-mt_3__Sample = Sample 270 :: Sample
-mt_4__Sample = Sample 271 :: Sample
-mt_5__Sample = Sample 272 :: Sample
-mt_6__Sample = Sample 273 :: Sample
-mt_7__Sample = Sample 274 :: Sample
-mt_8__Sample = Sample 275 :: Sample
-mt_9__Sample = Sample 276 :: Sample
-mt_10__Sample = Sample 277 :: Sample
-mt_11__Sample = Sample 278 :: Sample
-mt_12__Sample = Sample 279 :: Sample
-mt_13__Sample = Sample 280 :: Sample
-mt_14__Sample = Sample 281 :: Sample
-mt_15__Sample = Sample 282 :: Sample
-drumtraks_0__Sample = Sample 283 :: Sample
-drumtraks_1__Sample = Sample 284 :: Sample
-drumtraks_2__Sample = Sample 285 :: Sample
-drumtraks_3__Sample = Sample 286 :: Sample
-drumtraks_4__Sample = Sample 287 :: Sample
-drumtraks_5__Sample = Sample 288 :: Sample
-drumtraks_6__Sample = Sample 289 :: Sample
-drumtraks_7__Sample = Sample 290 :: Sample
-drumtraks_8__Sample = Sample 291 :: Sample
-drumtraks_9__Sample = Sample 292 :: Sample
-drumtraks_10__Sample = Sample 293 :: Sample
-drumtraks_11__Sample = Sample 294 :: Sample
-drumtraks_12__Sample = Sample 295 :: Sample
-print_0__Sample = Sample 296 :: Sample
-print_1__Sample = Sample 297 :: Sample
-print_2__Sample = Sample 298 :: Sample
-print_3__Sample = Sample 299 :: Sample
-print_4__Sample = Sample 300 :: Sample
-print_5__Sample = Sample 301 :: Sample
-print_6__Sample = Sample 302 :: Sample
-print_7__Sample = Sample 303 :: Sample
-print_8__Sample = Sample 304 :: Sample
-print_9__Sample = Sample 305 :: Sample
-print_10__Sample = Sample 306 :: Sample
-blip_0__Sample = Sample 307 :: Sample
-blip_1__Sample = Sample 308 :: Sample
-wobble_0__Sample = Sample 309 :: Sample
-made_0__Sample = Sample 310 :: Sample
-made_1__Sample = Sample 311 :: Sample
-made_2__Sample = Sample 312 :: Sample
-made_3__Sample = Sample 313 :: Sample
-made_4__Sample = Sample 314 :: Sample
-made_5__Sample = Sample 315 :: Sample
-made_6__Sample = Sample 316 :: Sample
-bass3_0__Sample = Sample 317 :: Sample
-bass3_1__Sample = Sample 318 :: Sample
-bass3_2__Sample = Sample 319 :: Sample
-bass3_3__Sample = Sample 320 :: Sample
-bass3_4__Sample = Sample 321 :: Sample
-bass3_5__Sample = Sample 322 :: Sample
-bass3_6__Sample = Sample 323 :: Sample
-bass3_7__Sample = Sample 324 :: Sample
-bass3_8__Sample = Sample 325 :: Sample
-bass3_9__Sample = Sample 326 :: Sample
-bass3_10__Sample = Sample 327 :: Sample
-speechless_0__Sample = Sample 328 :: Sample
-speechless_1__Sample = Sample 329 :: Sample
-speechless_2__Sample = Sample 330 :: Sample
-speechless_3__Sample = Sample 331 :: Sample
-speechless_4__Sample = Sample 332 :: Sample
-speechless_5__Sample = Sample 333 :: Sample
-speechless_6__Sample = Sample 334 :: Sample
-speechless_7__Sample = Sample 335 :: Sample
-speechless_8__Sample = Sample 336 :: Sample
-speechless_9__Sample = Sample 337 :: Sample
-sine_0__Sample = Sample 338 :: Sample
-sine_1__Sample = Sample 339 :: Sample
-sine_2__Sample = Sample 340 :: Sample
-sine_3__Sample = Sample 341 :: Sample
-sine_4__Sample = Sample 342 :: Sample
-sine_5__Sample = Sample 343 :: Sample
-noise_0__Sample = Sample 344 :: Sample
-x_808lt_0__Sample = Sample 345 :: Sample
-x_808lt_1__Sample = Sample 346 :: Sample
-x_808lt_2__Sample = Sample 347 :: Sample
-x_808lt_3__Sample = Sample 348 :: Sample
-x_808lt_4__Sample = Sample 349 :: Sample
-sd_0__Sample = Sample 350 :: Sample
-sd_1__Sample = Sample 351 :: Sample
-alphabet_0__Sample = Sample 352 :: Sample
-alphabet_1__Sample = Sample 353 :: Sample
-alphabet_2__Sample = Sample 354 :: Sample
-alphabet_3__Sample = Sample 355 :: Sample
-alphabet_4__Sample = Sample 356 :: Sample
-alphabet_5__Sample = Sample 357 :: Sample
-alphabet_6__Sample = Sample 358 :: Sample
-alphabet_7__Sample = Sample 359 :: Sample
-alphabet_8__Sample = Sample 360 :: Sample
-alphabet_9__Sample = Sample 361 :: Sample
-alphabet_10__Sample = Sample 362 :: Sample
-alphabet_11__Sample = Sample 363 :: Sample
-alphabet_12__Sample = Sample 364 :: Sample
-alphabet_13__Sample = Sample 365 :: Sample
-alphabet_14__Sample = Sample 366 :: Sample
-alphabet_15__Sample = Sample 367 :: Sample
-alphabet_16__Sample = Sample 368 :: Sample
-alphabet_17__Sample = Sample 369 :: Sample
-alphabet_18__Sample = Sample 370 :: Sample
-alphabet_19__Sample = Sample 371 :: Sample
-alphabet_20__Sample = Sample 372 :: Sample
-alphabet_21__Sample = Sample 373 :: Sample
-alphabet_22__Sample = Sample 374 :: Sample
-alphabet_23__Sample = Sample 375 :: Sample
-alphabet_24__Sample = Sample 376 :: Sample
-alphabet_25__Sample = Sample 377 :: Sample
-baa2_0__Sample = Sample 378 :: Sample
-baa2_1__Sample = Sample 379 :: Sample
-baa2_2__Sample = Sample 380 :: Sample
-baa2_3__Sample = Sample 381 :: Sample
-baa2_4__Sample = Sample 382 :: Sample
-baa2_5__Sample = Sample 383 :: Sample
-baa2_6__Sample = Sample 384 :: Sample
-tok_0__Sample = Sample 385 :: Sample
-tok_1__Sample = Sample 386 :: Sample
-tok_2__Sample = Sample 387 :: Sample
-tok_3__Sample = Sample 388 :: Sample
-ades3_0__Sample = Sample 389 :: Sample
-ades3_1__Sample = Sample 390 :: Sample
-ades3_2__Sample = Sample 391 :: Sample
-ades3_3__Sample = Sample 392 :: Sample
-ades3_4__Sample = Sample 393 :: Sample
-ades3_5__Sample = Sample 394 :: Sample
-ades3_6__Sample = Sample 395 :: Sample
-x_909_0__Sample = Sample 396 :: Sample
-sid_0__Sample = Sample 397 :: Sample
-sid_1__Sample = Sample 398 :: Sample
-sid_2__Sample = Sample 399 :: Sample
-sid_3__Sample = Sample 400 :: Sample
-sid_4__Sample = Sample 401 :: Sample
-sid_5__Sample = Sample 402 :: Sample
-sid_6__Sample = Sample 403 :: Sample
-sid_7__Sample = Sample 404 :: Sample
-sid_8__Sample = Sample 405 :: Sample
-sid_9__Sample = Sample 406 :: Sample
-sid_10__Sample = Sample 407 :: Sample
-sid_11__Sample = Sample 408 :: Sample
-jungbass_0__Sample = Sample 409 :: Sample
-jungbass_1__Sample = Sample 410 :: Sample
-jungbass_2__Sample = Sample 411 :: Sample
-jungbass_3__Sample = Sample 412 :: Sample
-jungbass_4__Sample = Sample 413 :: Sample
-jungbass_5__Sample = Sample 414 :: Sample
-jungbass_6__Sample = Sample 415 :: Sample
-jungbass_7__Sample = Sample 416 :: Sample
-jungbass_8__Sample = Sample 417 :: Sample
-jungbass_9__Sample = Sample 418 :: Sample
-jungbass_10__Sample = Sample 419 :: Sample
-jungbass_11__Sample = Sample 420 :: Sample
-jungbass_12__Sample = Sample 421 :: Sample
-jungbass_13__Sample = Sample 422 :: Sample
-jungbass_14__Sample = Sample 423 :: Sample
-jungbass_15__Sample = Sample 424 :: Sample
-jungbass_16__Sample = Sample 425 :: Sample
-jungbass_17__Sample = Sample 426 :: Sample
-jungbass_18__Sample = Sample 427 :: Sample
-jungbass_19__Sample = Sample 428 :: Sample
-gabba_0__Sample = Sample 429 :: Sample
-gabba_1__Sample = Sample 430 :: Sample
-gabba_2__Sample = Sample 431 :: Sample
-gabba_3__Sample = Sample 432 :: Sample
-crow_0__Sample = Sample 433 :: Sample
-crow_1__Sample = Sample 434 :: Sample
-crow_2__Sample = Sample 435 :: Sample
-crow_3__Sample = Sample 436 :: Sample
-birds3_0__Sample = Sample 437 :: Sample
-birds3_1__Sample = Sample 438 :: Sample
-birds3_2__Sample = Sample 439 :: Sample
-birds3_3__Sample = Sample 440 :: Sample
-birds3_4__Sample = Sample 441 :: Sample
-birds3_5__Sample = Sample 442 :: Sample
-birds3_6__Sample = Sample 443 :: Sample
-birds3_7__Sample = Sample 444 :: Sample
-birds3_8__Sample = Sample 445 :: Sample
-birds3_9__Sample = Sample 446 :: Sample
-birds3_10__Sample = Sample 447 :: Sample
-birds3_11__Sample = Sample 448 :: Sample
-birds3_12__Sample = Sample 449 :: Sample
-birds3_13__Sample = Sample 450 :: Sample
-birds3_14__Sample = Sample 451 :: Sample
-birds3_15__Sample = Sample 452 :: Sample
-birds3_16__Sample = Sample 453 :: Sample
-birds3_17__Sample = Sample 454 :: Sample
-birds3_18__Sample = Sample 455 :: Sample
-auto_0__Sample = Sample 456 :: Sample
-auto_1__Sample = Sample 457 :: Sample
-auto_2__Sample = Sample 458 :: Sample
-auto_3__Sample = Sample 459 :: Sample
-auto_4__Sample = Sample 460 :: Sample
-auto_5__Sample = Sample 461 :: Sample
-auto_6__Sample = Sample 462 :: Sample
-auto_7__Sample = Sample 463 :: Sample
-auto_8__Sample = Sample 464 :: Sample
-auto_9__Sample = Sample 465 :: Sample
-auto_10__Sample = Sample 466 :: Sample
-mute_0__Sample = Sample 467 :: Sample
-mute_1__Sample = Sample 468 :: Sample
-mute_2__Sample = Sample 469 :: Sample
-mute_3__Sample = Sample 470 :: Sample
-mute_4__Sample = Sample 471 :: Sample
-mute_5__Sample = Sample 472 :: Sample
-mute_6__Sample = Sample 473 :: Sample
-mute_7__Sample = Sample 474 :: Sample
-mute_8__Sample = Sample 475 :: Sample
-mute_9__Sample = Sample 476 :: Sample
-mute_10__Sample = Sample 477 :: Sample
-mute_11__Sample = Sample 478 :: Sample
-mute_12__Sample = Sample 479 :: Sample
-mute_13__Sample = Sample 480 :: Sample
-mute_14__Sample = Sample 481 :: Sample
-mute_15__Sample = Sample 482 :: Sample
-mute_16__Sample = Sample 483 :: Sample
-mute_17__Sample = Sample 484 :: Sample
-mute_18__Sample = Sample 485 :: Sample
-mute_19__Sample = Sample 486 :: Sample
-mute_20__Sample = Sample 487 :: Sample
-mute_21__Sample = Sample 488 :: Sample
-mute_22__Sample = Sample 489 :: Sample
-mute_23__Sample = Sample 490 :: Sample
-mute_24__Sample = Sample 491 :: Sample
-mute_25__Sample = Sample 492 :: Sample
-mute_26__Sample = Sample 493 :: Sample
-mute_27__Sample = Sample 494 :: Sample
-sheffield_0__Sample = Sample 495 :: Sample
-casio_0__Sample = Sample 496 :: Sample
-casio_1__Sample = Sample 497 :: Sample
-casio_2__Sample = Sample 498 :: Sample
-sax_0__Sample = Sample 499 :: Sample
-sax_1__Sample = Sample 500 :: Sample
-sax_2__Sample = Sample 501 :: Sample
-sax_3__Sample = Sample 502 :: Sample
-sax_4__Sample = Sample 503 :: Sample
-sax_5__Sample = Sample 504 :: Sample
-sax_6__Sample = Sample 505 :: Sample
-sax_7__Sample = Sample 506 :: Sample
-sax_8__Sample = Sample 507 :: Sample
-sax_9__Sample = Sample 508 :: Sample
-sax_10__Sample = Sample 509 :: Sample
-sax_11__Sample = Sample 510 :: Sample
-sax_12__Sample = Sample 511 :: Sample
-sax_13__Sample = Sample 512 :: Sample
-sax_14__Sample = Sample 513 :: Sample
-sax_15__Sample = Sample 514 :: Sample
-sax_16__Sample = Sample 515 :: Sample
-sax_17__Sample = Sample 516 :: Sample
-sax_18__Sample = Sample 517 :: Sample
-sax_19__Sample = Sample 518 :: Sample
-sax_20__Sample = Sample 519 :: Sample
-sax_21__Sample = Sample 520 :: Sample
-circus_0__Sample = Sample 521 :: Sample
-circus_1__Sample = Sample 522 :: Sample
-circus_2__Sample = Sample 523 :: Sample
-yeah_0__Sample = Sample 524 :: Sample
-yeah_1__Sample = Sample 525 :: Sample
-yeah_2__Sample = Sample 526 :: Sample
-yeah_3__Sample = Sample 527 :: Sample
-yeah_4__Sample = Sample 528 :: Sample
-yeah_5__Sample = Sample 529 :: Sample
-yeah_6__Sample = Sample 530 :: Sample
-yeah_7__Sample = Sample 531 :: Sample
-yeah_8__Sample = Sample 532 :: Sample
-yeah_9__Sample = Sample 533 :: Sample
-yeah_10__Sample = Sample 534 :: Sample
-yeah_11__Sample = Sample 535 :: Sample
-yeah_12__Sample = Sample 536 :: Sample
-yeah_13__Sample = Sample 537 :: Sample
-yeah_14__Sample = Sample 538 :: Sample
-yeah_15__Sample = Sample 539 :: Sample
-yeah_16__Sample = Sample 540 :: Sample
-yeah_17__Sample = Sample 541 :: Sample
-yeah_18__Sample = Sample 542 :: Sample
-yeah_19__Sample = Sample 543 :: Sample
-yeah_20__Sample = Sample 544 :: Sample
-yeah_21__Sample = Sample 545 :: Sample
-yeah_22__Sample = Sample 546 :: Sample
-yeah_23__Sample = Sample 547 :: Sample
-yeah_24__Sample = Sample 548 :: Sample
-yeah_25__Sample = Sample 549 :: Sample
-yeah_26__Sample = Sample 550 :: Sample
-yeah_27__Sample = Sample 551 :: Sample
-yeah_28__Sample = Sample 552 :: Sample
-yeah_29__Sample = Sample 553 :: Sample
-yeah_30__Sample = Sample 554 :: Sample
-oc_0__Sample = Sample 555 :: Sample
-oc_1__Sample = Sample 556 :: Sample
-oc_2__Sample = Sample 557 :: Sample
-oc_3__Sample = Sample 558 :: Sample
-alex_0__Sample = Sample 559 :: Sample
-alex_1__Sample = Sample 560 :: Sample
-can_0__Sample = Sample 561 :: Sample
-can_1__Sample = Sample 562 :: Sample
-can_2__Sample = Sample 563 :: Sample
-can_3__Sample = Sample 564 :: Sample
-can_4__Sample = Sample 565 :: Sample
-can_5__Sample = Sample 566 :: Sample
-can_6__Sample = Sample 567 :: Sample
-can_7__Sample = Sample 568 :: Sample
-can_8__Sample = Sample 569 :: Sample
-can_9__Sample = Sample 570 :: Sample
-can_10__Sample = Sample 571 :: Sample
-can_11__Sample = Sample 572 :: Sample
-can_12__Sample = Sample 573 :: Sample
-can_13__Sample = Sample 574 :: Sample
-jungle_0__Sample = Sample 575 :: Sample
-jungle_1__Sample = Sample 576 :: Sample
-jungle_2__Sample = Sample 577 :: Sample
-jungle_3__Sample = Sample 578 :: Sample
-jungle_4__Sample = Sample 579 :: Sample
-jungle_5__Sample = Sample 580 :: Sample
-jungle_6__Sample = Sample 581 :: Sample
-jungle_7__Sample = Sample 582 :: Sample
-jungle_8__Sample = Sample 583 :: Sample
-jungle_9__Sample = Sample 584 :: Sample
-jungle_10__Sample = Sample 585 :: Sample
-jungle_11__Sample = Sample 586 :: Sample
-jungle_12__Sample = Sample 587 :: Sample
-moog_0__Sample = Sample 588 :: Sample
-moog_1__Sample = Sample 589 :: Sample
-moog_2__Sample = Sample 590 :: Sample
-moog_3__Sample = Sample 591 :: Sample
-moog_4__Sample = Sample 592 :: Sample
-moog_5__Sample = Sample 593 :: Sample
-moog_6__Sample = Sample 594 :: Sample
-h_0__Sample = Sample 595 :: Sample
-h_1__Sample = Sample 596 :: Sample
-h_2__Sample = Sample 597 :: Sample
-h_3__Sample = Sample 598 :: Sample
-h_4__Sample = Sample 599 :: Sample
-h_5__Sample = Sample 600 :: Sample
-h_6__Sample = Sample 601 :: Sample
-wind_0__Sample = Sample 602 :: Sample
-wind_1__Sample = Sample 603 :: Sample
-wind_2__Sample = Sample 604 :: Sample
-wind_3__Sample = Sample 605 :: Sample
-wind_4__Sample = Sample 606 :: Sample
-wind_5__Sample = Sample 607 :: Sample
-wind_6__Sample = Sample 608 :: Sample
-wind_7__Sample = Sample 609 :: Sample
-wind_8__Sample = Sample 610 :: Sample
-wind_9__Sample = Sample 611 :: Sample
-rs_0__Sample = Sample 612 :: Sample
-em2_0__Sample = Sample 613 :: Sample
-em2_1__Sample = Sample 614 :: Sample
-em2_2__Sample = Sample 615 :: Sample
-em2_3__Sample = Sample 616 :: Sample
-em2_4__Sample = Sample 617 :: Sample
-em2_5__Sample = Sample 618 :: Sample
-noise2_0__Sample = Sample 619 :: Sample
-noise2_1__Sample = Sample 620 :: Sample
-noise2_2__Sample = Sample 621 :: Sample
-noise2_3__Sample = Sample 622 :: Sample
-noise2_4__Sample = Sample 623 :: Sample
-noise2_5__Sample = Sample 624 :: Sample
-noise2_6__Sample = Sample 625 :: Sample
-noise2_7__Sample = Sample 626 :: Sample
-foo_0__Sample = Sample 627 :: Sample
-foo_1__Sample = Sample 628 :: Sample
-foo_2__Sample = Sample 629 :: Sample
-foo_3__Sample = Sample 630 :: Sample
-foo_4__Sample = Sample 631 :: Sample
-foo_5__Sample = Sample 632 :: Sample
-foo_6__Sample = Sample 633 :: Sample
-foo_7__Sample = Sample 634 :: Sample
-foo_8__Sample = Sample 635 :: Sample
-foo_9__Sample = Sample 636 :: Sample
-foo_10__Sample = Sample 637 :: Sample
-foo_11__Sample = Sample 638 :: Sample
-foo_12__Sample = Sample 639 :: Sample
-foo_13__Sample = Sample 640 :: Sample
-foo_14__Sample = Sample 641 :: Sample
-foo_15__Sample = Sample 642 :: Sample
-foo_16__Sample = Sample 643 :: Sample
-foo_17__Sample = Sample 644 :: Sample
-foo_18__Sample = Sample 645 :: Sample
-foo_19__Sample = Sample 646 :: Sample
-foo_20__Sample = Sample 647 :: Sample
-foo_21__Sample = Sample 648 :: Sample
-foo_22__Sample = Sample 649 :: Sample
-foo_23__Sample = Sample 650 :: Sample
-foo_24__Sample = Sample 651 :: Sample
-foo_25__Sample = Sample 652 :: Sample
-foo_26__Sample = Sample 653 :: Sample
-armora_0__Sample = Sample 654 :: Sample
-armora_1__Sample = Sample 655 :: Sample
-armora_2__Sample = Sample 656 :: Sample
-armora_3__Sample = Sample 657 :: Sample
-armora_4__Sample = Sample 658 :: Sample
-armora_5__Sample = Sample 659 :: Sample
-armora_6__Sample = Sample 660 :: Sample
-bend_0__Sample = Sample 661 :: Sample
-bend_1__Sample = Sample 662 :: Sample
-bend_2__Sample = Sample 663 :: Sample
-bend_3__Sample = Sample 664 :: Sample
-newnotes_0__Sample = Sample 665 :: Sample
-newnotes_1__Sample = Sample 666 :: Sample
-newnotes_2__Sample = Sample 667 :: Sample
-newnotes_3__Sample = Sample 668 :: Sample
-newnotes_4__Sample = Sample 669 :: Sample
-newnotes_5__Sample = Sample 670 :: Sample
-newnotes_6__Sample = Sample 671 :: Sample
-newnotes_7__Sample = Sample 672 :: Sample
-newnotes_8__Sample = Sample 673 :: Sample
-newnotes_9__Sample = Sample 674 :: Sample
-newnotes_10__Sample = Sample 675 :: Sample
-newnotes_11__Sample = Sample 676 :: Sample
-newnotes_12__Sample = Sample 677 :: Sample
-newnotes_13__Sample = Sample 678 :: Sample
-newnotes_14__Sample = Sample 679 :: Sample
-pebbles_0__Sample = Sample 680 :: Sample
-mash2_0__Sample = Sample 681 :: Sample
-mash2_1__Sample = Sample 682 :: Sample
-mash2_2__Sample = Sample 683 :: Sample
-mash2_3__Sample = Sample 684 :: Sample
-diphone2_0__Sample = Sample 685 :: Sample
-diphone2_1__Sample = Sample 686 :: Sample
-diphone2_2__Sample = Sample 687 :: Sample
-diphone2_3__Sample = Sample 688 :: Sample
-diphone2_4__Sample = Sample 689 :: Sample
-diphone2_5__Sample = Sample 690 :: Sample
-diphone2_6__Sample = Sample 691 :: Sample
-diphone2_7__Sample = Sample 692 :: Sample
-diphone2_8__Sample = Sample 693 :: Sample
-diphone2_9__Sample = Sample 694 :: Sample
-diphone2_10__Sample = Sample 695 :: Sample
-diphone2_11__Sample = Sample 696 :: Sample
-e_0__Sample = Sample 697 :: Sample
-e_1__Sample = Sample 698 :: Sample
-e_2__Sample = Sample 699 :: Sample
-e_3__Sample = Sample 700 :: Sample
-e_4__Sample = Sample 701 :: Sample
-e_5__Sample = Sample 702 :: Sample
-e_6__Sample = Sample 703 :: Sample
-e_7__Sample = Sample 704 :: Sample
-bubble_0__Sample = Sample 705 :: Sample
-bubble_1__Sample = Sample 706 :: Sample
-bubble_2__Sample = Sample 707 :: Sample
-bubble_3__Sample = Sample 708 :: Sample
-bubble_4__Sample = Sample 709 :: Sample
-bubble_5__Sample = Sample 710 :: Sample
-bubble_6__Sample = Sample 711 :: Sample
-bubble_7__Sample = Sample 712 :: Sample
-insect_0__Sample = Sample 713 :: Sample
-insect_1__Sample = Sample 714 :: Sample
-insect_2__Sample = Sample 715 :: Sample
-ade_0__Sample = Sample 716 :: Sample
-ade_1__Sample = Sample 717 :: Sample
-ade_2__Sample = Sample 718 :: Sample
-ade_3__Sample = Sample 719 :: Sample
-ade_4__Sample = Sample 720 :: Sample
-ade_5__Sample = Sample 721 :: Sample
-ade_6__Sample = Sample 722 :: Sample
-ade_7__Sample = Sample 723 :: Sample
-ade_8__Sample = Sample 724 :: Sample
-ade_9__Sample = Sample 725 :: Sample
-glitch_0__Sample = Sample 726 :: Sample
-glitch_1__Sample = Sample 727 :: Sample
-glitch_2__Sample = Sample 728 :: Sample
-glitch_3__Sample = Sample 729 :: Sample
-glitch_4__Sample = Sample 730 :: Sample
-glitch_5__Sample = Sample 731 :: Sample
-glitch_6__Sample = Sample 732 :: Sample
-glitch_7__Sample = Sample 733 :: Sample
-haw_0__Sample = Sample 734 :: Sample
-haw_1__Sample = Sample 735 :: Sample
-haw_2__Sample = Sample 736 :: Sample
-haw_3__Sample = Sample 737 :: Sample
-haw_4__Sample = Sample 738 :: Sample
-haw_5__Sample = Sample 739 :: Sample
-popkick_0__Sample = Sample 740 :: Sample
-popkick_1__Sample = Sample 741 :: Sample
-popkick_2__Sample = Sample 742 :: Sample
-popkick_3__Sample = Sample 743 :: Sample
-popkick_4__Sample = Sample 744 :: Sample
-popkick_5__Sample = Sample 745 :: Sample
-popkick_6__Sample = Sample 746 :: Sample
-popkick_7__Sample = Sample 747 :: Sample
-popkick_8__Sample = Sample 748 :: Sample
-popkick_9__Sample = Sample 749 :: Sample
-breaks157_0__Sample = Sample 750 :: Sample
-gtr_0__Sample = Sample 751 :: Sample
-gtr_1__Sample = Sample 752 :: Sample
-gtr_2__Sample = Sample 753 :: Sample
-clubkick_0__Sample = Sample 754 :: Sample
-clubkick_1__Sample = Sample 755 :: Sample
-clubkick_2__Sample = Sample 756 :: Sample
-clubkick_3__Sample = Sample 757 :: Sample
-clubkick_4__Sample = Sample 758 :: Sample
-breaks152_0__Sample = Sample 759 :: Sample
-x_808bd_0__Sample = Sample 760 :: Sample
-x_808bd_1__Sample = Sample 761 :: Sample
-x_808bd_2__Sample = Sample 762 :: Sample
-x_808bd_3__Sample = Sample 763 :: Sample
-x_808bd_4__Sample = Sample 764 :: Sample
-x_808bd_5__Sample = Sample 765 :: Sample
-x_808bd_6__Sample = Sample 766 :: Sample
-x_808bd_7__Sample = Sample 767 :: Sample
-x_808bd_8__Sample = Sample 768 :: Sample
-x_808bd_9__Sample = Sample 769 :: Sample
-x_808bd_10__Sample = Sample 770 :: Sample
-x_808bd_11__Sample = Sample 771 :: Sample
-x_808bd_12__Sample = Sample 772 :: Sample
-x_808bd_13__Sample = Sample 773 :: Sample
-x_808bd_14__Sample = Sample 774 :: Sample
-x_808bd_15__Sample = Sample 775 :: Sample
-x_808bd_16__Sample = Sample 776 :: Sample
-x_808bd_17__Sample = Sample 777 :: Sample
-x_808bd_18__Sample = Sample 778 :: Sample
-x_808bd_19__Sample = Sample 779 :: Sample
-x_808bd_20__Sample = Sample 780 :: Sample
-x_808bd_21__Sample = Sample 781 :: Sample
-x_808bd_22__Sample = Sample 782 :: Sample
-x_808bd_23__Sample = Sample 783 :: Sample
-x_808bd_24__Sample = Sample 784 :: Sample
-miniyeah_0__Sample = Sample 785 :: Sample
-miniyeah_1__Sample = Sample 786 :: Sample
-miniyeah_2__Sample = Sample 787 :: Sample
-miniyeah_3__Sample = Sample 788 :: Sample
-if_0__Sample = Sample 789 :: Sample
-if_1__Sample = Sample 790 :: Sample
-if_2__Sample = Sample 791 :: Sample
-if_3__Sample = Sample 792 :: Sample
-if_4__Sample = Sample 793 :: Sample
-x_808oh_0__Sample = Sample 794 :: Sample
-x_808oh_1__Sample = Sample 795 :: Sample
-x_808oh_2__Sample = Sample 796 :: Sample
-x_808oh_3__Sample = Sample 797 :: Sample
-x_808oh_4__Sample = Sample 798 :: Sample
-house_0__Sample = Sample 799 :: Sample
-house_1__Sample = Sample 800 :: Sample
-house_2__Sample = Sample 801 :: Sample
-house_3__Sample = Sample 802 :: Sample
-house_4__Sample = Sample 803 :: Sample
-house_5__Sample = Sample 804 :: Sample
-house_6__Sample = Sample 805 :: Sample
-house_7__Sample = Sample 806 :: Sample
-dr_0__Sample = Sample 807 :: Sample
-dr_1__Sample = Sample 808 :: Sample
-dr_2__Sample = Sample 809 :: Sample
-dr_3__Sample = Sample 810 :: Sample
-dr_4__Sample = Sample 811 :: Sample
-dr_5__Sample = Sample 812 :: Sample
-dr_6__Sample = Sample 813 :: Sample
-dr_7__Sample = Sample 814 :: Sample
-dr_8__Sample = Sample 815 :: Sample
-dr_9__Sample = Sample 816 :: Sample
-dr_10__Sample = Sample 817 :: Sample
-dr_11__Sample = Sample 818 :: Sample
-dr_12__Sample = Sample 819 :: Sample
-dr_13__Sample = Sample 820 :: Sample
-dr_14__Sample = Sample 821 :: Sample
-dr_15__Sample = Sample 822 :: Sample
-dr_16__Sample = Sample 823 :: Sample
-dr_17__Sample = Sample 824 :: Sample
-dr_18__Sample = Sample 825 :: Sample
-dr_19__Sample = Sample 826 :: Sample
-dr_20__Sample = Sample 827 :: Sample
-dr_21__Sample = Sample 828 :: Sample
-dr_22__Sample = Sample 829 :: Sample
-dr_23__Sample = Sample 830 :: Sample
-dr_24__Sample = Sample 831 :: Sample
-dr_25__Sample = Sample 832 :: Sample
-dr_26__Sample = Sample 833 :: Sample
-dr_27__Sample = Sample 834 :: Sample
-dr_28__Sample = Sample 835 :: Sample
-dr_29__Sample = Sample 836 :: Sample
-dr_30__Sample = Sample 837 :: Sample
-dr_31__Sample = Sample 838 :: Sample
-dr_32__Sample = Sample 839 :: Sample
-dr_33__Sample = Sample 840 :: Sample
-dr_34__Sample = Sample 841 :: Sample
-dr_35__Sample = Sample 842 :: Sample
-dr_36__Sample = Sample 843 :: Sample
-dr_37__Sample = Sample 844 :: Sample
-dr_38__Sample = Sample 845 :: Sample
-dr_39__Sample = Sample 846 :: Sample
-dr_40__Sample = Sample 847 :: Sample
-dr_41__Sample = Sample 848 :: Sample
-dr55_0__Sample = Sample 849 :: Sample
-dr55_1__Sample = Sample 850 :: Sample
-dr55_2__Sample = Sample 851 :: Sample
-dr55_3__Sample = Sample 852 :: Sample
-bass_0__Sample = Sample 853 :: Sample
-bass_1__Sample = Sample 854 :: Sample
-bass_2__Sample = Sample 855 :: Sample
-bass_3__Sample = Sample 856 :: Sample
-ho_0__Sample = Sample 857 :: Sample
-ho_1__Sample = Sample 858 :: Sample
-ho_2__Sample = Sample 859 :: Sample
-ho_3__Sample = Sample 860 :: Sample
-ho_4__Sample = Sample 861 :: Sample
-ho_5__Sample = Sample 862 :: Sample
-hardkick_0__Sample = Sample 863 :: Sample
-hardkick_1__Sample = Sample 864 :: Sample
-hardkick_2__Sample = Sample 865 :: Sample
-hardkick_3__Sample = Sample 866 :: Sample
-hardkick_4__Sample = Sample 867 :: Sample
-hardkick_5__Sample = Sample 868 :: Sample
-x_808hc_0__Sample = Sample 869 :: Sample
-x_808hc_1__Sample = Sample 870 :: Sample
-x_808hc_2__Sample = Sample 871 :: Sample
-x_808hc_3__Sample = Sample 872 :: Sample
-x_808hc_4__Sample = Sample 873 :: Sample
-hit_0__Sample = Sample 874 :: Sample
-hit_1__Sample = Sample 875 :: Sample
-hit_2__Sample = Sample 876 :: Sample
-hit_3__Sample = Sample 877 :: Sample
-hit_4__Sample = Sample 878 :: Sample
-hit_5__Sample = Sample 879 :: Sample
-breaks165_0__Sample = Sample 880 :: Sample
-dr2_0__Sample = Sample 881 :: Sample
-dr2_1__Sample = Sample 882 :: Sample
-dr2_2__Sample = Sample 883 :: Sample
-dr2_3__Sample = Sample 884 :: Sample
-dr2_4__Sample = Sample 885 :: Sample
-dr2_5__Sample = Sample 886 :: Sample
-tabla_0__Sample = Sample 887 :: Sample
-tabla_1__Sample = Sample 888 :: Sample
-tabla_2__Sample = Sample 889 :: Sample
-tabla_3__Sample = Sample 890 :: Sample
-tabla_4__Sample = Sample 891 :: Sample
-tabla_5__Sample = Sample 892 :: Sample
-tabla_6__Sample = Sample 893 :: Sample
-tabla_7__Sample = Sample 894 :: Sample
-tabla_8__Sample = Sample 895 :: Sample
-tabla_9__Sample = Sample 896 :: Sample
-tabla_10__Sample = Sample 897 :: Sample
-tabla_11__Sample = Sample 898 :: Sample
-tabla_12__Sample = Sample 899 :: Sample
-tabla_13__Sample = Sample 900 :: Sample
-tabla_14__Sample = Sample 901 :: Sample
-tabla_15__Sample = Sample 902 :: Sample
-tabla_16__Sample = Sample 903 :: Sample
-tabla_17__Sample = Sample 904 :: Sample
-tabla_18__Sample = Sample 905 :: Sample
-tabla_19__Sample = Sample 906 :: Sample
-tabla_20__Sample = Sample 907 :: Sample
-tabla_21__Sample = Sample 908 :: Sample
-tabla_22__Sample = Sample 909 :: Sample
-tabla_23__Sample = Sample 910 :: Sample
-tabla_24__Sample = Sample 911 :: Sample
-tabla_25__Sample = Sample 912 :: Sample
-dork2_0__Sample = Sample 913 :: Sample
-dork2_1__Sample = Sample 914 :: Sample
-dork2_2__Sample = Sample 915 :: Sample
-dork2_3__Sample = Sample 916 :: Sample
-hc_0__Sample = Sample 917 :: Sample
-hc_1__Sample = Sample 918 :: Sample
-hc_2__Sample = Sample 919 :: Sample
-hc_3__Sample = Sample 920 :: Sample
-hc_4__Sample = Sample 921 :: Sample
-hc_5__Sample = Sample 922 :: Sample
-bassfoo_0__Sample = Sample 923 :: Sample
-bassfoo_1__Sample = Sample 924 :: Sample
-bassfoo_2__Sample = Sample 925 :: Sample
-seawolf_0__Sample = Sample 926 :: Sample
-seawolf_1__Sample = Sample 927 :: Sample
-seawolf_2__Sample = Sample 928 :: Sample
-cp_0__Sample = Sample 929 :: Sample
-cp_1__Sample = Sample 930 :: Sample
-jazz_0__Sample = Sample 931 :: Sample
-jazz_1__Sample = Sample 932 :: Sample
-jazz_2__Sample = Sample 933 :: Sample
-jazz_3__Sample = Sample 934 :: Sample
-jazz_4__Sample = Sample 935 :: Sample
-jazz_5__Sample = Sample 936 :: Sample
-jazz_6__Sample = Sample 937 :: Sample
-jazz_7__Sample = Sample 938 :: Sample
-juno_0__Sample = Sample 939 :: Sample
-juno_1__Sample = Sample 940 :: Sample
-juno_2__Sample = Sample 941 :: Sample
-juno_3__Sample = Sample 942 :: Sample
-juno_4__Sample = Sample 943 :: Sample
-juno_5__Sample = Sample 944 :: Sample
-juno_6__Sample = Sample 945 :: Sample
-juno_7__Sample = Sample 946 :: Sample
-juno_8__Sample = Sample 947 :: Sample
-juno_9__Sample = Sample 948 :: Sample
-juno_10__Sample = Sample 949 :: Sample
-juno_11__Sample = Sample 950 :: Sample
-birds_0__Sample = Sample 951 :: Sample
-birds_1__Sample = Sample 952 :: Sample
-birds_2__Sample = Sample 953 :: Sample
-birds_3__Sample = Sample 954 :: Sample
-birds_4__Sample = Sample 955 :: Sample
-birds_5__Sample = Sample 956 :: Sample
-birds_6__Sample = Sample 957 :: Sample
-birds_7__Sample = Sample 958 :: Sample
-birds_8__Sample = Sample 959 :: Sample
-birds_9__Sample = Sample 960 :: Sample
-glasstap_0__Sample = Sample 961 :: Sample
-glasstap_1__Sample = Sample 962 :: Sample
-glasstap_2__Sample = Sample 963 :: Sample
-bass1_0__Sample = Sample 964 :: Sample
-bass1_1__Sample = Sample 965 :: Sample
-bass1_2__Sample = Sample 966 :: Sample
-bass1_3__Sample = Sample 967 :: Sample
-bass1_4__Sample = Sample 968 :: Sample
-bass1_5__Sample = Sample 969 :: Sample
-bass1_6__Sample = Sample 970 :: Sample
-bass1_7__Sample = Sample 971 :: Sample
-bass1_8__Sample = Sample 972 :: Sample
-bass1_9__Sample = Sample 973 :: Sample
-bass1_10__Sample = Sample 974 :: Sample
-bass1_11__Sample = Sample 975 :: Sample
-bass1_12__Sample = Sample 976 :: Sample
-bass1_13__Sample = Sample 977 :: Sample
-bass1_14__Sample = Sample 978 :: Sample
-bass1_15__Sample = Sample 979 :: Sample
-bass1_16__Sample = Sample 980 :: Sample
-bass1_17__Sample = Sample 981 :: Sample
-bass1_18__Sample = Sample 982 :: Sample
-bass1_19__Sample = Sample 983 :: Sample
-bass1_20__Sample = Sample 984 :: Sample
-bass1_21__Sample = Sample 985 :: Sample
-bass1_22__Sample = Sample 986 :: Sample
-bass1_23__Sample = Sample 987 :: Sample
-bass1_24__Sample = Sample 988 :: Sample
-bass1_25__Sample = Sample 989 :: Sample
-bass1_26__Sample = Sample 990 :: Sample
-bass1_27__Sample = Sample 991 :: Sample
-bass1_28__Sample = Sample 992 :: Sample
-bass1_29__Sample = Sample 993 :: Sample
-hh27_0__Sample = Sample 994 :: Sample
-hh27_1__Sample = Sample 995 :: Sample
-hh27_2__Sample = Sample 996 :: Sample
-hh27_3__Sample = Sample 997 :: Sample
-hh27_4__Sample = Sample 998 :: Sample
-hh27_5__Sample = Sample 999 :: Sample
-hh27_6__Sample = Sample 1000 :: Sample
-hh27_7__Sample = Sample 1001 :: Sample
-hh27_8__Sample = Sample 1002 :: Sample
-hh27_9__Sample = Sample 1003 :: Sample
-hh27_10__Sample = Sample 1004 :: Sample
-hh27_11__Sample = Sample 1005 :: Sample
-hh27_12__Sample = Sample 1006 :: Sample
-x_808_0__Sample = Sample 1007 :: Sample
-x_808_1__Sample = Sample 1008 :: Sample
-x_808_2__Sample = Sample 1009 :: Sample
-x_808_3__Sample = Sample 1010 :: Sample
-x_808_4__Sample = Sample 1011 :: Sample
-x_808_5__Sample = Sample 1012 :: Sample
-notes_0__Sample = Sample 1013 :: Sample
-notes_1__Sample = Sample 1014 :: Sample
-notes_2__Sample = Sample 1015 :: Sample
-notes_3__Sample = Sample 1016 :: Sample
-notes_4__Sample = Sample 1017 :: Sample
-notes_5__Sample = Sample 1018 :: Sample
-notes_6__Sample = Sample 1019 :: Sample
-notes_7__Sample = Sample 1020 :: Sample
-notes_8__Sample = Sample 1021 :: Sample
-notes_9__Sample = Sample 1022 :: Sample
-notes_10__Sample = Sample 1023 :: Sample
-notes_11__Sample = Sample 1024 :: Sample
-notes_12__Sample = Sample 1025 :: Sample
-notes_13__Sample = Sample 1026 :: Sample
-notes_14__Sample = Sample 1027 :: Sample
-xmas_0__Sample = Sample 1028 :: Sample
-erk_0__Sample = Sample 1029 :: Sample
-x_808mt_0__Sample = Sample 1030 :: Sample
-x_808mt_1__Sample = Sample 1031 :: Sample
-x_808mt_2__Sample = Sample 1032 :: Sample
-x_808mt_3__Sample = Sample 1033 :: Sample
-x_808mt_4__Sample = Sample 1034 :: Sample
-lighter_0__Sample = Sample 1035 :: Sample
-lighter_1__Sample = Sample 1036 :: Sample
-lighter_2__Sample = Sample 1037 :: Sample
-lighter_3__Sample = Sample 1038 :: Sample
-lighter_4__Sample = Sample 1039 :: Sample
-lighter_5__Sample = Sample 1040 :: Sample
-lighter_6__Sample = Sample 1041 :: Sample
-lighter_7__Sample = Sample 1042 :: Sample
-lighter_8__Sample = Sample 1043 :: Sample
-lighter_9__Sample = Sample 1044 :: Sample
-lighter_10__Sample = Sample 1045 :: Sample
-lighter_11__Sample = Sample 1046 :: Sample
-lighter_12__Sample = Sample 1047 :: Sample
-lighter_13__Sample = Sample 1048 :: Sample
-lighter_14__Sample = Sample 1049 :: Sample
-lighter_15__Sample = Sample 1050 :: Sample
-lighter_16__Sample = Sample 1051 :: Sample
-lighter_17__Sample = Sample 1052 :: Sample
-lighter_18__Sample = Sample 1053 :: Sample
-lighter_19__Sample = Sample 1054 :: Sample
-lighter_20__Sample = Sample 1055 :: Sample
-lighter_21__Sample = Sample 1056 :: Sample
-lighter_22__Sample = Sample 1057 :: Sample
-lighter_23__Sample = Sample 1058 :: Sample
-lighter_24__Sample = Sample 1059 :: Sample
-lighter_25__Sample = Sample 1060 :: Sample
-lighter_26__Sample = Sample 1061 :: Sample
-lighter_27__Sample = Sample 1062 :: Sample
-lighter_28__Sample = Sample 1063 :: Sample
-lighter_29__Sample = Sample 1064 :: Sample
-lighter_30__Sample = Sample 1065 :: Sample
-lighter_31__Sample = Sample 1066 :: Sample
-lighter_32__Sample = Sample 1067 :: Sample
-cb_0__Sample = Sample 1068 :: Sample
-subroc3d_0__Sample = Sample 1069 :: Sample
-subroc3d_1__Sample = Sample 1070 :: Sample
-subroc3d_2__Sample = Sample 1071 :: Sample
-subroc3d_3__Sample = Sample 1072 :: Sample
-subroc3d_4__Sample = Sample 1073 :: Sample
-subroc3d_5__Sample = Sample 1074 :: Sample
-subroc3d_6__Sample = Sample 1075 :: Sample
-subroc3d_7__Sample = Sample 1076 :: Sample
-subroc3d_8__Sample = Sample 1077 :: Sample
-subroc3d_9__Sample = Sample 1078 :: Sample
-subroc3d_10__Sample = Sample 1079 :: Sample
-ul_0__Sample = Sample 1080 :: Sample
-ul_1__Sample = Sample 1081 :: Sample
-ul_2__Sample = Sample 1082 :: Sample
-ul_3__Sample = Sample 1083 :: Sample
-ul_4__Sample = Sample 1084 :: Sample
-ul_5__Sample = Sample 1085 :: Sample
-ul_6__Sample = Sample 1086 :: Sample
-ul_7__Sample = Sample 1087 :: Sample
-ul_8__Sample = Sample 1088 :: Sample
-ul_9__Sample = Sample 1089 :: Sample
-gab_0__Sample = Sample 1090 :: Sample
-gab_1__Sample = Sample 1091 :: Sample
-gab_2__Sample = Sample 1092 :: Sample
-gab_3__Sample = Sample 1093 :: Sample
-gab_4__Sample = Sample 1094 :: Sample
-gab_5__Sample = Sample 1095 :: Sample
-gab_6__Sample = Sample 1096 :: Sample
-gab_7__Sample = Sample 1097 :: Sample
-gab_8__Sample = Sample 1098 :: Sample
-gab_9__Sample = Sample 1099 :: Sample
-monsterb_0__Sample = Sample 1100 :: Sample
-monsterb_1__Sample = Sample 1101 :: Sample
-monsterb_2__Sample = Sample 1102 :: Sample
-monsterb_3__Sample = Sample 1103 :: Sample
-monsterb_4__Sample = Sample 1104 :: Sample
-monsterb_5__Sample = Sample 1105 :: Sample
-diphone_0__Sample = Sample 1106 :: Sample
-diphone_1__Sample = Sample 1107 :: Sample
-diphone_2__Sample = Sample 1108 :: Sample
-diphone_3__Sample = Sample 1109 :: Sample
-diphone_4__Sample = Sample 1110 :: Sample
-diphone_5__Sample = Sample 1111 :: Sample
-diphone_6__Sample = Sample 1112 :: Sample
-diphone_7__Sample = Sample 1113 :: Sample
-diphone_8__Sample = Sample 1114 :: Sample
-diphone_9__Sample = Sample 1115 :: Sample
-diphone_10__Sample = Sample 1116 :: Sample
-diphone_11__Sample = Sample 1117 :: Sample
-diphone_12__Sample = Sample 1118 :: Sample
-diphone_13__Sample = Sample 1119 :: Sample
-diphone_14__Sample = Sample 1120 :: Sample
-diphone_15__Sample = Sample 1121 :: Sample
-diphone_16__Sample = Sample 1122 :: Sample
-diphone_17__Sample = Sample 1123 :: Sample
-diphone_18__Sample = Sample 1124 :: Sample
-diphone_19__Sample = Sample 1125 :: Sample
-diphone_20__Sample = Sample 1126 :: Sample
-diphone_21__Sample = Sample 1127 :: Sample
-diphone_22__Sample = Sample 1128 :: Sample
-diphone_23__Sample = Sample 1129 :: Sample
-diphone_24__Sample = Sample 1130 :: Sample
-diphone_25__Sample = Sample 1131 :: Sample
-diphone_26__Sample = Sample 1132 :: Sample
-diphone_27__Sample = Sample 1133 :: Sample
-diphone_28__Sample = Sample 1134 :: Sample
-diphone_29__Sample = Sample 1135 :: Sample
-diphone_30__Sample = Sample 1136 :: Sample
-diphone_31__Sample = Sample 1137 :: Sample
-diphone_32__Sample = Sample 1138 :: Sample
-diphone_33__Sample = Sample 1139 :: Sample
-diphone_34__Sample = Sample 1140 :: Sample
-diphone_35__Sample = Sample 1141 :: Sample
-diphone_36__Sample = Sample 1142 :: Sample
-diphone_37__Sample = Sample 1143 :: Sample
-clak_0__Sample = Sample 1144 :: Sample
-clak_1__Sample = Sample 1145 :: Sample
-sitar_0__Sample = Sample 1146 :: Sample
-sitar_1__Sample = Sample 1147 :: Sample
-sitar_2__Sample = Sample 1148 :: Sample
-sitar_3__Sample = Sample 1149 :: Sample
-sitar_4__Sample = Sample 1150 :: Sample
-sitar_5__Sample = Sample 1151 :: Sample
-sitar_6__Sample = Sample 1152 :: Sample
-sitar_7__Sample = Sample 1153 :: Sample
-ab_0__Sample = Sample 1154 :: Sample
-ab_1__Sample = Sample 1155 :: Sample
-ab_2__Sample = Sample 1156 :: Sample
-ab_3__Sample = Sample 1157 :: Sample
-ab_4__Sample = Sample 1158 :: Sample
-ab_5__Sample = Sample 1159 :: Sample
-ab_6__Sample = Sample 1160 :: Sample
-ab_7__Sample = Sample 1161 :: Sample
-ab_8__Sample = Sample 1162 :: Sample
-ab_9__Sample = Sample 1163 :: Sample
-ab_10__Sample = Sample 1164 :: Sample
-ab_11__Sample = Sample 1165 :: Sample
-cr_0__Sample = Sample 1166 :: Sample
-cr_1__Sample = Sample 1167 :: Sample
-cr_2__Sample = Sample 1168 :: Sample
-cr_3__Sample = Sample 1169 :: Sample
-cr_4__Sample = Sample 1170 :: Sample
-cr_5__Sample = Sample 1171 :: Sample
-tacscan_0__Sample = Sample 1172 :: Sample
-tacscan_1__Sample = Sample 1173 :: Sample
-tacscan_2__Sample = Sample 1174 :: Sample
-tacscan_3__Sample = Sample 1175 :: Sample
-tacscan_4__Sample = Sample 1176 :: Sample
-tacscan_5__Sample = Sample 1177 :: Sample
-tacscan_6__Sample = Sample 1178 :: Sample
-tacscan_7__Sample = Sample 1179 :: Sample
-tacscan_8__Sample = Sample 1180 :: Sample
-tacscan_9__Sample = Sample 1181 :: Sample
-tacscan_10__Sample = Sample 1182 :: Sample
-tacscan_11__Sample = Sample 1183 :: Sample
-tacscan_12__Sample = Sample 1184 :: Sample
-tacscan_13__Sample = Sample 1185 :: Sample
-tacscan_14__Sample = Sample 1186 :: Sample
-tacscan_15__Sample = Sample 1187 :: Sample
-tacscan_16__Sample = Sample 1188 :: Sample
-tacscan_17__Sample = Sample 1189 :: Sample
-tacscan_18__Sample = Sample 1190 :: Sample
-tacscan_19__Sample = Sample 1191 :: Sample
-tacscan_20__Sample = Sample 1192 :: Sample
-tacscan_21__Sample = Sample 1193 :: Sample
-v_0__Sample = Sample 1194 :: Sample
-v_1__Sample = Sample 1195 :: Sample
-v_2__Sample = Sample 1196 :: Sample
-v_3__Sample = Sample 1197 :: Sample
-v_4__Sample = Sample 1198 :: Sample
-v_5__Sample = Sample 1199 :: Sample
-bd_0__Sample = Sample 1200 :: Sample
-bd_1__Sample = Sample 1201 :: Sample
-bd_2__Sample = Sample 1202 :: Sample
-bd_3__Sample = Sample 1203 :: Sample
-bd_4__Sample = Sample 1204 :: Sample
-bd_5__Sample = Sample 1205 :: Sample
-bd_6__Sample = Sample 1206 :: Sample
-bd_7__Sample = Sample 1207 :: Sample
-bd_8__Sample = Sample 1208 :: Sample
-bd_9__Sample = Sample 1209 :: Sample
-bd_10__Sample = Sample 1210 :: Sample
-bd_11__Sample = Sample 1211 :: Sample
-bd_12__Sample = Sample 1212 :: Sample
-bd_13__Sample = Sample 1213 :: Sample
-bd_14__Sample = Sample 1214 :: Sample
-bd_15__Sample = Sample 1215 :: Sample
-bd_16__Sample = Sample 1216 :: Sample
-bd_17__Sample = Sample 1217 :: Sample
-bd_18__Sample = Sample 1218 :: Sample
-bd_19__Sample = Sample 1219 :: Sample
-bd_20__Sample = Sample 1220 :: Sample
-bd_21__Sample = Sample 1221 :: Sample
-bd_22__Sample = Sample 1222 :: Sample
-bd_23__Sample = Sample 1223 :: Sample
-rm_0__Sample = Sample 1224 :: Sample
-rm_1__Sample = Sample 1225 :: Sample
-blue_0__Sample = Sample 1226 :: Sample
-blue_1__Sample = Sample 1227 :: Sample
-latibro_0__Sample = Sample 1228 :: Sample
-latibro_1__Sample = Sample 1229 :: Sample
-latibro_2__Sample = Sample 1230 :: Sample
-latibro_3__Sample = Sample 1231 :: Sample
-latibro_4__Sample = Sample 1232 :: Sample
-latibro_5__Sample = Sample 1233 :: Sample
-latibro_6__Sample = Sample 1234 :: Sample
-latibro_7__Sample = Sample 1235 :: Sample
-dr_few_0__Sample = Sample 1236 :: Sample
-dr_few_1__Sample = Sample 1237 :: Sample
-dr_few_2__Sample = Sample 1238 :: Sample
-dr_few_3__Sample = Sample 1239 :: Sample
-dr_few_4__Sample = Sample 1240 :: Sample
-dr_few_5__Sample = Sample 1241 :: Sample
-dr_few_6__Sample = Sample 1242 :: Sample
-dr_few_7__Sample = Sample 1243 :: Sample
-rave2_0__Sample = Sample 1244 :: Sample
-rave2_1__Sample = Sample 1245 :: Sample
-rave2_2__Sample = Sample 1246 :: Sample
-rave2_3__Sample = Sample 1247 :: Sample
-rave2_4__Sample = Sample 1248 :: Sample
-rave2_5__Sample = Sample 1249 :: Sample
-koy_0__Sample = Sample 1250 :: Sample
-koy_1__Sample = Sample 1251 :: Sample
-glitch2_0__Sample = Sample 1252 :: Sample
-glitch2_1__Sample = Sample 1253 :: Sample
-glitch2_2__Sample = Sample 1254 :: Sample
-glitch2_3__Sample = Sample 1255 :: Sample
-glitch2_4__Sample = Sample 1256 :: Sample
-glitch2_5__Sample = Sample 1257 :: Sample
-glitch2_6__Sample = Sample 1258 :: Sample
-glitch2_7__Sample = Sample 1259 :: Sample
-hmm_0__Sample = Sample 1260 :: Sample
-arp_0__Sample = Sample 1261 :: Sample
-arp_1__Sample = Sample 1262 :: Sample
-made2_0__Sample = Sample 1263 :: Sample
-uxay_0__Sample = Sample 1264 :: Sample
-uxay_1__Sample = Sample 1265 :: Sample
-uxay_2__Sample = Sample 1266 :: Sample
-stomp_0__Sample = Sample 1267 :: Sample
-stomp_1__Sample = Sample 1268 :: Sample
-stomp_2__Sample = Sample 1269 :: Sample
-stomp_3__Sample = Sample 1270 :: Sample
-stomp_4__Sample = Sample 1271 :: Sample
-stomp_5__Sample = Sample 1272 :: Sample
-stomp_6__Sample = Sample 1273 :: Sample
-stomp_7__Sample = Sample 1274 :: Sample
-stomp_8__Sample = Sample 1275 :: Sample
-stomp_9__Sample = Sample 1276 :: Sample
-tech_0__Sample = Sample 1277 :: Sample
-tech_1__Sample = Sample 1278 :: Sample
-tech_2__Sample = Sample 1279 :: Sample
-tech_3__Sample = Sample 1280 :: Sample
-tech_4__Sample = Sample 1281 :: Sample
-tech_5__Sample = Sample 1282 :: Sample
-tech_6__Sample = Sample 1283 :: Sample
-tech_7__Sample = Sample 1284 :: Sample
-tech_8__Sample = Sample 1285 :: Sample
-tech_9__Sample = Sample 1286 :: Sample
-tech_10__Sample = Sample 1287 :: Sample
-tech_11__Sample = Sample 1288 :: Sample
-tech_12__Sample = Sample 1289 :: Sample
-sn_0__Sample = Sample 1290 :: Sample
-sn_1__Sample = Sample 1291 :: Sample
-sn_2__Sample = Sample 1292 :: Sample
-sn_3__Sample = Sample 1293 :: Sample
-sn_4__Sample = Sample 1294 :: Sample
-sn_5__Sample = Sample 1295 :: Sample
-sn_6__Sample = Sample 1296 :: Sample
-sn_7__Sample = Sample 1297 :: Sample
-sn_8__Sample = Sample 1298 :: Sample
-sn_9__Sample = Sample 1299 :: Sample
-sn_10__Sample = Sample 1300 :: Sample
-sn_11__Sample = Sample 1301 :: Sample
-sn_12__Sample = Sample 1302 :: Sample
-sn_13__Sample = Sample 1303 :: Sample
-sn_14__Sample = Sample 1304 :: Sample
-sn_15__Sample = Sample 1305 :: Sample
-sn_16__Sample = Sample 1306 :: Sample
-sn_17__Sample = Sample 1307 :: Sample
-sn_18__Sample = Sample 1308 :: Sample
-sn_19__Sample = Sample 1309 :: Sample
-sn_20__Sample = Sample 1310 :: Sample
-sn_21__Sample = Sample 1311 :: Sample
-sn_22__Sample = Sample 1312 :: Sample
-sn_23__Sample = Sample 1313 :: Sample
-sn_24__Sample = Sample 1314 :: Sample
-sn_25__Sample = Sample 1315 :: Sample
-sn_26__Sample = Sample 1316 :: Sample
-sn_27__Sample = Sample 1317 :: Sample
-sn_28__Sample = Sample 1318 :: Sample
-sn_29__Sample = Sample 1319 :: Sample
-sn_30__Sample = Sample 1320 :: Sample
-sn_31__Sample = Sample 1321 :: Sample
-sn_32__Sample = Sample 1322 :: Sample
-sn_33__Sample = Sample 1323 :: Sample
-sn_34__Sample = Sample 1324 :: Sample
-sn_35__Sample = Sample 1325 :: Sample
-sn_36__Sample = Sample 1326 :: Sample
-sn_37__Sample = Sample 1327 :: Sample
-sn_38__Sample = Sample 1328 :: Sample
-sn_39__Sample = Sample 1329 :: Sample
-sn_40__Sample = Sample 1330 :: Sample
-sn_41__Sample = Sample 1331 :: Sample
-sn_42__Sample = Sample 1332 :: Sample
-sn_43__Sample = Sample 1333 :: Sample
-sn_44__Sample = Sample 1334 :: Sample
-sn_45__Sample = Sample 1335 :: Sample
-sn_46__Sample = Sample 1336 :: Sample
-sn_47__Sample = Sample 1337 :: Sample
-sn_48__Sample = Sample 1338 :: Sample
-sn_49__Sample = Sample 1339 :: Sample
-sn_50__Sample = Sample 1340 :: Sample
-sn_51__Sample = Sample 1341 :: Sample
-less_0__Sample = Sample 1342 :: Sample
-less_1__Sample = Sample 1343 :: Sample
-less_2__Sample = Sample 1344 :: Sample
-less_3__Sample = Sample 1345 :: Sample
-off_0__Sample = Sample 1346 :: Sample
-x_808sd_0__Sample = Sample 1347 :: Sample
-x_808sd_1__Sample = Sample 1348 :: Sample
-x_808sd_2__Sample = Sample 1349 :: Sample
-x_808sd_3__Sample = Sample 1350 :: Sample
-x_808sd_4__Sample = Sample 1351 :: Sample
-x_808sd_5__Sample = Sample 1352 :: Sample
-x_808sd_6__Sample = Sample 1353 :: Sample
-x_808sd_7__Sample = Sample 1354 :: Sample
-x_808sd_8__Sample = Sample 1355 :: Sample
-x_808sd_9__Sample = Sample 1356 :: Sample
-x_808sd_10__Sample = Sample 1357 :: Sample
-x_808sd_11__Sample = Sample 1358 :: Sample
-x_808sd_12__Sample = Sample 1359 :: Sample
-x_808sd_13__Sample = Sample 1360 :: Sample
-x_808sd_14__Sample = Sample 1361 :: Sample
-x_808sd_15__Sample = Sample 1362 :: Sample
-x_808sd_16__Sample = Sample 1363 :: Sample
-x_808sd_17__Sample = Sample 1364 :: Sample
-x_808sd_18__Sample = Sample 1365 :: Sample
-x_808sd_19__Sample = Sample 1366 :: Sample
-x_808sd_20__Sample = Sample 1367 :: Sample
-x_808sd_21__Sample = Sample 1368 :: Sample
-x_808sd_22__Sample = Sample 1369 :: Sample
-x_808sd_23__Sample = Sample 1370 :: Sample
-x_808sd_24__Sample = Sample 1371 :: Sample
-trump_0__Sample = Sample 1372 :: Sample
-trump_1__Sample = Sample 1373 :: Sample
-trump_2__Sample = Sample 1374 :: Sample
-trump_3__Sample = Sample 1375 :: Sample
-trump_4__Sample = Sample 1376 :: Sample
-trump_5__Sample = Sample 1377 :: Sample
-trump_6__Sample = Sample 1378 :: Sample
-trump_7__Sample = Sample 1379 :: Sample
-trump_8__Sample = Sample 1380 :: Sample
-trump_9__Sample = Sample 1381 :: Sample
-trump_10__Sample = Sample 1382 :: Sample
-bev_0__Sample = Sample 1383 :: Sample
-bev_1__Sample = Sample 1384 :: Sample
-pad_0__Sample = Sample 1385 :: Sample
-pad_1__Sample = Sample 1386 :: Sample
-pad_2__Sample = Sample 1387 :: Sample
-led_0__Sample = Sample 1388 :: Sample
-perc_0__Sample = Sample 1389 :: Sample
-perc_1__Sample = Sample 1390 :: Sample
-perc_2__Sample = Sample 1391 :: Sample
-perc_3__Sample = Sample 1392 :: Sample
-perc_4__Sample = Sample 1393 :: Sample
-perc_5__Sample = Sample 1394 :: Sample
-pluck_0__Sample = Sample 1395 :: Sample
-pluck_1__Sample = Sample 1396 :: Sample
-pluck_2__Sample = Sample 1397 :: Sample
-pluck_3__Sample = Sample 1398 :: Sample
-pluck_4__Sample = Sample 1399 :: Sample
-pluck_5__Sample = Sample 1400 :: Sample
-pluck_6__Sample = Sample 1401 :: Sample
-pluck_7__Sample = Sample 1402 :: Sample
-pluck_8__Sample = Sample 1403 :: Sample
-pluck_9__Sample = Sample 1404 :: Sample
-pluck_10__Sample = Sample 1405 :: Sample
-pluck_11__Sample = Sample 1406 :: Sample
-pluck_12__Sample = Sample 1407 :: Sample
-pluck_13__Sample = Sample 1408 :: Sample
-pluck_14__Sample = Sample 1409 :: Sample
-pluck_15__Sample = Sample 1410 :: Sample
-pluck_16__Sample = Sample 1411 :: Sample
-bleep_0__Sample = Sample 1412 :: Sample
-bleep_1__Sample = Sample 1413 :: Sample
-bleep_2__Sample = Sample 1414 :: Sample
-bleep_3__Sample = Sample 1415 :: Sample
-bleep_4__Sample = Sample 1416 :: Sample
-bleep_5__Sample = Sample 1417 :: Sample
-bleep_6__Sample = Sample 1418 :: Sample
-bleep_7__Sample = Sample 1419 :: Sample
-bleep_8__Sample = Sample 1420 :: Sample
-bleep_9__Sample = Sample 1421 :: Sample
-bleep_10__Sample = Sample 1422 :: Sample
-bleep_11__Sample = Sample 1423 :: Sample
-bleep_12__Sample = Sample 1424 :: Sample
-ht_0__Sample = Sample 1425 :: Sample
-ht_1__Sample = Sample 1426 :: Sample
-ht_2__Sample = Sample 1427 :: Sample
-ht_3__Sample = Sample 1428 :: Sample
-ht_4__Sample = Sample 1429 :: Sample
-ht_5__Sample = Sample 1430 :: Sample
-ht_6__Sample = Sample 1431 :: Sample
-ht_7__Sample = Sample 1432 :: Sample
-ht_8__Sample = Sample 1433 :: Sample
-ht_9__Sample = Sample 1434 :: Sample
-ht_10__Sample = Sample 1435 :: Sample
-ht_11__Sample = Sample 1436 :: Sample
-ht_12__Sample = Sample 1437 :: Sample
-ht_13__Sample = Sample 1438 :: Sample
-ht_14__Sample = Sample 1439 :: Sample
-ht_15__Sample = Sample 1440 :: Sample
-ades4_0__Sample = Sample 1441 :: Sample
-ades4_1__Sample = Sample 1442 :: Sample
-ades4_2__Sample = Sample 1443 :: Sample
-ades4_3__Sample = Sample 1444 :: Sample
-ades4_4__Sample = Sample 1445 :: Sample
-ades4_5__Sample = Sample 1446 :: Sample
-proc_0__Sample = Sample 1447 :: Sample
-proc_1__Sample = Sample 1448 :: Sample
-gretsch_0__Sample = Sample 1449 :: Sample
-gretsch_1__Sample = Sample 1450 :: Sample
-gretsch_2__Sample = Sample 1451 :: Sample
-gretsch_3__Sample = Sample 1452 :: Sample
-gretsch_4__Sample = Sample 1453 :: Sample
-gretsch_5__Sample = Sample 1454 :: Sample
-gretsch_6__Sample = Sample 1455 :: Sample
-gretsch_7__Sample = Sample 1456 :: Sample
-gretsch_8__Sample = Sample 1457 :: Sample
-gretsch_9__Sample = Sample 1458 :: Sample
-gretsch_10__Sample = Sample 1459 :: Sample
-gretsch_11__Sample = Sample 1460 :: Sample
-gretsch_12__Sample = Sample 1461 :: Sample
-gretsch_13__Sample = Sample 1462 :: Sample
-gretsch_14__Sample = Sample 1463 :: Sample
-gretsch_15__Sample = Sample 1464 :: Sample
-gretsch_16__Sample = Sample 1465 :: Sample
-gretsch_17__Sample = Sample 1466 :: Sample
-gretsch_18__Sample = Sample 1467 :: Sample
-gretsch_19__Sample = Sample 1468 :: Sample
-gretsch_20__Sample = Sample 1469 :: Sample
-gretsch_21__Sample = Sample 1470 :: Sample
-gretsch_22__Sample = Sample 1471 :: Sample
-gretsch_23__Sample = Sample 1472 :: Sample
-outdoor_0__Sample = Sample 1473 :: Sample
-outdoor_1__Sample = Sample 1474 :: Sample
-outdoor_2__Sample = Sample 1475 :: Sample
-outdoor_3__Sample = Sample 1476 :: Sample
-outdoor_4__Sample = Sample 1477 :: Sample
-outdoor_5__Sample = Sample 1478 :: Sample
-techno_0__Sample = Sample 1479 :: Sample
-techno_1__Sample = Sample 1480 :: Sample
-techno_2__Sample = Sample 1481 :: Sample
-techno_3__Sample = Sample 1482 :: Sample
-techno_4__Sample = Sample 1483 :: Sample
-techno_5__Sample = Sample 1484 :: Sample
-techno_6__Sample = Sample 1485 :: Sample
-ulgab_0__Sample = Sample 1486 :: Sample
-ulgab_1__Sample = Sample 1487 :: Sample
-ulgab_2__Sample = Sample 1488 :: Sample
-ulgab_3__Sample = Sample 1489 :: Sample
-ulgab_4__Sample = Sample 1490 :: Sample
-breaks125_0__Sample = Sample 1491 :: Sample
-breaks125_1__Sample = Sample 1492 :: Sample
-bin_0__Sample = Sample 1493 :: Sample
-bin_1__Sample = Sample 1494 :: Sample
-x_808mc_0__Sample = Sample 1495 :: Sample
-x_808mc_1__Sample = Sample 1496 :: Sample
-x_808mc_2__Sample = Sample 1497 :: Sample
-x_808mc_3__Sample = Sample 1498 :: Sample
-x_808mc_4__Sample = Sample 1499 :: Sample
-lt_0__Sample = Sample 1500 :: Sample
-lt_1__Sample = Sample 1501 :: Sample
-lt_2__Sample = Sample 1502 :: Sample
-lt_3__Sample = Sample 1503 :: Sample
-lt_4__Sample = Sample 1504 :: Sample
-lt_5__Sample = Sample 1505 :: Sample
-lt_6__Sample = Sample 1506 :: Sample
-lt_7__Sample = Sample 1507 :: Sample
-lt_8__Sample = Sample 1508 :: Sample
-lt_9__Sample = Sample 1509 :: Sample
-lt_10__Sample = Sample 1510 :: Sample
-lt_11__Sample = Sample 1511 :: Sample
-lt_12__Sample = Sample 1512 :: Sample
-lt_13__Sample = Sample 1513 :: Sample
-lt_14__Sample = Sample 1514 :: Sample
-lt_15__Sample = Sample 1515 :: Sample
-amencutup_0__Sample = Sample 1516 :: Sample
-amencutup_1__Sample = Sample 1517 :: Sample
-amencutup_2__Sample = Sample 1518 :: Sample
-amencutup_3__Sample = Sample 1519 :: Sample
-amencutup_4__Sample = Sample 1520 :: Sample
-amencutup_5__Sample = Sample 1521 :: Sample
-amencutup_6__Sample = Sample 1522 :: Sample
-amencutup_7__Sample = Sample 1523 :: Sample
-amencutup_8__Sample = Sample 1524 :: Sample
-amencutup_9__Sample = Sample 1525 :: Sample
-amencutup_10__Sample = Sample 1526 :: Sample
-amencutup_11__Sample = Sample 1527 :: Sample
-amencutup_12__Sample = Sample 1528 :: Sample
-amencutup_13__Sample = Sample 1529 :: Sample
-amencutup_14__Sample = Sample 1530 :: Sample
-amencutup_15__Sample = Sample 1531 :: Sample
-amencutup_16__Sample = Sample 1532 :: Sample
-amencutup_17__Sample = Sample 1533 :: Sample
-amencutup_18__Sample = Sample 1534 :: Sample
-amencutup_19__Sample = Sample 1535 :: Sample
-amencutup_20__Sample = Sample 1536 :: Sample
-amencutup_21__Sample = Sample 1537 :: Sample
-amencutup_22__Sample = Sample 1538 :: Sample
-amencutup_23__Sample = Sample 1539 :: Sample
-amencutup_24__Sample = Sample 1540 :: Sample
-amencutup_25__Sample = Sample 1541 :: Sample
-amencutup_26__Sample = Sample 1542 :: Sample
-amencutup_27__Sample = Sample 1543 :: Sample
-amencutup_28__Sample = Sample 1544 :: Sample
-amencutup_29__Sample = Sample 1545 :: Sample
-amencutup_30__Sample = Sample 1546 :: Sample
-amencutup_31__Sample = Sample 1547 :: Sample
-drum_0__Sample = Sample 1548 :: Sample
-drum_1__Sample = Sample 1549 :: Sample
-drum_2__Sample = Sample 1550 :: Sample
-drum_3__Sample = Sample 1551 :: Sample
-drum_4__Sample = Sample 1552 :: Sample
-drum_5__Sample = Sample 1553 :: Sample
-coins_0__Sample = Sample 1554 :: Sample
-industrial_0__Sample = Sample 1555 :: Sample
-industrial_1__Sample = Sample 1556 :: Sample
-industrial_2__Sample = Sample 1557 :: Sample
-industrial_3__Sample = Sample 1558 :: Sample
-industrial_4__Sample = Sample 1559 :: Sample
-industrial_5__Sample = Sample 1560 :: Sample
-industrial_6__Sample = Sample 1561 :: Sample
-industrial_7__Sample = Sample 1562 :: Sample
-industrial_8__Sample = Sample 1563 :: Sample
-industrial_9__Sample = Sample 1564 :: Sample
-industrial_10__Sample = Sample 1565 :: Sample
-industrial_11__Sample = Sample 1566 :: Sample
-industrial_12__Sample = Sample 1567 :: Sample
-industrial_13__Sample = Sample 1568 :: Sample
-industrial_14__Sample = Sample 1569 :: Sample
-industrial_15__Sample = Sample 1570 :: Sample
-industrial_16__Sample = Sample 1571 :: Sample
-industrial_17__Sample = Sample 1572 :: Sample
-industrial_18__Sample = Sample 1573 :: Sample
-industrial_19__Sample = Sample 1574 :: Sample
-industrial_20__Sample = Sample 1575 :: Sample
-industrial_21__Sample = Sample 1576 :: Sample
-industrial_22__Sample = Sample 1577 :: Sample
-industrial_23__Sample = Sample 1578 :: Sample
-industrial_24__Sample = Sample 1579 :: Sample
-industrial_25__Sample = Sample 1580 :: Sample
-industrial_26__Sample = Sample 1581 :: Sample
-industrial_27__Sample = Sample 1582 :: Sample
-industrial_28__Sample = Sample 1583 :: Sample
-industrial_29__Sample = Sample 1584 :: Sample
-industrial_30__Sample = Sample 1585 :: Sample
-industrial_31__Sample = Sample 1586 :: Sample
-tink_0__Sample = Sample 1587 :: Sample
-tink_1__Sample = Sample 1588 :: Sample
-tink_2__Sample = Sample 1589 :: Sample
-tink_3__Sample = Sample 1590 :: Sample
-tink_4__Sample = Sample 1591 :: Sample
-co_0__Sample = Sample 1592 :: Sample
-co_1__Sample = Sample 1593 :: Sample
-co_2__Sample = Sample 1594 :: Sample
-co_3__Sample = Sample 1595 :: Sample
-fest_0__Sample = Sample 1596 :: Sample
-feelfx_0__Sample = Sample 1597 :: Sample
-feelfx_1__Sample = Sample 1598 :: Sample
-feelfx_2__Sample = Sample 1599 :: Sample
-feelfx_3__Sample = Sample 1600 :: Sample
-feelfx_4__Sample = Sample 1601 :: Sample
-feelfx_5__Sample = Sample 1602 :: Sample
-feelfx_6__Sample = Sample 1603 :: Sample
-feelfx_7__Sample = Sample 1604 :: Sample
-x_808cy_0__Sample = Sample 1605 :: Sample
-x_808cy_1__Sample = Sample 1606 :: Sample
-x_808cy_2__Sample = Sample 1607 :: Sample
-x_808cy_3__Sample = Sample 1608 :: Sample
-x_808cy_4__Sample = Sample 1609 :: Sample
-x_808cy_5__Sample = Sample 1610 :: Sample
-x_808cy_6__Sample = Sample 1611 :: Sample
-x_808cy_7__Sample = Sample 1612 :: Sample
-x_808cy_8__Sample = Sample 1613 :: Sample
-x_808cy_9__Sample = Sample 1614 :: Sample
-x_808cy_10__Sample = Sample 1615 :: Sample
-x_808cy_11__Sample = Sample 1616 :: Sample
-x_808cy_12__Sample = Sample 1617 :: Sample
-x_808cy_13__Sample = Sample 1618 :: Sample
-x_808cy_14__Sample = Sample 1619 :: Sample
-x_808cy_15__Sample = Sample 1620 :: Sample
-x_808cy_16__Sample = Sample 1621 :: Sample
-x_808cy_17__Sample = Sample 1622 :: Sample
-x_808cy_18__Sample = Sample 1623 :: Sample
-x_808cy_19__Sample = Sample 1624 :: Sample
-x_808cy_20__Sample = Sample 1625 :: Sample
-x_808cy_21__Sample = Sample 1626 :: Sample
-x_808cy_22__Sample = Sample 1627 :: Sample
-x_808cy_23__Sample = Sample 1628 :: Sample
-x_808cy_24__Sample = Sample 1629 :: Sample
-world_0__Sample = Sample 1630 :: Sample
-world_1__Sample = Sample 1631 :: Sample
-world_2__Sample = Sample 1632 :: Sample
-f_0__Sample = Sample 1633 :: Sample
-numbers_0__Sample = Sample 1634 :: Sample
-numbers_1__Sample = Sample 1635 :: Sample
-numbers_2__Sample = Sample 1636 :: Sample
-numbers_3__Sample = Sample 1637 :: Sample
-numbers_4__Sample = Sample 1638 :: Sample
-numbers_5__Sample = Sample 1639 :: Sample
-numbers_6__Sample = Sample 1640 :: Sample
-numbers_7__Sample = Sample 1641 :: Sample
-numbers_8__Sample = Sample 1642 :: Sample
-d_0__Sample = Sample 1643 :: Sample
-d_1__Sample = Sample 1644 :: Sample
-d_2__Sample = Sample 1645 :: Sample
-d_3__Sample = Sample 1646 :: Sample
-padlong_0__Sample = Sample 1647 :: Sample
-sequential_0__Sample = Sample 1648 :: Sample
-sequential_1__Sample = Sample 1649 :: Sample
-sequential_2__Sample = Sample 1650 :: Sample
-sequential_3__Sample = Sample 1651 :: Sample
-sequential_4__Sample = Sample 1652 :: Sample
-sequential_5__Sample = Sample 1653 :: Sample
-sequential_6__Sample = Sample 1654 :: Sample
-sequential_7__Sample = Sample 1655 :: Sample
-stab_0__Sample = Sample 1656 :: Sample
-stab_1__Sample = Sample 1657 :: Sample
-stab_2__Sample = Sample 1658 :: Sample
-stab_3__Sample = Sample 1659 :: Sample
-stab_4__Sample = Sample 1660 :: Sample
-stab_5__Sample = Sample 1661 :: Sample
-stab_6__Sample = Sample 1662 :: Sample
-stab_7__Sample = Sample 1663 :: Sample
-stab_8__Sample = Sample 1664 :: Sample
-stab_9__Sample = Sample 1665 :: Sample
-stab_10__Sample = Sample 1666 :: Sample
-stab_11__Sample = Sample 1667 :: Sample
-stab_12__Sample = Sample 1668 :: Sample
-stab_13__Sample = Sample 1669 :: Sample
-stab_14__Sample = Sample 1670 :: Sample
-stab_15__Sample = Sample 1671 :: Sample
-stab_16__Sample = Sample 1672 :: Sample
-stab_17__Sample = Sample 1673 :: Sample
-stab_18__Sample = Sample 1674 :: Sample
-stab_19__Sample = Sample 1675 :: Sample
-stab_20__Sample = Sample 1676 :: Sample
-stab_21__Sample = Sample 1677 :: Sample
-stab_22__Sample = Sample 1678 :: Sample
-electro1_0__Sample = Sample 1679 :: Sample
-electro1_1__Sample = Sample 1680 :: Sample
-electro1_2__Sample = Sample 1681 :: Sample
-electro1_3__Sample = Sample 1682 :: Sample
-electro1_4__Sample = Sample 1683 :: Sample
-electro1_5__Sample = Sample 1684 :: Sample
-electro1_6__Sample = Sample 1685 :: Sample
-electro1_7__Sample = Sample 1686 :: Sample
-electro1_8__Sample = Sample 1687 :: Sample
-electro1_9__Sample = Sample 1688 :: Sample
-electro1_10__Sample = Sample 1689 :: Sample
-electro1_11__Sample = Sample 1690 :: Sample
-electro1_12__Sample = Sample 1691 :: Sample
-ifdrums_0__Sample = Sample 1692 :: Sample
-ifdrums_1__Sample = Sample 1693 :: Sample
-ifdrums_2__Sample = Sample 1694 :: Sample
-invaders_0__Sample = Sample 1695 :: Sample
-invaders_1__Sample = Sample 1696 :: Sample
-invaders_2__Sample = Sample 1697 :: Sample
-invaders_3__Sample = Sample 1698 :: Sample
-invaders_4__Sample = Sample 1699 :: Sample
-invaders_5__Sample = Sample 1700 :: Sample
-invaders_6__Sample = Sample 1701 :: Sample
-invaders_7__Sample = Sample 1702 :: Sample
-invaders_8__Sample = Sample 1703 :: Sample
-invaders_9__Sample = Sample 1704 :: Sample
-invaders_10__Sample = Sample 1705 :: Sample
-invaders_11__Sample = Sample 1706 :: Sample
-invaders_12__Sample = Sample 1707 :: Sample
-invaders_13__Sample = Sample 1708 :: Sample
-invaders_14__Sample = Sample 1709 :: Sample
-invaders_15__Sample = Sample 1710 :: Sample
-invaders_16__Sample = Sample 1711 :: Sample
-invaders_17__Sample = Sample 1712 :: Sample
-dist_0__Sample = Sample 1713 :: Sample
-dist_1__Sample = Sample 1714 :: Sample
-dist_2__Sample = Sample 1715 :: Sample
-dist_3__Sample = Sample 1716 :: Sample
-dist_4__Sample = Sample 1717 :: Sample
-dist_5__Sample = Sample 1718 :: Sample
-dist_6__Sample = Sample 1719 :: Sample
-dist_7__Sample = Sample 1720 :: Sample
-dist_8__Sample = Sample 1721 :: Sample
-dist_9__Sample = Sample 1722 :: Sample
-dist_10__Sample = Sample 1723 :: Sample
-dist_11__Sample = Sample 1724 :: Sample
-dist_12__Sample = Sample 1725 :: Sample
-dist_13__Sample = Sample 1726 :: Sample
-dist_14__Sample = Sample 1727 :: Sample
-dist_15__Sample = Sample 1728 :: Sample
-sundance_0__Sample = Sample 1729 :: Sample
-sundance_1__Sample = Sample 1730 :: Sample
-sundance_2__Sample = Sample 1731 :: Sample
-sundance_3__Sample = Sample 1732 :: Sample
-sundance_4__Sample = Sample 1733 :: Sample
-sundance_5__Sample = Sample 1734 :: Sample
-speech_0__Sample = Sample 1735 :: Sample
-speech_1__Sample = Sample 1736 :: Sample
-speech_2__Sample = Sample 1737 :: Sample
-speech_3__Sample = Sample 1738 :: Sample
-speech_4__Sample = Sample 1739 :: Sample
-speech_5__Sample = Sample 1740 :: Sample
-speech_6__Sample = Sample 1741 :: Sample
-toys_0__Sample = Sample 1742 :: Sample
-toys_1__Sample = Sample 1743 :: Sample
-toys_2__Sample = Sample 1744 :: Sample
-toys_3__Sample = Sample 1745 :: Sample
-toys_4__Sample = Sample 1746 :: Sample
-toys_5__Sample = Sample 1747 :: Sample
-toys_6__Sample = Sample 1748 :: Sample
-toys_7__Sample = Sample 1749 :: Sample
-toys_8__Sample = Sample 1750 :: Sample
-toys_9__Sample = Sample 1751 :: Sample
-toys_10__Sample = Sample 1752 :: Sample
-toys_11__Sample = Sample 1753 :: Sample
-toys_12__Sample = Sample 1754 :: Sample
-bass0_0__Sample = Sample 1755 :: Sample
-bass0_1__Sample = Sample 1756 :: Sample
-bass0_2__Sample = Sample 1757 :: Sample
-realclaps_0__Sample = Sample 1758 :: Sample
-realclaps_1__Sample = Sample 1759 :: Sample
-realclaps_2__Sample = Sample 1760 :: Sample
-realclaps_3__Sample = Sample 1761 :: Sample
-dorkbot_0__Sample = Sample 1762 :: Sample
-dorkbot_1__Sample = Sample 1763 :: Sample
-arpy_0__Sample = Sample 1764 :: Sample
-arpy_1__Sample = Sample 1765 :: Sample
-arpy_2__Sample = Sample 1766 :: Sample
-arpy_3__Sample = Sample 1767 :: Sample
-arpy_4__Sample = Sample 1768 :: Sample
-arpy_5__Sample = Sample 1769 :: Sample
-arpy_6__Sample = Sample 1770 :: Sample
-arpy_7__Sample = Sample 1771 :: Sample
-arpy_8__Sample = Sample 1772 :: Sample
-arpy_9__Sample = Sample 1773 :: Sample
-arpy_10__Sample = Sample 1774 :: Sample
-fire_0__Sample = Sample 1775 :: Sample
-hoover_0__Sample = Sample 1776 :: Sample
-hoover_1__Sample = Sample 1777 :: Sample
-hoover_2__Sample = Sample 1778 :: Sample
-hoover_3__Sample = Sample 1779 :: Sample
-hoover_4__Sample = Sample 1780 :: Sample
-hoover_5__Sample = Sample 1781 :: Sample
-breath_0__Sample = Sample 1782 :: Sample
-rave_0__Sample = Sample 1783 :: Sample
-rave_1__Sample = Sample 1784 :: Sample
-rave_2__Sample = Sample 1785 :: Sample
-rave_3__Sample = Sample 1786 :: Sample
-rave_4__Sample = Sample 1787 :: Sample
-rave_5__Sample = Sample 1788 :: Sample
-rave_6__Sample = Sample 1789 :: Sample
-rave_7__Sample = Sample 1790 :: Sample
-bottle_0__Sample = Sample 1791 :: Sample
-bottle_1__Sample = Sample 1792 :: Sample
-bottle_2__Sample = Sample 1793 :: Sample
-bottle_3__Sample = Sample 1794 :: Sample
-bottle_4__Sample = Sample 1795 :: Sample
-bottle_5__Sample = Sample 1796 :: Sample
-bottle_6__Sample = Sample 1797 :: Sample
-bottle_7__Sample = Sample 1798 :: Sample
-bottle_8__Sample = Sample 1799 :: Sample
-bottle_9__Sample = Sample 1800 :: Sample
-bottle_10__Sample = Sample 1801 :: Sample
-bottle_11__Sample = Sample 1802 :: Sample
-bottle_12__Sample = Sample 1803 :: Sample
-east_0__Sample = Sample 1804 :: Sample
-east_1__Sample = Sample 1805 :: Sample
-east_2__Sample = Sample 1806 :: Sample
-east_3__Sample = Sample 1807 :: Sample
-east_4__Sample = Sample 1808 :: Sample
-east_5__Sample = Sample 1809 :: Sample
-east_6__Sample = Sample 1810 :: Sample
-east_7__Sample = Sample 1811 :: Sample
-east_8__Sample = Sample 1812 :: Sample
-linnhats_0__Sample = Sample 1813 :: Sample
-linnhats_1__Sample = Sample 1814 :: Sample
-linnhats_2__Sample = Sample 1815 :: Sample
-linnhats_3__Sample = Sample 1816 :: Sample
-linnhats_4__Sample = Sample 1817 :: Sample
-linnhats_5__Sample = Sample 1818 :: Sample
-speedupdown_0__Sample = Sample 1819 :: Sample
-speedupdown_1__Sample = Sample 1820 :: Sample
-speedupdown_2__Sample = Sample 1821 :: Sample
-speedupdown_3__Sample = Sample 1822 :: Sample
-speedupdown_4__Sample = Sample 1823 :: Sample
-speedupdown_5__Sample = Sample 1824 :: Sample
-speedupdown_6__Sample = Sample 1825 :: Sample
-speedupdown_7__Sample = Sample 1826 :: Sample
-speedupdown_8__Sample = Sample 1827 :: Sample
-cosmicg_0__Sample = Sample 1828 :: Sample
-cosmicg_1__Sample = Sample 1829 :: Sample
-cosmicg_2__Sample = Sample 1830 :: Sample
-cosmicg_3__Sample = Sample 1831 :: Sample
-cosmicg_4__Sample = Sample 1832 :: Sample
-cosmicg_5__Sample = Sample 1833 :: Sample
-cosmicg_6__Sample = Sample 1834 :: Sample
-cosmicg_7__Sample = Sample 1835 :: Sample
-cosmicg_8__Sample = Sample 1836 :: Sample
-cosmicg_9__Sample = Sample 1837 :: Sample
-cosmicg_10__Sample = Sample 1838 :: Sample
-cosmicg_11__Sample = Sample 1839 :: Sample
-cosmicg_12__Sample = Sample 1840 :: Sample
-cosmicg_13__Sample = Sample 1841 :: Sample
-cosmicg_14__Sample = Sample 1842 :: Sample
-jvbass_0__Sample = Sample 1843 :: Sample
-jvbass_1__Sample = Sample 1844 :: Sample
-jvbass_2__Sample = Sample 1845 :: Sample
-jvbass_3__Sample = Sample 1846 :: Sample
-jvbass_4__Sample = Sample 1847 :: Sample
-jvbass_5__Sample = Sample 1848 :: Sample
-jvbass_6__Sample = Sample 1849 :: Sample
-jvbass_7__Sample = Sample 1850 :: Sample
-jvbass_8__Sample = Sample 1851 :: Sample
-jvbass_9__Sample = Sample 1852 :: Sample
-jvbass_10__Sample = Sample 1853 :: Sample
-jvbass_11__Sample = Sample 1854 :: Sample
-jvbass_12__Sample = Sample 1855 :: Sample
-mash_0__Sample = Sample 1856 :: Sample
-mash_1__Sample = Sample 1857 :: Sample
-feel_0__Sample = Sample 1858 :: Sample
-feel_1__Sample = Sample 1859 :: Sample
-feel_2__Sample = Sample 1860 :: Sample
-feel_3__Sample = Sample 1861 :: Sample
-feel_4__Sample = Sample 1862 :: Sample
-feel_5__Sample = Sample 1863 :: Sample
-feel_6__Sample = Sample 1864 :: Sample
-short_0__Sample = Sample 1865 :: Sample
-short_1__Sample = Sample 1866 :: Sample
-short_2__Sample = Sample 1867 :: Sample
-short_3__Sample = Sample 1868 :: Sample
-short_4__Sample = Sample 1869 :: Sample
-incoming_0__Sample = Sample 1870 :: Sample
-incoming_1__Sample = Sample 1871 :: Sample
-incoming_2__Sample = Sample 1872 :: Sample
-incoming_3__Sample = Sample 1873 :: Sample
-incoming_4__Sample = Sample 1874 :: Sample
-incoming_5__Sample = Sample 1875 :: Sample
-incoming_6__Sample = Sample 1876 :: Sample
-incoming_7__Sample = Sample 1877 :: Sample
-flick_0__Sample = Sample 1878 :: Sample
-flick_1__Sample = Sample 1879 :: Sample
-flick_2__Sample = Sample 1880 :: Sample
-flick_3__Sample = Sample 1881 :: Sample
-flick_4__Sample = Sample 1882 :: Sample
-flick_5__Sample = Sample 1883 :: Sample
-flick_6__Sample = Sample 1884 :: Sample
-flick_7__Sample = Sample 1885 :: Sample
-flick_8__Sample = Sample 1886 :: Sample
-flick_9__Sample = Sample 1887 :: Sample
-flick_10__Sample = Sample 1888 :: Sample
-flick_11__Sample = Sample 1889 :: Sample
-flick_12__Sample = Sample 1890 :: Sample
-flick_13__Sample = Sample 1891 :: Sample
-flick_14__Sample = Sample 1892 :: Sample
-flick_15__Sample = Sample 1893 :: Sample
-flick_16__Sample = Sample 1894 :: Sample
-reverbkick_0__Sample = Sample 1895 :: Sample
-bass2_0__Sample = Sample 1896 :: Sample
-bass2_1__Sample = Sample 1897 :: Sample
-bass2_2__Sample = Sample 1898 :: Sample
-bass2_3__Sample = Sample 1899 :: Sample
-bass2_4__Sample = Sample 1900 :: Sample
-baa_0__Sample = Sample 1901 :: Sample
-baa_1__Sample = Sample 1902 :: Sample
-baa_2__Sample = Sample 1903 :: Sample
-baa_3__Sample = Sample 1904 :: Sample
-baa_4__Sample = Sample 1905 :: Sample
-baa_5__Sample = Sample 1906 :: Sample
-baa_6__Sample = Sample 1907 :: Sample
-fm_0__Sample = Sample 1908 :: Sample
-fm_1__Sample = Sample 1909 :: Sample
-fm_2__Sample = Sample 1910 :: Sample
-fm_3__Sample = Sample 1911 :: Sample
-fm_4__Sample = Sample 1912 :: Sample
-fm_5__Sample = Sample 1913 :: Sample
-fm_6__Sample = Sample 1914 :: Sample
-fm_7__Sample = Sample 1915 :: Sample
-fm_8__Sample = Sample 1916 :: Sample
-fm_9__Sample = Sample 1917 :: Sample
-fm_10__Sample = Sample 1918 :: Sample
-fm_11__Sample = Sample 1919 :: Sample
-fm_12__Sample = Sample 1920 :: Sample
-fm_13__Sample = Sample 1921 :: Sample
-fm_14__Sample = Sample 1922 :: Sample
-fm_15__Sample = Sample 1923 :: Sample
-fm_16__Sample = Sample 1924 :: Sample
-click_0__Sample = Sample 1925 :: Sample
-click_1__Sample = Sample 1926 :: Sample
-click_2__Sample = Sample 1927 :: Sample
-click_3__Sample = Sample 1928 :: Sample
-control_0__Sample = Sample 1929 :: Sample
-control_1__Sample = Sample 1930 :: Sample
-peri_0__Sample = Sample 1931 :: Sample
-peri_1__Sample = Sample 1932 :: Sample
-peri_2__Sample = Sample 1933 :: Sample
-peri_3__Sample = Sample 1934 :: Sample
-peri_4__Sample = Sample 1935 :: Sample
-peri_5__Sample = Sample 1936 :: Sample
-peri_6__Sample = Sample 1937 :: Sample
-peri_7__Sample = Sample 1938 :: Sample
-peri_8__Sample = Sample 1939 :: Sample
-peri_9__Sample = Sample 1940 :: Sample
-peri_10__Sample = Sample 1941 :: Sample
-peri_11__Sample = Sample 1942 :: Sample
-peri_12__Sample = Sample 1943 :: Sample
-peri_13__Sample = Sample 1944 :: Sample
-peri_14__Sample = Sample 1945 :: Sample
-procshort_0__Sample = Sample 1946 :: Sample
-procshort_1__Sample = Sample 1947 :: Sample
-procshort_2__Sample = Sample 1948 :: Sample
-procshort_3__Sample = Sample 1949 :: Sample
-procshort_4__Sample = Sample 1950 :: Sample
-procshort_5__Sample = Sample 1951 :: Sample
-procshort_6__Sample = Sample 1952 :: Sample
-procshort_7__Sample = Sample 1953 :: Sample
-hand_0__Sample = Sample 1954 :: Sample
-hand_1__Sample = Sample 1955 :: Sample
-hand_2__Sample = Sample 1956 :: Sample
-hand_3__Sample = Sample 1957 :: Sample
-hand_4__Sample = Sample 1958 :: Sample
-hand_5__Sample = Sample 1959 :: Sample
-hand_6__Sample = Sample 1960 :: Sample
-hand_7__Sample = Sample 1961 :: Sample
-hand_8__Sample = Sample 1962 :: Sample
-hand_9__Sample = Sample 1963 :: Sample
-hand_10__Sample = Sample 1964 :: Sample
-hand_11__Sample = Sample 1965 :: Sample
-hand_12__Sample = Sample 1966 :: Sample
-hand_13__Sample = Sample 1967 :: Sample
-hand_14__Sample = Sample 1968 :: Sample
-hand_15__Sample = Sample 1969 :: Sample
-hand_16__Sample = Sample 1970 :: Sample
-future_0__Sample = Sample 1971 :: Sample
-future_1__Sample = Sample 1972 :: Sample
-future_2__Sample = Sample 1973 :: Sample
-future_3__Sample = Sample 1974 :: Sample
-future_4__Sample = Sample 1975 :: Sample
-future_5__Sample = Sample 1976 :: Sample
-future_6__Sample = Sample 1977 :: Sample
-future_7__Sample = Sample 1978 :: Sample
-future_8__Sample = Sample 1979 :: Sample
-future_9__Sample = Sample 1980 :: Sample
-future_10__Sample = Sample 1981 :: Sample
-future_11__Sample = Sample 1982 :: Sample
-future_12__Sample = Sample 1983 :: Sample
-future_13__Sample = Sample 1984 :: Sample
-future_14__Sample = Sample 1985 :: Sample
-future_15__Sample = Sample 1986 :: Sample
-future_16__Sample = Sample 1987 :: Sample
-hh_0__Sample = Sample 1988 :: Sample
-hh_1__Sample = Sample 1989 :: Sample
-hh_2__Sample = Sample 1990 :: Sample
-hh_3__Sample = Sample 1991 :: Sample
-hh_4__Sample = Sample 1992 :: Sample
-hh_5__Sample = Sample 1993 :: Sample
-hh_6__Sample = Sample 1994 :: Sample
-hh_7__Sample = Sample 1995 :: Sample
-hh_8__Sample = Sample 1996 :: Sample
-hh_9__Sample = Sample 1997 :: Sample
-hh_10__Sample = Sample 1998 :: Sample
-hh_11__Sample = Sample 1999 :: Sample
-hh_12__Sample = Sample 2000 :: Sample
-x_808ht_0__Sample = Sample 2001 :: Sample
-x_808ht_1__Sample = Sample 2002 :: Sample
-x_808ht_2__Sample = Sample 2003 :: Sample
-x_808ht_3__Sample = Sample 2004 :: Sample
-x_808ht_4__Sample = Sample 2005 :: Sample
-db_0__Sample = Sample 2006 :: Sample
-db_1__Sample = Sample 2007 :: Sample
-db_2__Sample = Sample 2008 :: Sample
-db_3__Sample = Sample 2009 :: Sample
-db_4__Sample = Sample 2010 :: Sample
-db_5__Sample = Sample 2011 :: Sample
-db_6__Sample = Sample 2012 :: Sample
-db_7__Sample = Sample 2013 :: Sample
-db_8__Sample = Sample 2014 :: Sample
-db_9__Sample = Sample 2015 :: Sample
-db_10__Sample = Sample 2016 :: Sample
-db_11__Sample = Sample 2017 :: Sample
-db_12__Sample = Sample 2018 :: Sample
+intentionalSilenceForInternalUseOnly__Sample = Sample "intentionalSilenceForInternalUseOnly" :: Sample
+kicklinn_0__Sample = Sample "kicklinn_0" :: Sample
+msg_0__Sample = Sample "msg_0" :: Sample
+msg_1__Sample = Sample "msg_1" :: Sample
+msg_2__Sample = Sample "msg_2" :: Sample
+msg_3__Sample = Sample "msg_3" :: Sample
+msg_4__Sample = Sample "msg_4" :: Sample
+msg_5__Sample = Sample "msg_5" :: Sample
+msg_6__Sample = Sample "msg_6" :: Sample
+msg_7__Sample = Sample "msg_7" :: Sample
+msg_8__Sample = Sample "msg_8" :: Sample
+gabbalouder_0__Sample = Sample "gabbalouder_0" :: Sample
+gabbalouder_1__Sample = Sample "gabbalouder_1" :: Sample
+gabbalouder_2__Sample = Sample "gabbalouder_2" :: Sample
+gabbalouder_3__Sample = Sample "gabbalouder_3" :: Sample
+kurt_0__Sample = Sample "kurt_0" :: Sample
+kurt_1__Sample = Sample "kurt_1" :: Sample
+kurt_2__Sample = Sample "kurt_2" :: Sample
+kurt_3__Sample = Sample "kurt_3" :: Sample
+kurt_4__Sample = Sample "kurt_4" :: Sample
+kurt_5__Sample = Sample "kurt_5" :: Sample
+kurt_6__Sample = Sample "kurt_6" :: Sample
+bassdm_0__Sample = Sample "bassdm_0" :: Sample
+bassdm_1__Sample = Sample "bassdm_1" :: Sample
+bassdm_2__Sample = Sample "bassdm_2" :: Sample
+bassdm_3__Sample = Sample "bassdm_3" :: Sample
+bassdm_4__Sample = Sample "bassdm_4" :: Sample
+bassdm_5__Sample = Sample "bassdm_5" :: Sample
+bassdm_6__Sample = Sample "bassdm_6" :: Sample
+bassdm_7__Sample = Sample "bassdm_7" :: Sample
+bassdm_8__Sample = Sample "bassdm_8" :: Sample
+bassdm_9__Sample = Sample "bassdm_9" :: Sample
+bassdm_10__Sample = Sample "bassdm_10" :: Sample
+bassdm_11__Sample = Sample "bassdm_11" :: Sample
+bassdm_12__Sample = Sample "bassdm_12" :: Sample
+bassdm_13__Sample = Sample "bassdm_13" :: Sample
+bassdm_14__Sample = Sample "bassdm_14" :: Sample
+bassdm_15__Sample = Sample "bassdm_15" :: Sample
+bassdm_16__Sample = Sample "bassdm_16" :: Sample
+bassdm_17__Sample = Sample "bassdm_17" :: Sample
+bassdm_18__Sample = Sample "bassdm_18" :: Sample
+bassdm_19__Sample = Sample "bassdm_19" :: Sample
+bassdm_20__Sample = Sample "bassdm_20" :: Sample
+bassdm_21__Sample = Sample "bassdm_21" :: Sample
+bassdm_22__Sample = Sample "bassdm_22" :: Sample
+bassdm_23__Sample = Sample "bassdm_23" :: Sample
+tabla2_0__Sample = Sample "tabla2_0" :: Sample
+tabla2_1__Sample = Sample "tabla2_1" :: Sample
+tabla2_2__Sample = Sample "tabla2_2" :: Sample
+tabla2_3__Sample = Sample "tabla2_3" :: Sample
+tabla2_4__Sample = Sample "tabla2_4" :: Sample
+tabla2_5__Sample = Sample "tabla2_5" :: Sample
+tabla2_6__Sample = Sample "tabla2_6" :: Sample
+tabla2_7__Sample = Sample "tabla2_7" :: Sample
+tabla2_8__Sample = Sample "tabla2_8" :: Sample
+tabla2_9__Sample = Sample "tabla2_9" :: Sample
+tabla2_10__Sample = Sample "tabla2_10" :: Sample
+tabla2_11__Sample = Sample "tabla2_11" :: Sample
+tabla2_12__Sample = Sample "tabla2_12" :: Sample
+tabla2_13__Sample = Sample "tabla2_13" :: Sample
+tabla2_14__Sample = Sample "tabla2_14" :: Sample
+tabla2_15__Sample = Sample "tabla2_15" :: Sample
+tabla2_16__Sample = Sample "tabla2_16" :: Sample
+tabla2_17__Sample = Sample "tabla2_17" :: Sample
+tabla2_18__Sample = Sample "tabla2_18" :: Sample
+tabla2_19__Sample = Sample "tabla2_19" :: Sample
+tabla2_20__Sample = Sample "tabla2_20" :: Sample
+tabla2_21__Sample = Sample "tabla2_21" :: Sample
+tabla2_22__Sample = Sample "tabla2_22" :: Sample
+tabla2_23__Sample = Sample "tabla2_23" :: Sample
+tabla2_24__Sample = Sample "tabla2_24" :: Sample
+tabla2_25__Sample = Sample "tabla2_25" :: Sample
+tabla2_26__Sample = Sample "tabla2_26" :: Sample
+tabla2_27__Sample = Sample "tabla2_27" :: Sample
+tabla2_28__Sample = Sample "tabla2_28" :: Sample
+tabla2_29__Sample = Sample "tabla2_29" :: Sample
+tabla2_30__Sample = Sample "tabla2_30" :: Sample
+tabla2_31__Sample = Sample "tabla2_31" :: Sample
+tabla2_32__Sample = Sample "tabla2_32" :: Sample
+tabla2_33__Sample = Sample "tabla2_33" :: Sample
+tabla2_34__Sample = Sample "tabla2_34" :: Sample
+tabla2_35__Sample = Sample "tabla2_35" :: Sample
+tabla2_36__Sample = Sample "tabla2_36" :: Sample
+tabla2_37__Sample = Sample "tabla2_37" :: Sample
+tabla2_38__Sample = Sample "tabla2_38" :: Sample
+tabla2_39__Sample = Sample "tabla2_39" :: Sample
+tabla2_40__Sample = Sample "tabla2_40" :: Sample
+tabla2_41__Sample = Sample "tabla2_41" :: Sample
+tabla2_42__Sample = Sample "tabla2_42" :: Sample
+tabla2_43__Sample = Sample "tabla2_43" :: Sample
+tabla2_44__Sample = Sample "tabla2_44" :: Sample
+tabla2_45__Sample = Sample "tabla2_45" :: Sample
+chin_0__Sample = Sample "chin_0" :: Sample
+chin_1__Sample = Sample "chin_1" :: Sample
+chin_2__Sample = Sample "chin_2" :: Sample
+chin_3__Sample = Sample "chin_3" :: Sample
+mp3_0__Sample = Sample "mp3_0" :: Sample
+mp3_1__Sample = Sample "mp3_1" :: Sample
+mp3_2__Sample = Sample "mp3_2" :: Sample
+mp3_3__Sample = Sample "mp3_3" :: Sample
+tablex_0__Sample = Sample "tablex_0" :: Sample
+tablex_1__Sample = Sample "tablex_1" :: Sample
+tablex_2__Sample = Sample "tablex_2" :: Sample
+sf_0__Sample = Sample "sf_0" :: Sample
+sf_1__Sample = Sample "sf_1" :: Sample
+sf_2__Sample = Sample "sf_2" :: Sample
+sf_3__Sample = Sample "sf_3" :: Sample
+sf_4__Sample = Sample "sf_4" :: Sample
+sf_5__Sample = Sample "sf_5" :: Sample
+sf_6__Sample = Sample "sf_6" :: Sample
+sf_7__Sample = Sample "sf_7" :: Sample
+sf_8__Sample = Sample "sf_8" :: Sample
+sf_9__Sample = Sample "sf_9" :: Sample
+sf_10__Sample = Sample "sf_10" :: Sample
+sf_11__Sample = Sample "sf_11" :: Sample
+sf_12__Sample = Sample "sf_12" :: Sample
+sf_13__Sample = Sample "sf_13" :: Sample
+sf_14__Sample = Sample "sf_14" :: Sample
+sf_15__Sample = Sample "sf_15" :: Sample
+sf_16__Sample = Sample "sf_16" :: Sample
+sf_17__Sample = Sample "sf_17" :: Sample
+speakspell_0__Sample = Sample "speakspell_0" :: Sample
+speakspell_1__Sample = Sample "speakspell_1" :: Sample
+speakspell_2__Sample = Sample "speakspell_2" :: Sample
+speakspell_3__Sample = Sample "speakspell_3" :: Sample
+speakspell_4__Sample = Sample "speakspell_4" :: Sample
+speakspell_5__Sample = Sample "speakspell_5" :: Sample
+speakspell_6__Sample = Sample "speakspell_6" :: Sample
+speakspell_7__Sample = Sample "speakspell_7" :: Sample
+speakspell_8__Sample = Sample "speakspell_8" :: Sample
+speakspell_9__Sample = Sample "speakspell_9" :: Sample
+speakspell_10__Sample = Sample "speakspell_10" :: Sample
+speakspell_11__Sample = Sample "speakspell_11" :: Sample
+cc_0__Sample = Sample "cc_0" :: Sample
+cc_1__Sample = Sample "cc_1" :: Sample
+cc_2__Sample = Sample "cc_2" :: Sample
+cc_3__Sample = Sample "cc_3" :: Sample
+cc_4__Sample = Sample "cc_4" :: Sample
+cc_5__Sample = Sample "cc_5" :: Sample
+gabbaloud_0__Sample = Sample "gabbaloud_0" :: Sample
+gabbaloud_1__Sample = Sample "gabbaloud_1" :: Sample
+gabbaloud_2__Sample = Sample "gabbaloud_2" :: Sample
+gabbaloud_3__Sample = Sample "gabbaloud_3" :: Sample
+ades2_0__Sample = Sample "ades2_0" :: Sample
+ades2_1__Sample = Sample "ades2_1" :: Sample
+ades2_2__Sample = Sample "ades2_2" :: Sample
+ades2_3__Sample = Sample "ades2_3" :: Sample
+ades2_4__Sample = Sample "ades2_4" :: Sample
+ades2_5__Sample = Sample "ades2_5" :: Sample
+ades2_6__Sample = Sample "ades2_6" :: Sample
+ades2_7__Sample = Sample "ades2_7" :: Sample
+ades2_8__Sample = Sample "ades2_8" :: Sample
+space_0__Sample = Sample "space_0" :: Sample
+space_1__Sample = Sample "space_1" :: Sample
+space_2__Sample = Sample "space_2" :: Sample
+space_3__Sample = Sample "space_3" :: Sample
+space_4__Sample = Sample "space_4" :: Sample
+space_5__Sample = Sample "space_5" :: Sample
+space_6__Sample = Sample "space_6" :: Sample
+space_7__Sample = Sample "space_7" :: Sample
+space_8__Sample = Sample "space_8" :: Sample
+space_9__Sample = Sample "space_9" :: Sample
+space_10__Sample = Sample "space_10" :: Sample
+space_11__Sample = Sample "space_11" :: Sample
+space_12__Sample = Sample "space_12" :: Sample
+space_13__Sample = Sample "space_13" :: Sample
+space_14__Sample = Sample "space_14" :: Sample
+space_15__Sample = Sample "space_15" :: Sample
+space_16__Sample = Sample "space_16" :: Sample
+space_17__Sample = Sample "space_17" :: Sample
+battles_0__Sample = Sample "battles_0" :: Sample
+battles_1__Sample = Sample "battles_1" :: Sample
+voodoo_0__Sample = Sample "voodoo_0" :: Sample
+voodoo_1__Sample = Sample "voodoo_1" :: Sample
+voodoo_2__Sample = Sample "voodoo_2" :: Sample
+voodoo_3__Sample = Sample "voodoo_3" :: Sample
+voodoo_4__Sample = Sample "voodoo_4" :: Sample
+ravemono_0__Sample = Sample "ravemono_0" :: Sample
+ravemono_1__Sample = Sample "ravemono_1" :: Sample
+psr_0__Sample = Sample "psr_0" :: Sample
+psr_1__Sample = Sample "psr_1" :: Sample
+psr_2__Sample = Sample "psr_2" :: Sample
+psr_3__Sample = Sample "psr_3" :: Sample
+psr_4__Sample = Sample "psr_4" :: Sample
+psr_5__Sample = Sample "psr_5" :: Sample
+psr_6__Sample = Sample "psr_6" :: Sample
+psr_7__Sample = Sample "psr_7" :: Sample
+psr_8__Sample = Sample "psr_8" :: Sample
+psr_9__Sample = Sample "psr_9" :: Sample
+psr_10__Sample = Sample "psr_10" :: Sample
+psr_11__Sample = Sample "psr_11" :: Sample
+psr_12__Sample = Sample "psr_12" :: Sample
+psr_13__Sample = Sample "psr_13" :: Sample
+psr_14__Sample = Sample "psr_14" :: Sample
+psr_15__Sample = Sample "psr_15" :: Sample
+psr_16__Sample = Sample "psr_16" :: Sample
+psr_17__Sample = Sample "psr_17" :: Sample
+psr_18__Sample = Sample "psr_18" :: Sample
+psr_19__Sample = Sample "psr_19" :: Sample
+psr_20__Sample = Sample "psr_20" :: Sample
+psr_21__Sample = Sample "psr_21" :: Sample
+psr_22__Sample = Sample "psr_22" :: Sample
+psr_23__Sample = Sample "psr_23" :: Sample
+psr_24__Sample = Sample "psr_24" :: Sample
+psr_25__Sample = Sample "psr_25" :: Sample
+psr_26__Sample = Sample "psr_26" :: Sample
+psr_27__Sample = Sample "psr_27" :: Sample
+psr_28__Sample = Sample "psr_28" :: Sample
+psr_29__Sample = Sample "psr_29" :: Sample
+metal_0__Sample = Sample "metal_0" :: Sample
+metal_1__Sample = Sample "metal_1" :: Sample
+metal_2__Sample = Sample "metal_2" :: Sample
+metal_3__Sample = Sample "metal_3" :: Sample
+metal_4__Sample = Sample "metal_4" :: Sample
+metal_5__Sample = Sample "metal_5" :: Sample
+metal_6__Sample = Sample "metal_6" :: Sample
+metal_7__Sample = Sample "metal_7" :: Sample
+metal_8__Sample = Sample "metal_8" :: Sample
+metal_9__Sample = Sample "metal_9" :: Sample
+hardcore_0__Sample = Sample "hardcore_0" :: Sample
+hardcore_1__Sample = Sample "hardcore_1" :: Sample
+hardcore_2__Sample = Sample "hardcore_2" :: Sample
+hardcore_3__Sample = Sample "hardcore_3" :: Sample
+hardcore_4__Sample = Sample "hardcore_4" :: Sample
+hardcore_5__Sample = Sample "hardcore_5" :: Sample
+hardcore_6__Sample = Sample "hardcore_6" :: Sample
+hardcore_7__Sample = Sample "hardcore_7" :: Sample
+hardcore_8__Sample = Sample "hardcore_8" :: Sample
+hardcore_9__Sample = Sample "hardcore_9" :: Sample
+hardcore_10__Sample = Sample "hardcore_10" :: Sample
+hardcore_11__Sample = Sample "hardcore_11" :: Sample
+mouth_0__Sample = Sample "mouth_0" :: Sample
+mouth_1__Sample = Sample "mouth_1" :: Sample
+mouth_2__Sample = Sample "mouth_2" :: Sample
+mouth_3__Sample = Sample "mouth_3" :: Sample
+mouth_4__Sample = Sample "mouth_4" :: Sample
+mouth_5__Sample = Sample "mouth_5" :: Sample
+mouth_6__Sample = Sample "mouth_6" :: Sample
+mouth_7__Sample = Sample "mouth_7" :: Sample
+mouth_8__Sample = Sample "mouth_8" :: Sample
+mouth_9__Sample = Sample "mouth_9" :: Sample
+mouth_10__Sample = Sample "mouth_10" :: Sample
+mouth_11__Sample = Sample "mouth_11" :: Sample
+mouth_12__Sample = Sample "mouth_12" :: Sample
+mouth_13__Sample = Sample "mouth_13" :: Sample
+mouth_14__Sample = Sample "mouth_14" :: Sample
+sugar_0__Sample = Sample "sugar_0" :: Sample
+sugar_1__Sample = Sample "sugar_1" :: Sample
+odx_0__Sample = Sample "odx_0" :: Sample
+odx_1__Sample = Sample "odx_1" :: Sample
+odx_2__Sample = Sample "odx_2" :: Sample
+odx_3__Sample = Sample "odx_3" :: Sample
+odx_4__Sample = Sample "odx_4" :: Sample
+odx_5__Sample = Sample "odx_5" :: Sample
+odx_6__Sample = Sample "odx_6" :: Sample
+odx_7__Sample = Sample "odx_7" :: Sample
+odx_8__Sample = Sample "odx_8" :: Sample
+odx_9__Sample = Sample "odx_9" :: Sample
+odx_10__Sample = Sample "odx_10" :: Sample
+odx_11__Sample = Sample "odx_11" :: Sample
+odx_12__Sample = Sample "odx_12" :: Sample
+odx_13__Sample = Sample "odx_13" :: Sample
+odx_14__Sample = Sample "odx_14" :: Sample
+x_808lc_0__Sample = Sample "x_808lc_0" :: Sample
+x_808lc_1__Sample = Sample "x_808lc_1" :: Sample
+x_808lc_2__Sample = Sample "x_808lc_2" :: Sample
+x_808lc_3__Sample = Sample "x_808lc_3" :: Sample
+x_808lc_4__Sample = Sample "x_808lc_4" :: Sample
+mt_0__Sample = Sample "mt_0" :: Sample
+mt_1__Sample = Sample "mt_1" :: Sample
+mt_2__Sample = Sample "mt_2" :: Sample
+mt_3__Sample = Sample "mt_3" :: Sample
+mt_4__Sample = Sample "mt_4" :: Sample
+mt_5__Sample = Sample "mt_5" :: Sample
+mt_6__Sample = Sample "mt_6" :: Sample
+mt_7__Sample = Sample "mt_7" :: Sample
+mt_8__Sample = Sample "mt_8" :: Sample
+mt_9__Sample = Sample "mt_9" :: Sample
+mt_10__Sample = Sample "mt_10" :: Sample
+mt_11__Sample = Sample "mt_11" :: Sample
+mt_12__Sample = Sample "mt_12" :: Sample
+mt_13__Sample = Sample "mt_13" :: Sample
+mt_14__Sample = Sample "mt_14" :: Sample
+mt_15__Sample = Sample "mt_15" :: Sample
+drumtraks_0__Sample = Sample "drumtraks_0" :: Sample
+drumtraks_1__Sample = Sample "drumtraks_1" :: Sample
+drumtraks_2__Sample = Sample "drumtraks_2" :: Sample
+drumtraks_3__Sample = Sample "drumtraks_3" :: Sample
+drumtraks_4__Sample = Sample "drumtraks_4" :: Sample
+drumtraks_5__Sample = Sample "drumtraks_5" :: Sample
+drumtraks_6__Sample = Sample "drumtraks_6" :: Sample
+drumtraks_7__Sample = Sample "drumtraks_7" :: Sample
+drumtraks_8__Sample = Sample "drumtraks_8" :: Sample
+drumtraks_9__Sample = Sample "drumtraks_9" :: Sample
+drumtraks_10__Sample = Sample "drumtraks_10" :: Sample
+drumtraks_11__Sample = Sample "drumtraks_11" :: Sample
+drumtraks_12__Sample = Sample "drumtraks_12" :: Sample
+print_0__Sample = Sample "print_0" :: Sample
+print_1__Sample = Sample "print_1" :: Sample
+print_2__Sample = Sample "print_2" :: Sample
+print_3__Sample = Sample "print_3" :: Sample
+print_4__Sample = Sample "print_4" :: Sample
+print_5__Sample = Sample "print_5" :: Sample
+print_6__Sample = Sample "print_6" :: Sample
+print_7__Sample = Sample "print_7" :: Sample
+print_8__Sample = Sample "print_8" :: Sample
+print_9__Sample = Sample "print_9" :: Sample
+print_10__Sample = Sample "print_10" :: Sample
+blip_0__Sample = Sample "blip_0" :: Sample
+blip_1__Sample = Sample "blip_1" :: Sample
+wobble_0__Sample = Sample "wobble_0" :: Sample
+made_0__Sample = Sample "made_0" :: Sample
+made_1__Sample = Sample "made_1" :: Sample
+made_2__Sample = Sample "made_2" :: Sample
+made_3__Sample = Sample "made_3" :: Sample
+made_4__Sample = Sample "made_4" :: Sample
+made_5__Sample = Sample "made_5" :: Sample
+made_6__Sample = Sample "made_6" :: Sample
+bass3_0__Sample = Sample "bass3_0" :: Sample
+bass3_1__Sample = Sample "bass3_1" :: Sample
+bass3_2__Sample = Sample "bass3_2" :: Sample
+bass3_3__Sample = Sample "bass3_3" :: Sample
+bass3_4__Sample = Sample "bass3_4" :: Sample
+bass3_5__Sample = Sample "bass3_5" :: Sample
+bass3_6__Sample = Sample "bass3_6" :: Sample
+bass3_7__Sample = Sample "bass3_7" :: Sample
+bass3_8__Sample = Sample "bass3_8" :: Sample
+bass3_9__Sample = Sample "bass3_9" :: Sample
+bass3_10__Sample = Sample "bass3_10" :: Sample
+speechless_0__Sample = Sample "speechless_0" :: Sample
+speechless_1__Sample = Sample "speechless_1" :: Sample
+speechless_2__Sample = Sample "speechless_2" :: Sample
+speechless_3__Sample = Sample "speechless_3" :: Sample
+speechless_4__Sample = Sample "speechless_4" :: Sample
+speechless_5__Sample = Sample "speechless_5" :: Sample
+speechless_6__Sample = Sample "speechless_6" :: Sample
+speechless_7__Sample = Sample "speechless_7" :: Sample
+speechless_8__Sample = Sample "speechless_8" :: Sample
+speechless_9__Sample = Sample "speechless_9" :: Sample
+sine_0__Sample = Sample "sine_0" :: Sample
+sine_1__Sample = Sample "sine_1" :: Sample
+sine_2__Sample = Sample "sine_2" :: Sample
+sine_3__Sample = Sample "sine_3" :: Sample
+sine_4__Sample = Sample "sine_4" :: Sample
+sine_5__Sample = Sample "sine_5" :: Sample
+noise_0__Sample = Sample "noise_0" :: Sample
+x_808lt_0__Sample = Sample "x_808lt_0" :: Sample
+x_808lt_1__Sample = Sample "x_808lt_1" :: Sample
+x_808lt_2__Sample = Sample "x_808lt_2" :: Sample
+x_808lt_3__Sample = Sample "x_808lt_3" :: Sample
+x_808lt_4__Sample = Sample "x_808lt_4" :: Sample
+sd_0__Sample = Sample "sd_0" :: Sample
+sd_1__Sample = Sample "sd_1" :: Sample
+alphabet_0__Sample = Sample "alphabet_0" :: Sample
+alphabet_1__Sample = Sample "alphabet_1" :: Sample
+alphabet_2__Sample = Sample "alphabet_2" :: Sample
+alphabet_3__Sample = Sample "alphabet_3" :: Sample
+alphabet_4__Sample = Sample "alphabet_4" :: Sample
+alphabet_5__Sample = Sample "alphabet_5" :: Sample
+alphabet_6__Sample = Sample "alphabet_6" :: Sample
+alphabet_7__Sample = Sample "alphabet_7" :: Sample
+alphabet_8__Sample = Sample "alphabet_8" :: Sample
+alphabet_9__Sample = Sample "alphabet_9" :: Sample
+alphabet_10__Sample = Sample "alphabet_10" :: Sample
+alphabet_11__Sample = Sample "alphabet_11" :: Sample
+alphabet_12__Sample = Sample "alphabet_12" :: Sample
+alphabet_13__Sample = Sample "alphabet_13" :: Sample
+alphabet_14__Sample = Sample "alphabet_14" :: Sample
+alphabet_15__Sample = Sample "alphabet_15" :: Sample
+alphabet_16__Sample = Sample "alphabet_16" :: Sample
+alphabet_17__Sample = Sample "alphabet_17" :: Sample
+alphabet_18__Sample = Sample "alphabet_18" :: Sample
+alphabet_19__Sample = Sample "alphabet_19" :: Sample
+alphabet_20__Sample = Sample "alphabet_20" :: Sample
+alphabet_21__Sample = Sample "alphabet_21" :: Sample
+alphabet_22__Sample = Sample "alphabet_22" :: Sample
+alphabet_23__Sample = Sample "alphabet_23" :: Sample
+alphabet_24__Sample = Sample "alphabet_24" :: Sample
+alphabet_25__Sample = Sample "alphabet_25" :: Sample
+baa2_0__Sample = Sample "baa2_0" :: Sample
+baa2_1__Sample = Sample "baa2_1" :: Sample
+baa2_2__Sample = Sample "baa2_2" :: Sample
+baa2_3__Sample = Sample "baa2_3" :: Sample
+baa2_4__Sample = Sample "baa2_4" :: Sample
+baa2_5__Sample = Sample "baa2_5" :: Sample
+baa2_6__Sample = Sample "baa2_6" :: Sample
+tok_0__Sample = Sample "tok_0" :: Sample
+tok_1__Sample = Sample "tok_1" :: Sample
+tok_2__Sample = Sample "tok_2" :: Sample
+tok_3__Sample = Sample "tok_3" :: Sample
+ades3_0__Sample = Sample "ades3_0" :: Sample
+ades3_1__Sample = Sample "ades3_1" :: Sample
+ades3_2__Sample = Sample "ades3_2" :: Sample
+ades3_3__Sample = Sample "ades3_3" :: Sample
+ades3_4__Sample = Sample "ades3_4" :: Sample
+ades3_5__Sample = Sample "ades3_5" :: Sample
+ades3_6__Sample = Sample "ades3_6" :: Sample
+x_909_0__Sample = Sample "x_909_0" :: Sample
+sid_0__Sample = Sample "sid_0" :: Sample
+sid_1__Sample = Sample "sid_1" :: Sample
+sid_2__Sample = Sample "sid_2" :: Sample
+sid_3__Sample = Sample "sid_3" :: Sample
+sid_4__Sample = Sample "sid_4" :: Sample
+sid_5__Sample = Sample "sid_5" :: Sample
+sid_6__Sample = Sample "sid_6" :: Sample
+sid_7__Sample = Sample "sid_7" :: Sample
+sid_8__Sample = Sample "sid_8" :: Sample
+sid_9__Sample = Sample "sid_9" :: Sample
+sid_10__Sample = Sample "sid_10" :: Sample
+sid_11__Sample = Sample "sid_11" :: Sample
+jungbass_0__Sample = Sample "jungbass_0" :: Sample
+jungbass_1__Sample = Sample "jungbass_1" :: Sample
+jungbass_2__Sample = Sample "jungbass_2" :: Sample
+jungbass_3__Sample = Sample "jungbass_3" :: Sample
+jungbass_4__Sample = Sample "jungbass_4" :: Sample
+jungbass_5__Sample = Sample "jungbass_5" :: Sample
+jungbass_6__Sample = Sample "jungbass_6" :: Sample
+jungbass_7__Sample = Sample "jungbass_7" :: Sample
+jungbass_8__Sample = Sample "jungbass_8" :: Sample
+jungbass_9__Sample = Sample "jungbass_9" :: Sample
+jungbass_10__Sample = Sample "jungbass_10" :: Sample
+jungbass_11__Sample = Sample "jungbass_11" :: Sample
+jungbass_12__Sample = Sample "jungbass_12" :: Sample
+jungbass_13__Sample = Sample "jungbass_13" :: Sample
+jungbass_14__Sample = Sample "jungbass_14" :: Sample
+jungbass_15__Sample = Sample "jungbass_15" :: Sample
+jungbass_16__Sample = Sample "jungbass_16" :: Sample
+jungbass_17__Sample = Sample "jungbass_17" :: Sample
+jungbass_18__Sample = Sample "jungbass_18" :: Sample
+jungbass_19__Sample = Sample "jungbass_19" :: Sample
+gabba_0__Sample = Sample "gabba_0" :: Sample
+gabba_1__Sample = Sample "gabba_1" :: Sample
+gabba_2__Sample = Sample "gabba_2" :: Sample
+gabba_3__Sample = Sample "gabba_3" :: Sample
+crow_0__Sample = Sample "crow_0" :: Sample
+crow_1__Sample = Sample "crow_1" :: Sample
+crow_2__Sample = Sample "crow_2" :: Sample
+crow_3__Sample = Sample "crow_3" :: Sample
+birds3_0__Sample = Sample "birds3_0" :: Sample
+birds3_1__Sample = Sample "birds3_1" :: Sample
+birds3_2__Sample = Sample "birds3_2" :: Sample
+birds3_3__Sample = Sample "birds3_3" :: Sample
+birds3_4__Sample = Sample "birds3_4" :: Sample
+birds3_5__Sample = Sample "birds3_5" :: Sample
+birds3_6__Sample = Sample "birds3_6" :: Sample
+birds3_7__Sample = Sample "birds3_7" :: Sample
+birds3_8__Sample = Sample "birds3_8" :: Sample
+birds3_9__Sample = Sample "birds3_9" :: Sample
+birds3_10__Sample = Sample "birds3_10" :: Sample
+birds3_11__Sample = Sample "birds3_11" :: Sample
+birds3_12__Sample = Sample "birds3_12" :: Sample
+birds3_13__Sample = Sample "birds3_13" :: Sample
+birds3_14__Sample = Sample "birds3_14" :: Sample
+birds3_15__Sample = Sample "birds3_15" :: Sample
+birds3_16__Sample = Sample "birds3_16" :: Sample
+birds3_17__Sample = Sample "birds3_17" :: Sample
+birds3_18__Sample = Sample "birds3_18" :: Sample
+auto_0__Sample = Sample "auto_0" :: Sample
+auto_1__Sample = Sample "auto_1" :: Sample
+auto_2__Sample = Sample "auto_2" :: Sample
+auto_3__Sample = Sample "auto_3" :: Sample
+auto_4__Sample = Sample "auto_4" :: Sample
+auto_5__Sample = Sample "auto_5" :: Sample
+auto_6__Sample = Sample "auto_6" :: Sample
+auto_7__Sample = Sample "auto_7" :: Sample
+auto_8__Sample = Sample "auto_8" :: Sample
+auto_9__Sample = Sample "auto_9" :: Sample
+auto_10__Sample = Sample "auto_10" :: Sample
+mute_0__Sample = Sample "mute_0" :: Sample
+mute_1__Sample = Sample "mute_1" :: Sample
+mute_2__Sample = Sample "mute_2" :: Sample
+mute_3__Sample = Sample "mute_3" :: Sample
+mute_4__Sample = Sample "mute_4" :: Sample
+mute_5__Sample = Sample "mute_5" :: Sample
+mute_6__Sample = Sample "mute_6" :: Sample
+mute_7__Sample = Sample "mute_7" :: Sample
+mute_8__Sample = Sample "mute_8" :: Sample
+mute_9__Sample = Sample "mute_9" :: Sample
+mute_10__Sample = Sample "mute_10" :: Sample
+mute_11__Sample = Sample "mute_11" :: Sample
+mute_12__Sample = Sample "mute_12" :: Sample
+mute_13__Sample = Sample "mute_13" :: Sample
+mute_14__Sample = Sample "mute_14" :: Sample
+mute_15__Sample = Sample "mute_15" :: Sample
+mute_16__Sample = Sample "mute_16" :: Sample
+mute_17__Sample = Sample "mute_17" :: Sample
+mute_18__Sample = Sample "mute_18" :: Sample
+mute_19__Sample = Sample "mute_19" :: Sample
+mute_20__Sample = Sample "mute_20" :: Sample
+mute_21__Sample = Sample "mute_21" :: Sample
+mute_22__Sample = Sample "mute_22" :: Sample
+mute_23__Sample = Sample "mute_23" :: Sample
+mute_24__Sample = Sample "mute_24" :: Sample
+mute_25__Sample = Sample "mute_25" :: Sample
+mute_26__Sample = Sample "mute_26" :: Sample
+mute_27__Sample = Sample "mute_27" :: Sample
+sheffield_0__Sample = Sample "sheffield_0" :: Sample
+casio_0__Sample = Sample "casio_0" :: Sample
+casio_1__Sample = Sample "casio_1" :: Sample
+casio_2__Sample = Sample "casio_2" :: Sample
+sax_0__Sample = Sample "sax_0" :: Sample
+sax_1__Sample = Sample "sax_1" :: Sample
+sax_2__Sample = Sample "sax_2" :: Sample
+sax_3__Sample = Sample "sax_3" :: Sample
+sax_4__Sample = Sample "sax_4" :: Sample
+sax_5__Sample = Sample "sax_5" :: Sample
+sax_6__Sample = Sample "sax_6" :: Sample
+sax_7__Sample = Sample "sax_7" :: Sample
+sax_8__Sample = Sample "sax_8" :: Sample
+sax_9__Sample = Sample "sax_9" :: Sample
+sax_10__Sample = Sample "sax_10" :: Sample
+sax_11__Sample = Sample "sax_11" :: Sample
+sax_12__Sample = Sample "sax_12" :: Sample
+sax_13__Sample = Sample "sax_13" :: Sample
+sax_14__Sample = Sample "sax_14" :: Sample
+sax_15__Sample = Sample "sax_15" :: Sample
+sax_16__Sample = Sample "sax_16" :: Sample
+sax_17__Sample = Sample "sax_17" :: Sample
+sax_18__Sample = Sample "sax_18" :: Sample
+sax_19__Sample = Sample "sax_19" :: Sample
+sax_20__Sample = Sample "sax_20" :: Sample
+sax_21__Sample = Sample "sax_21" :: Sample
+circus_0__Sample = Sample "circus_0" :: Sample
+circus_1__Sample = Sample "circus_1" :: Sample
+circus_2__Sample = Sample "circus_2" :: Sample
+yeah_0__Sample = Sample "yeah_0" :: Sample
+yeah_1__Sample = Sample "yeah_1" :: Sample
+yeah_2__Sample = Sample "yeah_2" :: Sample
+yeah_3__Sample = Sample "yeah_3" :: Sample
+yeah_4__Sample = Sample "yeah_4" :: Sample
+yeah_5__Sample = Sample "yeah_5" :: Sample
+yeah_6__Sample = Sample "yeah_6" :: Sample
+yeah_7__Sample = Sample "yeah_7" :: Sample
+yeah_8__Sample = Sample "yeah_8" :: Sample
+yeah_9__Sample = Sample "yeah_9" :: Sample
+yeah_10__Sample = Sample "yeah_10" :: Sample
+yeah_11__Sample = Sample "yeah_11" :: Sample
+yeah_12__Sample = Sample "yeah_12" :: Sample
+yeah_13__Sample = Sample "yeah_13" :: Sample
+yeah_14__Sample = Sample "yeah_14" :: Sample
+yeah_15__Sample = Sample "yeah_15" :: Sample
+yeah_16__Sample = Sample "yeah_16" :: Sample
+yeah_17__Sample = Sample "yeah_17" :: Sample
+yeah_18__Sample = Sample "yeah_18" :: Sample
+yeah_19__Sample = Sample "yeah_19" :: Sample
+yeah_20__Sample = Sample "yeah_20" :: Sample
+yeah_21__Sample = Sample "yeah_21" :: Sample
+yeah_22__Sample = Sample "yeah_22" :: Sample
+yeah_23__Sample = Sample "yeah_23" :: Sample
+yeah_24__Sample = Sample "yeah_24" :: Sample
+yeah_25__Sample = Sample "yeah_25" :: Sample
+yeah_26__Sample = Sample "yeah_26" :: Sample
+yeah_27__Sample = Sample "yeah_27" :: Sample
+yeah_28__Sample = Sample "yeah_28" :: Sample
+yeah_29__Sample = Sample "yeah_29" :: Sample
+yeah_30__Sample = Sample "yeah_30" :: Sample
+oc_0__Sample = Sample "oc_0" :: Sample
+oc_1__Sample = Sample "oc_1" :: Sample
+oc_2__Sample = Sample "oc_2" :: Sample
+oc_3__Sample = Sample "oc_3" :: Sample
+alex_0__Sample = Sample "alex_0" :: Sample
+alex_1__Sample = Sample "alex_1" :: Sample
+can_0__Sample = Sample "can_0" :: Sample
+can_1__Sample = Sample "can_1" :: Sample
+can_2__Sample = Sample "can_2" :: Sample
+can_3__Sample = Sample "can_3" :: Sample
+can_4__Sample = Sample "can_4" :: Sample
+can_5__Sample = Sample "can_5" :: Sample
+can_6__Sample = Sample "can_6" :: Sample
+can_7__Sample = Sample "can_7" :: Sample
+can_8__Sample = Sample "can_8" :: Sample
+can_9__Sample = Sample "can_9" :: Sample
+can_10__Sample = Sample "can_10" :: Sample
+can_11__Sample = Sample "can_11" :: Sample
+can_12__Sample = Sample "can_12" :: Sample
+can_13__Sample = Sample "can_13" :: Sample
+jungle_0__Sample = Sample "jungle_0" :: Sample
+jungle_1__Sample = Sample "jungle_1" :: Sample
+jungle_2__Sample = Sample "jungle_2" :: Sample
+jungle_3__Sample = Sample "jungle_3" :: Sample
+jungle_4__Sample = Sample "jungle_4" :: Sample
+jungle_5__Sample = Sample "jungle_5" :: Sample
+jungle_6__Sample = Sample "jungle_6" :: Sample
+jungle_7__Sample = Sample "jungle_7" :: Sample
+jungle_8__Sample = Sample "jungle_8" :: Sample
+jungle_9__Sample = Sample "jungle_9" :: Sample
+jungle_10__Sample = Sample "jungle_10" :: Sample
+jungle_11__Sample = Sample "jungle_11" :: Sample
+jungle_12__Sample = Sample "jungle_12" :: Sample
+moog_0__Sample = Sample "moog_0" :: Sample
+moog_1__Sample = Sample "moog_1" :: Sample
+moog_2__Sample = Sample "moog_2" :: Sample
+moog_3__Sample = Sample "moog_3" :: Sample
+moog_4__Sample = Sample "moog_4" :: Sample
+moog_5__Sample = Sample "moog_5" :: Sample
+moog_6__Sample = Sample "moog_6" :: Sample
+h_0__Sample = Sample "h_0" :: Sample
+h_1__Sample = Sample "h_1" :: Sample
+h_2__Sample = Sample "h_2" :: Sample
+h_3__Sample = Sample "h_3" :: Sample
+h_4__Sample = Sample "h_4" :: Sample
+h_5__Sample = Sample "h_5" :: Sample
+h_6__Sample = Sample "h_6" :: Sample
+wind_0__Sample = Sample "wind_0" :: Sample
+wind_1__Sample = Sample "wind_1" :: Sample
+wind_2__Sample = Sample "wind_2" :: Sample
+wind_3__Sample = Sample "wind_3" :: Sample
+wind_4__Sample = Sample "wind_4" :: Sample
+wind_5__Sample = Sample "wind_5" :: Sample
+wind_6__Sample = Sample "wind_6" :: Sample
+wind_7__Sample = Sample "wind_7" :: Sample
+wind_8__Sample = Sample "wind_8" :: Sample
+wind_9__Sample = Sample "wind_9" :: Sample
+rs_0__Sample = Sample "rs_0" :: Sample
+em2_0__Sample = Sample "em2_0" :: Sample
+em2_1__Sample = Sample "em2_1" :: Sample
+em2_2__Sample = Sample "em2_2" :: Sample
+em2_3__Sample = Sample "em2_3" :: Sample
+em2_4__Sample = Sample "em2_4" :: Sample
+em2_5__Sample = Sample "em2_5" :: Sample
+noise2_0__Sample = Sample "noise2_0" :: Sample
+noise2_1__Sample = Sample "noise2_1" :: Sample
+noise2_2__Sample = Sample "noise2_2" :: Sample
+noise2_3__Sample = Sample "noise2_3" :: Sample
+noise2_4__Sample = Sample "noise2_4" :: Sample
+noise2_5__Sample = Sample "noise2_5" :: Sample
+noise2_6__Sample = Sample "noise2_6" :: Sample
+noise2_7__Sample = Sample "noise2_7" :: Sample
+foo_0__Sample = Sample "foo_0" :: Sample
+foo_1__Sample = Sample "foo_1" :: Sample
+foo_2__Sample = Sample "foo_2" :: Sample
+foo_3__Sample = Sample "foo_3" :: Sample
+foo_4__Sample = Sample "foo_4" :: Sample
+foo_5__Sample = Sample "foo_5" :: Sample
+foo_6__Sample = Sample "foo_6" :: Sample
+foo_7__Sample = Sample "foo_7" :: Sample
+foo_8__Sample = Sample "foo_8" :: Sample
+foo_9__Sample = Sample "foo_9" :: Sample
+foo_10__Sample = Sample "foo_10" :: Sample
+foo_11__Sample = Sample "foo_11" :: Sample
+foo_12__Sample = Sample "foo_12" :: Sample
+foo_13__Sample = Sample "foo_13" :: Sample
+foo_14__Sample = Sample "foo_14" :: Sample
+foo_15__Sample = Sample "foo_15" :: Sample
+foo_16__Sample = Sample "foo_16" :: Sample
+foo_17__Sample = Sample "foo_17" :: Sample
+foo_18__Sample = Sample "foo_18" :: Sample
+foo_19__Sample = Sample "foo_19" :: Sample
+foo_20__Sample = Sample "foo_20" :: Sample
+foo_21__Sample = Sample "foo_21" :: Sample
+foo_22__Sample = Sample "foo_22" :: Sample
+foo_23__Sample = Sample "foo_23" :: Sample
+foo_24__Sample = Sample "foo_24" :: Sample
+foo_25__Sample = Sample "foo_25" :: Sample
+foo_26__Sample = Sample "foo_26" :: Sample
+armora_0__Sample = Sample "armora_0" :: Sample
+armora_1__Sample = Sample "armora_1" :: Sample
+armora_2__Sample = Sample "armora_2" :: Sample
+armora_3__Sample = Sample "armora_3" :: Sample
+armora_4__Sample = Sample "armora_4" :: Sample
+armora_5__Sample = Sample "armora_5" :: Sample
+armora_6__Sample = Sample "armora_6" :: Sample
+bend_0__Sample = Sample "bend_0" :: Sample
+bend_1__Sample = Sample "bend_1" :: Sample
+bend_2__Sample = Sample "bend_2" :: Sample
+bend_3__Sample = Sample "bend_3" :: Sample
+newnotes_0__Sample = Sample "newnotes_0" :: Sample
+newnotes_1__Sample = Sample "newnotes_1" :: Sample
+newnotes_2__Sample = Sample "newnotes_2" :: Sample
+newnotes_3__Sample = Sample "newnotes_3" :: Sample
+newnotes_4__Sample = Sample "newnotes_4" :: Sample
+newnotes_5__Sample = Sample "newnotes_5" :: Sample
+newnotes_6__Sample = Sample "newnotes_6" :: Sample
+newnotes_7__Sample = Sample "newnotes_7" :: Sample
+newnotes_8__Sample = Sample "newnotes_8" :: Sample
+newnotes_9__Sample = Sample "newnotes_9" :: Sample
+newnotes_10__Sample = Sample "newnotes_10" :: Sample
+newnotes_11__Sample = Sample "newnotes_11" :: Sample
+newnotes_12__Sample = Sample "newnotes_12" :: Sample
+newnotes_13__Sample = Sample "newnotes_13" :: Sample
+newnotes_14__Sample = Sample "newnotes_14" :: Sample
+pebbles_0__Sample = Sample "pebbles_0" :: Sample
+mash2_0__Sample = Sample "mash2_0" :: Sample
+mash2_1__Sample = Sample "mash2_1" :: Sample
+mash2_2__Sample = Sample "mash2_2" :: Sample
+mash2_3__Sample = Sample "mash2_3" :: Sample
+diphone2_0__Sample = Sample "diphone2_0" :: Sample
+diphone2_1__Sample = Sample "diphone2_1" :: Sample
+diphone2_2__Sample = Sample "diphone2_2" :: Sample
+diphone2_3__Sample = Sample "diphone2_3" :: Sample
+diphone2_4__Sample = Sample "diphone2_4" :: Sample
+diphone2_5__Sample = Sample "diphone2_5" :: Sample
+diphone2_6__Sample = Sample "diphone2_6" :: Sample
+diphone2_7__Sample = Sample "diphone2_7" :: Sample
+diphone2_8__Sample = Sample "diphone2_8" :: Sample
+diphone2_9__Sample = Sample "diphone2_9" :: Sample
+diphone2_10__Sample = Sample "diphone2_10" :: Sample
+diphone2_11__Sample = Sample "diphone2_11" :: Sample
+e_0__Sample = Sample "e_0" :: Sample
+e_1__Sample = Sample "e_1" :: Sample
+e_2__Sample = Sample "e_2" :: Sample
+e_3__Sample = Sample "e_3" :: Sample
+e_4__Sample = Sample "e_4" :: Sample
+e_5__Sample = Sample "e_5" :: Sample
+e_6__Sample = Sample "e_6" :: Sample
+e_7__Sample = Sample "e_7" :: Sample
+bubble_0__Sample = Sample "bubble_0" :: Sample
+bubble_1__Sample = Sample "bubble_1" :: Sample
+bubble_2__Sample = Sample "bubble_2" :: Sample
+bubble_3__Sample = Sample "bubble_3" :: Sample
+bubble_4__Sample = Sample "bubble_4" :: Sample
+bubble_5__Sample = Sample "bubble_5" :: Sample
+bubble_6__Sample = Sample "bubble_6" :: Sample
+bubble_7__Sample = Sample "bubble_7" :: Sample
+insect_0__Sample = Sample "insect_0" :: Sample
+insect_1__Sample = Sample "insect_1" :: Sample
+insect_2__Sample = Sample "insect_2" :: Sample
+ade_0__Sample = Sample "ade_0" :: Sample
+ade_1__Sample = Sample "ade_1" :: Sample
+ade_2__Sample = Sample "ade_2" :: Sample
+ade_3__Sample = Sample "ade_3" :: Sample
+ade_4__Sample = Sample "ade_4" :: Sample
+ade_5__Sample = Sample "ade_5" :: Sample
+ade_6__Sample = Sample "ade_6" :: Sample
+ade_7__Sample = Sample "ade_7" :: Sample
+ade_8__Sample = Sample "ade_8" :: Sample
+ade_9__Sample = Sample "ade_9" :: Sample
+glitch_0__Sample = Sample "glitch_0" :: Sample
+glitch_1__Sample = Sample "glitch_1" :: Sample
+glitch_2__Sample = Sample "glitch_2" :: Sample
+glitch_3__Sample = Sample "glitch_3" :: Sample
+glitch_4__Sample = Sample "glitch_4" :: Sample
+glitch_5__Sample = Sample "glitch_5" :: Sample
+glitch_6__Sample = Sample "glitch_6" :: Sample
+glitch_7__Sample = Sample "glitch_7" :: Sample
+haw_0__Sample = Sample "haw_0" :: Sample
+haw_1__Sample = Sample "haw_1" :: Sample
+haw_2__Sample = Sample "haw_2" :: Sample
+haw_3__Sample = Sample "haw_3" :: Sample
+haw_4__Sample = Sample "haw_4" :: Sample
+haw_5__Sample = Sample "haw_5" :: Sample
+popkick_0__Sample = Sample "popkick_0" :: Sample
+popkick_1__Sample = Sample "popkick_1" :: Sample
+popkick_2__Sample = Sample "popkick_2" :: Sample
+popkick_3__Sample = Sample "popkick_3" :: Sample
+popkick_4__Sample = Sample "popkick_4" :: Sample
+popkick_5__Sample = Sample "popkick_5" :: Sample
+popkick_6__Sample = Sample "popkick_6" :: Sample
+popkick_7__Sample = Sample "popkick_7" :: Sample
+popkick_8__Sample = Sample "popkick_8" :: Sample
+popkick_9__Sample = Sample "popkick_9" :: Sample
+breaks157_0__Sample = Sample "breaks157_0" :: Sample
+gtr_0__Sample = Sample "gtr_0" :: Sample
+gtr_1__Sample = Sample "gtr_1" :: Sample
+gtr_2__Sample = Sample "gtr_2" :: Sample
+clubkick_0__Sample = Sample "clubkick_0" :: Sample
+clubkick_1__Sample = Sample "clubkick_1" :: Sample
+clubkick_2__Sample = Sample "clubkick_2" :: Sample
+clubkick_3__Sample = Sample "clubkick_3" :: Sample
+clubkick_4__Sample = Sample "clubkick_4" :: Sample
+breaks152_0__Sample = Sample "breaks152_0" :: Sample
+x_808bd_0__Sample = Sample "x_808bd_0" :: Sample
+x_808bd_1__Sample = Sample "x_808bd_1" :: Sample
+x_808bd_2__Sample = Sample "x_808bd_2" :: Sample
+x_808bd_3__Sample = Sample "x_808bd_3" :: Sample
+x_808bd_4__Sample = Sample "x_808bd_4" :: Sample
+x_808bd_5__Sample = Sample "x_808bd_5" :: Sample
+x_808bd_6__Sample = Sample "x_808bd_6" :: Sample
+x_808bd_7__Sample = Sample "x_808bd_7" :: Sample
+x_808bd_8__Sample = Sample "x_808bd_8" :: Sample
+x_808bd_9__Sample = Sample "x_808bd_9" :: Sample
+x_808bd_10__Sample = Sample "x_808bd_10" :: Sample
+x_808bd_11__Sample = Sample "x_808bd_11" :: Sample
+x_808bd_12__Sample = Sample "x_808bd_12" :: Sample
+x_808bd_13__Sample = Sample "x_808bd_13" :: Sample
+x_808bd_14__Sample = Sample "x_808bd_14" :: Sample
+x_808bd_15__Sample = Sample "x_808bd_15" :: Sample
+x_808bd_16__Sample = Sample "x_808bd_16" :: Sample
+x_808bd_17__Sample = Sample "x_808bd_17" :: Sample
+x_808bd_18__Sample = Sample "x_808bd_18" :: Sample
+x_808bd_19__Sample = Sample "x_808bd_19" :: Sample
+x_808bd_20__Sample = Sample "x_808bd_20" :: Sample
+x_808bd_21__Sample = Sample "x_808bd_21" :: Sample
+x_808bd_22__Sample = Sample "x_808bd_22" :: Sample
+x_808bd_23__Sample = Sample "x_808bd_23" :: Sample
+x_808bd_24__Sample = Sample "x_808bd_24" :: Sample
+miniyeah_0__Sample = Sample "miniyeah_0" :: Sample
+miniyeah_1__Sample = Sample "miniyeah_1" :: Sample
+miniyeah_2__Sample = Sample "miniyeah_2" :: Sample
+miniyeah_3__Sample = Sample "miniyeah_3" :: Sample
+if_0__Sample = Sample "if_0" :: Sample
+if_1__Sample = Sample "if_1" :: Sample
+if_2__Sample = Sample "if_2" :: Sample
+if_3__Sample = Sample "if_3" :: Sample
+if_4__Sample = Sample "if_4" :: Sample
+x_808oh_0__Sample = Sample "x_808oh_0" :: Sample
+x_808oh_1__Sample = Sample "x_808oh_1" :: Sample
+x_808oh_2__Sample = Sample "x_808oh_2" :: Sample
+x_808oh_3__Sample = Sample "x_808oh_3" :: Sample
+x_808oh_4__Sample = Sample "x_808oh_4" :: Sample
+house_0__Sample = Sample "house_0" :: Sample
+house_1__Sample = Sample "house_1" :: Sample
+house_2__Sample = Sample "house_2" :: Sample
+house_3__Sample = Sample "house_3" :: Sample
+house_4__Sample = Sample "house_4" :: Sample
+house_5__Sample = Sample "house_5" :: Sample
+house_6__Sample = Sample "house_6" :: Sample
+house_7__Sample = Sample "house_7" :: Sample
+dr_0__Sample = Sample "dr_0" :: Sample
+dr_1__Sample = Sample "dr_1" :: Sample
+dr_2__Sample = Sample "dr_2" :: Sample
+dr_3__Sample = Sample "dr_3" :: Sample
+dr_4__Sample = Sample "dr_4" :: Sample
+dr_5__Sample = Sample "dr_5" :: Sample
+dr_6__Sample = Sample "dr_6" :: Sample
+dr_7__Sample = Sample "dr_7" :: Sample
+dr_8__Sample = Sample "dr_8" :: Sample
+dr_9__Sample = Sample "dr_9" :: Sample
+dr_10__Sample = Sample "dr_10" :: Sample
+dr_11__Sample = Sample "dr_11" :: Sample
+dr_12__Sample = Sample "dr_12" :: Sample
+dr_13__Sample = Sample "dr_13" :: Sample
+dr_14__Sample = Sample "dr_14" :: Sample
+dr_15__Sample = Sample "dr_15" :: Sample
+dr_16__Sample = Sample "dr_16" :: Sample
+dr_17__Sample = Sample "dr_17" :: Sample
+dr_18__Sample = Sample "dr_18" :: Sample
+dr_19__Sample = Sample "dr_19" :: Sample
+dr_20__Sample = Sample "dr_20" :: Sample
+dr_21__Sample = Sample "dr_21" :: Sample
+dr_22__Sample = Sample "dr_22" :: Sample
+dr_23__Sample = Sample "dr_23" :: Sample
+dr_24__Sample = Sample "dr_24" :: Sample
+dr_25__Sample = Sample "dr_25" :: Sample
+dr_26__Sample = Sample "dr_26" :: Sample
+dr_27__Sample = Sample "dr_27" :: Sample
+dr_28__Sample = Sample "dr_28" :: Sample
+dr_29__Sample = Sample "dr_29" :: Sample
+dr_30__Sample = Sample "dr_30" :: Sample
+dr_31__Sample = Sample "dr_31" :: Sample
+dr_32__Sample = Sample "dr_32" :: Sample
+dr_33__Sample = Sample "dr_33" :: Sample
+dr_34__Sample = Sample "dr_34" :: Sample
+dr_35__Sample = Sample "dr_35" :: Sample
+dr_36__Sample = Sample "dr_36" :: Sample
+dr_37__Sample = Sample "dr_37" :: Sample
+dr_38__Sample = Sample "dr_38" :: Sample
+dr_39__Sample = Sample "dr_39" :: Sample
+dr_40__Sample = Sample "dr_40" :: Sample
+dr_41__Sample = Sample "dr_41" :: Sample
+dr55_0__Sample = Sample "dr55_0" :: Sample
+dr55_1__Sample = Sample "dr55_1" :: Sample
+dr55_2__Sample = Sample "dr55_2" :: Sample
+dr55_3__Sample = Sample "dr55_3" :: Sample
+bass_0__Sample = Sample "bass_0" :: Sample
+bass_1__Sample = Sample "bass_1" :: Sample
+bass_2__Sample = Sample "bass_2" :: Sample
+bass_3__Sample = Sample "bass_3" :: Sample
+ho_0__Sample = Sample "ho_0" :: Sample
+ho_1__Sample = Sample "ho_1" :: Sample
+ho_2__Sample = Sample "ho_2" :: Sample
+ho_3__Sample = Sample "ho_3" :: Sample
+ho_4__Sample = Sample "ho_4" :: Sample
+ho_5__Sample = Sample "ho_5" :: Sample
+hardkick_0__Sample = Sample "hardkick_0" :: Sample
+hardkick_1__Sample = Sample "hardkick_1" :: Sample
+hardkick_2__Sample = Sample "hardkick_2" :: Sample
+hardkick_3__Sample = Sample "hardkick_3" :: Sample
+hardkick_4__Sample = Sample "hardkick_4" :: Sample
+hardkick_5__Sample = Sample "hardkick_5" :: Sample
+x_808hc_0__Sample = Sample "x_808hc_0" :: Sample
+x_808hc_1__Sample = Sample "x_808hc_1" :: Sample
+x_808hc_2__Sample = Sample "x_808hc_2" :: Sample
+x_808hc_3__Sample = Sample "x_808hc_3" :: Sample
+x_808hc_4__Sample = Sample "x_808hc_4" :: Sample
+hit_0__Sample = Sample "hit_0" :: Sample
+hit_1__Sample = Sample "hit_1" :: Sample
+hit_2__Sample = Sample "hit_2" :: Sample
+hit_3__Sample = Sample "hit_3" :: Sample
+hit_4__Sample = Sample "hit_4" :: Sample
+hit_5__Sample = Sample "hit_5" :: Sample
+breaks165_0__Sample = Sample "breaks165_0" :: Sample
+dr2_0__Sample = Sample "dr2_0" :: Sample
+dr2_1__Sample = Sample "dr2_1" :: Sample
+dr2_2__Sample = Sample "dr2_2" :: Sample
+dr2_3__Sample = Sample "dr2_3" :: Sample
+dr2_4__Sample = Sample "dr2_4" :: Sample
+dr2_5__Sample = Sample "dr2_5" :: Sample
+tabla_0__Sample = Sample "tabla_0" :: Sample
+tabla_1__Sample = Sample "tabla_1" :: Sample
+tabla_2__Sample = Sample "tabla_2" :: Sample
+tabla_3__Sample = Sample "tabla_3" :: Sample
+tabla_4__Sample = Sample "tabla_4" :: Sample
+tabla_5__Sample = Sample "tabla_5" :: Sample
+tabla_6__Sample = Sample "tabla_6" :: Sample
+tabla_7__Sample = Sample "tabla_7" :: Sample
+tabla_8__Sample = Sample "tabla_8" :: Sample
+tabla_9__Sample = Sample "tabla_9" :: Sample
+tabla_10__Sample = Sample "tabla_10" :: Sample
+tabla_11__Sample = Sample "tabla_11" :: Sample
+tabla_12__Sample = Sample "tabla_12" :: Sample
+tabla_13__Sample = Sample "tabla_13" :: Sample
+tabla_14__Sample = Sample "tabla_14" :: Sample
+tabla_15__Sample = Sample "tabla_15" :: Sample
+tabla_16__Sample = Sample "tabla_16" :: Sample
+tabla_17__Sample = Sample "tabla_17" :: Sample
+tabla_18__Sample = Sample "tabla_18" :: Sample
+tabla_19__Sample = Sample "tabla_19" :: Sample
+tabla_20__Sample = Sample "tabla_20" :: Sample
+tabla_21__Sample = Sample "tabla_21" :: Sample
+tabla_22__Sample = Sample "tabla_22" :: Sample
+tabla_23__Sample = Sample "tabla_23" :: Sample
+tabla_24__Sample = Sample "tabla_24" :: Sample
+tabla_25__Sample = Sample "tabla_25" :: Sample
+dork2_0__Sample = Sample "dork2_0" :: Sample
+dork2_1__Sample = Sample "dork2_1" :: Sample
+dork2_2__Sample = Sample "dork2_2" :: Sample
+dork2_3__Sample = Sample "dork2_3" :: Sample
+hc_0__Sample = Sample "hc_0" :: Sample
+hc_1__Sample = Sample "hc_1" :: Sample
+hc_2__Sample = Sample "hc_2" :: Sample
+hc_3__Sample = Sample "hc_3" :: Sample
+hc_4__Sample = Sample "hc_4" :: Sample
+hc_5__Sample = Sample "hc_5" :: Sample
+bassfoo_0__Sample = Sample "bassfoo_0" :: Sample
+bassfoo_1__Sample = Sample "bassfoo_1" :: Sample
+bassfoo_2__Sample = Sample "bassfoo_2" :: Sample
+seawolf_0__Sample = Sample "seawolf_0" :: Sample
+seawolf_1__Sample = Sample "seawolf_1" :: Sample
+seawolf_2__Sample = Sample "seawolf_2" :: Sample
+cp_0__Sample = Sample "cp_0" :: Sample
+cp_1__Sample = Sample "cp_1" :: Sample
+jazz_0__Sample = Sample "jazz_0" :: Sample
+jazz_1__Sample = Sample "jazz_1" :: Sample
+jazz_2__Sample = Sample "jazz_2" :: Sample
+jazz_3__Sample = Sample "jazz_3" :: Sample
+jazz_4__Sample = Sample "jazz_4" :: Sample
+jazz_5__Sample = Sample "jazz_5" :: Sample
+jazz_6__Sample = Sample "jazz_6" :: Sample
+jazz_7__Sample = Sample "jazz_7" :: Sample
+juno_0__Sample = Sample "juno_0" :: Sample
+juno_1__Sample = Sample "juno_1" :: Sample
+juno_2__Sample = Sample "juno_2" :: Sample
+juno_3__Sample = Sample "juno_3" :: Sample
+juno_4__Sample = Sample "juno_4" :: Sample
+juno_5__Sample = Sample "juno_5" :: Sample
+juno_6__Sample = Sample "juno_6" :: Sample
+juno_7__Sample = Sample "juno_7" :: Sample
+juno_8__Sample = Sample "juno_8" :: Sample
+juno_9__Sample = Sample "juno_9" :: Sample
+juno_10__Sample = Sample "juno_10" :: Sample
+juno_11__Sample = Sample "juno_11" :: Sample
+birds_0__Sample = Sample "birds_0" :: Sample
+birds_1__Sample = Sample "birds_1" :: Sample
+birds_2__Sample = Sample "birds_2" :: Sample
+birds_3__Sample = Sample "birds_3" :: Sample
+birds_4__Sample = Sample "birds_4" :: Sample
+birds_5__Sample = Sample "birds_5" :: Sample
+birds_6__Sample = Sample "birds_6" :: Sample
+birds_7__Sample = Sample "birds_7" :: Sample
+birds_8__Sample = Sample "birds_8" :: Sample
+birds_9__Sample = Sample "birds_9" :: Sample
+glasstap_0__Sample = Sample "glasstap_0" :: Sample
+glasstap_1__Sample = Sample "glasstap_1" :: Sample
+glasstap_2__Sample = Sample "glasstap_2" :: Sample
+bass1_0__Sample = Sample "bass1_0" :: Sample
+bass1_1__Sample = Sample "bass1_1" :: Sample
+bass1_2__Sample = Sample "bass1_2" :: Sample
+bass1_3__Sample = Sample "bass1_3" :: Sample
+bass1_4__Sample = Sample "bass1_4" :: Sample
+bass1_5__Sample = Sample "bass1_5" :: Sample
+bass1_6__Sample = Sample "bass1_6" :: Sample
+bass1_7__Sample = Sample "bass1_7" :: Sample
+bass1_8__Sample = Sample "bass1_8" :: Sample
+bass1_9__Sample = Sample "bass1_9" :: Sample
+bass1_10__Sample = Sample "bass1_10" :: Sample
+bass1_11__Sample = Sample "bass1_11" :: Sample
+bass1_12__Sample = Sample "bass1_12" :: Sample
+bass1_13__Sample = Sample "bass1_13" :: Sample
+bass1_14__Sample = Sample "bass1_14" :: Sample
+bass1_15__Sample = Sample "bass1_15" :: Sample
+bass1_16__Sample = Sample "bass1_16" :: Sample
+bass1_17__Sample = Sample "bass1_17" :: Sample
+bass1_18__Sample = Sample "bass1_18" :: Sample
+bass1_19__Sample = Sample "bass1_19" :: Sample
+bass1_20__Sample = Sample "bass1_20" :: Sample
+bass1_21__Sample = Sample "bass1_21" :: Sample
+bass1_22__Sample = Sample "bass1_22" :: Sample
+bass1_23__Sample = Sample "bass1_23" :: Sample
+bass1_24__Sample = Sample "bass1_24" :: Sample
+bass1_25__Sample = Sample "bass1_25" :: Sample
+bass1_26__Sample = Sample "bass1_26" :: Sample
+bass1_27__Sample = Sample "bass1_27" :: Sample
+bass1_28__Sample = Sample "bass1_28" :: Sample
+bass1_29__Sample = Sample "bass1_29" :: Sample
+hh27_0__Sample = Sample "hh27_0" :: Sample
+hh27_1__Sample = Sample "hh27_1" :: Sample
+hh27_2__Sample = Sample "hh27_2" :: Sample
+hh27_3__Sample = Sample "hh27_3" :: Sample
+hh27_4__Sample = Sample "hh27_4" :: Sample
+hh27_5__Sample = Sample "hh27_5" :: Sample
+hh27_6__Sample = Sample "hh27_6" :: Sample
+hh27_7__Sample = Sample "hh27_7" :: Sample
+hh27_8__Sample = Sample "hh27_8" :: Sample
+hh27_9__Sample = Sample "hh27_9" :: Sample
+hh27_10__Sample = Sample "hh27_10" :: Sample
+hh27_11__Sample = Sample "hh27_11" :: Sample
+hh27_12__Sample = Sample "hh27_12" :: Sample
+x_808_0__Sample = Sample "x_808_0" :: Sample
+x_808_1__Sample = Sample "x_808_1" :: Sample
+x_808_2__Sample = Sample "x_808_2" :: Sample
+x_808_3__Sample = Sample "x_808_3" :: Sample
+x_808_4__Sample = Sample "x_808_4" :: Sample
+x_808_5__Sample = Sample "x_808_5" :: Sample
+notes_0__Sample = Sample "notes_0" :: Sample
+notes_1__Sample = Sample "notes_1" :: Sample
+notes_2__Sample = Sample "notes_2" :: Sample
+notes_3__Sample = Sample "notes_3" :: Sample
+notes_4__Sample = Sample "notes_4" :: Sample
+notes_5__Sample = Sample "notes_5" :: Sample
+notes_6__Sample = Sample "notes_6" :: Sample
+notes_7__Sample = Sample "notes_7" :: Sample
+notes_8__Sample = Sample "notes_8" :: Sample
+notes_9__Sample = Sample "notes_9" :: Sample
+notes_10__Sample = Sample "notes_10" :: Sample
+notes_11__Sample = Sample "notes_11" :: Sample
+notes_12__Sample = Sample "notes_12" :: Sample
+notes_13__Sample = Sample "notes_13" :: Sample
+notes_14__Sample = Sample "notes_14" :: Sample
+xmas_0__Sample = Sample "xmas_0" :: Sample
+erk_0__Sample = Sample "erk_0" :: Sample
+x_808mt_0__Sample = Sample "x_808mt_0" :: Sample
+x_808mt_1__Sample = Sample "x_808mt_1" :: Sample
+x_808mt_2__Sample = Sample "x_808mt_2" :: Sample
+x_808mt_3__Sample = Sample "x_808mt_3" :: Sample
+x_808mt_4__Sample = Sample "x_808mt_4" :: Sample
+lighter_0__Sample = Sample "lighter_0" :: Sample
+lighter_1__Sample = Sample "lighter_1" :: Sample
+lighter_2__Sample = Sample "lighter_2" :: Sample
+lighter_3__Sample = Sample "lighter_3" :: Sample
+lighter_4__Sample = Sample "lighter_4" :: Sample
+lighter_5__Sample = Sample "lighter_5" :: Sample
+lighter_6__Sample = Sample "lighter_6" :: Sample
+lighter_7__Sample = Sample "lighter_7" :: Sample
+lighter_8__Sample = Sample "lighter_8" :: Sample
+lighter_9__Sample = Sample "lighter_9" :: Sample
+lighter_10__Sample = Sample "lighter_10" :: Sample
+lighter_11__Sample = Sample "lighter_11" :: Sample
+lighter_12__Sample = Sample "lighter_12" :: Sample
+lighter_13__Sample = Sample "lighter_13" :: Sample
+lighter_14__Sample = Sample "lighter_14" :: Sample
+lighter_15__Sample = Sample "lighter_15" :: Sample
+lighter_16__Sample = Sample "lighter_16" :: Sample
+lighter_17__Sample = Sample "lighter_17" :: Sample
+lighter_18__Sample = Sample "lighter_18" :: Sample
+lighter_19__Sample = Sample "lighter_19" :: Sample
+lighter_20__Sample = Sample "lighter_20" :: Sample
+lighter_21__Sample = Sample "lighter_21" :: Sample
+lighter_22__Sample = Sample "lighter_22" :: Sample
+lighter_23__Sample = Sample "lighter_23" :: Sample
+lighter_24__Sample = Sample "lighter_24" :: Sample
+lighter_25__Sample = Sample "lighter_25" :: Sample
+lighter_26__Sample = Sample "lighter_26" :: Sample
+lighter_27__Sample = Sample "lighter_27" :: Sample
+lighter_28__Sample = Sample "lighter_28" :: Sample
+lighter_29__Sample = Sample "lighter_29" :: Sample
+lighter_30__Sample = Sample "lighter_30" :: Sample
+lighter_31__Sample = Sample "lighter_31" :: Sample
+lighter_32__Sample = Sample "lighter_32" :: Sample
+cb_0__Sample = Sample "cb_0" :: Sample
+subroc3d_0__Sample = Sample "subroc3d_0" :: Sample
+subroc3d_1__Sample = Sample "subroc3d_1" :: Sample
+subroc3d_2__Sample = Sample "subroc3d_2" :: Sample
+subroc3d_3__Sample = Sample "subroc3d_3" :: Sample
+subroc3d_4__Sample = Sample "subroc3d_4" :: Sample
+subroc3d_5__Sample = Sample "subroc3d_5" :: Sample
+subroc3d_6__Sample = Sample "subroc3d_6" :: Sample
+subroc3d_7__Sample = Sample "subroc3d_7" :: Sample
+subroc3d_8__Sample = Sample "subroc3d_8" :: Sample
+subroc3d_9__Sample = Sample "subroc3d_9" :: Sample
+subroc3d_10__Sample = Sample "subroc3d_10" :: Sample
+ul_0__Sample = Sample "ul_0" :: Sample
+ul_1__Sample = Sample "ul_1" :: Sample
+ul_2__Sample = Sample "ul_2" :: Sample
+ul_3__Sample = Sample "ul_3" :: Sample
+ul_4__Sample = Sample "ul_4" :: Sample
+ul_5__Sample = Sample "ul_5" :: Sample
+ul_6__Sample = Sample "ul_6" :: Sample
+ul_7__Sample = Sample "ul_7" :: Sample
+ul_8__Sample = Sample "ul_8" :: Sample
+ul_9__Sample = Sample "ul_9" :: Sample
+gab_0__Sample = Sample "gab_0" :: Sample
+gab_1__Sample = Sample "gab_1" :: Sample
+gab_2__Sample = Sample "gab_2" :: Sample
+gab_3__Sample = Sample "gab_3" :: Sample
+gab_4__Sample = Sample "gab_4" :: Sample
+gab_5__Sample = Sample "gab_5" :: Sample
+gab_6__Sample = Sample "gab_6" :: Sample
+gab_7__Sample = Sample "gab_7" :: Sample
+gab_8__Sample = Sample "gab_8" :: Sample
+gab_9__Sample = Sample "gab_9" :: Sample
+monsterb_0__Sample = Sample "monsterb_0" :: Sample
+monsterb_1__Sample = Sample "monsterb_1" :: Sample
+monsterb_2__Sample = Sample "monsterb_2" :: Sample
+monsterb_3__Sample = Sample "monsterb_3" :: Sample
+monsterb_4__Sample = Sample "monsterb_4" :: Sample
+monsterb_5__Sample = Sample "monsterb_5" :: Sample
+diphone_0__Sample = Sample "diphone_0" :: Sample
+diphone_1__Sample = Sample "diphone_1" :: Sample
+diphone_2__Sample = Sample "diphone_2" :: Sample
+diphone_3__Sample = Sample "diphone_3" :: Sample
+diphone_4__Sample = Sample "diphone_4" :: Sample
+diphone_5__Sample = Sample "diphone_5" :: Sample
+diphone_6__Sample = Sample "diphone_6" :: Sample
+diphone_7__Sample = Sample "diphone_7" :: Sample
+diphone_8__Sample = Sample "diphone_8" :: Sample
+diphone_9__Sample = Sample "diphone_9" :: Sample
+diphone_10__Sample = Sample "diphone_10" :: Sample
+diphone_11__Sample = Sample "diphone_11" :: Sample
+diphone_12__Sample = Sample "diphone_12" :: Sample
+diphone_13__Sample = Sample "diphone_13" :: Sample
+diphone_14__Sample = Sample "diphone_14" :: Sample
+diphone_15__Sample = Sample "diphone_15" :: Sample
+diphone_16__Sample = Sample "diphone_16" :: Sample
+diphone_17__Sample = Sample "diphone_17" :: Sample
+diphone_18__Sample = Sample "diphone_18" :: Sample
+diphone_19__Sample = Sample "diphone_19" :: Sample
+diphone_20__Sample = Sample "diphone_20" :: Sample
+diphone_21__Sample = Sample "diphone_21" :: Sample
+diphone_22__Sample = Sample "diphone_22" :: Sample
+diphone_23__Sample = Sample "diphone_23" :: Sample
+diphone_24__Sample = Sample "diphone_24" :: Sample
+diphone_25__Sample = Sample "diphone_25" :: Sample
+diphone_26__Sample = Sample "diphone_26" :: Sample
+diphone_27__Sample = Sample "diphone_27" :: Sample
+diphone_28__Sample = Sample "diphone_28" :: Sample
+diphone_29__Sample = Sample "diphone_29" :: Sample
+diphone_30__Sample = Sample "diphone_30" :: Sample
+diphone_31__Sample = Sample "diphone_31" :: Sample
+diphone_32__Sample = Sample "diphone_32" :: Sample
+diphone_33__Sample = Sample "diphone_33" :: Sample
+diphone_34__Sample = Sample "diphone_34" :: Sample
+diphone_35__Sample = Sample "diphone_35" :: Sample
+diphone_36__Sample = Sample "diphone_36" :: Sample
+diphone_37__Sample = Sample "diphone_37" :: Sample
+clak_0__Sample = Sample "clak_0" :: Sample
+clak_1__Sample = Sample "clak_1" :: Sample
+sitar_0__Sample = Sample "sitar_0" :: Sample
+sitar_1__Sample = Sample "sitar_1" :: Sample
+sitar_2__Sample = Sample "sitar_2" :: Sample
+sitar_3__Sample = Sample "sitar_3" :: Sample
+sitar_4__Sample = Sample "sitar_4" :: Sample
+sitar_5__Sample = Sample "sitar_5" :: Sample
+sitar_6__Sample = Sample "sitar_6" :: Sample
+sitar_7__Sample = Sample "sitar_7" :: Sample
+ab_0__Sample = Sample "ab_0" :: Sample
+ab_1__Sample = Sample "ab_1" :: Sample
+ab_2__Sample = Sample "ab_2" :: Sample
+ab_3__Sample = Sample "ab_3" :: Sample
+ab_4__Sample = Sample "ab_4" :: Sample
+ab_5__Sample = Sample "ab_5" :: Sample
+ab_6__Sample = Sample "ab_6" :: Sample
+ab_7__Sample = Sample "ab_7" :: Sample
+ab_8__Sample = Sample "ab_8" :: Sample
+ab_9__Sample = Sample "ab_9" :: Sample
+ab_10__Sample = Sample "ab_10" :: Sample
+ab_11__Sample = Sample "ab_11" :: Sample
+cr_0__Sample = Sample "cr_0" :: Sample
+cr_1__Sample = Sample "cr_1" :: Sample
+cr_2__Sample = Sample "cr_2" :: Sample
+cr_3__Sample = Sample "cr_3" :: Sample
+cr_4__Sample = Sample "cr_4" :: Sample
+cr_5__Sample = Sample "cr_5" :: Sample
+tacscan_0__Sample = Sample "tacscan_0" :: Sample
+tacscan_1__Sample = Sample "tacscan_1" :: Sample
+tacscan_2__Sample = Sample "tacscan_2" :: Sample
+tacscan_3__Sample = Sample "tacscan_3" :: Sample
+tacscan_4__Sample = Sample "tacscan_4" :: Sample
+tacscan_5__Sample = Sample "tacscan_5" :: Sample
+tacscan_6__Sample = Sample "tacscan_6" :: Sample
+tacscan_7__Sample = Sample "tacscan_7" :: Sample
+tacscan_8__Sample = Sample "tacscan_8" :: Sample
+tacscan_9__Sample = Sample "tacscan_9" :: Sample
+tacscan_10__Sample = Sample "tacscan_10" :: Sample
+tacscan_11__Sample = Sample "tacscan_11" :: Sample
+tacscan_12__Sample = Sample "tacscan_12" :: Sample
+tacscan_13__Sample = Sample "tacscan_13" :: Sample
+tacscan_14__Sample = Sample "tacscan_14" :: Sample
+tacscan_15__Sample = Sample "tacscan_15" :: Sample
+tacscan_16__Sample = Sample "tacscan_16" :: Sample
+tacscan_17__Sample = Sample "tacscan_17" :: Sample
+tacscan_18__Sample = Sample "tacscan_18" :: Sample
+tacscan_19__Sample = Sample "tacscan_19" :: Sample
+tacscan_20__Sample = Sample "tacscan_20" :: Sample
+tacscan_21__Sample = Sample "tacscan_21" :: Sample
+v_0__Sample = Sample "v_0" :: Sample
+v_1__Sample = Sample "v_1" :: Sample
+v_2__Sample = Sample "v_2" :: Sample
+v_3__Sample = Sample "v_3" :: Sample
+v_4__Sample = Sample "v_4" :: Sample
+v_5__Sample = Sample "v_5" :: Sample
+bd_0__Sample = Sample "bd_0" :: Sample
+bd_1__Sample = Sample "bd_1" :: Sample
+bd_2__Sample = Sample "bd_2" :: Sample
+bd_3__Sample = Sample "bd_3" :: Sample
+bd_4__Sample = Sample "bd_4" :: Sample
+bd_5__Sample = Sample "bd_5" :: Sample
+bd_6__Sample = Sample "bd_6" :: Sample
+bd_7__Sample = Sample "bd_7" :: Sample
+bd_8__Sample = Sample "bd_8" :: Sample
+bd_9__Sample = Sample "bd_9" :: Sample
+bd_10__Sample = Sample "bd_10" :: Sample
+bd_11__Sample = Sample "bd_11" :: Sample
+bd_12__Sample = Sample "bd_12" :: Sample
+bd_13__Sample = Sample "bd_13" :: Sample
+bd_14__Sample = Sample "bd_14" :: Sample
+bd_15__Sample = Sample "bd_15" :: Sample
+bd_16__Sample = Sample "bd_16" :: Sample
+bd_17__Sample = Sample "bd_17" :: Sample
+bd_18__Sample = Sample "bd_18" :: Sample
+bd_19__Sample = Sample "bd_19" :: Sample
+bd_20__Sample = Sample "bd_20" :: Sample
+bd_21__Sample = Sample "bd_21" :: Sample
+bd_22__Sample = Sample "bd_22" :: Sample
+bd_23__Sample = Sample "bd_23" :: Sample
+rm_0__Sample = Sample "rm_0" :: Sample
+rm_1__Sample = Sample "rm_1" :: Sample
+blue_0__Sample = Sample "blue_0" :: Sample
+blue_1__Sample = Sample "blue_1" :: Sample
+latibro_0__Sample = Sample "latibro_0" :: Sample
+latibro_1__Sample = Sample "latibro_1" :: Sample
+latibro_2__Sample = Sample "latibro_2" :: Sample
+latibro_3__Sample = Sample "latibro_3" :: Sample
+latibro_4__Sample = Sample "latibro_4" :: Sample
+latibro_5__Sample = Sample "latibro_5" :: Sample
+latibro_6__Sample = Sample "latibro_6" :: Sample
+latibro_7__Sample = Sample "latibro_7" :: Sample
+dr_few_0__Sample = Sample "dr_few_0" :: Sample
+dr_few_1__Sample = Sample "dr_few_1" :: Sample
+dr_few_2__Sample = Sample "dr_few_2" :: Sample
+dr_few_3__Sample = Sample "dr_few_3" :: Sample
+dr_few_4__Sample = Sample "dr_few_4" :: Sample
+dr_few_5__Sample = Sample "dr_few_5" :: Sample
+dr_few_6__Sample = Sample "dr_few_6" :: Sample
+dr_few_7__Sample = Sample "dr_few_7" :: Sample
+rave2_0__Sample = Sample "rave2_0" :: Sample
+rave2_1__Sample = Sample "rave2_1" :: Sample
+rave2_2__Sample = Sample "rave2_2" :: Sample
+rave2_3__Sample = Sample "rave2_3" :: Sample
+rave2_4__Sample = Sample "rave2_4" :: Sample
+rave2_5__Sample = Sample "rave2_5" :: Sample
+koy_0__Sample = Sample "koy_0" :: Sample
+koy_1__Sample = Sample "koy_1" :: Sample
+glitch2_0__Sample = Sample "glitch2_0" :: Sample
+glitch2_1__Sample = Sample "glitch2_1" :: Sample
+glitch2_2__Sample = Sample "glitch2_2" :: Sample
+glitch2_3__Sample = Sample "glitch2_3" :: Sample
+glitch2_4__Sample = Sample "glitch2_4" :: Sample
+glitch2_5__Sample = Sample "glitch2_5" :: Sample
+glitch2_6__Sample = Sample "glitch2_6" :: Sample
+glitch2_7__Sample = Sample "glitch2_7" :: Sample
+hmm_0__Sample = Sample "hmm_0" :: Sample
+arp_0__Sample = Sample "arp_0" :: Sample
+arp_1__Sample = Sample "arp_1" :: Sample
+made2_0__Sample = Sample "made2_0" :: Sample
+uxay_0__Sample = Sample "uxay_0" :: Sample
+uxay_1__Sample = Sample "uxay_1" :: Sample
+uxay_2__Sample = Sample "uxay_2" :: Sample
+stomp_0__Sample = Sample "stomp_0" :: Sample
+stomp_1__Sample = Sample "stomp_1" :: Sample
+stomp_2__Sample = Sample "stomp_2" :: Sample
+stomp_3__Sample = Sample "stomp_3" :: Sample
+stomp_4__Sample = Sample "stomp_4" :: Sample
+stomp_5__Sample = Sample "stomp_5" :: Sample
+stomp_6__Sample = Sample "stomp_6" :: Sample
+stomp_7__Sample = Sample "stomp_7" :: Sample
+stomp_8__Sample = Sample "stomp_8" :: Sample
+stomp_9__Sample = Sample "stomp_9" :: Sample
+tech_0__Sample = Sample "tech_0" :: Sample
+tech_1__Sample = Sample "tech_1" :: Sample
+tech_2__Sample = Sample "tech_2" :: Sample
+tech_3__Sample = Sample "tech_3" :: Sample
+tech_4__Sample = Sample "tech_4" :: Sample
+tech_5__Sample = Sample "tech_5" :: Sample
+tech_6__Sample = Sample "tech_6" :: Sample
+tech_7__Sample = Sample "tech_7" :: Sample
+tech_8__Sample = Sample "tech_8" :: Sample
+tech_9__Sample = Sample "tech_9" :: Sample
+tech_10__Sample = Sample "tech_10" :: Sample
+tech_11__Sample = Sample "tech_11" :: Sample
+tech_12__Sample = Sample "tech_12" :: Sample
+sn_0__Sample = Sample "sn_0" :: Sample
+sn_1__Sample = Sample "sn_1" :: Sample
+sn_2__Sample = Sample "sn_2" :: Sample
+sn_3__Sample = Sample "sn_3" :: Sample
+sn_4__Sample = Sample "sn_4" :: Sample
+sn_5__Sample = Sample "sn_5" :: Sample
+sn_6__Sample = Sample "sn_6" :: Sample
+sn_7__Sample = Sample "sn_7" :: Sample
+sn_8__Sample = Sample "sn_8" :: Sample
+sn_9__Sample = Sample "sn_9" :: Sample
+sn_10__Sample = Sample "sn_10" :: Sample
+sn_11__Sample = Sample "sn_11" :: Sample
+sn_12__Sample = Sample "sn_12" :: Sample
+sn_13__Sample = Sample "sn_13" :: Sample
+sn_14__Sample = Sample "sn_14" :: Sample
+sn_15__Sample = Sample "sn_15" :: Sample
+sn_16__Sample = Sample "sn_16" :: Sample
+sn_17__Sample = Sample "sn_17" :: Sample
+sn_18__Sample = Sample "sn_18" :: Sample
+sn_19__Sample = Sample "sn_19" :: Sample
+sn_20__Sample = Sample "sn_20" :: Sample
+sn_21__Sample = Sample "sn_21" :: Sample
+sn_22__Sample = Sample "sn_22" :: Sample
+sn_23__Sample = Sample "sn_23" :: Sample
+sn_24__Sample = Sample "sn_24" :: Sample
+sn_25__Sample = Sample "sn_25" :: Sample
+sn_26__Sample = Sample "sn_26" :: Sample
+sn_27__Sample = Sample "sn_27" :: Sample
+sn_28__Sample = Sample "sn_28" :: Sample
+sn_29__Sample = Sample "sn_29" :: Sample
+sn_30__Sample = Sample "sn_30" :: Sample
+sn_31__Sample = Sample "sn_31" :: Sample
+sn_32__Sample = Sample "sn_32" :: Sample
+sn_33__Sample = Sample "sn_33" :: Sample
+sn_34__Sample = Sample "sn_34" :: Sample
+sn_35__Sample = Sample "sn_35" :: Sample
+sn_36__Sample = Sample "sn_36" :: Sample
+sn_37__Sample = Sample "sn_37" :: Sample
+sn_38__Sample = Sample "sn_38" :: Sample
+sn_39__Sample = Sample "sn_39" :: Sample
+sn_40__Sample = Sample "sn_40" :: Sample
+sn_41__Sample = Sample "sn_41" :: Sample
+sn_42__Sample = Sample "sn_42" :: Sample
+sn_43__Sample = Sample "sn_43" :: Sample
+sn_44__Sample = Sample "sn_44" :: Sample
+sn_45__Sample = Sample "sn_45" :: Sample
+sn_46__Sample = Sample "sn_46" :: Sample
+sn_47__Sample = Sample "sn_47" :: Sample
+sn_48__Sample = Sample "sn_48" :: Sample
+sn_49__Sample = Sample "sn_49" :: Sample
+sn_50__Sample = Sample "sn_50" :: Sample
+sn_51__Sample = Sample "sn_51" :: Sample
+less_0__Sample = Sample "less_0" :: Sample
+less_1__Sample = Sample "less_1" :: Sample
+less_2__Sample = Sample "less_2" :: Sample
+less_3__Sample = Sample "less_3" :: Sample
+off_0__Sample = Sample "off_0" :: Sample
+x_808sd_0__Sample = Sample "x_808sd_0" :: Sample
+x_808sd_1__Sample = Sample "x_808sd_1" :: Sample
+x_808sd_2__Sample = Sample "x_808sd_2" :: Sample
+x_808sd_3__Sample = Sample "x_808sd_3" :: Sample
+x_808sd_4__Sample = Sample "x_808sd_4" :: Sample
+x_808sd_5__Sample = Sample "x_808sd_5" :: Sample
+x_808sd_6__Sample = Sample "x_808sd_6" :: Sample
+x_808sd_7__Sample = Sample "x_808sd_7" :: Sample
+x_808sd_8__Sample = Sample "x_808sd_8" :: Sample
+x_808sd_9__Sample = Sample "x_808sd_9" :: Sample
+x_808sd_10__Sample = Sample "x_808sd_10" :: Sample
+x_808sd_11__Sample = Sample "x_808sd_11" :: Sample
+x_808sd_12__Sample = Sample "x_808sd_12" :: Sample
+x_808sd_13__Sample = Sample "x_808sd_13" :: Sample
+x_808sd_14__Sample = Sample "x_808sd_14" :: Sample
+x_808sd_15__Sample = Sample "x_808sd_15" :: Sample
+x_808sd_16__Sample = Sample "x_808sd_16" :: Sample
+x_808sd_17__Sample = Sample "x_808sd_17" :: Sample
+x_808sd_18__Sample = Sample "x_808sd_18" :: Sample
+x_808sd_19__Sample = Sample "x_808sd_19" :: Sample
+x_808sd_20__Sample = Sample "x_808sd_20" :: Sample
+x_808sd_21__Sample = Sample "x_808sd_21" :: Sample
+x_808sd_22__Sample = Sample "x_808sd_22" :: Sample
+x_808sd_23__Sample = Sample "x_808sd_23" :: Sample
+x_808sd_24__Sample = Sample "x_808sd_24" :: Sample
+trump_0__Sample = Sample "trump_0" :: Sample
+trump_1__Sample = Sample "trump_1" :: Sample
+trump_2__Sample = Sample "trump_2" :: Sample
+trump_3__Sample = Sample "trump_3" :: Sample
+trump_4__Sample = Sample "trump_4" :: Sample
+trump_5__Sample = Sample "trump_5" :: Sample
+trump_6__Sample = Sample "trump_6" :: Sample
+trump_7__Sample = Sample "trump_7" :: Sample
+trump_8__Sample = Sample "trump_8" :: Sample
+trump_9__Sample = Sample "trump_9" :: Sample
+trump_10__Sample = Sample "trump_10" :: Sample
+bev_0__Sample = Sample "bev_0" :: Sample
+bev_1__Sample = Sample "bev_1" :: Sample
+pad_0__Sample = Sample "pad_0" :: Sample
+pad_1__Sample = Sample "pad_1" :: Sample
+pad_2__Sample = Sample "pad_2" :: Sample
+led_0__Sample = Sample "led_0" :: Sample
+perc_0__Sample = Sample "perc_0" :: Sample
+perc_1__Sample = Sample "perc_1" :: Sample
+perc_2__Sample = Sample "perc_2" :: Sample
+perc_3__Sample = Sample "perc_3" :: Sample
+perc_4__Sample = Sample "perc_4" :: Sample
+perc_5__Sample = Sample "perc_5" :: Sample
+pluck_0__Sample = Sample "pluck_0" :: Sample
+pluck_1__Sample = Sample "pluck_1" :: Sample
+pluck_2__Sample = Sample "pluck_2" :: Sample
+pluck_3__Sample = Sample "pluck_3" :: Sample
+pluck_4__Sample = Sample "pluck_4" :: Sample
+pluck_5__Sample = Sample "pluck_5" :: Sample
+pluck_6__Sample = Sample "pluck_6" :: Sample
+pluck_7__Sample = Sample "pluck_7" :: Sample
+pluck_8__Sample = Sample "pluck_8" :: Sample
+pluck_9__Sample = Sample "pluck_9" :: Sample
+pluck_10__Sample = Sample "pluck_10" :: Sample
+pluck_11__Sample = Sample "pluck_11" :: Sample
+pluck_12__Sample = Sample "pluck_12" :: Sample
+pluck_13__Sample = Sample "pluck_13" :: Sample
+pluck_14__Sample = Sample "pluck_14" :: Sample
+pluck_15__Sample = Sample "pluck_15" :: Sample
+pluck_16__Sample = Sample "pluck_16" :: Sample
+bleep_0__Sample = Sample "bleep_0" :: Sample
+bleep_1__Sample = Sample "bleep_1" :: Sample
+bleep_2__Sample = Sample "bleep_2" :: Sample
+bleep_3__Sample = Sample "bleep_3" :: Sample
+bleep_4__Sample = Sample "bleep_4" :: Sample
+bleep_5__Sample = Sample "bleep_5" :: Sample
+bleep_6__Sample = Sample "bleep_6" :: Sample
+bleep_7__Sample = Sample "bleep_7" :: Sample
+bleep_8__Sample = Sample "bleep_8" :: Sample
+bleep_9__Sample = Sample "bleep_9" :: Sample
+bleep_10__Sample = Sample "bleep_10" :: Sample
+bleep_11__Sample = Sample "bleep_11" :: Sample
+bleep_12__Sample = Sample "bleep_12" :: Sample
+ht_0__Sample = Sample "ht_0" :: Sample
+ht_1__Sample = Sample "ht_1" :: Sample
+ht_2__Sample = Sample "ht_2" :: Sample
+ht_3__Sample = Sample "ht_3" :: Sample
+ht_4__Sample = Sample "ht_4" :: Sample
+ht_5__Sample = Sample "ht_5" :: Sample
+ht_6__Sample = Sample "ht_6" :: Sample
+ht_7__Sample = Sample "ht_7" :: Sample
+ht_8__Sample = Sample "ht_8" :: Sample
+ht_9__Sample = Sample "ht_9" :: Sample
+ht_10__Sample = Sample "ht_10" :: Sample
+ht_11__Sample = Sample "ht_11" :: Sample
+ht_12__Sample = Sample "ht_12" :: Sample
+ht_13__Sample = Sample "ht_13" :: Sample
+ht_14__Sample = Sample "ht_14" :: Sample
+ht_15__Sample = Sample "ht_15" :: Sample
+ades4_0__Sample = Sample "ades4_0" :: Sample
+ades4_1__Sample = Sample "ades4_1" :: Sample
+ades4_2__Sample = Sample "ades4_2" :: Sample
+ades4_3__Sample = Sample "ades4_3" :: Sample
+ades4_4__Sample = Sample "ades4_4" :: Sample
+ades4_5__Sample = Sample "ades4_5" :: Sample
+proc_0__Sample = Sample "proc_0" :: Sample
+proc_1__Sample = Sample "proc_1" :: Sample
+gretsch_0__Sample = Sample "gretsch_0" :: Sample
+gretsch_1__Sample = Sample "gretsch_1" :: Sample
+gretsch_2__Sample = Sample "gretsch_2" :: Sample
+gretsch_3__Sample = Sample "gretsch_3" :: Sample
+gretsch_4__Sample = Sample "gretsch_4" :: Sample
+gretsch_5__Sample = Sample "gretsch_5" :: Sample
+gretsch_6__Sample = Sample "gretsch_6" :: Sample
+gretsch_7__Sample = Sample "gretsch_7" :: Sample
+gretsch_8__Sample = Sample "gretsch_8" :: Sample
+gretsch_9__Sample = Sample "gretsch_9" :: Sample
+gretsch_10__Sample = Sample "gretsch_10" :: Sample
+gretsch_11__Sample = Sample "gretsch_11" :: Sample
+gretsch_12__Sample = Sample "gretsch_12" :: Sample
+gretsch_13__Sample = Sample "gretsch_13" :: Sample
+gretsch_14__Sample = Sample "gretsch_14" :: Sample
+gretsch_15__Sample = Sample "gretsch_15" :: Sample
+gretsch_16__Sample = Sample "gretsch_16" :: Sample
+gretsch_17__Sample = Sample "gretsch_17" :: Sample
+gretsch_18__Sample = Sample "gretsch_18" :: Sample
+gretsch_19__Sample = Sample "gretsch_19" :: Sample
+gretsch_20__Sample = Sample "gretsch_20" :: Sample
+gretsch_21__Sample = Sample "gretsch_21" :: Sample
+gretsch_22__Sample = Sample "gretsch_22" :: Sample
+gretsch_23__Sample = Sample "gretsch_23" :: Sample
+outdoor_0__Sample = Sample "outdoor_0" :: Sample
+outdoor_1__Sample = Sample "outdoor_1" :: Sample
+outdoor_2__Sample = Sample "outdoor_2" :: Sample
+outdoor_3__Sample = Sample "outdoor_3" :: Sample
+outdoor_4__Sample = Sample "outdoor_4" :: Sample
+outdoor_5__Sample = Sample "outdoor_5" :: Sample
+techno_0__Sample = Sample "techno_0" :: Sample
+techno_1__Sample = Sample "techno_1" :: Sample
+techno_2__Sample = Sample "techno_2" :: Sample
+techno_3__Sample = Sample "techno_3" :: Sample
+techno_4__Sample = Sample "techno_4" :: Sample
+techno_5__Sample = Sample "techno_5" :: Sample
+techno_6__Sample = Sample "techno_6" :: Sample
+ulgab_0__Sample = Sample "ulgab_0" :: Sample
+ulgab_1__Sample = Sample "ulgab_1" :: Sample
+ulgab_2__Sample = Sample "ulgab_2" :: Sample
+ulgab_3__Sample = Sample "ulgab_3" :: Sample
+ulgab_4__Sample = Sample "ulgab_4" :: Sample
+breaks125_0__Sample = Sample "breaks125_0" :: Sample
+breaks125_1__Sample = Sample "breaks125_1" :: Sample
+bin_0__Sample = Sample "bin_0" :: Sample
+bin_1__Sample = Sample "bin_1" :: Sample
+x_808mc_0__Sample = Sample "x_808mc_0" :: Sample
+x_808mc_1__Sample = Sample "x_808mc_1" :: Sample
+x_808mc_2__Sample = Sample "x_808mc_2" :: Sample
+x_808mc_3__Sample = Sample "x_808mc_3" :: Sample
+x_808mc_4__Sample = Sample "x_808mc_4" :: Sample
+lt_0__Sample = Sample "lt_0" :: Sample
+lt_1__Sample = Sample "lt_1" :: Sample
+lt_2__Sample = Sample "lt_2" :: Sample
+lt_3__Sample = Sample "lt_3" :: Sample
+lt_4__Sample = Sample "lt_4" :: Sample
+lt_5__Sample = Sample "lt_5" :: Sample
+lt_6__Sample = Sample "lt_6" :: Sample
+lt_7__Sample = Sample "lt_7" :: Sample
+lt_8__Sample = Sample "lt_8" :: Sample
+lt_9__Sample = Sample "lt_9" :: Sample
+lt_10__Sample = Sample "lt_10" :: Sample
+lt_11__Sample = Sample "lt_11" :: Sample
+lt_12__Sample = Sample "lt_12" :: Sample
+lt_13__Sample = Sample "lt_13" :: Sample
+lt_14__Sample = Sample "lt_14" :: Sample
+lt_15__Sample = Sample "lt_15" :: Sample
+amencutup_0__Sample = Sample "amencutup_0" :: Sample
+amencutup_1__Sample = Sample "amencutup_1" :: Sample
+amencutup_2__Sample = Sample "amencutup_2" :: Sample
+amencutup_3__Sample = Sample "amencutup_3" :: Sample
+amencutup_4__Sample = Sample "amencutup_4" :: Sample
+amencutup_5__Sample = Sample "amencutup_5" :: Sample
+amencutup_6__Sample = Sample "amencutup_6" :: Sample
+amencutup_7__Sample = Sample "amencutup_7" :: Sample
+amencutup_8__Sample = Sample "amencutup_8" :: Sample
+amencutup_9__Sample = Sample "amencutup_9" :: Sample
+amencutup_10__Sample = Sample "amencutup_10" :: Sample
+amencutup_11__Sample = Sample "amencutup_11" :: Sample
+amencutup_12__Sample = Sample "amencutup_12" :: Sample
+amencutup_13__Sample = Sample "amencutup_13" :: Sample
+amencutup_14__Sample = Sample "amencutup_14" :: Sample
+amencutup_15__Sample = Sample "amencutup_15" :: Sample
+amencutup_16__Sample = Sample "amencutup_16" :: Sample
+amencutup_17__Sample = Sample "amencutup_17" :: Sample
+amencutup_18__Sample = Sample "amencutup_18" :: Sample
+amencutup_19__Sample = Sample "amencutup_19" :: Sample
+amencutup_20__Sample = Sample "amencutup_20" :: Sample
+amencutup_21__Sample = Sample "amencutup_21" :: Sample
+amencutup_22__Sample = Sample "amencutup_22" :: Sample
+amencutup_23__Sample = Sample "amencutup_23" :: Sample
+amencutup_24__Sample = Sample "amencutup_24" :: Sample
+amencutup_25__Sample = Sample "amencutup_25" :: Sample
+amencutup_26__Sample = Sample "amencutup_26" :: Sample
+amencutup_27__Sample = Sample "amencutup_27" :: Sample
+amencutup_28__Sample = Sample "amencutup_28" :: Sample
+amencutup_29__Sample = Sample "amencutup_29" :: Sample
+amencutup_30__Sample = Sample "amencutup_30" :: Sample
+amencutup_31__Sample = Sample "amencutup_31" :: Sample
+drum_0__Sample = Sample "drum_0" :: Sample
+drum_1__Sample = Sample "drum_1" :: Sample
+drum_2__Sample = Sample "drum_2" :: Sample
+drum_3__Sample = Sample "drum_3" :: Sample
+drum_4__Sample = Sample "drum_4" :: Sample
+drum_5__Sample = Sample "drum_5" :: Sample
+coins_0__Sample = Sample "coins_0" :: Sample
+industrial_0__Sample = Sample "industrial_0" :: Sample
+industrial_1__Sample = Sample "industrial_1" :: Sample
+industrial_2__Sample = Sample "industrial_2" :: Sample
+industrial_3__Sample = Sample "industrial_3" :: Sample
+industrial_4__Sample = Sample "industrial_4" :: Sample
+industrial_5__Sample = Sample "industrial_5" :: Sample
+industrial_6__Sample = Sample "industrial_6" :: Sample
+industrial_7__Sample = Sample "industrial_7" :: Sample
+industrial_8__Sample = Sample "industrial_8" :: Sample
+industrial_9__Sample = Sample "industrial_9" :: Sample
+industrial_10__Sample = Sample "industrial_10" :: Sample
+industrial_11__Sample = Sample "industrial_11" :: Sample
+industrial_12__Sample = Sample "industrial_12" :: Sample
+industrial_13__Sample = Sample "industrial_13" :: Sample
+industrial_14__Sample = Sample "industrial_14" :: Sample
+industrial_15__Sample = Sample "industrial_15" :: Sample
+industrial_16__Sample = Sample "industrial_16" :: Sample
+industrial_17__Sample = Sample "industrial_17" :: Sample
+industrial_18__Sample = Sample "industrial_18" :: Sample
+industrial_19__Sample = Sample "industrial_19" :: Sample
+industrial_20__Sample = Sample "industrial_20" :: Sample
+industrial_21__Sample = Sample "industrial_21" :: Sample
+industrial_22__Sample = Sample "industrial_22" :: Sample
+industrial_23__Sample = Sample "industrial_23" :: Sample
+industrial_24__Sample = Sample "industrial_24" :: Sample
+industrial_25__Sample = Sample "industrial_25" :: Sample
+industrial_26__Sample = Sample "industrial_26" :: Sample
+industrial_27__Sample = Sample "industrial_27" :: Sample
+industrial_28__Sample = Sample "industrial_28" :: Sample
+industrial_29__Sample = Sample "industrial_29" :: Sample
+industrial_30__Sample = Sample "industrial_30" :: Sample
+industrial_31__Sample = Sample "industrial_31" :: Sample
+tink_0__Sample = Sample "tink_0" :: Sample
+tink_1__Sample = Sample "tink_1" :: Sample
+tink_2__Sample = Sample "tink_2" :: Sample
+tink_3__Sample = Sample "tink_3" :: Sample
+tink_4__Sample = Sample "tink_4" :: Sample
+co_0__Sample = Sample "co_0" :: Sample
+co_1__Sample = Sample "co_1" :: Sample
+co_2__Sample = Sample "co_2" :: Sample
+co_3__Sample = Sample "co_3" :: Sample
+fest_0__Sample = Sample "fest_0" :: Sample
+feelfx_0__Sample = Sample "feelfx_0" :: Sample
+feelfx_1__Sample = Sample "feelfx_1" :: Sample
+feelfx_2__Sample = Sample "feelfx_2" :: Sample
+feelfx_3__Sample = Sample "feelfx_3" :: Sample
+feelfx_4__Sample = Sample "feelfx_4" :: Sample
+feelfx_5__Sample = Sample "feelfx_5" :: Sample
+feelfx_6__Sample = Sample "feelfx_6" :: Sample
+feelfx_7__Sample = Sample "feelfx_7" :: Sample
+x_808cy_0__Sample = Sample "x_808cy_0" :: Sample
+x_808cy_1__Sample = Sample "x_808cy_1" :: Sample
+x_808cy_2__Sample = Sample "x_808cy_2" :: Sample
+x_808cy_3__Sample = Sample "x_808cy_3" :: Sample
+x_808cy_4__Sample = Sample "x_808cy_4" :: Sample
+x_808cy_5__Sample = Sample "x_808cy_5" :: Sample
+x_808cy_6__Sample = Sample "x_808cy_6" :: Sample
+x_808cy_7__Sample = Sample "x_808cy_7" :: Sample
+x_808cy_8__Sample = Sample "x_808cy_8" :: Sample
+x_808cy_9__Sample = Sample "x_808cy_9" :: Sample
+x_808cy_10__Sample = Sample "x_808cy_10" :: Sample
+x_808cy_11__Sample = Sample "x_808cy_11" :: Sample
+x_808cy_12__Sample = Sample "x_808cy_12" :: Sample
+x_808cy_13__Sample = Sample "x_808cy_13" :: Sample
+x_808cy_14__Sample = Sample "x_808cy_14" :: Sample
+x_808cy_15__Sample = Sample "x_808cy_15" :: Sample
+x_808cy_16__Sample = Sample "x_808cy_16" :: Sample
+x_808cy_17__Sample = Sample "x_808cy_17" :: Sample
+x_808cy_18__Sample = Sample "x_808cy_18" :: Sample
+x_808cy_19__Sample = Sample "x_808cy_19" :: Sample
+x_808cy_20__Sample = Sample "x_808cy_20" :: Sample
+x_808cy_21__Sample = Sample "x_808cy_21" :: Sample
+x_808cy_22__Sample = Sample "x_808cy_22" :: Sample
+x_808cy_23__Sample = Sample "x_808cy_23" :: Sample
+x_808cy_24__Sample = Sample "x_808cy_24" :: Sample
+world_0__Sample = Sample "world_0" :: Sample
+world_1__Sample = Sample "world_1" :: Sample
+world_2__Sample = Sample "world_2" :: Sample
+f_0__Sample = Sample "f_0" :: Sample
+numbers_0__Sample = Sample "numbers_0" :: Sample
+numbers_1__Sample = Sample "numbers_1" :: Sample
+numbers_2__Sample = Sample "numbers_2" :: Sample
+numbers_3__Sample = Sample "numbers_3" :: Sample
+numbers_4__Sample = Sample "numbers_4" :: Sample
+numbers_5__Sample = Sample "numbers_5" :: Sample
+numbers_6__Sample = Sample "numbers_6" :: Sample
+numbers_7__Sample = Sample "numbers_7" :: Sample
+numbers_8__Sample = Sample "numbers_8" :: Sample
+d_0__Sample = Sample "d_0" :: Sample
+d_1__Sample = Sample "d_1" :: Sample
+d_2__Sample = Sample "d_2" :: Sample
+d_3__Sample = Sample "d_3" :: Sample
+padlong_0__Sample = Sample "padlong_0" :: Sample
+sequential_0__Sample = Sample "sequential_0" :: Sample
+sequential_1__Sample = Sample "sequential_1" :: Sample
+sequential_2__Sample = Sample "sequential_2" :: Sample
+sequential_3__Sample = Sample "sequential_3" :: Sample
+sequential_4__Sample = Sample "sequential_4" :: Sample
+sequential_5__Sample = Sample "sequential_5" :: Sample
+sequential_6__Sample = Sample "sequential_6" :: Sample
+sequential_7__Sample = Sample "sequential_7" :: Sample
+stab_0__Sample = Sample "stab_0" :: Sample
+stab_1__Sample = Sample "stab_1" :: Sample
+stab_2__Sample = Sample "stab_2" :: Sample
+stab_3__Sample = Sample "stab_3" :: Sample
+stab_4__Sample = Sample "stab_4" :: Sample
+stab_5__Sample = Sample "stab_5" :: Sample
+stab_6__Sample = Sample "stab_6" :: Sample
+stab_7__Sample = Sample "stab_7" :: Sample
+stab_8__Sample = Sample "stab_8" :: Sample
+stab_9__Sample = Sample "stab_9" :: Sample
+stab_10__Sample = Sample "stab_10" :: Sample
+stab_11__Sample = Sample "stab_11" :: Sample
+stab_12__Sample = Sample "stab_12" :: Sample
+stab_13__Sample = Sample "stab_13" :: Sample
+stab_14__Sample = Sample "stab_14" :: Sample
+stab_15__Sample = Sample "stab_15" :: Sample
+stab_16__Sample = Sample "stab_16" :: Sample
+stab_17__Sample = Sample "stab_17" :: Sample
+stab_18__Sample = Sample "stab_18" :: Sample
+stab_19__Sample = Sample "stab_19" :: Sample
+stab_20__Sample = Sample "stab_20" :: Sample
+stab_21__Sample = Sample "stab_21" :: Sample
+stab_22__Sample = Sample "stab_22" :: Sample
+electro1_0__Sample = Sample "electro1_0" :: Sample
+electro1_1__Sample = Sample "electro1_1" :: Sample
+electro1_2__Sample = Sample "electro1_2" :: Sample
+electro1_3__Sample = Sample "electro1_3" :: Sample
+electro1_4__Sample = Sample "electro1_4" :: Sample
+electro1_5__Sample = Sample "electro1_5" :: Sample
+electro1_6__Sample = Sample "electro1_6" :: Sample
+electro1_7__Sample = Sample "electro1_7" :: Sample
+electro1_8__Sample = Sample "electro1_8" :: Sample
+electro1_9__Sample = Sample "electro1_9" :: Sample
+electro1_10__Sample = Sample "electro1_10" :: Sample
+electro1_11__Sample = Sample "electro1_11" :: Sample
+electro1_12__Sample = Sample "electro1_12" :: Sample
+ifdrums_0__Sample = Sample "ifdrums_0" :: Sample
+ifdrums_1__Sample = Sample "ifdrums_1" :: Sample
+ifdrums_2__Sample = Sample "ifdrums_2" :: Sample
+invaders_0__Sample = Sample "invaders_0" :: Sample
+invaders_1__Sample = Sample "invaders_1" :: Sample
+invaders_2__Sample = Sample "invaders_2" :: Sample
+invaders_3__Sample = Sample "invaders_3" :: Sample
+invaders_4__Sample = Sample "invaders_4" :: Sample
+invaders_5__Sample = Sample "invaders_5" :: Sample
+invaders_6__Sample = Sample "invaders_6" :: Sample
+invaders_7__Sample = Sample "invaders_7" :: Sample
+invaders_8__Sample = Sample "invaders_8" :: Sample
+invaders_9__Sample = Sample "invaders_9" :: Sample
+invaders_10__Sample = Sample "invaders_10" :: Sample
+invaders_11__Sample = Sample "invaders_11" :: Sample
+invaders_12__Sample = Sample "invaders_12" :: Sample
+invaders_13__Sample = Sample "invaders_13" :: Sample
+invaders_14__Sample = Sample "invaders_14" :: Sample
+invaders_15__Sample = Sample "invaders_15" :: Sample
+invaders_16__Sample = Sample "invaders_16" :: Sample
+invaders_17__Sample = Sample "invaders_17" :: Sample
+dist_0__Sample = Sample "dist_0" :: Sample
+dist_1__Sample = Sample "dist_1" :: Sample
+dist_2__Sample = Sample "dist_2" :: Sample
+dist_3__Sample = Sample "dist_3" :: Sample
+dist_4__Sample = Sample "dist_4" :: Sample
+dist_5__Sample = Sample "dist_5" :: Sample
+dist_6__Sample = Sample "dist_6" :: Sample
+dist_7__Sample = Sample "dist_7" :: Sample
+dist_8__Sample = Sample "dist_8" :: Sample
+dist_9__Sample = Sample "dist_9" :: Sample
+dist_10__Sample = Sample "dist_10" :: Sample
+dist_11__Sample = Sample "dist_11" :: Sample
+dist_12__Sample = Sample "dist_12" :: Sample
+dist_13__Sample = Sample "dist_13" :: Sample
+dist_14__Sample = Sample "dist_14" :: Sample
+dist_15__Sample = Sample "dist_15" :: Sample
+sundance_0__Sample = Sample "sundance_0" :: Sample
+sundance_1__Sample = Sample "sundance_1" :: Sample
+sundance_2__Sample = Sample "sundance_2" :: Sample
+sundance_3__Sample = Sample "sundance_3" :: Sample
+sundance_4__Sample = Sample "sundance_4" :: Sample
+sundance_5__Sample = Sample "sundance_5" :: Sample
+speech_0__Sample = Sample "speech_0" :: Sample
+speech_1__Sample = Sample "speech_1" :: Sample
+speech_2__Sample = Sample "speech_2" :: Sample
+speech_3__Sample = Sample "speech_3" :: Sample
+speech_4__Sample = Sample "speech_4" :: Sample
+speech_5__Sample = Sample "speech_5" :: Sample
+speech_6__Sample = Sample "speech_6" :: Sample
+toys_0__Sample = Sample "toys_0" :: Sample
+toys_1__Sample = Sample "toys_1" :: Sample
+toys_2__Sample = Sample "toys_2" :: Sample
+toys_3__Sample = Sample "toys_3" :: Sample
+toys_4__Sample = Sample "toys_4" :: Sample
+toys_5__Sample = Sample "toys_5" :: Sample
+toys_6__Sample = Sample "toys_6" :: Sample
+toys_7__Sample = Sample "toys_7" :: Sample
+toys_8__Sample = Sample "toys_8" :: Sample
+toys_9__Sample = Sample "toys_9" :: Sample
+toys_10__Sample = Sample "toys_10" :: Sample
+toys_11__Sample = Sample "toys_11" :: Sample
+toys_12__Sample = Sample "toys_12" :: Sample
+bass0_0__Sample = Sample "bass0_0" :: Sample
+bass0_1__Sample = Sample "bass0_1" :: Sample
+bass0_2__Sample = Sample "bass0_2" :: Sample
+realclaps_0__Sample = Sample "realclaps_0" :: Sample
+realclaps_1__Sample = Sample "realclaps_1" :: Sample
+realclaps_2__Sample = Sample "realclaps_2" :: Sample
+realclaps_3__Sample = Sample "realclaps_3" :: Sample
+dorkbot_0__Sample = Sample "dorkbot_0" :: Sample
+dorkbot_1__Sample = Sample "dorkbot_1" :: Sample
+arpy_0__Sample = Sample "arpy_0" :: Sample
+arpy_1__Sample = Sample "arpy_1" :: Sample
+arpy_2__Sample = Sample "arpy_2" :: Sample
+arpy_3__Sample = Sample "arpy_3" :: Sample
+arpy_4__Sample = Sample "arpy_4" :: Sample
+arpy_5__Sample = Sample "arpy_5" :: Sample
+arpy_6__Sample = Sample "arpy_6" :: Sample
+arpy_7__Sample = Sample "arpy_7" :: Sample
+arpy_8__Sample = Sample "arpy_8" :: Sample
+arpy_9__Sample = Sample "arpy_9" :: Sample
+arpy_10__Sample = Sample "arpy_10" :: Sample
+fire_0__Sample = Sample "fire_0" :: Sample
+hoover_0__Sample = Sample "hoover_0" :: Sample
+hoover_1__Sample = Sample "hoover_1" :: Sample
+hoover_2__Sample = Sample "hoover_2" :: Sample
+hoover_3__Sample = Sample "hoover_3" :: Sample
+hoover_4__Sample = Sample "hoover_4" :: Sample
+hoover_5__Sample = Sample "hoover_5" :: Sample
+breath_0__Sample = Sample "breath_0" :: Sample
+rave_0__Sample = Sample "rave_0" :: Sample
+rave_1__Sample = Sample "rave_1" :: Sample
+rave_2__Sample = Sample "rave_2" :: Sample
+rave_3__Sample = Sample "rave_3" :: Sample
+rave_4__Sample = Sample "rave_4" :: Sample
+rave_5__Sample = Sample "rave_5" :: Sample
+rave_6__Sample = Sample "rave_6" :: Sample
+rave_7__Sample = Sample "rave_7" :: Sample
+bottle_0__Sample = Sample "bottle_0" :: Sample
+bottle_1__Sample = Sample "bottle_1" :: Sample
+bottle_2__Sample = Sample "bottle_2" :: Sample
+bottle_3__Sample = Sample "bottle_3" :: Sample
+bottle_4__Sample = Sample "bottle_4" :: Sample
+bottle_5__Sample = Sample "bottle_5" :: Sample
+bottle_6__Sample = Sample "bottle_6" :: Sample
+bottle_7__Sample = Sample "bottle_7" :: Sample
+bottle_8__Sample = Sample "bottle_8" :: Sample
+bottle_9__Sample = Sample "bottle_9" :: Sample
+bottle_10__Sample = Sample "bottle_10" :: Sample
+bottle_11__Sample = Sample "bottle_11" :: Sample
+bottle_12__Sample = Sample "bottle_12" :: Sample
+east_0__Sample = Sample "east_0" :: Sample
+east_1__Sample = Sample "east_1" :: Sample
+east_2__Sample = Sample "east_2" :: Sample
+east_3__Sample = Sample "east_3" :: Sample
+east_4__Sample = Sample "east_4" :: Sample
+east_5__Sample = Sample "east_5" :: Sample
+east_6__Sample = Sample "east_6" :: Sample
+east_7__Sample = Sample "east_7" :: Sample
+east_8__Sample = Sample "east_8" :: Sample
+linnhats_0__Sample = Sample "linnhats_0" :: Sample
+linnhats_1__Sample = Sample "linnhats_1" :: Sample
+linnhats_2__Sample = Sample "linnhats_2" :: Sample
+linnhats_3__Sample = Sample "linnhats_3" :: Sample
+linnhats_4__Sample = Sample "linnhats_4" :: Sample
+linnhats_5__Sample = Sample "linnhats_5" :: Sample
+speedupdown_0__Sample = Sample "speedupdown_0" :: Sample
+speedupdown_1__Sample = Sample "speedupdown_1" :: Sample
+speedupdown_2__Sample = Sample "speedupdown_2" :: Sample
+speedupdown_3__Sample = Sample "speedupdown_3" :: Sample
+speedupdown_4__Sample = Sample "speedupdown_4" :: Sample
+speedupdown_5__Sample = Sample "speedupdown_5" :: Sample
+speedupdown_6__Sample = Sample "speedupdown_6" :: Sample
+speedupdown_7__Sample = Sample "speedupdown_7" :: Sample
+speedupdown_8__Sample = Sample "speedupdown_8" :: Sample
+cosmicg_0__Sample = Sample "cosmicg_0" :: Sample
+cosmicg_1__Sample = Sample "cosmicg_1" :: Sample
+cosmicg_2__Sample = Sample "cosmicg_2" :: Sample
+cosmicg_3__Sample = Sample "cosmicg_3" :: Sample
+cosmicg_4__Sample = Sample "cosmicg_4" :: Sample
+cosmicg_5__Sample = Sample "cosmicg_5" :: Sample
+cosmicg_6__Sample = Sample "cosmicg_6" :: Sample
+cosmicg_7__Sample = Sample "cosmicg_7" :: Sample
+cosmicg_8__Sample = Sample "cosmicg_8" :: Sample
+cosmicg_9__Sample = Sample "cosmicg_9" :: Sample
+cosmicg_10__Sample = Sample "cosmicg_10" :: Sample
+cosmicg_11__Sample = Sample "cosmicg_11" :: Sample
+cosmicg_12__Sample = Sample "cosmicg_12" :: Sample
+cosmicg_13__Sample = Sample "cosmicg_13" :: Sample
+cosmicg_14__Sample = Sample "cosmicg_14" :: Sample
+jvbass_0__Sample = Sample "jvbass_0" :: Sample
+jvbass_1__Sample = Sample "jvbass_1" :: Sample
+jvbass_2__Sample = Sample "jvbass_2" :: Sample
+jvbass_3__Sample = Sample "jvbass_3" :: Sample
+jvbass_4__Sample = Sample "jvbass_4" :: Sample
+jvbass_5__Sample = Sample "jvbass_5" :: Sample
+jvbass_6__Sample = Sample "jvbass_6" :: Sample
+jvbass_7__Sample = Sample "jvbass_7" :: Sample
+jvbass_8__Sample = Sample "jvbass_8" :: Sample
+jvbass_9__Sample = Sample "jvbass_9" :: Sample
+jvbass_10__Sample = Sample "jvbass_10" :: Sample
+jvbass_11__Sample = Sample "jvbass_11" :: Sample
+jvbass_12__Sample = Sample "jvbass_12" :: Sample
+mash_0__Sample = Sample "mash_0" :: Sample
+mash_1__Sample = Sample "mash_1" :: Sample
+feel_0__Sample = Sample "feel_0" :: Sample
+feel_1__Sample = Sample "feel_1" :: Sample
+feel_2__Sample = Sample "feel_2" :: Sample
+feel_3__Sample = Sample "feel_3" :: Sample
+feel_4__Sample = Sample "feel_4" :: Sample
+feel_5__Sample = Sample "feel_5" :: Sample
+feel_6__Sample = Sample "feel_6" :: Sample
+short_0__Sample = Sample "short_0" :: Sample
+short_1__Sample = Sample "short_1" :: Sample
+short_2__Sample = Sample "short_2" :: Sample
+short_3__Sample = Sample "short_3" :: Sample
+short_4__Sample = Sample "short_4" :: Sample
+incoming_0__Sample = Sample "incoming_0" :: Sample
+incoming_1__Sample = Sample "incoming_1" :: Sample
+incoming_2__Sample = Sample "incoming_2" :: Sample
+incoming_3__Sample = Sample "incoming_3" :: Sample
+incoming_4__Sample = Sample "incoming_4" :: Sample
+incoming_5__Sample = Sample "incoming_5" :: Sample
+incoming_6__Sample = Sample "incoming_6" :: Sample
+incoming_7__Sample = Sample "incoming_7" :: Sample
+flick_0__Sample = Sample "flick_0" :: Sample
+flick_1__Sample = Sample "flick_1" :: Sample
+flick_2__Sample = Sample "flick_2" :: Sample
+flick_3__Sample = Sample "flick_3" :: Sample
+flick_4__Sample = Sample "flick_4" :: Sample
+flick_5__Sample = Sample "flick_5" :: Sample
+flick_6__Sample = Sample "flick_6" :: Sample
+flick_7__Sample = Sample "flick_7" :: Sample
+flick_8__Sample = Sample "flick_8" :: Sample
+flick_9__Sample = Sample "flick_9" :: Sample
+flick_10__Sample = Sample "flick_10" :: Sample
+flick_11__Sample = Sample "flick_11" :: Sample
+flick_12__Sample = Sample "flick_12" :: Sample
+flick_13__Sample = Sample "flick_13" :: Sample
+flick_14__Sample = Sample "flick_14" :: Sample
+flick_15__Sample = Sample "flick_15" :: Sample
+flick_16__Sample = Sample "flick_16" :: Sample
+reverbkick_0__Sample = Sample "reverbkick_0" :: Sample
+bass2_0__Sample = Sample "bass2_0" :: Sample
+bass2_1__Sample = Sample "bass2_1" :: Sample
+bass2_2__Sample = Sample "bass2_2" :: Sample
+bass2_3__Sample = Sample "bass2_3" :: Sample
+bass2_4__Sample = Sample "bass2_4" :: Sample
+baa_0__Sample = Sample "baa_0" :: Sample
+baa_1__Sample = Sample "baa_1" :: Sample
+baa_2__Sample = Sample "baa_2" :: Sample
+baa_3__Sample = Sample "baa_3" :: Sample
+baa_4__Sample = Sample "baa_4" :: Sample
+baa_5__Sample = Sample "baa_5" :: Sample
+baa_6__Sample = Sample "baa_6" :: Sample
+fm_0__Sample = Sample "fm_0" :: Sample
+fm_1__Sample = Sample "fm_1" :: Sample
+fm_2__Sample = Sample "fm_2" :: Sample
+fm_3__Sample = Sample "fm_3" :: Sample
+fm_4__Sample = Sample "fm_4" :: Sample
+fm_5__Sample = Sample "fm_5" :: Sample
+fm_6__Sample = Sample "fm_6" :: Sample
+fm_7__Sample = Sample "fm_7" :: Sample
+fm_8__Sample = Sample "fm_8" :: Sample
+fm_9__Sample = Sample "fm_9" :: Sample
+fm_10__Sample = Sample "fm_10" :: Sample
+fm_11__Sample = Sample "fm_11" :: Sample
+fm_12__Sample = Sample "fm_12" :: Sample
+fm_13__Sample = Sample "fm_13" :: Sample
+fm_14__Sample = Sample "fm_14" :: Sample
+fm_15__Sample = Sample "fm_15" :: Sample
+fm_16__Sample = Sample "fm_16" :: Sample
+click_0__Sample = Sample "click_0" :: Sample
+click_1__Sample = Sample "click_1" :: Sample
+click_2__Sample = Sample "click_2" :: Sample
+click_3__Sample = Sample "click_3" :: Sample
+control_0__Sample = Sample "control_0" :: Sample
+control_1__Sample = Sample "control_1" :: Sample
+peri_0__Sample = Sample "peri_0" :: Sample
+peri_1__Sample = Sample "peri_1" :: Sample
+peri_2__Sample = Sample "peri_2" :: Sample
+peri_3__Sample = Sample "peri_3" :: Sample
+peri_4__Sample = Sample "peri_4" :: Sample
+peri_5__Sample = Sample "peri_5" :: Sample
+peri_6__Sample = Sample "peri_6" :: Sample
+peri_7__Sample = Sample "peri_7" :: Sample
+peri_8__Sample = Sample "peri_8" :: Sample
+peri_9__Sample = Sample "peri_9" :: Sample
+peri_10__Sample = Sample "peri_10" :: Sample
+peri_11__Sample = Sample "peri_11" :: Sample
+peri_12__Sample = Sample "peri_12" :: Sample
+peri_13__Sample = Sample "peri_13" :: Sample
+peri_14__Sample = Sample "peri_14" :: Sample
+procshort_0__Sample = Sample "procshort_0" :: Sample
+procshort_1__Sample = Sample "procshort_1" :: Sample
+procshort_2__Sample = Sample "procshort_2" :: Sample
+procshort_3__Sample = Sample "procshort_3" :: Sample
+procshort_4__Sample = Sample "procshort_4" :: Sample
+procshort_5__Sample = Sample "procshort_5" :: Sample
+procshort_6__Sample = Sample "procshort_6" :: Sample
+procshort_7__Sample = Sample "procshort_7" :: Sample
+hand_0__Sample = Sample "hand_0" :: Sample
+hand_1__Sample = Sample "hand_1" :: Sample
+hand_2__Sample = Sample "hand_2" :: Sample
+hand_3__Sample = Sample "hand_3" :: Sample
+hand_4__Sample = Sample "hand_4" :: Sample
+hand_5__Sample = Sample "hand_5" :: Sample
+hand_6__Sample = Sample "hand_6" :: Sample
+hand_7__Sample = Sample "hand_7" :: Sample
+hand_8__Sample = Sample "hand_8" :: Sample
+hand_9__Sample = Sample "hand_9" :: Sample
+hand_10__Sample = Sample "hand_10" :: Sample
+hand_11__Sample = Sample "hand_11" :: Sample
+hand_12__Sample = Sample "hand_12" :: Sample
+hand_13__Sample = Sample "hand_13" :: Sample
+hand_14__Sample = Sample "hand_14" :: Sample
+hand_15__Sample = Sample "hand_15" :: Sample
+hand_16__Sample = Sample "hand_16" :: Sample
+future_0__Sample = Sample "future_0" :: Sample
+future_1__Sample = Sample "future_1" :: Sample
+future_2__Sample = Sample "future_2" :: Sample
+future_3__Sample = Sample "future_3" :: Sample
+future_4__Sample = Sample "future_4" :: Sample
+future_5__Sample = Sample "future_5" :: Sample
+future_6__Sample = Sample "future_6" :: Sample
+future_7__Sample = Sample "future_7" :: Sample
+future_8__Sample = Sample "future_8" :: Sample
+future_9__Sample = Sample "future_9" :: Sample
+future_10__Sample = Sample "future_10" :: Sample
+future_11__Sample = Sample "future_11" :: Sample
+future_12__Sample = Sample "future_12" :: Sample
+future_13__Sample = Sample "future_13" :: Sample
+future_14__Sample = Sample "future_14" :: Sample
+future_15__Sample = Sample "future_15" :: Sample
+future_16__Sample = Sample "future_16" :: Sample
+hh_0__Sample = Sample "hh_0" :: Sample
+hh_1__Sample = Sample "hh_1" :: Sample
+hh_2__Sample = Sample "hh_2" :: Sample
+hh_3__Sample = Sample "hh_3" :: Sample
+hh_4__Sample = Sample "hh_4" :: Sample
+hh_5__Sample = Sample "hh_5" :: Sample
+hh_6__Sample = Sample "hh_6" :: Sample
+hh_7__Sample = Sample "hh_7" :: Sample
+hh_8__Sample = Sample "hh_8" :: Sample
+hh_9__Sample = Sample "hh_9" :: Sample
+hh_10__Sample = Sample "hh_10" :: Sample
+hh_11__Sample = Sample "hh_11" :: Sample
+hh_12__Sample = Sample "hh_12" :: Sample
+x_808ht_0__Sample = Sample "x_808ht_0" :: Sample
+x_808ht_1__Sample = Sample "x_808ht_1" :: Sample
+x_808ht_2__Sample = Sample "x_808ht_2" :: Sample
+x_808ht_3__Sample = Sample "x_808ht_3" :: Sample
+x_808ht_4__Sample = Sample "x_808ht_4" :: Sample
+db_0__Sample = Sample "db_0" :: Sample
+db_1__Sample = Sample "db_1" :: Sample
+db_2__Sample = Sample "db_2" :: Sample
+db_3__Sample = Sample "db_3" :: Sample
+db_4__Sample = Sample "db_4" :: Sample
+db_5__Sample = Sample "db_5" :: Sample
+db_6__Sample = Sample "db_6" :: Sample
+db_7__Sample = Sample "db_7" :: Sample
+db_8__Sample = Sample "db_8" :: Sample
+db_9__Sample = Sample "db_9" :: Sample
+db_10__Sample = Sample "db_10" :: Sample
+db_11__Sample = Sample "db_11" :: Sample
+db_12__Sample = Sample "db_12" :: Sample
 
 nameToSampleO :: Object Sample
 nameToSampleO = Object.fromFoldable nameToSample
