@@ -20,6 +20,7 @@ module WAGSI.Plumbing.Tidal
   , i_
   , x_
   ---
+  , lvg
   , lfn
   , lfb
   , lfl
@@ -62,7 +63,7 @@ import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Generic.Rep (class Generic)
 import Data.Int (toNumber)
-import Data.Lens (Lens', Prism', _1, over, prism')
+import Data.Lens (Prism', Lens', _1, over, prism')
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.List (List(..), fold, foldMap, foldl, (:))
@@ -97,7 +98,7 @@ import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (speaker, gain, playBuf)
 import WAGS.Graph.AudioUnit (OnOff(..))
 import WAGS.Graph.Parameter (ff)
-import WAGS.Lib.BufferPool (AScoredBufferPool, Buffy(..), makeScoredBufferPool)
+import WAGS.Lib.BufferPool (AScoredBufferPool, Buffy(..), CfScoredBufferPool, makeScoredBufferPool)
 import WAGS.Lib.Cofree (tails)
 import WAGS.Lib.Learn (FullSceneBuilder, usingc)
 import WAGS.Lib.Score (CfNoteStream')
@@ -143,13 +144,15 @@ derive instance newtypeNextCycle :: Newtype NextCycle _
 impatient :: NextCycle -> NextCycle
 impatient = over (unto NextCycle <<< prop (Proxy :: _ "force")) (const true)
 
-newtype Globals = Globals Unit
+newtype Globals = Globals { gain :: { clockTime :: Number } -> Number }
+
+derive instance newtypeGlobals :: Newtype Globals _
 
 newtype Voice = Voice { globals :: Globals, next :: NextCycle }
 
 derive instance newtypeVoice :: Newtype Voice _
 
-type EWF (v :: Type) = (earth :: v) --, wind :: v, fire :: v)
+type EWF (v :: Type) = (earth :: v, wind :: v, fire :: v)
 
 newtype TheFuture = TheFuture { | EWF Voice }
 
@@ -168,8 +171,9 @@ make cl rr = TheFuture $ hmapWithIndex (ZipProps z) (hmap (\(_ :: (CycleLength -
   z = Record.merge rr openVoices :: { | EWF (CycleLength -> Voice) }
 
 plainly :: forall f. Functor f => f NextCycle -> f Voice
-plainly = map (Voice <<< { globals: Globals unit, next: _ })
+plainly = map (Voice <<< { globals: Globals { gain: const 1.0 }, next: _ })
 
+s :: String -> CycleLength -> Voice
 s = plainly <<< parse
 
 --- @@ ---
@@ -218,6 +222,9 @@ instance showNoteInFlattenedTime :: Show note => Show (NoteInFlattenedTime note)
 derive instance functorNoteInFlattenedTime :: Functor NoteInFlattenedTime
 
 --- lenses
+lvg :: Lens' Voice ({ clockTime :: Number } -> Number)
+lvg = unto Voice <<< prop (Proxy :: _ "globals") <<< unto Globals <<< prop (Proxy :: _ "gain")
+
 lfn :: forall note. Lens' (NoteInFlattenedTime note) note
 lfn = unto NoteInFlattenedTime <<< prop (Proxy :: _ "note")
 
@@ -532,7 +539,7 @@ emptyPool = makeScoredBufferPool
 
 openVoice :: Voice
 openVoice = Voice
-  { globals: Globals unit
+  { globals: Globals { gain: const 0.0 }
   , next: asScore false (pure intentionalSilenceForInternalUseOnly)
   }
 
@@ -636,6 +643,8 @@ instance zipProps ::
   MappingWithIndex (ZipProps fns) (Proxy sym) a b where
   mappingWithIndex (ZipProps fns) prop = Record.get prop fns
 
+futureMaker = hmap (\(_ :: Unit) -> { future: _, globals: _ } :: CfScoredBufferPool Next NBuf RBuf -> Globals -> { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }) (mempty :: { | EWF Unit })
+
 tidal :: FullSceneBuilder (theFuture :: TheFuture) (buffers :: { | S.Samples BrowserAudioBuffer }) Unit
 tidal = usingc
   (thePresent wag <<< downloadFiles)
@@ -651,14 +660,18 @@ tidal = usingc
             } $ { next: _ } $ _.next $ unwrap v
         )
         (unFuture theFuture)
+      myGlobals = hmap
+        ( \(v :: Voice) -> _.globals $ unwrap v
+        )
+        (unFuture theFuture)
       actualized = hmapWithIndex (ZipProps control.buffers) toActualize
-
+      forTemplate = hmapWithIndex (ZipProps (hmapWithIndex (ZipProps futureMaker) actualized)) myGlobals
     in
       { control: { buffers: tails actualized, backToTheFuture: theFuture }
       , scene: speaker
           ( gain 1.0
-              ( fromTemplate (Proxy :: _ "voices") actualized \_ future ->
-                  gain 1.0
+              ( fromTemplate (Proxy :: _ "voices") forTemplate \_ { future, globals } ->
+                  gain ((unwrap globals).gain { clockTime: time })
                     ( fromTemplate (Proxy :: _ "instruments") (extract future) \_ -> case _ of
                         Just
                           ( Buffy
