@@ -53,6 +53,7 @@ import Prelude hiding (between)
 import Control.Alt ((<|>))
 import Control.Comonad (extract)
 import Control.Comonad.Cofree ((:<))
+import Control.Monad.State (evalState, get, put)
 import Data.Array as A
 import Data.Either (Either(..), hush)
 import Data.Filterable (compact, filter, filterMap, maybeBool)
@@ -63,7 +64,7 @@ import Data.Int (toNumber)
 import Data.Lens (Lens', Prism', _1, over, prism')
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
-import Data.List (List(..), fold, (:))
+import Data.List (List(..), fold, foldMap, foldl, (:))
 import Data.List as L
 import Data.List.NonEmpty (sortBy)
 import Data.List.NonEmpty as NEL
@@ -72,7 +73,7 @@ import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.NonEmpty ((:|))
 import Data.Show.Generic (genericShow)
-import Data.String.CodeUnits (fromCharArray)
+import Data.String.CodeUnits (fromCharArray, singleton)
 import Data.Symbol (class IsSymbol)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple.Nested (type (/\))
@@ -90,7 +91,7 @@ import Prim.Row as Row
 import Record as Record
 import Text.Parsing.StringParser (Parser, fail, runParser, try)
 import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, char)
-import Text.Parsing.StringParser.Combinators (between, many, many1, sepBy)
+import Text.Parsing.StringParser.Combinators (between, many, many1, sepBy, sepEndBy)
 import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (speaker, gain, playBuf)
 import WAGS.Graph.AudioUnit (OnOff(..))
@@ -262,19 +263,19 @@ mapmap = map <<< map
 
 ---
 b :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
-b bx by = Branching { nel: NonEmptyList (bx :| L.fromFoldable by) }
+b bx by = Branching { weight: 1.0, nel: NonEmptyList (bx :| L.fromFoldable by) }
 
 b_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
 b_ bx = b bx []
 
 s :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
-s sx sy = Internal { nel: NonEmptyList (sx :| L.fromFoldable sy) }
+s sx sy = Internal { weight: 1.0, nel: NonEmptyList (sx :| L.fromFoldable sy) }
 
 s_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
 s_ sx = s sx []
 
 x :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
-x xx xy = Simultaneous { nel: NonEmptyList (xx :| L.fromFoldable xy) }
+x xx xy = Simultaneous { weight: 1.0, nel: NonEmptyList (xx :| L.fromFoldable xy) }
 
 x_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
 x_ sx = x sx []
@@ -283,6 +284,16 @@ sampleName :: Parser String
 sampleName = map (fromCharArray <<< A.fromFoldable <<< NEL.toList) (many1 $ oneOf [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', '~' ])
 
 ---
+whiteSpace1 :: Parser String
+whiteSpace1 = do
+  cs <- many1 (satisfy \ c -> c == '\n' || c == '\r' || c == ' ' || c == '\t')
+  pure (foldMap singleton cs)
+
+weightP :: Parser Number
+weightP = do
+  _ <- skipSpaces
+  add 1.0 <<< toNumber <<< L.length <$> sepEndBy (char '_') whiteSpace1
+  
 sampleP :: Parser (Maybe Note)
 sampleP = do
   possiblySample <- sampleName
@@ -291,25 +302,29 @@ sampleP = do
     Just foundSample -> pure foundSample
 
 internalcyclePInternal :: Parser (Cycle (Maybe Note))
-internalcyclePInternal = Internal <<< { nel: _ } <$>
-  between (skipSpaces *> char '[' *> skipSpaces) (skipSpaces *> char ']' *> skipSpaces) do
+internalcyclePInternal = Internal  <$> do
+  nel <- between (skipSpaces *> char '[' *> skipSpaces) (skipSpaces *> char ']' *> skipSpaces) do
     pure unit -- breaks recursion
     cyc <- cyclePInternal unit
     case cyc of
       Sequential { nel } -> pure nel
       xx -> pure (pure xx)
+  weight <- weightP
+  pure { nel, weight }
 
 branchingcyclePInternal :: Parser (Cycle (Maybe Note))
-branchingcyclePInternal = Branching <<< { nel: _ } <$>
-  between (skipSpaces *> char '<' *> skipSpaces) (skipSpaces *> char '>' *> skipSpaces) do
+branchingcyclePInternal = Branching <$> do
+  nel <- between (skipSpaces *> char '<' *> skipSpaces) (skipSpaces *> char '>' *> skipSpaces) do
     pure unit -- breaks recursion
     cyc <- cyclePInternal unit
     case cyc of
       Sequential { nel } -> pure nel
       xx -> pure (pure xx)
+  weight <- weightP
+  pure { nel, weight }
 
 simultaneouscyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
-simultaneouscyclePInternal _ = Simultaneous <<< { nel: _ } <$> do
+simultaneouscyclePInternal _ = Simultaneous <<< { weight: 1.0, nel: _ } <$> do
   sep <- sepBy ((fromCharArray <<< A.fromFoldable) <$> many (satisfy (not <<< eq ','))) (string ",")
   case sep of
     Nil -> fail "Lacks comma"
@@ -330,7 +345,7 @@ joinSequential (Sequential { nel: NonEmptyList (aa :| bb) } : cc) = (aa : joinSe
 joinSequential (aa : bb) = aa : joinSequential bb
 
 sequentialcyclePInternal :: Parser (Cycle (Maybe Note))
-sequentialcyclePInternal = Sequential <<< { nel: _ } <$> do
+sequentialcyclePInternal = Sequential <<< { weight: 1.0, nel: _ } <$> do
   skipSpaces
   leadsWith <- try internalcyclePInternal <|> singleSampleP
   skipSpaces
@@ -342,7 +357,8 @@ singleSampleP = SingleNote <$> do
   skipSpaces
   sample <- sampleP
   skipSpaces
-  pure { val: sample }
+  weight <- weightP
+  pure { weight, val: sample }
 
 cyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
 cyclePInternal _ = try branchingcyclePInternal
@@ -358,15 +374,22 @@ cycleP = go <$> cyclePInternal unit
   go (Simultaneous { nel: NonEmptyList (a :| Nil) }) = go a
   go (Sequential { nel: NonEmptyList (a :| Nil) }) = go a
   go (Internal { nel: NonEmptyList (a :| Nil) }) = go a
-  go (Branching { nel }) = Branching { nel: map go nel }
-  go (Simultaneous { nel }) = Simultaneous { nel: map go nel }
-  go (Sequential { nel }) = Sequential { nel: map go nel }
-  go (Internal { nel }) = Internal { nel: map go nel }
+  go (Branching { weight, nel }) = Branching { weight, nel: map go nel }
+  go (Simultaneous { weight, nel }) = Simultaneous { weight, nel: map go nel }
+  go (Sequential { weight, nel }) = Sequential { weight, nel: map go nel }
+  go (Internal { weight, nel }) = Internal { weight, nel: map go nel }
   go (SingleNote note) = SingleNote note
 
 flatMap :: NonEmptyList (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 flatMap (NonEmptyList (aa :| Nil)) = aa
 flatMap (NonEmptyList (aa :| bb : cc)) = join $ aa # map \a' -> flatMap (wrap (bb :| cc)) # map \b' -> a' <> b'
+
+getWeight :: forall a. Cycle a -> Number
+getWeight (Branching { weight }) = weight
+getWeight (Simultaneous { weight }) = weight
+getWeight (Sequential { weight }) = weight
+getWeight (Internal { weight }) = weight
+getWeight (SingleNote { weight }) = weight
 
 cycleToSequence :: CycleLength -> Cycle (Maybe Note) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength, currentOffset: 0.0 }
@@ -385,16 +408,24 @@ cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength
     }
   seq state nel =
     let
-      currentSubdivision = state.currentSubdivision / (toNumber (NEL.length nel))
-    in
-      flatMap $ mapWithIndex
-        ( go
-            <<< { currentSubdivision, currentOffset: _ }
-            <<< add state.currentOffset
-            <<< mul currentSubdivision
-            <<< toNumber
+      allWeights = foldl (+) 0.0 (map getWeight nel)
+      withStateInfo = evalState
+        ( ( traverse \vv -> do
+              i <- get
+              let wt = getWeight vv
+              put $ i + wt
+              pure
+                { currentSubdivision: state.currentSubdivision * wt / allWeights
+                , currentOffset: state.currentOffset + state.currentSubdivision * i / allWeights
+                , vv
+                }
+          ) nel
         )
-        nel
+        0.0
+    in
+      flatMap $ map
+        (\{ currentSubdivision, currentOffset, vv } -> go { currentSubdivision, currentOffset } vv)
+        withStateInfo
 
 unrest :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> List (List (NoteInTime Note))
 unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
@@ -658,7 +689,7 @@ tidal = usingc
                                   let
                                     cs2 x0 x1 y1 t y0 = calcSlope x0 y0 x1 y1 t
                                   in
-                                    cs2 (startTime + duration) (startTime + duration + 0.5) 0.0 time <$> vol
+                                    cs2 (startTime + duration) (startTime + duration + 0.25) 0.0 time <$> vol
                                 else vol
                               )
                               ( playBuf
