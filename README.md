@@ -82,6 +82,10 @@ Wagsi tidal supports the following mini-notation. A big thanks to whoever wrote 
 | `,`    | Play multiple patterns at the same time. | `bassdm hh27 , cr cr cr cr`           |
 | `< >`  | Alternate between patterns.              | `[hh hh hh] [hh27 gab hh27 <gab cr>]` |
 
+## Sounds
+
+A full list is [here](./SOUNDS.md). Enjoy!
+
 ## Not-mini notation
 
 You can also use PureScript terms to create notation. Here is the same example above using PureScript terms.
