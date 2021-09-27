@@ -1,5 +1,6 @@
 module WAGSI.Plumbing.Tidal
-  ( make
+  ( module WAGSI.Plumbing.Cycle
+  , make
   , parse
   , parse'
   , tidal
@@ -9,34 +10,6 @@ module WAGSI.Plumbing.Tidal
   , c2s
   , wag
   , openFuture
-  --
-  , r
-  , kick0
-  , kick1
-  , kick
-  , ss0
-  , ss
-  , snare0
-  , snare
-  , clap0
-  , clap
-  , roll0
-  , roll
-  , hh0
-  , hh
-  , shaker0
-  , shaker
-  , ohh0
-  , ohh
-  , tamb0
-  , tamb
-  , crash0
-  , crash
-  , ride0
-  , ride
-  , Cycle(..)
-  , Note(..)
-  , Sample(..)
   ---
   , b
   , s
@@ -59,13 +32,10 @@ module WAGSI.Plumbing.Tidal
   ---
   , when_
   , prune
-  , flattenCycle
-  , reverse
   , mapmap
   ---
   , cycleP
   , unrest
-  , noteFromSample
   , CycleLength(..)
   , NoteInTime(..)
   , NoteInFlattenedTime(..)
@@ -74,14 +44,11 @@ module WAGSI.Plumbing.Tidal
   , NextCycle(..)
   , RBuf
   , Next
-  , Instruments
-  , Instruments'
-  , Instruments''
   , TheFuture
-  , FoT
   ) where
 
 import Prelude hiding (between)
+import WAGSI.Plumbing.Cycle
 
 import Control.Alt ((<|>))
 import Control.Comonad (extract)
@@ -117,14 +84,14 @@ import Effect.Random (randomInt)
 import FRP.Behavior (Behavior)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
+import Foreign.Object as Object
 import Heterogeneous.Mapping (class MappingWithIndex, hmap, hmapWithIndex)
 import Prim.Row (class Lacks, class Nub, class Union)
 import Prim.Row as Row
 import Record as Record
 import Text.Parsing.StringParser (Parser, fail, runParser, try)
-import Text.Parsing.StringParser.CodePoints (satisfy)
-import Text.Parsing.StringParser.CodeUnits (skipSpaces, string, char)
-import Text.Parsing.StringParser.Combinators (between, many, sepBy)
+import Text.Parsing.StringParser.CodeUnits (satisfy, alphaNum, oneOf, skipSpaces, string, char)
+import Text.Parsing.StringParser.Combinators (between, many, many1, sepBy)
 import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (speaker, gain, playBuf)
 import WAGS.Graph.AudioUnit (OnOff(..))
@@ -137,21 +104,15 @@ import WAGS.Math (calcSlope)
 import WAGS.Run (SceneI(..))
 import WAGS.Template (fromTemplate)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
+import WAGSI.Plumbing.Cycle (Cycle(..), reverse, flattenCycle)
+import WAGSI.Plumbing.Samples (Sample(..), Note(..), FoT)
+import WAGSI.Plumbing.Samples as S
 
 --- @@ ---
 
-type Instruments'' (a :: Type) (r :: Row Type)
-  = (kick0 :: a, sideStick0 :: a, snare0 :: a, clap0 :: a, snareRoll0 :: a, kick1 :: a, closedHH0 :: a, shaker0 :: a, openHH0 :: a, tamb0 :: a, crash0 :: a, ride0 :: a, intentionalSilenceForInternalUseOnly :: a | r)
-
-type Instruments' (a :: Type)
-  = Instruments'' a ()
-
-type Instruments a
-  = { | Instruments' a }
-
 type RBuf
   =
-  { sampleF :: Instruments BrowserAudioBuffer -> BrowserAudioBuffer
+  { sampleF :: { | S.Samples BrowserAudioBuffer } -> BrowserAudioBuffer
   , rateFoT :: FoT
   , volumeFoT :: FoT
   , cycleStartsAt :: Number
@@ -203,31 +164,6 @@ newtype CycleLength = CycleLength Number
 derive instance newtypeCycleLength :: Newtype CycleLength _
 derive instance eqCycleLength :: Eq CycleLength
 derive instance ordCycleLength :: Ord CycleLength
-
-type FoT =
-  { clockTime :: Number
-  , sampleTime :: Number
-  , bigCycleTime :: Number
-  , littleCycleTime :: Number
-  }
-  -> Number
-
-newtype Note = Note
-  { sample :: Sample
-  , rateFoT :: FoT
-  , volumeFoT :: FoT
-  }
-
-derive instance newtypeNote :: Newtype Note _
-derive instance genericNote :: Generic Note _
-instance eqNote :: Eq Note where
-  eq = eq `on` (unwrap >>> _.sample)
-
-instance ordNote :: Ord Note where
-  compare = compare `on` (unwrap >>> _.sample)
-
-instance showNote :: Show Note where
-  show (Note { sample }) = "Note <" <> show sample <> ">"
 
 newtype NoteInTime note = NoteInTime
   { note :: note
@@ -308,196 +244,8 @@ prune = prism' identity <<< maybeBool
 
 ---
 
-data Sample
-  = Kick0
-  | Kick1
-  | SideStick0
-  | Snare0
-  | Clap0
-  | SnareRoll0
-  | ClosedHH0
-  | Shaker0
-  | OpenHH0
-  | Tamb0
-  | Crash0
-  | Ride0
-  | IntentionalSilenceForInternalUseOnly
-
-derive instance genericSample :: Generic Sample _
-derive instance eqSample :: Eq Sample
-derive instance ordSample :: Ord Sample
-instance showSample :: Show Sample where
-  show xx = genericShow xx
-
-data Cycle a
-  = Branching { nel :: NonEmptyList (Cycle a) }
-  | Simultaneous { nel :: NonEmptyList (Cycle a) }
-  | Sequential { nel :: NonEmptyList (Cycle a) }
-  | Internal { nel :: NonEmptyList (Cycle a) }
-  | SingleNote { val :: a }
-
-derive instance genericCycle :: Generic (Cycle a) _
-derive instance eqCycle :: Eq a => Eq (Cycle a)
-derive instance ordCycle :: Ord a => Ord (Cycle a)
-instance showCycle :: Show a => Show (Cycle a) where
-  show xx = genericShow xx
-
-derive instance functorCycle :: Functor Cycle
-
-instance functorWithIndexCycle :: FunctorWithIndex Int Cycle where
-  mapWithIndex f v = (go 0 v).val
-    where
-    go' ff ii nel = let folded = foldl (\axc cyc -> axc <> (pure (go (NEL.last axc).i cyc))) (pure (go ii (NEL.head nel))) (NEL.tail nel) in { i: _.i $ NEL.last folded, val: ff { nel: map _.val folded } }
-    go ii = case _ of
-      Branching { nel } -> go' Branching ii nel
-      Simultaneous { nel } -> go' Simultaneous ii nel
-      Sequential { nel } -> go' Sequential ii nel
-      Internal { nel } -> go' Internal ii nel
-      SingleNote { val } -> { i: ii + 1, val: SingleNote { val: f ii val } }
-
-instance foldableCycle :: Foldable Cycle where
-  foldl fba aa fbb = foldl fba aa (flattenCycle fbb)
-  foldr fab aa fbb = foldr fab aa (flattenCycle fbb)
-  foldMap = foldMapDefaultR
-
-instance traversableCycle :: Traversable Cycle where
-  traverse ff = case _ of
-    Branching { nel } -> Branching <<< { nel: _ } <$> (traverse (traverse ff) nel)
-    Simultaneous { nel } -> Simultaneous <<< { nel: _ } <$> (traverse (traverse ff) nel)
-    Sequential { nel } -> Sequential <<< { nel: _ } <$> (traverse (traverse ff) nel)
-    Internal { nel } -> Internal <<< { nel: _ } <$> (traverse (traverse ff) nel)
-    SingleNote { val } -> SingleNote <<< { val: _ } <$> ff val
-  sequence = sequenceDefault
-
-flattenCycle :: Cycle ~> NonEmptyList
-flattenCycle = case _ of
-  Branching { nel } -> join $ map flattenCycle nel
-  Simultaneous { nel } -> join $ map flattenCycle nel
-  Sequential { nel } -> join $ map flattenCycle nel
-  Internal { nel } -> join $ map flattenCycle nel
-  SingleNote { val } -> pure val
-
 mapmap :: forall f g a b. Functor f => Functor g => (a -> b) -> f (g a) -> f (g b)
 mapmap = map <<< map
-
-reverse :: Cycle ~> Cycle
-reverse l = go l
-  where
-  go' f nel = f { nel: NEL.reverse (map reverse nel) }
-  go = case _ of
-    Branching { nel } -> go' Branching nel
-    Simultaneous { nel } -> go' Simultaneous nel
-    Sequential { nel } -> go' Sequential nel
-    Internal { nel } -> go' Internal nel
-    SingleNote sn -> SingleNote sn
-
-notes :: Array (String /\ Maybe Note)
-notes =
-  over (traversed <<< _2) (Just <<< Note <<< { sample: _, rateFoT: const 1.0, volumeFoT: const 1.0 })
-    [ "kick:0" /\ Kick0
-    , "kick:1" /\ Kick1
-    , "kick" /\ Kick0
-    , "ss:0" /\ SideStick0
-    , "ss" /\ SideStick0
-    , "snare:0" /\ Snare0
-    , "snare" /\ Snare0
-    , "clap:0" /\ Clap0
-    , "clap" /\ Clap0
-    , "roll:0" /\ SnareRoll0
-    , "roll" /\ SnareRoll0
-    , "hh:0" /\ ClosedHH0
-    , "hh" /\ ClosedHH0
-    , "shaker:0" /\ Shaker0
-    , "shaker" /\ Shaker0
-    , "ohh:0" /\ OpenHH0
-    , "ohh" /\ OpenHH0
-    , "tamb:0" /\ Tamb0
-    , "tamb" /\ Tamb0
-    , "crash:0" /\ Crash0
-    , "crash" /\ Crash0
-    , "ride:0" /\ Ride0
-    , "ride" /\ Ride0
-    , "intentionalSilenceForInternalUseOnly" /\ IntentionalSilenceForInternalUseOnly
-    ] <> [ "~" /\ Nothing ]
-
----
-r :: Cycle (Maybe Note)
-r = SingleNote { val: Nothing }
-
-noteFromSample :: Sample -> Cycle (Maybe Note)
-noteFromSample sample = SingleNote { val: Just (Note { sample, rateFoT: const 1.0, volumeFoT: const 1.0 }) }
-
-kick0 :: Cycle (Maybe Note)
-kick0 = noteFromSample Kick0
-
-kick1 :: Cycle (Maybe Note)
-kick1 = noteFromSample Kick1
-
-kick :: Cycle (Maybe Note)
-kick = noteFromSample Kick0
-
-ss0 :: Cycle (Maybe Note)
-ss0 = noteFromSample SideStick0
-
-ss :: Cycle (Maybe Note)
-ss = noteFromSample SideStick0
-
-snare0 :: Cycle (Maybe Note)
-snare0 = noteFromSample Snare0
-
-snare :: Cycle (Maybe Note)
-snare = noteFromSample Snare0
-
-clap0 :: Cycle (Maybe Note)
-clap0 = noteFromSample Clap0
-
-clap :: Cycle (Maybe Note)
-clap = noteFromSample Clap0
-
-roll0 :: Cycle (Maybe Note)
-roll0 = noteFromSample SnareRoll0
-
-roll :: Cycle (Maybe Note)
-roll = noteFromSample SnareRoll0
-
-hh0 :: Cycle (Maybe Note)
-hh0 = noteFromSample ClosedHH0
-
-hh :: Cycle (Maybe Note)
-hh = noteFromSample ClosedHH0
-
-shaker0 :: Cycle (Maybe Note)
-shaker0 = noteFromSample Shaker0
-
-shaker :: Cycle (Maybe Note)
-shaker = noteFromSample Shaker0
-
-ohh0 :: Cycle (Maybe Note)
-ohh0 = noteFromSample OpenHH0
-
-ohh :: Cycle (Maybe Note)
-ohh = noteFromSample OpenHH0
-
-tamb0 :: Cycle (Maybe Note)
-tamb0 = noteFromSample Tamb0
-
-tamb :: Cycle (Maybe Note)
-tamb = noteFromSample Tamb0
-
-crash0 :: Cycle (Maybe Note)
-crash0 = noteFromSample Crash0
-
-crash :: Cycle (Maybe Note)
-crash = noteFromSample Crash0
-
-ride0 :: Cycle (Maybe Note)
-ride0 = noteFromSample Ride0
-
-ride :: Cycle (Maybe Note)
-ride = noteFromSample Ride0
-
-intentionalSilenceForInternalUseOnly_ :: Cycle (Maybe Note)
-intentionalSilenceForInternalUseOnly_ = noteFromSample IntentionalSilenceForInternalUseOnly
 
 ---
 b :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
@@ -518,12 +266,16 @@ x xx xy = Simultaneous { nel: NonEmptyList (xx :| L.fromFoldable xy) }
 x_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
 x_ sx = x sx []
 
+sampleName :: Parser String
+sampleName = map (fromCharArray <<< A.fromFoldable <<< NEL.toList) (many1 $ oneOf [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':' ])
+
 ---
 sampleP :: Parser (Maybe Note)
-sampleP = go $ L.fromFoldable notes
-  where
-  go (aa : bb) = (try (string (fst aa)) $> snd aa) <|> go bb
-  go Nil = fail "Could not find a note"
+sampleP = do
+  possiblySample <- sampleName
+  case Object.lookup possiblySample S.nameToSampleMNO of
+    Nothing -> fail "Not a sample name"
+    Just foundSample -> pure foundSample
 
 internalcyclePInternal :: Parser (Cycle (Maybe Note))
 internalcyclePInternal = Internal <<< { nel: _ } <$>
@@ -650,7 +402,7 @@ asScore flattened = NextCycle scoreInput
     in
       { startsAfter: st - currentCount
       , rest:
-          { sampleF: sampleToBuffers (unwrap aa.note).sample
+          { sampleF: S.sampleToBuffers (unwrap aa.note).sample
           , cycleStartsAt: prevCycleEnded
           , rateFoT: (unwrap aa.note).rateFoT
           , volumeFoT: (unwrap aa.note).volumeFoT
@@ -741,22 +493,6 @@ acc =
 
 globalFF = 0.03 :: Number
 
-sampleToBuffers :: Sample -> Instruments BrowserAudioBuffer -> BrowserAudioBuffer
-sampleToBuffers = case _ of
-  Kick0 -> _.kick0
-  Kick1 -> _.kick1
-  SideStick0 -> _.sideStick0
-  Snare0 -> _.snare0
-  Clap0 -> _.clap0
-  SnareRoll0 -> _.snareRoll0
-  ClosedHH0 -> _.closedHH0
-  Shaker0 -> _.shaker0
-  OpenHH0 -> _.openHH0
-  Tamb0 -> _.tamb0
-  Crash0 -> _.crash0
-  Ride0 -> _.ride0
-  IntentionalSilenceForInternalUseOnly -> _.intentionalSilenceForInternalUseOnly
-
 foreign import handlers :: Effect (Object (TheFuture -> Effect Unit))
 
 foreign import wag_ :: String -> (TheFuture -> Effect Unit) -> Effect Unit
@@ -781,7 +517,7 @@ thePresent ev = (map <<< map) (over _1 (\e -> Record.insert (Proxy :: _ "theFutu
 intentionalSilenceForInternalUseOnly :: (NoteInFlattenedTime Note)
 intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
   { note: Note
-      { sample: IntentionalSilenceForInternalUseOnly
+      { sample: S.intentionalSilenceForInternalUseOnly__Sample
       , rateFoT: const 1.0
       , volumeFoT: const 1.0
       }
@@ -840,24 +576,9 @@ instance zipProps ::
   MappingWithIndex (ZipProps fns) (Proxy sym) a b where
   mappingWithIndex (ZipProps fns) prop = Record.get prop fns
 
-tidal :: FullSceneBuilder (theFuture :: TheFuture) (buffers :: Instruments BrowserAudioBuffer) Unit
+tidal :: FullSceneBuilder (theFuture :: TheFuture) (buffers :: { | S.Samples BrowserAudioBuffer }) Unit
 tidal = usingc
-  ( thePresent wag <<< buffers
-      { kick0: "https://freesound.org/data/previews/171/171104_2394245-hq.mp3"
-      , sideStick0: "https://freesound.org/data/previews/209/209890_3797507-hq.mp3"
-      , snare0: "https://freesound.org/data/previews/495/495777_10741529-hq.mp3"
-      , clap0: "https://freesound.org/data/previews/183/183102_2394245-hq.mp3"
-      , snareRoll0: "https://freesound.org/data/previews/50/50710_179538-hq.mp3"
-      , kick1: "https://freesound.org/data/previews/148/148634_2614600-hq.mp3"
-      , closedHH0: "https://freesound.org/data/previews/269/269720_4965320-hq.mp3"
-      , shaker0: "https://freesound.org/data/previews/432/432205_8738244-hq.mp3"
-      , openHH0: "https://freesound.org/data/previews/416/416249_8218607-hq.mp3"
-      , tamb0: "https://freesound.org/data/previews/207/207925_19852-hq.mp3"
-      , crash0: "https://freesound.org/data/previews/528/528490_3797507-hq.mp3"
-      , ride0: "https://freesound.org/data/previews/270/270138_1125482-hq.mp3"
-      , intentionalSilenceForInternalUseOnly: "https://freesound.org/data/previews/459/459659_4766646-lq.mp3"
-      }
-  )
+  (thePresent wag <<< S.urls S.urls)
   acc
   \(SceneI { time, headroomInSeconds, trigger, world: { buffers } }) control ->
     let

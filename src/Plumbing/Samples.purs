@@ -1,8 +1,21 @@
 module WAGSI.Plumbing.Samples where
 
-type Samples :: forall k. k -> Row k
-type Samples a =
-  ( kicklinn_0 :: a
+import Prelude
+
+import Data.Function (on)
+import Data.Generic.Rep (class Generic)
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Newtype (class Newtype, unwrap)
+import Data.Tuple.Nested ((/\), type (/\))
+import Foreign.Object (Object)
+import Foreign.Object as Object
+import WAGS.WebAPI (BrowserAudioBuffer)
+
+type Samples (a :: Type) =
+  ( intentionalSilenceForInternalUseOnly :: a
+  , kicklinn_0 :: a
   , msg_0 :: a
   , msg_1 :: a
   , msg_2 :: a
@@ -2025,7 +2038,8 @@ type Samples a =
 
 urls :: { | Samples String }
 urls =
-  { kicklinn_0: "https://klank-share.s3.amazonaws.com/dirt-samples/kicklinn/Linn_Kick_1.ogg"
+  { intentionalSilenceForInternalUseOnly: "https://freesound.org/data/previews/459/459659_4766646-lq.mp3"
+  , kicklinn_0: "https://klank-share.s3.amazonaws.com/dirt-samples/kicklinn/Linn_Kick_1.ogg"
   , msg_0: "https://klank-share.s3.amazonaws.com/dirt-samples/msg/007_msg7.ogg"
   , msg_1: "https://klank-share.s3.amazonaws.com/dirt-samples/msg/003_msg3.ogg"
   , msg_2: "https://klank-share.s3.amazonaws.com/dirt-samples/msg/002_msg2.ogg"
@@ -4045,3 +4059,6349 @@ urls =
   , db_11: "https://klank-share.s3.amazonaws.com/dirt-samples/db/dbs12kick2.ogg"
   , db_12: "https://klank-share.s3.amazonaws.com/dirt-samples/db/dbs12snare2.ogg"
   }
+
+newtype Sample = Sample Int
+
+derive instance newtypeSample :: Newtype Sample _
+derive instance genericSample :: Generic Sample _
+derive newtype instance sampleEq :: Eq Sample
+derive newtype instance sampleOrd :: Ord Sample
+instance sampleShow :: Show Sample where
+  show (Sample i) = "Sample <" <> show i <> ">"
+
+type FoT =
+  { clockTime :: Number
+  , sampleTime :: Number
+  , bigCycleTime :: Number
+  , littleCycleTime :: Number
+  }
+  -> Number
+
+newtype Note = Note
+  { sample :: Sample
+  , rateFoT :: FoT
+  , volumeFoT :: FoT
+  }
+
+derive instance newtypeNote :: Newtype Note _
+derive instance genericNote :: Generic Note _
+instance eqNote :: Eq Note where
+  eq = eq `on` (unwrap >>> _.sample)
+
+instance ordNote :: Ord Note where
+  compare = compare `on` (unwrap >>> _.sample)
+
+instance showNote :: Show Note where
+  show (Note { sample }) = "Note <" <> show sample <> ">"
+
+intentionalSilenceForInternalUseOnly__Sample = Sample (-1) :: Sample
+kicklinn_0__Sample = Sample 0 :: Sample
+msg_0__Sample = Sample 1 :: Sample
+msg_1__Sample = Sample 2 :: Sample
+msg_2__Sample = Sample 3 :: Sample
+msg_3__Sample = Sample 4 :: Sample
+msg_4__Sample = Sample 5 :: Sample
+msg_5__Sample = Sample 6 :: Sample
+msg_6__Sample = Sample 7 :: Sample
+msg_7__Sample = Sample 8 :: Sample
+msg_8__Sample = Sample 9 :: Sample
+gabbalouder_0__Sample = Sample 10 :: Sample
+gabbalouder_1__Sample = Sample 11 :: Sample
+gabbalouder_2__Sample = Sample 12 :: Sample
+gabbalouder_3__Sample = Sample 13 :: Sample
+kurt_0__Sample = Sample 14 :: Sample
+kurt_1__Sample = Sample 15 :: Sample
+kurt_2__Sample = Sample 16 :: Sample
+kurt_3__Sample = Sample 17 :: Sample
+kurt_4__Sample = Sample 18 :: Sample
+kurt_5__Sample = Sample 19 :: Sample
+kurt_6__Sample = Sample 20 :: Sample
+bassdm_0__Sample = Sample 21 :: Sample
+bassdm_1__Sample = Sample 22 :: Sample
+bassdm_2__Sample = Sample 23 :: Sample
+bassdm_3__Sample = Sample 24 :: Sample
+bassdm_4__Sample = Sample 25 :: Sample
+bassdm_5__Sample = Sample 26 :: Sample
+bassdm_6__Sample = Sample 27 :: Sample
+bassdm_7__Sample = Sample 28 :: Sample
+bassdm_8__Sample = Sample 29 :: Sample
+bassdm_9__Sample = Sample 30 :: Sample
+bassdm_10__Sample = Sample 31 :: Sample
+bassdm_11__Sample = Sample 32 :: Sample
+bassdm_12__Sample = Sample 33 :: Sample
+bassdm_13__Sample = Sample 34 :: Sample
+bassdm_14__Sample = Sample 35 :: Sample
+bassdm_15__Sample = Sample 36 :: Sample
+bassdm_16__Sample = Sample 37 :: Sample
+bassdm_17__Sample = Sample 38 :: Sample
+bassdm_18__Sample = Sample 39 :: Sample
+bassdm_19__Sample = Sample 40 :: Sample
+bassdm_20__Sample = Sample 41 :: Sample
+bassdm_21__Sample = Sample 42 :: Sample
+bassdm_22__Sample = Sample 43 :: Sample
+bassdm_23__Sample = Sample 44 :: Sample
+tabla2_0__Sample = Sample 45 :: Sample
+tabla2_1__Sample = Sample 46 :: Sample
+tabla2_2__Sample = Sample 47 :: Sample
+tabla2_3__Sample = Sample 48 :: Sample
+tabla2_4__Sample = Sample 49 :: Sample
+tabla2_5__Sample = Sample 50 :: Sample
+tabla2_6__Sample = Sample 51 :: Sample
+tabla2_7__Sample = Sample 52 :: Sample
+tabla2_8__Sample = Sample 53 :: Sample
+tabla2_9__Sample = Sample 54 :: Sample
+tabla2_10__Sample = Sample 55 :: Sample
+tabla2_11__Sample = Sample 56 :: Sample
+tabla2_12__Sample = Sample 57 :: Sample
+tabla2_13__Sample = Sample 58 :: Sample
+tabla2_14__Sample = Sample 59 :: Sample
+tabla2_15__Sample = Sample 60 :: Sample
+tabla2_16__Sample = Sample 61 :: Sample
+tabla2_17__Sample = Sample 62 :: Sample
+tabla2_18__Sample = Sample 63 :: Sample
+tabla2_19__Sample = Sample 64 :: Sample
+tabla2_20__Sample = Sample 65 :: Sample
+tabla2_21__Sample = Sample 66 :: Sample
+tabla2_22__Sample = Sample 67 :: Sample
+tabla2_23__Sample = Sample 68 :: Sample
+tabla2_24__Sample = Sample 69 :: Sample
+tabla2_25__Sample = Sample 70 :: Sample
+tabla2_26__Sample = Sample 71 :: Sample
+tabla2_27__Sample = Sample 72 :: Sample
+tabla2_28__Sample = Sample 73 :: Sample
+tabla2_29__Sample = Sample 74 :: Sample
+tabla2_30__Sample = Sample 75 :: Sample
+tabla2_31__Sample = Sample 76 :: Sample
+tabla2_32__Sample = Sample 77 :: Sample
+tabla2_33__Sample = Sample 78 :: Sample
+tabla2_34__Sample = Sample 79 :: Sample
+tabla2_35__Sample = Sample 80 :: Sample
+tabla2_36__Sample = Sample 81 :: Sample
+tabla2_37__Sample = Sample 82 :: Sample
+tabla2_38__Sample = Sample 83 :: Sample
+tabla2_39__Sample = Sample 84 :: Sample
+tabla2_40__Sample = Sample 85 :: Sample
+tabla2_41__Sample = Sample 86 :: Sample
+tabla2_42__Sample = Sample 87 :: Sample
+tabla2_43__Sample = Sample 88 :: Sample
+tabla2_44__Sample = Sample 89 :: Sample
+tabla2_45__Sample = Sample 90 :: Sample
+chin_0__Sample = Sample 91 :: Sample
+chin_1__Sample = Sample 92 :: Sample
+chin_2__Sample = Sample 93 :: Sample
+chin_3__Sample = Sample 94 :: Sample
+mp3_0__Sample = Sample 95 :: Sample
+mp3_1__Sample = Sample 96 :: Sample
+mp3_2__Sample = Sample 97 :: Sample
+mp3_3__Sample = Sample 98 :: Sample
+tablex_0__Sample = Sample 99 :: Sample
+tablex_1__Sample = Sample 100 :: Sample
+tablex_2__Sample = Sample 101 :: Sample
+sf_0__Sample = Sample 102 :: Sample
+sf_1__Sample = Sample 103 :: Sample
+sf_2__Sample = Sample 104 :: Sample
+sf_3__Sample = Sample 105 :: Sample
+sf_4__Sample = Sample 106 :: Sample
+sf_5__Sample = Sample 107 :: Sample
+sf_6__Sample = Sample 108 :: Sample
+sf_7__Sample = Sample 109 :: Sample
+sf_8__Sample = Sample 110 :: Sample
+sf_9__Sample = Sample 111 :: Sample
+sf_10__Sample = Sample 112 :: Sample
+sf_11__Sample = Sample 113 :: Sample
+sf_12__Sample = Sample 114 :: Sample
+sf_13__Sample = Sample 115 :: Sample
+sf_14__Sample = Sample 116 :: Sample
+sf_15__Sample = Sample 117 :: Sample
+sf_16__Sample = Sample 118 :: Sample
+sf_17__Sample = Sample 119 :: Sample
+speakspell_0__Sample = Sample 120 :: Sample
+speakspell_1__Sample = Sample 121 :: Sample
+speakspell_2__Sample = Sample 122 :: Sample
+speakspell_3__Sample = Sample 123 :: Sample
+speakspell_4__Sample = Sample 124 :: Sample
+speakspell_5__Sample = Sample 125 :: Sample
+speakspell_6__Sample = Sample 126 :: Sample
+speakspell_7__Sample = Sample 127 :: Sample
+speakspell_8__Sample = Sample 128 :: Sample
+speakspell_9__Sample = Sample 129 :: Sample
+speakspell_10__Sample = Sample 130 :: Sample
+speakspell_11__Sample = Sample 131 :: Sample
+cc_0__Sample = Sample 132 :: Sample
+cc_1__Sample = Sample 133 :: Sample
+cc_2__Sample = Sample 134 :: Sample
+cc_3__Sample = Sample 135 :: Sample
+cc_4__Sample = Sample 136 :: Sample
+cc_5__Sample = Sample 137 :: Sample
+gabbaloud_0__Sample = Sample 138 :: Sample
+gabbaloud_1__Sample = Sample 139 :: Sample
+gabbaloud_2__Sample = Sample 140 :: Sample
+gabbaloud_3__Sample = Sample 141 :: Sample
+ades2_0__Sample = Sample 142 :: Sample
+ades2_1__Sample = Sample 143 :: Sample
+ades2_2__Sample = Sample 144 :: Sample
+ades2_3__Sample = Sample 145 :: Sample
+ades2_4__Sample = Sample 146 :: Sample
+ades2_5__Sample = Sample 147 :: Sample
+ades2_6__Sample = Sample 148 :: Sample
+ades2_7__Sample = Sample 149 :: Sample
+ades2_8__Sample = Sample 150 :: Sample
+space_0__Sample = Sample 151 :: Sample
+space_1__Sample = Sample 152 :: Sample
+space_2__Sample = Sample 153 :: Sample
+space_3__Sample = Sample 154 :: Sample
+space_4__Sample = Sample 155 :: Sample
+space_5__Sample = Sample 156 :: Sample
+space_6__Sample = Sample 157 :: Sample
+space_7__Sample = Sample 158 :: Sample
+space_8__Sample = Sample 159 :: Sample
+space_9__Sample = Sample 160 :: Sample
+space_10__Sample = Sample 161 :: Sample
+space_11__Sample = Sample 162 :: Sample
+space_12__Sample = Sample 163 :: Sample
+space_13__Sample = Sample 164 :: Sample
+space_14__Sample = Sample 165 :: Sample
+space_15__Sample = Sample 166 :: Sample
+space_16__Sample = Sample 167 :: Sample
+space_17__Sample = Sample 168 :: Sample
+battles_0__Sample = Sample 169 :: Sample
+battles_1__Sample = Sample 170 :: Sample
+voodoo_0__Sample = Sample 171 :: Sample
+voodoo_1__Sample = Sample 172 :: Sample
+voodoo_2__Sample = Sample 173 :: Sample
+voodoo_3__Sample = Sample 174 :: Sample
+voodoo_4__Sample = Sample 175 :: Sample
+ravemono_0__Sample = Sample 176 :: Sample
+ravemono_1__Sample = Sample 177 :: Sample
+psr_0__Sample = Sample 178 :: Sample
+psr_1__Sample = Sample 179 :: Sample
+psr_2__Sample = Sample 180 :: Sample
+psr_3__Sample = Sample 181 :: Sample
+psr_4__Sample = Sample 182 :: Sample
+psr_5__Sample = Sample 183 :: Sample
+psr_6__Sample = Sample 184 :: Sample
+psr_7__Sample = Sample 185 :: Sample
+psr_8__Sample = Sample 186 :: Sample
+psr_9__Sample = Sample 187 :: Sample
+psr_10__Sample = Sample 188 :: Sample
+psr_11__Sample = Sample 189 :: Sample
+psr_12__Sample = Sample 190 :: Sample
+psr_13__Sample = Sample 191 :: Sample
+psr_14__Sample = Sample 192 :: Sample
+psr_15__Sample = Sample 193 :: Sample
+psr_16__Sample = Sample 194 :: Sample
+psr_17__Sample = Sample 195 :: Sample
+psr_18__Sample = Sample 196 :: Sample
+psr_19__Sample = Sample 197 :: Sample
+psr_20__Sample = Sample 198 :: Sample
+psr_21__Sample = Sample 199 :: Sample
+psr_22__Sample = Sample 200 :: Sample
+psr_23__Sample = Sample 201 :: Sample
+psr_24__Sample = Sample 202 :: Sample
+psr_25__Sample = Sample 203 :: Sample
+psr_26__Sample = Sample 204 :: Sample
+psr_27__Sample = Sample 205 :: Sample
+psr_28__Sample = Sample 206 :: Sample
+psr_29__Sample = Sample 207 :: Sample
+metal_0__Sample = Sample 208 :: Sample
+metal_1__Sample = Sample 209 :: Sample
+metal_2__Sample = Sample 210 :: Sample
+metal_3__Sample = Sample 211 :: Sample
+metal_4__Sample = Sample 212 :: Sample
+metal_5__Sample = Sample 213 :: Sample
+metal_6__Sample = Sample 214 :: Sample
+metal_7__Sample = Sample 215 :: Sample
+metal_8__Sample = Sample 216 :: Sample
+metal_9__Sample = Sample 217 :: Sample
+hardcore_0__Sample = Sample 218 :: Sample
+hardcore_1__Sample = Sample 219 :: Sample
+hardcore_2__Sample = Sample 220 :: Sample
+hardcore_3__Sample = Sample 221 :: Sample
+hardcore_4__Sample = Sample 222 :: Sample
+hardcore_5__Sample = Sample 223 :: Sample
+hardcore_6__Sample = Sample 224 :: Sample
+hardcore_7__Sample = Sample 225 :: Sample
+hardcore_8__Sample = Sample 226 :: Sample
+hardcore_9__Sample = Sample 227 :: Sample
+hardcore_10__Sample = Sample 228 :: Sample
+hardcore_11__Sample = Sample 229 :: Sample
+mouth_0__Sample = Sample 230 :: Sample
+mouth_1__Sample = Sample 231 :: Sample
+mouth_2__Sample = Sample 232 :: Sample
+mouth_3__Sample = Sample 233 :: Sample
+mouth_4__Sample = Sample 234 :: Sample
+mouth_5__Sample = Sample 235 :: Sample
+mouth_6__Sample = Sample 236 :: Sample
+mouth_7__Sample = Sample 237 :: Sample
+mouth_8__Sample = Sample 238 :: Sample
+mouth_9__Sample = Sample 239 :: Sample
+mouth_10__Sample = Sample 240 :: Sample
+mouth_11__Sample = Sample 241 :: Sample
+mouth_12__Sample = Sample 242 :: Sample
+mouth_13__Sample = Sample 243 :: Sample
+mouth_14__Sample = Sample 244 :: Sample
+sugar_0__Sample = Sample 245 :: Sample
+sugar_1__Sample = Sample 246 :: Sample
+odx_0__Sample = Sample 247 :: Sample
+odx_1__Sample = Sample 248 :: Sample
+odx_2__Sample = Sample 249 :: Sample
+odx_3__Sample = Sample 250 :: Sample
+odx_4__Sample = Sample 251 :: Sample
+odx_5__Sample = Sample 252 :: Sample
+odx_6__Sample = Sample 253 :: Sample
+odx_7__Sample = Sample 254 :: Sample
+odx_8__Sample = Sample 255 :: Sample
+odx_9__Sample = Sample 256 :: Sample
+odx_10__Sample = Sample 257 :: Sample
+odx_11__Sample = Sample 258 :: Sample
+odx_12__Sample = Sample 259 :: Sample
+odx_13__Sample = Sample 260 :: Sample
+odx_14__Sample = Sample 261 :: Sample
+x_808lc_0__Sample = Sample 262 :: Sample
+x_808lc_1__Sample = Sample 263 :: Sample
+x_808lc_2__Sample = Sample 264 :: Sample
+x_808lc_3__Sample = Sample 265 :: Sample
+x_808lc_4__Sample = Sample 266 :: Sample
+mt_0__Sample = Sample 267 :: Sample
+mt_1__Sample = Sample 268 :: Sample
+mt_2__Sample = Sample 269 :: Sample
+mt_3__Sample = Sample 270 :: Sample
+mt_4__Sample = Sample 271 :: Sample
+mt_5__Sample = Sample 272 :: Sample
+mt_6__Sample = Sample 273 :: Sample
+mt_7__Sample = Sample 274 :: Sample
+mt_8__Sample = Sample 275 :: Sample
+mt_9__Sample = Sample 276 :: Sample
+mt_10__Sample = Sample 277 :: Sample
+mt_11__Sample = Sample 278 :: Sample
+mt_12__Sample = Sample 279 :: Sample
+mt_13__Sample = Sample 280 :: Sample
+mt_14__Sample = Sample 281 :: Sample
+mt_15__Sample = Sample 282 :: Sample
+drumtraks_0__Sample = Sample 283 :: Sample
+drumtraks_1__Sample = Sample 284 :: Sample
+drumtraks_2__Sample = Sample 285 :: Sample
+drumtraks_3__Sample = Sample 286 :: Sample
+drumtraks_4__Sample = Sample 287 :: Sample
+drumtraks_5__Sample = Sample 288 :: Sample
+drumtraks_6__Sample = Sample 289 :: Sample
+drumtraks_7__Sample = Sample 290 :: Sample
+drumtraks_8__Sample = Sample 291 :: Sample
+drumtraks_9__Sample = Sample 292 :: Sample
+drumtraks_10__Sample = Sample 293 :: Sample
+drumtraks_11__Sample = Sample 294 :: Sample
+drumtraks_12__Sample = Sample 295 :: Sample
+print_0__Sample = Sample 296 :: Sample
+print_1__Sample = Sample 297 :: Sample
+print_2__Sample = Sample 298 :: Sample
+print_3__Sample = Sample 299 :: Sample
+print_4__Sample = Sample 300 :: Sample
+print_5__Sample = Sample 301 :: Sample
+print_6__Sample = Sample 302 :: Sample
+print_7__Sample = Sample 303 :: Sample
+print_8__Sample = Sample 304 :: Sample
+print_9__Sample = Sample 305 :: Sample
+print_10__Sample = Sample 306 :: Sample
+blip_0__Sample = Sample 307 :: Sample
+blip_1__Sample = Sample 308 :: Sample
+wobble_0__Sample = Sample 309 :: Sample
+made_0__Sample = Sample 310 :: Sample
+made_1__Sample = Sample 311 :: Sample
+made_2__Sample = Sample 312 :: Sample
+made_3__Sample = Sample 313 :: Sample
+made_4__Sample = Sample 314 :: Sample
+made_5__Sample = Sample 315 :: Sample
+made_6__Sample = Sample 316 :: Sample
+bass3_0__Sample = Sample 317 :: Sample
+bass3_1__Sample = Sample 318 :: Sample
+bass3_2__Sample = Sample 319 :: Sample
+bass3_3__Sample = Sample 320 :: Sample
+bass3_4__Sample = Sample 321 :: Sample
+bass3_5__Sample = Sample 322 :: Sample
+bass3_6__Sample = Sample 323 :: Sample
+bass3_7__Sample = Sample 324 :: Sample
+bass3_8__Sample = Sample 325 :: Sample
+bass3_9__Sample = Sample 326 :: Sample
+bass3_10__Sample = Sample 327 :: Sample
+speechless_0__Sample = Sample 328 :: Sample
+speechless_1__Sample = Sample 329 :: Sample
+speechless_2__Sample = Sample 330 :: Sample
+speechless_3__Sample = Sample 331 :: Sample
+speechless_4__Sample = Sample 332 :: Sample
+speechless_5__Sample = Sample 333 :: Sample
+speechless_6__Sample = Sample 334 :: Sample
+speechless_7__Sample = Sample 335 :: Sample
+speechless_8__Sample = Sample 336 :: Sample
+speechless_9__Sample = Sample 337 :: Sample
+sine_0__Sample = Sample 338 :: Sample
+sine_1__Sample = Sample 339 :: Sample
+sine_2__Sample = Sample 340 :: Sample
+sine_3__Sample = Sample 341 :: Sample
+sine_4__Sample = Sample 342 :: Sample
+sine_5__Sample = Sample 343 :: Sample
+noise_0__Sample = Sample 344 :: Sample
+x_808lt_0__Sample = Sample 345 :: Sample
+x_808lt_1__Sample = Sample 346 :: Sample
+x_808lt_2__Sample = Sample 347 :: Sample
+x_808lt_3__Sample = Sample 348 :: Sample
+x_808lt_4__Sample = Sample 349 :: Sample
+sd_0__Sample = Sample 350 :: Sample
+sd_1__Sample = Sample 351 :: Sample
+alphabet_0__Sample = Sample 352 :: Sample
+alphabet_1__Sample = Sample 353 :: Sample
+alphabet_2__Sample = Sample 354 :: Sample
+alphabet_3__Sample = Sample 355 :: Sample
+alphabet_4__Sample = Sample 356 :: Sample
+alphabet_5__Sample = Sample 357 :: Sample
+alphabet_6__Sample = Sample 358 :: Sample
+alphabet_7__Sample = Sample 359 :: Sample
+alphabet_8__Sample = Sample 360 :: Sample
+alphabet_9__Sample = Sample 361 :: Sample
+alphabet_10__Sample = Sample 362 :: Sample
+alphabet_11__Sample = Sample 363 :: Sample
+alphabet_12__Sample = Sample 364 :: Sample
+alphabet_13__Sample = Sample 365 :: Sample
+alphabet_14__Sample = Sample 366 :: Sample
+alphabet_15__Sample = Sample 367 :: Sample
+alphabet_16__Sample = Sample 368 :: Sample
+alphabet_17__Sample = Sample 369 :: Sample
+alphabet_18__Sample = Sample 370 :: Sample
+alphabet_19__Sample = Sample 371 :: Sample
+alphabet_20__Sample = Sample 372 :: Sample
+alphabet_21__Sample = Sample 373 :: Sample
+alphabet_22__Sample = Sample 374 :: Sample
+alphabet_23__Sample = Sample 375 :: Sample
+alphabet_24__Sample = Sample 376 :: Sample
+alphabet_25__Sample = Sample 377 :: Sample
+baa2_0__Sample = Sample 378 :: Sample
+baa2_1__Sample = Sample 379 :: Sample
+baa2_2__Sample = Sample 380 :: Sample
+baa2_3__Sample = Sample 381 :: Sample
+baa2_4__Sample = Sample 382 :: Sample
+baa2_5__Sample = Sample 383 :: Sample
+baa2_6__Sample = Sample 384 :: Sample
+tok_0__Sample = Sample 385 :: Sample
+tok_1__Sample = Sample 386 :: Sample
+tok_2__Sample = Sample 387 :: Sample
+tok_3__Sample = Sample 388 :: Sample
+ades3_0__Sample = Sample 389 :: Sample
+ades3_1__Sample = Sample 390 :: Sample
+ades3_2__Sample = Sample 391 :: Sample
+ades3_3__Sample = Sample 392 :: Sample
+ades3_4__Sample = Sample 393 :: Sample
+ades3_5__Sample = Sample 394 :: Sample
+ades3_6__Sample = Sample 395 :: Sample
+x_909_0__Sample = Sample 396 :: Sample
+sid_0__Sample = Sample 397 :: Sample
+sid_1__Sample = Sample 398 :: Sample
+sid_2__Sample = Sample 399 :: Sample
+sid_3__Sample = Sample 400 :: Sample
+sid_4__Sample = Sample 401 :: Sample
+sid_5__Sample = Sample 402 :: Sample
+sid_6__Sample = Sample 403 :: Sample
+sid_7__Sample = Sample 404 :: Sample
+sid_8__Sample = Sample 405 :: Sample
+sid_9__Sample = Sample 406 :: Sample
+sid_10__Sample = Sample 407 :: Sample
+sid_11__Sample = Sample 408 :: Sample
+jungbass_0__Sample = Sample 409 :: Sample
+jungbass_1__Sample = Sample 410 :: Sample
+jungbass_2__Sample = Sample 411 :: Sample
+jungbass_3__Sample = Sample 412 :: Sample
+jungbass_4__Sample = Sample 413 :: Sample
+jungbass_5__Sample = Sample 414 :: Sample
+jungbass_6__Sample = Sample 415 :: Sample
+jungbass_7__Sample = Sample 416 :: Sample
+jungbass_8__Sample = Sample 417 :: Sample
+jungbass_9__Sample = Sample 418 :: Sample
+jungbass_10__Sample = Sample 419 :: Sample
+jungbass_11__Sample = Sample 420 :: Sample
+jungbass_12__Sample = Sample 421 :: Sample
+jungbass_13__Sample = Sample 422 :: Sample
+jungbass_14__Sample = Sample 423 :: Sample
+jungbass_15__Sample = Sample 424 :: Sample
+jungbass_16__Sample = Sample 425 :: Sample
+jungbass_17__Sample = Sample 426 :: Sample
+jungbass_18__Sample = Sample 427 :: Sample
+jungbass_19__Sample = Sample 428 :: Sample
+gabba_0__Sample = Sample 429 :: Sample
+gabba_1__Sample = Sample 430 :: Sample
+gabba_2__Sample = Sample 431 :: Sample
+gabba_3__Sample = Sample 432 :: Sample
+crow_0__Sample = Sample 433 :: Sample
+crow_1__Sample = Sample 434 :: Sample
+crow_2__Sample = Sample 435 :: Sample
+crow_3__Sample = Sample 436 :: Sample
+birds3_0__Sample = Sample 437 :: Sample
+birds3_1__Sample = Sample 438 :: Sample
+birds3_2__Sample = Sample 439 :: Sample
+birds3_3__Sample = Sample 440 :: Sample
+birds3_4__Sample = Sample 441 :: Sample
+birds3_5__Sample = Sample 442 :: Sample
+birds3_6__Sample = Sample 443 :: Sample
+birds3_7__Sample = Sample 444 :: Sample
+birds3_8__Sample = Sample 445 :: Sample
+birds3_9__Sample = Sample 446 :: Sample
+birds3_10__Sample = Sample 447 :: Sample
+birds3_11__Sample = Sample 448 :: Sample
+birds3_12__Sample = Sample 449 :: Sample
+birds3_13__Sample = Sample 450 :: Sample
+birds3_14__Sample = Sample 451 :: Sample
+birds3_15__Sample = Sample 452 :: Sample
+birds3_16__Sample = Sample 453 :: Sample
+birds3_17__Sample = Sample 454 :: Sample
+birds3_18__Sample = Sample 455 :: Sample
+auto_0__Sample = Sample 456 :: Sample
+auto_1__Sample = Sample 457 :: Sample
+auto_2__Sample = Sample 458 :: Sample
+auto_3__Sample = Sample 459 :: Sample
+auto_4__Sample = Sample 460 :: Sample
+auto_5__Sample = Sample 461 :: Sample
+auto_6__Sample = Sample 462 :: Sample
+auto_7__Sample = Sample 463 :: Sample
+auto_8__Sample = Sample 464 :: Sample
+auto_9__Sample = Sample 465 :: Sample
+auto_10__Sample = Sample 466 :: Sample
+mute_0__Sample = Sample 467 :: Sample
+mute_1__Sample = Sample 468 :: Sample
+mute_2__Sample = Sample 469 :: Sample
+mute_3__Sample = Sample 470 :: Sample
+mute_4__Sample = Sample 471 :: Sample
+mute_5__Sample = Sample 472 :: Sample
+mute_6__Sample = Sample 473 :: Sample
+mute_7__Sample = Sample 474 :: Sample
+mute_8__Sample = Sample 475 :: Sample
+mute_9__Sample = Sample 476 :: Sample
+mute_10__Sample = Sample 477 :: Sample
+mute_11__Sample = Sample 478 :: Sample
+mute_12__Sample = Sample 479 :: Sample
+mute_13__Sample = Sample 480 :: Sample
+mute_14__Sample = Sample 481 :: Sample
+mute_15__Sample = Sample 482 :: Sample
+mute_16__Sample = Sample 483 :: Sample
+mute_17__Sample = Sample 484 :: Sample
+mute_18__Sample = Sample 485 :: Sample
+mute_19__Sample = Sample 486 :: Sample
+mute_20__Sample = Sample 487 :: Sample
+mute_21__Sample = Sample 488 :: Sample
+mute_22__Sample = Sample 489 :: Sample
+mute_23__Sample = Sample 490 :: Sample
+mute_24__Sample = Sample 491 :: Sample
+mute_25__Sample = Sample 492 :: Sample
+mute_26__Sample = Sample 493 :: Sample
+mute_27__Sample = Sample 494 :: Sample
+sheffield_0__Sample = Sample 495 :: Sample
+casio_0__Sample = Sample 496 :: Sample
+casio_1__Sample = Sample 497 :: Sample
+casio_2__Sample = Sample 498 :: Sample
+sax_0__Sample = Sample 499 :: Sample
+sax_1__Sample = Sample 500 :: Sample
+sax_2__Sample = Sample 501 :: Sample
+sax_3__Sample = Sample 502 :: Sample
+sax_4__Sample = Sample 503 :: Sample
+sax_5__Sample = Sample 504 :: Sample
+sax_6__Sample = Sample 505 :: Sample
+sax_7__Sample = Sample 506 :: Sample
+sax_8__Sample = Sample 507 :: Sample
+sax_9__Sample = Sample 508 :: Sample
+sax_10__Sample = Sample 509 :: Sample
+sax_11__Sample = Sample 510 :: Sample
+sax_12__Sample = Sample 511 :: Sample
+sax_13__Sample = Sample 512 :: Sample
+sax_14__Sample = Sample 513 :: Sample
+sax_15__Sample = Sample 514 :: Sample
+sax_16__Sample = Sample 515 :: Sample
+sax_17__Sample = Sample 516 :: Sample
+sax_18__Sample = Sample 517 :: Sample
+sax_19__Sample = Sample 518 :: Sample
+sax_20__Sample = Sample 519 :: Sample
+sax_21__Sample = Sample 520 :: Sample
+circus_0__Sample = Sample 521 :: Sample
+circus_1__Sample = Sample 522 :: Sample
+circus_2__Sample = Sample 523 :: Sample
+yeah_0__Sample = Sample 524 :: Sample
+yeah_1__Sample = Sample 525 :: Sample
+yeah_2__Sample = Sample 526 :: Sample
+yeah_3__Sample = Sample 527 :: Sample
+yeah_4__Sample = Sample 528 :: Sample
+yeah_5__Sample = Sample 529 :: Sample
+yeah_6__Sample = Sample 530 :: Sample
+yeah_7__Sample = Sample 531 :: Sample
+yeah_8__Sample = Sample 532 :: Sample
+yeah_9__Sample = Sample 533 :: Sample
+yeah_10__Sample = Sample 534 :: Sample
+yeah_11__Sample = Sample 535 :: Sample
+yeah_12__Sample = Sample 536 :: Sample
+yeah_13__Sample = Sample 537 :: Sample
+yeah_14__Sample = Sample 538 :: Sample
+yeah_15__Sample = Sample 539 :: Sample
+yeah_16__Sample = Sample 540 :: Sample
+yeah_17__Sample = Sample 541 :: Sample
+yeah_18__Sample = Sample 542 :: Sample
+yeah_19__Sample = Sample 543 :: Sample
+yeah_20__Sample = Sample 544 :: Sample
+yeah_21__Sample = Sample 545 :: Sample
+yeah_22__Sample = Sample 546 :: Sample
+yeah_23__Sample = Sample 547 :: Sample
+yeah_24__Sample = Sample 548 :: Sample
+yeah_25__Sample = Sample 549 :: Sample
+yeah_26__Sample = Sample 550 :: Sample
+yeah_27__Sample = Sample 551 :: Sample
+yeah_28__Sample = Sample 552 :: Sample
+yeah_29__Sample = Sample 553 :: Sample
+yeah_30__Sample = Sample 554 :: Sample
+oc_0__Sample = Sample 555 :: Sample
+oc_1__Sample = Sample 556 :: Sample
+oc_2__Sample = Sample 557 :: Sample
+oc_3__Sample = Sample 558 :: Sample
+alex_0__Sample = Sample 559 :: Sample
+alex_1__Sample = Sample 560 :: Sample
+can_0__Sample = Sample 561 :: Sample
+can_1__Sample = Sample 562 :: Sample
+can_2__Sample = Sample 563 :: Sample
+can_3__Sample = Sample 564 :: Sample
+can_4__Sample = Sample 565 :: Sample
+can_5__Sample = Sample 566 :: Sample
+can_6__Sample = Sample 567 :: Sample
+can_7__Sample = Sample 568 :: Sample
+can_8__Sample = Sample 569 :: Sample
+can_9__Sample = Sample 570 :: Sample
+can_10__Sample = Sample 571 :: Sample
+can_11__Sample = Sample 572 :: Sample
+can_12__Sample = Sample 573 :: Sample
+can_13__Sample = Sample 574 :: Sample
+jungle_0__Sample = Sample 575 :: Sample
+jungle_1__Sample = Sample 576 :: Sample
+jungle_2__Sample = Sample 577 :: Sample
+jungle_3__Sample = Sample 578 :: Sample
+jungle_4__Sample = Sample 579 :: Sample
+jungle_5__Sample = Sample 580 :: Sample
+jungle_6__Sample = Sample 581 :: Sample
+jungle_7__Sample = Sample 582 :: Sample
+jungle_8__Sample = Sample 583 :: Sample
+jungle_9__Sample = Sample 584 :: Sample
+jungle_10__Sample = Sample 585 :: Sample
+jungle_11__Sample = Sample 586 :: Sample
+jungle_12__Sample = Sample 587 :: Sample
+moog_0__Sample = Sample 588 :: Sample
+moog_1__Sample = Sample 589 :: Sample
+moog_2__Sample = Sample 590 :: Sample
+moog_3__Sample = Sample 591 :: Sample
+moog_4__Sample = Sample 592 :: Sample
+moog_5__Sample = Sample 593 :: Sample
+moog_6__Sample = Sample 594 :: Sample
+h_0__Sample = Sample 595 :: Sample
+h_1__Sample = Sample 596 :: Sample
+h_2__Sample = Sample 597 :: Sample
+h_3__Sample = Sample 598 :: Sample
+h_4__Sample = Sample 599 :: Sample
+h_5__Sample = Sample 600 :: Sample
+h_6__Sample = Sample 601 :: Sample
+wind_0__Sample = Sample 602 :: Sample
+wind_1__Sample = Sample 603 :: Sample
+wind_2__Sample = Sample 604 :: Sample
+wind_3__Sample = Sample 605 :: Sample
+wind_4__Sample = Sample 606 :: Sample
+wind_5__Sample = Sample 607 :: Sample
+wind_6__Sample = Sample 608 :: Sample
+wind_7__Sample = Sample 609 :: Sample
+wind_8__Sample = Sample 610 :: Sample
+wind_9__Sample = Sample 611 :: Sample
+rs_0__Sample = Sample 612 :: Sample
+em2_0__Sample = Sample 613 :: Sample
+em2_1__Sample = Sample 614 :: Sample
+em2_2__Sample = Sample 615 :: Sample
+em2_3__Sample = Sample 616 :: Sample
+em2_4__Sample = Sample 617 :: Sample
+em2_5__Sample = Sample 618 :: Sample
+noise2_0__Sample = Sample 619 :: Sample
+noise2_1__Sample = Sample 620 :: Sample
+noise2_2__Sample = Sample 621 :: Sample
+noise2_3__Sample = Sample 622 :: Sample
+noise2_4__Sample = Sample 623 :: Sample
+noise2_5__Sample = Sample 624 :: Sample
+noise2_6__Sample = Sample 625 :: Sample
+noise2_7__Sample = Sample 626 :: Sample
+foo_0__Sample = Sample 627 :: Sample
+foo_1__Sample = Sample 628 :: Sample
+foo_2__Sample = Sample 629 :: Sample
+foo_3__Sample = Sample 630 :: Sample
+foo_4__Sample = Sample 631 :: Sample
+foo_5__Sample = Sample 632 :: Sample
+foo_6__Sample = Sample 633 :: Sample
+foo_7__Sample = Sample 634 :: Sample
+foo_8__Sample = Sample 635 :: Sample
+foo_9__Sample = Sample 636 :: Sample
+foo_10__Sample = Sample 637 :: Sample
+foo_11__Sample = Sample 638 :: Sample
+foo_12__Sample = Sample 639 :: Sample
+foo_13__Sample = Sample 640 :: Sample
+foo_14__Sample = Sample 641 :: Sample
+foo_15__Sample = Sample 642 :: Sample
+foo_16__Sample = Sample 643 :: Sample
+foo_17__Sample = Sample 644 :: Sample
+foo_18__Sample = Sample 645 :: Sample
+foo_19__Sample = Sample 646 :: Sample
+foo_20__Sample = Sample 647 :: Sample
+foo_21__Sample = Sample 648 :: Sample
+foo_22__Sample = Sample 649 :: Sample
+foo_23__Sample = Sample 650 :: Sample
+foo_24__Sample = Sample 651 :: Sample
+foo_25__Sample = Sample 652 :: Sample
+foo_26__Sample = Sample 653 :: Sample
+armora_0__Sample = Sample 654 :: Sample
+armora_1__Sample = Sample 655 :: Sample
+armora_2__Sample = Sample 656 :: Sample
+armora_3__Sample = Sample 657 :: Sample
+armora_4__Sample = Sample 658 :: Sample
+armora_5__Sample = Sample 659 :: Sample
+armora_6__Sample = Sample 660 :: Sample
+bend_0__Sample = Sample 661 :: Sample
+bend_1__Sample = Sample 662 :: Sample
+bend_2__Sample = Sample 663 :: Sample
+bend_3__Sample = Sample 664 :: Sample
+newnotes_0__Sample = Sample 665 :: Sample
+newnotes_1__Sample = Sample 666 :: Sample
+newnotes_2__Sample = Sample 667 :: Sample
+newnotes_3__Sample = Sample 668 :: Sample
+newnotes_4__Sample = Sample 669 :: Sample
+newnotes_5__Sample = Sample 670 :: Sample
+newnotes_6__Sample = Sample 671 :: Sample
+newnotes_7__Sample = Sample 672 :: Sample
+newnotes_8__Sample = Sample 673 :: Sample
+newnotes_9__Sample = Sample 674 :: Sample
+newnotes_10__Sample = Sample 675 :: Sample
+newnotes_11__Sample = Sample 676 :: Sample
+newnotes_12__Sample = Sample 677 :: Sample
+newnotes_13__Sample = Sample 678 :: Sample
+newnotes_14__Sample = Sample 679 :: Sample
+pebbles_0__Sample = Sample 680 :: Sample
+mash2_0__Sample = Sample 681 :: Sample
+mash2_1__Sample = Sample 682 :: Sample
+mash2_2__Sample = Sample 683 :: Sample
+mash2_3__Sample = Sample 684 :: Sample
+diphone2_0__Sample = Sample 685 :: Sample
+diphone2_1__Sample = Sample 686 :: Sample
+diphone2_2__Sample = Sample 687 :: Sample
+diphone2_3__Sample = Sample 688 :: Sample
+diphone2_4__Sample = Sample 689 :: Sample
+diphone2_5__Sample = Sample 690 :: Sample
+diphone2_6__Sample = Sample 691 :: Sample
+diphone2_7__Sample = Sample 692 :: Sample
+diphone2_8__Sample = Sample 693 :: Sample
+diphone2_9__Sample = Sample 694 :: Sample
+diphone2_10__Sample = Sample 695 :: Sample
+diphone2_11__Sample = Sample 696 :: Sample
+e_0__Sample = Sample 697 :: Sample
+e_1__Sample = Sample 698 :: Sample
+e_2__Sample = Sample 699 :: Sample
+e_3__Sample = Sample 700 :: Sample
+e_4__Sample = Sample 701 :: Sample
+e_5__Sample = Sample 702 :: Sample
+e_6__Sample = Sample 703 :: Sample
+e_7__Sample = Sample 704 :: Sample
+bubble_0__Sample = Sample 705 :: Sample
+bubble_1__Sample = Sample 706 :: Sample
+bubble_2__Sample = Sample 707 :: Sample
+bubble_3__Sample = Sample 708 :: Sample
+bubble_4__Sample = Sample 709 :: Sample
+bubble_5__Sample = Sample 710 :: Sample
+bubble_6__Sample = Sample 711 :: Sample
+bubble_7__Sample = Sample 712 :: Sample
+insect_0__Sample = Sample 713 :: Sample
+insect_1__Sample = Sample 714 :: Sample
+insect_2__Sample = Sample 715 :: Sample
+ade_0__Sample = Sample 716 :: Sample
+ade_1__Sample = Sample 717 :: Sample
+ade_2__Sample = Sample 718 :: Sample
+ade_3__Sample = Sample 719 :: Sample
+ade_4__Sample = Sample 720 :: Sample
+ade_5__Sample = Sample 721 :: Sample
+ade_6__Sample = Sample 722 :: Sample
+ade_7__Sample = Sample 723 :: Sample
+ade_8__Sample = Sample 724 :: Sample
+ade_9__Sample = Sample 725 :: Sample
+glitch_0__Sample = Sample 726 :: Sample
+glitch_1__Sample = Sample 727 :: Sample
+glitch_2__Sample = Sample 728 :: Sample
+glitch_3__Sample = Sample 729 :: Sample
+glitch_4__Sample = Sample 730 :: Sample
+glitch_5__Sample = Sample 731 :: Sample
+glitch_6__Sample = Sample 732 :: Sample
+glitch_7__Sample = Sample 733 :: Sample
+haw_0__Sample = Sample 734 :: Sample
+haw_1__Sample = Sample 735 :: Sample
+haw_2__Sample = Sample 736 :: Sample
+haw_3__Sample = Sample 737 :: Sample
+haw_4__Sample = Sample 738 :: Sample
+haw_5__Sample = Sample 739 :: Sample
+popkick_0__Sample = Sample 740 :: Sample
+popkick_1__Sample = Sample 741 :: Sample
+popkick_2__Sample = Sample 742 :: Sample
+popkick_3__Sample = Sample 743 :: Sample
+popkick_4__Sample = Sample 744 :: Sample
+popkick_5__Sample = Sample 745 :: Sample
+popkick_6__Sample = Sample 746 :: Sample
+popkick_7__Sample = Sample 747 :: Sample
+popkick_8__Sample = Sample 748 :: Sample
+popkick_9__Sample = Sample 749 :: Sample
+breaks157_0__Sample = Sample 750 :: Sample
+gtr_0__Sample = Sample 751 :: Sample
+gtr_1__Sample = Sample 752 :: Sample
+gtr_2__Sample = Sample 753 :: Sample
+clubkick_0__Sample = Sample 754 :: Sample
+clubkick_1__Sample = Sample 755 :: Sample
+clubkick_2__Sample = Sample 756 :: Sample
+clubkick_3__Sample = Sample 757 :: Sample
+clubkick_4__Sample = Sample 758 :: Sample
+breaks152_0__Sample = Sample 759 :: Sample
+x_808bd_0__Sample = Sample 760 :: Sample
+x_808bd_1__Sample = Sample 761 :: Sample
+x_808bd_2__Sample = Sample 762 :: Sample
+x_808bd_3__Sample = Sample 763 :: Sample
+x_808bd_4__Sample = Sample 764 :: Sample
+x_808bd_5__Sample = Sample 765 :: Sample
+x_808bd_6__Sample = Sample 766 :: Sample
+x_808bd_7__Sample = Sample 767 :: Sample
+x_808bd_8__Sample = Sample 768 :: Sample
+x_808bd_9__Sample = Sample 769 :: Sample
+x_808bd_10__Sample = Sample 770 :: Sample
+x_808bd_11__Sample = Sample 771 :: Sample
+x_808bd_12__Sample = Sample 772 :: Sample
+x_808bd_13__Sample = Sample 773 :: Sample
+x_808bd_14__Sample = Sample 774 :: Sample
+x_808bd_15__Sample = Sample 775 :: Sample
+x_808bd_16__Sample = Sample 776 :: Sample
+x_808bd_17__Sample = Sample 777 :: Sample
+x_808bd_18__Sample = Sample 778 :: Sample
+x_808bd_19__Sample = Sample 779 :: Sample
+x_808bd_20__Sample = Sample 780 :: Sample
+x_808bd_21__Sample = Sample 781 :: Sample
+x_808bd_22__Sample = Sample 782 :: Sample
+x_808bd_23__Sample = Sample 783 :: Sample
+x_808bd_24__Sample = Sample 784 :: Sample
+miniyeah_0__Sample = Sample 785 :: Sample
+miniyeah_1__Sample = Sample 786 :: Sample
+miniyeah_2__Sample = Sample 787 :: Sample
+miniyeah_3__Sample = Sample 788 :: Sample
+if_0__Sample = Sample 789 :: Sample
+if_1__Sample = Sample 790 :: Sample
+if_2__Sample = Sample 791 :: Sample
+if_3__Sample = Sample 792 :: Sample
+if_4__Sample = Sample 793 :: Sample
+x_808oh_0__Sample = Sample 794 :: Sample
+x_808oh_1__Sample = Sample 795 :: Sample
+x_808oh_2__Sample = Sample 796 :: Sample
+x_808oh_3__Sample = Sample 797 :: Sample
+x_808oh_4__Sample = Sample 798 :: Sample
+house_0__Sample = Sample 799 :: Sample
+house_1__Sample = Sample 800 :: Sample
+house_2__Sample = Sample 801 :: Sample
+house_3__Sample = Sample 802 :: Sample
+house_4__Sample = Sample 803 :: Sample
+house_5__Sample = Sample 804 :: Sample
+house_6__Sample = Sample 805 :: Sample
+house_7__Sample = Sample 806 :: Sample
+dr_0__Sample = Sample 807 :: Sample
+dr_1__Sample = Sample 808 :: Sample
+dr_2__Sample = Sample 809 :: Sample
+dr_3__Sample = Sample 810 :: Sample
+dr_4__Sample = Sample 811 :: Sample
+dr_5__Sample = Sample 812 :: Sample
+dr_6__Sample = Sample 813 :: Sample
+dr_7__Sample = Sample 814 :: Sample
+dr_8__Sample = Sample 815 :: Sample
+dr_9__Sample = Sample 816 :: Sample
+dr_10__Sample = Sample 817 :: Sample
+dr_11__Sample = Sample 818 :: Sample
+dr_12__Sample = Sample 819 :: Sample
+dr_13__Sample = Sample 820 :: Sample
+dr_14__Sample = Sample 821 :: Sample
+dr_15__Sample = Sample 822 :: Sample
+dr_16__Sample = Sample 823 :: Sample
+dr_17__Sample = Sample 824 :: Sample
+dr_18__Sample = Sample 825 :: Sample
+dr_19__Sample = Sample 826 :: Sample
+dr_20__Sample = Sample 827 :: Sample
+dr_21__Sample = Sample 828 :: Sample
+dr_22__Sample = Sample 829 :: Sample
+dr_23__Sample = Sample 830 :: Sample
+dr_24__Sample = Sample 831 :: Sample
+dr_25__Sample = Sample 832 :: Sample
+dr_26__Sample = Sample 833 :: Sample
+dr_27__Sample = Sample 834 :: Sample
+dr_28__Sample = Sample 835 :: Sample
+dr_29__Sample = Sample 836 :: Sample
+dr_30__Sample = Sample 837 :: Sample
+dr_31__Sample = Sample 838 :: Sample
+dr_32__Sample = Sample 839 :: Sample
+dr_33__Sample = Sample 840 :: Sample
+dr_34__Sample = Sample 841 :: Sample
+dr_35__Sample = Sample 842 :: Sample
+dr_36__Sample = Sample 843 :: Sample
+dr_37__Sample = Sample 844 :: Sample
+dr_38__Sample = Sample 845 :: Sample
+dr_39__Sample = Sample 846 :: Sample
+dr_40__Sample = Sample 847 :: Sample
+dr_41__Sample = Sample 848 :: Sample
+dr55_0__Sample = Sample 849 :: Sample
+dr55_1__Sample = Sample 850 :: Sample
+dr55_2__Sample = Sample 851 :: Sample
+dr55_3__Sample = Sample 852 :: Sample
+bass_0__Sample = Sample 853 :: Sample
+bass_1__Sample = Sample 854 :: Sample
+bass_2__Sample = Sample 855 :: Sample
+bass_3__Sample = Sample 856 :: Sample
+ho_0__Sample = Sample 857 :: Sample
+ho_1__Sample = Sample 858 :: Sample
+ho_2__Sample = Sample 859 :: Sample
+ho_3__Sample = Sample 860 :: Sample
+ho_4__Sample = Sample 861 :: Sample
+ho_5__Sample = Sample 862 :: Sample
+hardkick_0__Sample = Sample 863 :: Sample
+hardkick_1__Sample = Sample 864 :: Sample
+hardkick_2__Sample = Sample 865 :: Sample
+hardkick_3__Sample = Sample 866 :: Sample
+hardkick_4__Sample = Sample 867 :: Sample
+hardkick_5__Sample = Sample 868 :: Sample
+x_808hc_0__Sample = Sample 869 :: Sample
+x_808hc_1__Sample = Sample 870 :: Sample
+x_808hc_2__Sample = Sample 871 :: Sample
+x_808hc_3__Sample = Sample 872 :: Sample
+x_808hc_4__Sample = Sample 873 :: Sample
+hit_0__Sample = Sample 874 :: Sample
+hit_1__Sample = Sample 875 :: Sample
+hit_2__Sample = Sample 876 :: Sample
+hit_3__Sample = Sample 877 :: Sample
+hit_4__Sample = Sample 878 :: Sample
+hit_5__Sample = Sample 879 :: Sample
+breaks165_0__Sample = Sample 880 :: Sample
+dr2_0__Sample = Sample 881 :: Sample
+dr2_1__Sample = Sample 882 :: Sample
+dr2_2__Sample = Sample 883 :: Sample
+dr2_3__Sample = Sample 884 :: Sample
+dr2_4__Sample = Sample 885 :: Sample
+dr2_5__Sample = Sample 886 :: Sample
+tabla_0__Sample = Sample 887 :: Sample
+tabla_1__Sample = Sample 888 :: Sample
+tabla_2__Sample = Sample 889 :: Sample
+tabla_3__Sample = Sample 890 :: Sample
+tabla_4__Sample = Sample 891 :: Sample
+tabla_5__Sample = Sample 892 :: Sample
+tabla_6__Sample = Sample 893 :: Sample
+tabla_7__Sample = Sample 894 :: Sample
+tabla_8__Sample = Sample 895 :: Sample
+tabla_9__Sample = Sample 896 :: Sample
+tabla_10__Sample = Sample 897 :: Sample
+tabla_11__Sample = Sample 898 :: Sample
+tabla_12__Sample = Sample 899 :: Sample
+tabla_13__Sample = Sample 900 :: Sample
+tabla_14__Sample = Sample 901 :: Sample
+tabla_15__Sample = Sample 902 :: Sample
+tabla_16__Sample = Sample 903 :: Sample
+tabla_17__Sample = Sample 904 :: Sample
+tabla_18__Sample = Sample 905 :: Sample
+tabla_19__Sample = Sample 906 :: Sample
+tabla_20__Sample = Sample 907 :: Sample
+tabla_21__Sample = Sample 908 :: Sample
+tabla_22__Sample = Sample 909 :: Sample
+tabla_23__Sample = Sample 910 :: Sample
+tabla_24__Sample = Sample 911 :: Sample
+tabla_25__Sample = Sample 912 :: Sample
+dork2_0__Sample = Sample 913 :: Sample
+dork2_1__Sample = Sample 914 :: Sample
+dork2_2__Sample = Sample 915 :: Sample
+dork2_3__Sample = Sample 916 :: Sample
+hc_0__Sample = Sample 917 :: Sample
+hc_1__Sample = Sample 918 :: Sample
+hc_2__Sample = Sample 919 :: Sample
+hc_3__Sample = Sample 920 :: Sample
+hc_4__Sample = Sample 921 :: Sample
+hc_5__Sample = Sample 922 :: Sample
+bassfoo_0__Sample = Sample 923 :: Sample
+bassfoo_1__Sample = Sample 924 :: Sample
+bassfoo_2__Sample = Sample 925 :: Sample
+seawolf_0__Sample = Sample 926 :: Sample
+seawolf_1__Sample = Sample 927 :: Sample
+seawolf_2__Sample = Sample 928 :: Sample
+cp_0__Sample = Sample 929 :: Sample
+cp_1__Sample = Sample 930 :: Sample
+jazz_0__Sample = Sample 931 :: Sample
+jazz_1__Sample = Sample 932 :: Sample
+jazz_2__Sample = Sample 933 :: Sample
+jazz_3__Sample = Sample 934 :: Sample
+jazz_4__Sample = Sample 935 :: Sample
+jazz_5__Sample = Sample 936 :: Sample
+jazz_6__Sample = Sample 937 :: Sample
+jazz_7__Sample = Sample 938 :: Sample
+juno_0__Sample = Sample 939 :: Sample
+juno_1__Sample = Sample 940 :: Sample
+juno_2__Sample = Sample 941 :: Sample
+juno_3__Sample = Sample 942 :: Sample
+juno_4__Sample = Sample 943 :: Sample
+juno_5__Sample = Sample 944 :: Sample
+juno_6__Sample = Sample 945 :: Sample
+juno_7__Sample = Sample 946 :: Sample
+juno_8__Sample = Sample 947 :: Sample
+juno_9__Sample = Sample 948 :: Sample
+juno_10__Sample = Sample 949 :: Sample
+juno_11__Sample = Sample 950 :: Sample
+birds_0__Sample = Sample 951 :: Sample
+birds_1__Sample = Sample 952 :: Sample
+birds_2__Sample = Sample 953 :: Sample
+birds_3__Sample = Sample 954 :: Sample
+birds_4__Sample = Sample 955 :: Sample
+birds_5__Sample = Sample 956 :: Sample
+birds_6__Sample = Sample 957 :: Sample
+birds_7__Sample = Sample 958 :: Sample
+birds_8__Sample = Sample 959 :: Sample
+birds_9__Sample = Sample 960 :: Sample
+glasstap_0__Sample = Sample 961 :: Sample
+glasstap_1__Sample = Sample 962 :: Sample
+glasstap_2__Sample = Sample 963 :: Sample
+bass1_0__Sample = Sample 964 :: Sample
+bass1_1__Sample = Sample 965 :: Sample
+bass1_2__Sample = Sample 966 :: Sample
+bass1_3__Sample = Sample 967 :: Sample
+bass1_4__Sample = Sample 968 :: Sample
+bass1_5__Sample = Sample 969 :: Sample
+bass1_6__Sample = Sample 970 :: Sample
+bass1_7__Sample = Sample 971 :: Sample
+bass1_8__Sample = Sample 972 :: Sample
+bass1_9__Sample = Sample 973 :: Sample
+bass1_10__Sample = Sample 974 :: Sample
+bass1_11__Sample = Sample 975 :: Sample
+bass1_12__Sample = Sample 976 :: Sample
+bass1_13__Sample = Sample 977 :: Sample
+bass1_14__Sample = Sample 978 :: Sample
+bass1_15__Sample = Sample 979 :: Sample
+bass1_16__Sample = Sample 980 :: Sample
+bass1_17__Sample = Sample 981 :: Sample
+bass1_18__Sample = Sample 982 :: Sample
+bass1_19__Sample = Sample 983 :: Sample
+bass1_20__Sample = Sample 984 :: Sample
+bass1_21__Sample = Sample 985 :: Sample
+bass1_22__Sample = Sample 986 :: Sample
+bass1_23__Sample = Sample 987 :: Sample
+bass1_24__Sample = Sample 988 :: Sample
+bass1_25__Sample = Sample 989 :: Sample
+bass1_26__Sample = Sample 990 :: Sample
+bass1_27__Sample = Sample 991 :: Sample
+bass1_28__Sample = Sample 992 :: Sample
+bass1_29__Sample = Sample 993 :: Sample
+hh27_0__Sample = Sample 994 :: Sample
+hh27_1__Sample = Sample 995 :: Sample
+hh27_2__Sample = Sample 996 :: Sample
+hh27_3__Sample = Sample 997 :: Sample
+hh27_4__Sample = Sample 998 :: Sample
+hh27_5__Sample = Sample 999 :: Sample
+hh27_6__Sample = Sample 1000 :: Sample
+hh27_7__Sample = Sample 1001 :: Sample
+hh27_8__Sample = Sample 1002 :: Sample
+hh27_9__Sample = Sample 1003 :: Sample
+hh27_10__Sample = Sample 1004 :: Sample
+hh27_11__Sample = Sample 1005 :: Sample
+hh27_12__Sample = Sample 1006 :: Sample
+x_808_0__Sample = Sample 1007 :: Sample
+x_808_1__Sample = Sample 1008 :: Sample
+x_808_2__Sample = Sample 1009 :: Sample
+x_808_3__Sample = Sample 1010 :: Sample
+x_808_4__Sample = Sample 1011 :: Sample
+x_808_5__Sample = Sample 1012 :: Sample
+notes_0__Sample = Sample 1013 :: Sample
+notes_1__Sample = Sample 1014 :: Sample
+notes_2__Sample = Sample 1015 :: Sample
+notes_3__Sample = Sample 1016 :: Sample
+notes_4__Sample = Sample 1017 :: Sample
+notes_5__Sample = Sample 1018 :: Sample
+notes_6__Sample = Sample 1019 :: Sample
+notes_7__Sample = Sample 1020 :: Sample
+notes_8__Sample = Sample 1021 :: Sample
+notes_9__Sample = Sample 1022 :: Sample
+notes_10__Sample = Sample 1023 :: Sample
+notes_11__Sample = Sample 1024 :: Sample
+notes_12__Sample = Sample 1025 :: Sample
+notes_13__Sample = Sample 1026 :: Sample
+notes_14__Sample = Sample 1027 :: Sample
+xmas_0__Sample = Sample 1028 :: Sample
+erk_0__Sample = Sample 1029 :: Sample
+x_808mt_0__Sample = Sample 1030 :: Sample
+x_808mt_1__Sample = Sample 1031 :: Sample
+x_808mt_2__Sample = Sample 1032 :: Sample
+x_808mt_3__Sample = Sample 1033 :: Sample
+x_808mt_4__Sample = Sample 1034 :: Sample
+lighter_0__Sample = Sample 1035 :: Sample
+lighter_1__Sample = Sample 1036 :: Sample
+lighter_2__Sample = Sample 1037 :: Sample
+lighter_3__Sample = Sample 1038 :: Sample
+lighter_4__Sample = Sample 1039 :: Sample
+lighter_5__Sample = Sample 1040 :: Sample
+lighter_6__Sample = Sample 1041 :: Sample
+lighter_7__Sample = Sample 1042 :: Sample
+lighter_8__Sample = Sample 1043 :: Sample
+lighter_9__Sample = Sample 1044 :: Sample
+lighter_10__Sample = Sample 1045 :: Sample
+lighter_11__Sample = Sample 1046 :: Sample
+lighter_12__Sample = Sample 1047 :: Sample
+lighter_13__Sample = Sample 1048 :: Sample
+lighter_14__Sample = Sample 1049 :: Sample
+lighter_15__Sample = Sample 1050 :: Sample
+lighter_16__Sample = Sample 1051 :: Sample
+lighter_17__Sample = Sample 1052 :: Sample
+lighter_18__Sample = Sample 1053 :: Sample
+lighter_19__Sample = Sample 1054 :: Sample
+lighter_20__Sample = Sample 1055 :: Sample
+lighter_21__Sample = Sample 1056 :: Sample
+lighter_22__Sample = Sample 1057 :: Sample
+lighter_23__Sample = Sample 1058 :: Sample
+lighter_24__Sample = Sample 1059 :: Sample
+lighter_25__Sample = Sample 1060 :: Sample
+lighter_26__Sample = Sample 1061 :: Sample
+lighter_27__Sample = Sample 1062 :: Sample
+lighter_28__Sample = Sample 1063 :: Sample
+lighter_29__Sample = Sample 1064 :: Sample
+lighter_30__Sample = Sample 1065 :: Sample
+lighter_31__Sample = Sample 1066 :: Sample
+lighter_32__Sample = Sample 1067 :: Sample
+cb_0__Sample = Sample 1068 :: Sample
+subroc3d_0__Sample = Sample 1069 :: Sample
+subroc3d_1__Sample = Sample 1070 :: Sample
+subroc3d_2__Sample = Sample 1071 :: Sample
+subroc3d_3__Sample = Sample 1072 :: Sample
+subroc3d_4__Sample = Sample 1073 :: Sample
+subroc3d_5__Sample = Sample 1074 :: Sample
+subroc3d_6__Sample = Sample 1075 :: Sample
+subroc3d_7__Sample = Sample 1076 :: Sample
+subroc3d_8__Sample = Sample 1077 :: Sample
+subroc3d_9__Sample = Sample 1078 :: Sample
+subroc3d_10__Sample = Sample 1079 :: Sample
+ul_0__Sample = Sample 1080 :: Sample
+ul_1__Sample = Sample 1081 :: Sample
+ul_2__Sample = Sample 1082 :: Sample
+ul_3__Sample = Sample 1083 :: Sample
+ul_4__Sample = Sample 1084 :: Sample
+ul_5__Sample = Sample 1085 :: Sample
+ul_6__Sample = Sample 1086 :: Sample
+ul_7__Sample = Sample 1087 :: Sample
+ul_8__Sample = Sample 1088 :: Sample
+ul_9__Sample = Sample 1089 :: Sample
+gab_0__Sample = Sample 1090 :: Sample
+gab_1__Sample = Sample 1091 :: Sample
+gab_2__Sample = Sample 1092 :: Sample
+gab_3__Sample = Sample 1093 :: Sample
+gab_4__Sample = Sample 1094 :: Sample
+gab_5__Sample = Sample 1095 :: Sample
+gab_6__Sample = Sample 1096 :: Sample
+gab_7__Sample = Sample 1097 :: Sample
+gab_8__Sample = Sample 1098 :: Sample
+gab_9__Sample = Sample 1099 :: Sample
+monsterb_0__Sample = Sample 1100 :: Sample
+monsterb_1__Sample = Sample 1101 :: Sample
+monsterb_2__Sample = Sample 1102 :: Sample
+monsterb_3__Sample = Sample 1103 :: Sample
+monsterb_4__Sample = Sample 1104 :: Sample
+monsterb_5__Sample = Sample 1105 :: Sample
+diphone_0__Sample = Sample 1106 :: Sample
+diphone_1__Sample = Sample 1107 :: Sample
+diphone_2__Sample = Sample 1108 :: Sample
+diphone_3__Sample = Sample 1109 :: Sample
+diphone_4__Sample = Sample 1110 :: Sample
+diphone_5__Sample = Sample 1111 :: Sample
+diphone_6__Sample = Sample 1112 :: Sample
+diphone_7__Sample = Sample 1113 :: Sample
+diphone_8__Sample = Sample 1114 :: Sample
+diphone_9__Sample = Sample 1115 :: Sample
+diphone_10__Sample = Sample 1116 :: Sample
+diphone_11__Sample = Sample 1117 :: Sample
+diphone_12__Sample = Sample 1118 :: Sample
+diphone_13__Sample = Sample 1119 :: Sample
+diphone_14__Sample = Sample 1120 :: Sample
+diphone_15__Sample = Sample 1121 :: Sample
+diphone_16__Sample = Sample 1122 :: Sample
+diphone_17__Sample = Sample 1123 :: Sample
+diphone_18__Sample = Sample 1124 :: Sample
+diphone_19__Sample = Sample 1125 :: Sample
+diphone_20__Sample = Sample 1126 :: Sample
+diphone_21__Sample = Sample 1127 :: Sample
+diphone_22__Sample = Sample 1128 :: Sample
+diphone_23__Sample = Sample 1129 :: Sample
+diphone_24__Sample = Sample 1130 :: Sample
+diphone_25__Sample = Sample 1131 :: Sample
+diphone_26__Sample = Sample 1132 :: Sample
+diphone_27__Sample = Sample 1133 :: Sample
+diphone_28__Sample = Sample 1134 :: Sample
+diphone_29__Sample = Sample 1135 :: Sample
+diphone_30__Sample = Sample 1136 :: Sample
+diphone_31__Sample = Sample 1137 :: Sample
+diphone_32__Sample = Sample 1138 :: Sample
+diphone_33__Sample = Sample 1139 :: Sample
+diphone_34__Sample = Sample 1140 :: Sample
+diphone_35__Sample = Sample 1141 :: Sample
+diphone_36__Sample = Sample 1142 :: Sample
+diphone_37__Sample = Sample 1143 :: Sample
+clak_0__Sample = Sample 1144 :: Sample
+clak_1__Sample = Sample 1145 :: Sample
+sitar_0__Sample = Sample 1146 :: Sample
+sitar_1__Sample = Sample 1147 :: Sample
+sitar_2__Sample = Sample 1148 :: Sample
+sitar_3__Sample = Sample 1149 :: Sample
+sitar_4__Sample = Sample 1150 :: Sample
+sitar_5__Sample = Sample 1151 :: Sample
+sitar_6__Sample = Sample 1152 :: Sample
+sitar_7__Sample = Sample 1153 :: Sample
+ab_0__Sample = Sample 1154 :: Sample
+ab_1__Sample = Sample 1155 :: Sample
+ab_2__Sample = Sample 1156 :: Sample
+ab_3__Sample = Sample 1157 :: Sample
+ab_4__Sample = Sample 1158 :: Sample
+ab_5__Sample = Sample 1159 :: Sample
+ab_6__Sample = Sample 1160 :: Sample
+ab_7__Sample = Sample 1161 :: Sample
+ab_8__Sample = Sample 1162 :: Sample
+ab_9__Sample = Sample 1163 :: Sample
+ab_10__Sample = Sample 1164 :: Sample
+ab_11__Sample = Sample 1165 :: Sample
+cr_0__Sample = Sample 1166 :: Sample
+cr_1__Sample = Sample 1167 :: Sample
+cr_2__Sample = Sample 1168 :: Sample
+cr_3__Sample = Sample 1169 :: Sample
+cr_4__Sample = Sample 1170 :: Sample
+cr_5__Sample = Sample 1171 :: Sample
+tacscan_0__Sample = Sample 1172 :: Sample
+tacscan_1__Sample = Sample 1173 :: Sample
+tacscan_2__Sample = Sample 1174 :: Sample
+tacscan_3__Sample = Sample 1175 :: Sample
+tacscan_4__Sample = Sample 1176 :: Sample
+tacscan_5__Sample = Sample 1177 :: Sample
+tacscan_6__Sample = Sample 1178 :: Sample
+tacscan_7__Sample = Sample 1179 :: Sample
+tacscan_8__Sample = Sample 1180 :: Sample
+tacscan_9__Sample = Sample 1181 :: Sample
+tacscan_10__Sample = Sample 1182 :: Sample
+tacscan_11__Sample = Sample 1183 :: Sample
+tacscan_12__Sample = Sample 1184 :: Sample
+tacscan_13__Sample = Sample 1185 :: Sample
+tacscan_14__Sample = Sample 1186 :: Sample
+tacscan_15__Sample = Sample 1187 :: Sample
+tacscan_16__Sample = Sample 1188 :: Sample
+tacscan_17__Sample = Sample 1189 :: Sample
+tacscan_18__Sample = Sample 1190 :: Sample
+tacscan_19__Sample = Sample 1191 :: Sample
+tacscan_20__Sample = Sample 1192 :: Sample
+tacscan_21__Sample = Sample 1193 :: Sample
+v_0__Sample = Sample 1194 :: Sample
+v_1__Sample = Sample 1195 :: Sample
+v_2__Sample = Sample 1196 :: Sample
+v_3__Sample = Sample 1197 :: Sample
+v_4__Sample = Sample 1198 :: Sample
+v_5__Sample = Sample 1199 :: Sample
+bd_0__Sample = Sample 1200 :: Sample
+bd_1__Sample = Sample 1201 :: Sample
+bd_2__Sample = Sample 1202 :: Sample
+bd_3__Sample = Sample 1203 :: Sample
+bd_4__Sample = Sample 1204 :: Sample
+bd_5__Sample = Sample 1205 :: Sample
+bd_6__Sample = Sample 1206 :: Sample
+bd_7__Sample = Sample 1207 :: Sample
+bd_8__Sample = Sample 1208 :: Sample
+bd_9__Sample = Sample 1209 :: Sample
+bd_10__Sample = Sample 1210 :: Sample
+bd_11__Sample = Sample 1211 :: Sample
+bd_12__Sample = Sample 1212 :: Sample
+bd_13__Sample = Sample 1213 :: Sample
+bd_14__Sample = Sample 1214 :: Sample
+bd_15__Sample = Sample 1215 :: Sample
+bd_16__Sample = Sample 1216 :: Sample
+bd_17__Sample = Sample 1217 :: Sample
+bd_18__Sample = Sample 1218 :: Sample
+bd_19__Sample = Sample 1219 :: Sample
+bd_20__Sample = Sample 1220 :: Sample
+bd_21__Sample = Sample 1221 :: Sample
+bd_22__Sample = Sample 1222 :: Sample
+bd_23__Sample = Sample 1223 :: Sample
+rm_0__Sample = Sample 1224 :: Sample
+rm_1__Sample = Sample 1225 :: Sample
+blue_0__Sample = Sample 1226 :: Sample
+blue_1__Sample = Sample 1227 :: Sample
+latibro_0__Sample = Sample 1228 :: Sample
+latibro_1__Sample = Sample 1229 :: Sample
+latibro_2__Sample = Sample 1230 :: Sample
+latibro_3__Sample = Sample 1231 :: Sample
+latibro_4__Sample = Sample 1232 :: Sample
+latibro_5__Sample = Sample 1233 :: Sample
+latibro_6__Sample = Sample 1234 :: Sample
+latibro_7__Sample = Sample 1235 :: Sample
+dr_few_0__Sample = Sample 1236 :: Sample
+dr_few_1__Sample = Sample 1237 :: Sample
+dr_few_2__Sample = Sample 1238 :: Sample
+dr_few_3__Sample = Sample 1239 :: Sample
+dr_few_4__Sample = Sample 1240 :: Sample
+dr_few_5__Sample = Sample 1241 :: Sample
+dr_few_6__Sample = Sample 1242 :: Sample
+dr_few_7__Sample = Sample 1243 :: Sample
+rave2_0__Sample = Sample 1244 :: Sample
+rave2_1__Sample = Sample 1245 :: Sample
+rave2_2__Sample = Sample 1246 :: Sample
+rave2_3__Sample = Sample 1247 :: Sample
+rave2_4__Sample = Sample 1248 :: Sample
+rave2_5__Sample = Sample 1249 :: Sample
+koy_0__Sample = Sample 1250 :: Sample
+koy_1__Sample = Sample 1251 :: Sample
+glitch2_0__Sample = Sample 1252 :: Sample
+glitch2_1__Sample = Sample 1253 :: Sample
+glitch2_2__Sample = Sample 1254 :: Sample
+glitch2_3__Sample = Sample 1255 :: Sample
+glitch2_4__Sample = Sample 1256 :: Sample
+glitch2_5__Sample = Sample 1257 :: Sample
+glitch2_6__Sample = Sample 1258 :: Sample
+glitch2_7__Sample = Sample 1259 :: Sample
+hmm_0__Sample = Sample 1260 :: Sample
+arp_0__Sample = Sample 1261 :: Sample
+arp_1__Sample = Sample 1262 :: Sample
+made2_0__Sample = Sample 1263 :: Sample
+uxay_0__Sample = Sample 1264 :: Sample
+uxay_1__Sample = Sample 1265 :: Sample
+uxay_2__Sample = Sample 1266 :: Sample
+stomp_0__Sample = Sample 1267 :: Sample
+stomp_1__Sample = Sample 1268 :: Sample
+stomp_2__Sample = Sample 1269 :: Sample
+stomp_3__Sample = Sample 1270 :: Sample
+stomp_4__Sample = Sample 1271 :: Sample
+stomp_5__Sample = Sample 1272 :: Sample
+stomp_6__Sample = Sample 1273 :: Sample
+stomp_7__Sample = Sample 1274 :: Sample
+stomp_8__Sample = Sample 1275 :: Sample
+stomp_9__Sample = Sample 1276 :: Sample
+tech_0__Sample = Sample 1277 :: Sample
+tech_1__Sample = Sample 1278 :: Sample
+tech_2__Sample = Sample 1279 :: Sample
+tech_3__Sample = Sample 1280 :: Sample
+tech_4__Sample = Sample 1281 :: Sample
+tech_5__Sample = Sample 1282 :: Sample
+tech_6__Sample = Sample 1283 :: Sample
+tech_7__Sample = Sample 1284 :: Sample
+tech_8__Sample = Sample 1285 :: Sample
+tech_9__Sample = Sample 1286 :: Sample
+tech_10__Sample = Sample 1287 :: Sample
+tech_11__Sample = Sample 1288 :: Sample
+tech_12__Sample = Sample 1289 :: Sample
+sn_0__Sample = Sample 1290 :: Sample
+sn_1__Sample = Sample 1291 :: Sample
+sn_2__Sample = Sample 1292 :: Sample
+sn_3__Sample = Sample 1293 :: Sample
+sn_4__Sample = Sample 1294 :: Sample
+sn_5__Sample = Sample 1295 :: Sample
+sn_6__Sample = Sample 1296 :: Sample
+sn_7__Sample = Sample 1297 :: Sample
+sn_8__Sample = Sample 1298 :: Sample
+sn_9__Sample = Sample 1299 :: Sample
+sn_10__Sample = Sample 1300 :: Sample
+sn_11__Sample = Sample 1301 :: Sample
+sn_12__Sample = Sample 1302 :: Sample
+sn_13__Sample = Sample 1303 :: Sample
+sn_14__Sample = Sample 1304 :: Sample
+sn_15__Sample = Sample 1305 :: Sample
+sn_16__Sample = Sample 1306 :: Sample
+sn_17__Sample = Sample 1307 :: Sample
+sn_18__Sample = Sample 1308 :: Sample
+sn_19__Sample = Sample 1309 :: Sample
+sn_20__Sample = Sample 1310 :: Sample
+sn_21__Sample = Sample 1311 :: Sample
+sn_22__Sample = Sample 1312 :: Sample
+sn_23__Sample = Sample 1313 :: Sample
+sn_24__Sample = Sample 1314 :: Sample
+sn_25__Sample = Sample 1315 :: Sample
+sn_26__Sample = Sample 1316 :: Sample
+sn_27__Sample = Sample 1317 :: Sample
+sn_28__Sample = Sample 1318 :: Sample
+sn_29__Sample = Sample 1319 :: Sample
+sn_30__Sample = Sample 1320 :: Sample
+sn_31__Sample = Sample 1321 :: Sample
+sn_32__Sample = Sample 1322 :: Sample
+sn_33__Sample = Sample 1323 :: Sample
+sn_34__Sample = Sample 1324 :: Sample
+sn_35__Sample = Sample 1325 :: Sample
+sn_36__Sample = Sample 1326 :: Sample
+sn_37__Sample = Sample 1327 :: Sample
+sn_38__Sample = Sample 1328 :: Sample
+sn_39__Sample = Sample 1329 :: Sample
+sn_40__Sample = Sample 1330 :: Sample
+sn_41__Sample = Sample 1331 :: Sample
+sn_42__Sample = Sample 1332 :: Sample
+sn_43__Sample = Sample 1333 :: Sample
+sn_44__Sample = Sample 1334 :: Sample
+sn_45__Sample = Sample 1335 :: Sample
+sn_46__Sample = Sample 1336 :: Sample
+sn_47__Sample = Sample 1337 :: Sample
+sn_48__Sample = Sample 1338 :: Sample
+sn_49__Sample = Sample 1339 :: Sample
+sn_50__Sample = Sample 1340 :: Sample
+sn_51__Sample = Sample 1341 :: Sample
+less_0__Sample = Sample 1342 :: Sample
+less_1__Sample = Sample 1343 :: Sample
+less_2__Sample = Sample 1344 :: Sample
+less_3__Sample = Sample 1345 :: Sample
+off_0__Sample = Sample 1346 :: Sample
+x_808sd_0__Sample = Sample 1347 :: Sample
+x_808sd_1__Sample = Sample 1348 :: Sample
+x_808sd_2__Sample = Sample 1349 :: Sample
+x_808sd_3__Sample = Sample 1350 :: Sample
+x_808sd_4__Sample = Sample 1351 :: Sample
+x_808sd_5__Sample = Sample 1352 :: Sample
+x_808sd_6__Sample = Sample 1353 :: Sample
+x_808sd_7__Sample = Sample 1354 :: Sample
+x_808sd_8__Sample = Sample 1355 :: Sample
+x_808sd_9__Sample = Sample 1356 :: Sample
+x_808sd_10__Sample = Sample 1357 :: Sample
+x_808sd_11__Sample = Sample 1358 :: Sample
+x_808sd_12__Sample = Sample 1359 :: Sample
+x_808sd_13__Sample = Sample 1360 :: Sample
+x_808sd_14__Sample = Sample 1361 :: Sample
+x_808sd_15__Sample = Sample 1362 :: Sample
+x_808sd_16__Sample = Sample 1363 :: Sample
+x_808sd_17__Sample = Sample 1364 :: Sample
+x_808sd_18__Sample = Sample 1365 :: Sample
+x_808sd_19__Sample = Sample 1366 :: Sample
+x_808sd_20__Sample = Sample 1367 :: Sample
+x_808sd_21__Sample = Sample 1368 :: Sample
+x_808sd_22__Sample = Sample 1369 :: Sample
+x_808sd_23__Sample = Sample 1370 :: Sample
+x_808sd_24__Sample = Sample 1371 :: Sample
+trump_0__Sample = Sample 1372 :: Sample
+trump_1__Sample = Sample 1373 :: Sample
+trump_2__Sample = Sample 1374 :: Sample
+trump_3__Sample = Sample 1375 :: Sample
+trump_4__Sample = Sample 1376 :: Sample
+trump_5__Sample = Sample 1377 :: Sample
+trump_6__Sample = Sample 1378 :: Sample
+trump_7__Sample = Sample 1379 :: Sample
+trump_8__Sample = Sample 1380 :: Sample
+trump_9__Sample = Sample 1381 :: Sample
+trump_10__Sample = Sample 1382 :: Sample
+bev_0__Sample = Sample 1383 :: Sample
+bev_1__Sample = Sample 1384 :: Sample
+pad_0__Sample = Sample 1385 :: Sample
+pad_1__Sample = Sample 1386 :: Sample
+pad_2__Sample = Sample 1387 :: Sample
+led_0__Sample = Sample 1388 :: Sample
+perc_0__Sample = Sample 1389 :: Sample
+perc_1__Sample = Sample 1390 :: Sample
+perc_2__Sample = Sample 1391 :: Sample
+perc_3__Sample = Sample 1392 :: Sample
+perc_4__Sample = Sample 1393 :: Sample
+perc_5__Sample = Sample 1394 :: Sample
+pluck_0__Sample = Sample 1395 :: Sample
+pluck_1__Sample = Sample 1396 :: Sample
+pluck_2__Sample = Sample 1397 :: Sample
+pluck_3__Sample = Sample 1398 :: Sample
+pluck_4__Sample = Sample 1399 :: Sample
+pluck_5__Sample = Sample 1400 :: Sample
+pluck_6__Sample = Sample 1401 :: Sample
+pluck_7__Sample = Sample 1402 :: Sample
+pluck_8__Sample = Sample 1403 :: Sample
+pluck_9__Sample = Sample 1404 :: Sample
+pluck_10__Sample = Sample 1405 :: Sample
+pluck_11__Sample = Sample 1406 :: Sample
+pluck_12__Sample = Sample 1407 :: Sample
+pluck_13__Sample = Sample 1408 :: Sample
+pluck_14__Sample = Sample 1409 :: Sample
+pluck_15__Sample = Sample 1410 :: Sample
+pluck_16__Sample = Sample 1411 :: Sample
+bleep_0__Sample = Sample 1412 :: Sample
+bleep_1__Sample = Sample 1413 :: Sample
+bleep_2__Sample = Sample 1414 :: Sample
+bleep_3__Sample = Sample 1415 :: Sample
+bleep_4__Sample = Sample 1416 :: Sample
+bleep_5__Sample = Sample 1417 :: Sample
+bleep_6__Sample = Sample 1418 :: Sample
+bleep_7__Sample = Sample 1419 :: Sample
+bleep_8__Sample = Sample 1420 :: Sample
+bleep_9__Sample = Sample 1421 :: Sample
+bleep_10__Sample = Sample 1422 :: Sample
+bleep_11__Sample = Sample 1423 :: Sample
+bleep_12__Sample = Sample 1424 :: Sample
+ht_0__Sample = Sample 1425 :: Sample
+ht_1__Sample = Sample 1426 :: Sample
+ht_2__Sample = Sample 1427 :: Sample
+ht_3__Sample = Sample 1428 :: Sample
+ht_4__Sample = Sample 1429 :: Sample
+ht_5__Sample = Sample 1430 :: Sample
+ht_6__Sample = Sample 1431 :: Sample
+ht_7__Sample = Sample 1432 :: Sample
+ht_8__Sample = Sample 1433 :: Sample
+ht_9__Sample = Sample 1434 :: Sample
+ht_10__Sample = Sample 1435 :: Sample
+ht_11__Sample = Sample 1436 :: Sample
+ht_12__Sample = Sample 1437 :: Sample
+ht_13__Sample = Sample 1438 :: Sample
+ht_14__Sample = Sample 1439 :: Sample
+ht_15__Sample = Sample 1440 :: Sample
+ades4_0__Sample = Sample 1441 :: Sample
+ades4_1__Sample = Sample 1442 :: Sample
+ades4_2__Sample = Sample 1443 :: Sample
+ades4_3__Sample = Sample 1444 :: Sample
+ades4_4__Sample = Sample 1445 :: Sample
+ades4_5__Sample = Sample 1446 :: Sample
+proc_0__Sample = Sample 1447 :: Sample
+proc_1__Sample = Sample 1448 :: Sample
+gretsch_0__Sample = Sample 1449 :: Sample
+gretsch_1__Sample = Sample 1450 :: Sample
+gretsch_2__Sample = Sample 1451 :: Sample
+gretsch_3__Sample = Sample 1452 :: Sample
+gretsch_4__Sample = Sample 1453 :: Sample
+gretsch_5__Sample = Sample 1454 :: Sample
+gretsch_6__Sample = Sample 1455 :: Sample
+gretsch_7__Sample = Sample 1456 :: Sample
+gretsch_8__Sample = Sample 1457 :: Sample
+gretsch_9__Sample = Sample 1458 :: Sample
+gretsch_10__Sample = Sample 1459 :: Sample
+gretsch_11__Sample = Sample 1460 :: Sample
+gretsch_12__Sample = Sample 1461 :: Sample
+gretsch_13__Sample = Sample 1462 :: Sample
+gretsch_14__Sample = Sample 1463 :: Sample
+gretsch_15__Sample = Sample 1464 :: Sample
+gretsch_16__Sample = Sample 1465 :: Sample
+gretsch_17__Sample = Sample 1466 :: Sample
+gretsch_18__Sample = Sample 1467 :: Sample
+gretsch_19__Sample = Sample 1468 :: Sample
+gretsch_20__Sample = Sample 1469 :: Sample
+gretsch_21__Sample = Sample 1470 :: Sample
+gretsch_22__Sample = Sample 1471 :: Sample
+gretsch_23__Sample = Sample 1472 :: Sample
+outdoor_0__Sample = Sample 1473 :: Sample
+outdoor_1__Sample = Sample 1474 :: Sample
+outdoor_2__Sample = Sample 1475 :: Sample
+outdoor_3__Sample = Sample 1476 :: Sample
+outdoor_4__Sample = Sample 1477 :: Sample
+outdoor_5__Sample = Sample 1478 :: Sample
+techno_0__Sample = Sample 1479 :: Sample
+techno_1__Sample = Sample 1480 :: Sample
+techno_2__Sample = Sample 1481 :: Sample
+techno_3__Sample = Sample 1482 :: Sample
+techno_4__Sample = Sample 1483 :: Sample
+techno_5__Sample = Sample 1484 :: Sample
+techno_6__Sample = Sample 1485 :: Sample
+ulgab_0__Sample = Sample 1486 :: Sample
+ulgab_1__Sample = Sample 1487 :: Sample
+ulgab_2__Sample = Sample 1488 :: Sample
+ulgab_3__Sample = Sample 1489 :: Sample
+ulgab_4__Sample = Sample 1490 :: Sample
+breaks125_0__Sample = Sample 1491 :: Sample
+breaks125_1__Sample = Sample 1492 :: Sample
+bin_0__Sample = Sample 1493 :: Sample
+bin_1__Sample = Sample 1494 :: Sample
+x_808mc_0__Sample = Sample 1495 :: Sample
+x_808mc_1__Sample = Sample 1496 :: Sample
+x_808mc_2__Sample = Sample 1497 :: Sample
+x_808mc_3__Sample = Sample 1498 :: Sample
+x_808mc_4__Sample = Sample 1499 :: Sample
+lt_0__Sample = Sample 1500 :: Sample
+lt_1__Sample = Sample 1501 :: Sample
+lt_2__Sample = Sample 1502 :: Sample
+lt_3__Sample = Sample 1503 :: Sample
+lt_4__Sample = Sample 1504 :: Sample
+lt_5__Sample = Sample 1505 :: Sample
+lt_6__Sample = Sample 1506 :: Sample
+lt_7__Sample = Sample 1507 :: Sample
+lt_8__Sample = Sample 1508 :: Sample
+lt_9__Sample = Sample 1509 :: Sample
+lt_10__Sample = Sample 1510 :: Sample
+lt_11__Sample = Sample 1511 :: Sample
+lt_12__Sample = Sample 1512 :: Sample
+lt_13__Sample = Sample 1513 :: Sample
+lt_14__Sample = Sample 1514 :: Sample
+lt_15__Sample = Sample 1515 :: Sample
+amencutup_0__Sample = Sample 1516 :: Sample
+amencutup_1__Sample = Sample 1517 :: Sample
+amencutup_2__Sample = Sample 1518 :: Sample
+amencutup_3__Sample = Sample 1519 :: Sample
+amencutup_4__Sample = Sample 1520 :: Sample
+amencutup_5__Sample = Sample 1521 :: Sample
+amencutup_6__Sample = Sample 1522 :: Sample
+amencutup_7__Sample = Sample 1523 :: Sample
+amencutup_8__Sample = Sample 1524 :: Sample
+amencutup_9__Sample = Sample 1525 :: Sample
+amencutup_10__Sample = Sample 1526 :: Sample
+amencutup_11__Sample = Sample 1527 :: Sample
+amencutup_12__Sample = Sample 1528 :: Sample
+amencutup_13__Sample = Sample 1529 :: Sample
+amencutup_14__Sample = Sample 1530 :: Sample
+amencutup_15__Sample = Sample 1531 :: Sample
+amencutup_16__Sample = Sample 1532 :: Sample
+amencutup_17__Sample = Sample 1533 :: Sample
+amencutup_18__Sample = Sample 1534 :: Sample
+amencutup_19__Sample = Sample 1535 :: Sample
+amencutup_20__Sample = Sample 1536 :: Sample
+amencutup_21__Sample = Sample 1537 :: Sample
+amencutup_22__Sample = Sample 1538 :: Sample
+amencutup_23__Sample = Sample 1539 :: Sample
+amencutup_24__Sample = Sample 1540 :: Sample
+amencutup_25__Sample = Sample 1541 :: Sample
+amencutup_26__Sample = Sample 1542 :: Sample
+amencutup_27__Sample = Sample 1543 :: Sample
+amencutup_28__Sample = Sample 1544 :: Sample
+amencutup_29__Sample = Sample 1545 :: Sample
+amencutup_30__Sample = Sample 1546 :: Sample
+amencutup_31__Sample = Sample 1547 :: Sample
+drum_0__Sample = Sample 1548 :: Sample
+drum_1__Sample = Sample 1549 :: Sample
+drum_2__Sample = Sample 1550 :: Sample
+drum_3__Sample = Sample 1551 :: Sample
+drum_4__Sample = Sample 1552 :: Sample
+drum_5__Sample = Sample 1553 :: Sample
+coins_0__Sample = Sample 1554 :: Sample
+industrial_0__Sample = Sample 1555 :: Sample
+industrial_1__Sample = Sample 1556 :: Sample
+industrial_2__Sample = Sample 1557 :: Sample
+industrial_3__Sample = Sample 1558 :: Sample
+industrial_4__Sample = Sample 1559 :: Sample
+industrial_5__Sample = Sample 1560 :: Sample
+industrial_6__Sample = Sample 1561 :: Sample
+industrial_7__Sample = Sample 1562 :: Sample
+industrial_8__Sample = Sample 1563 :: Sample
+industrial_9__Sample = Sample 1564 :: Sample
+industrial_10__Sample = Sample 1565 :: Sample
+industrial_11__Sample = Sample 1566 :: Sample
+industrial_12__Sample = Sample 1567 :: Sample
+industrial_13__Sample = Sample 1568 :: Sample
+industrial_14__Sample = Sample 1569 :: Sample
+industrial_15__Sample = Sample 1570 :: Sample
+industrial_16__Sample = Sample 1571 :: Sample
+industrial_17__Sample = Sample 1572 :: Sample
+industrial_18__Sample = Sample 1573 :: Sample
+industrial_19__Sample = Sample 1574 :: Sample
+industrial_20__Sample = Sample 1575 :: Sample
+industrial_21__Sample = Sample 1576 :: Sample
+industrial_22__Sample = Sample 1577 :: Sample
+industrial_23__Sample = Sample 1578 :: Sample
+industrial_24__Sample = Sample 1579 :: Sample
+industrial_25__Sample = Sample 1580 :: Sample
+industrial_26__Sample = Sample 1581 :: Sample
+industrial_27__Sample = Sample 1582 :: Sample
+industrial_28__Sample = Sample 1583 :: Sample
+industrial_29__Sample = Sample 1584 :: Sample
+industrial_30__Sample = Sample 1585 :: Sample
+industrial_31__Sample = Sample 1586 :: Sample
+tink_0__Sample = Sample 1587 :: Sample
+tink_1__Sample = Sample 1588 :: Sample
+tink_2__Sample = Sample 1589 :: Sample
+tink_3__Sample = Sample 1590 :: Sample
+tink_4__Sample = Sample 1591 :: Sample
+co_0__Sample = Sample 1592 :: Sample
+co_1__Sample = Sample 1593 :: Sample
+co_2__Sample = Sample 1594 :: Sample
+co_3__Sample = Sample 1595 :: Sample
+fest_0__Sample = Sample 1596 :: Sample
+feelfx_0__Sample = Sample 1597 :: Sample
+feelfx_1__Sample = Sample 1598 :: Sample
+feelfx_2__Sample = Sample 1599 :: Sample
+feelfx_3__Sample = Sample 1600 :: Sample
+feelfx_4__Sample = Sample 1601 :: Sample
+feelfx_5__Sample = Sample 1602 :: Sample
+feelfx_6__Sample = Sample 1603 :: Sample
+feelfx_7__Sample = Sample 1604 :: Sample
+x_808cy_0__Sample = Sample 1605 :: Sample
+x_808cy_1__Sample = Sample 1606 :: Sample
+x_808cy_2__Sample = Sample 1607 :: Sample
+x_808cy_3__Sample = Sample 1608 :: Sample
+x_808cy_4__Sample = Sample 1609 :: Sample
+x_808cy_5__Sample = Sample 1610 :: Sample
+x_808cy_6__Sample = Sample 1611 :: Sample
+x_808cy_7__Sample = Sample 1612 :: Sample
+x_808cy_8__Sample = Sample 1613 :: Sample
+x_808cy_9__Sample = Sample 1614 :: Sample
+x_808cy_10__Sample = Sample 1615 :: Sample
+x_808cy_11__Sample = Sample 1616 :: Sample
+x_808cy_12__Sample = Sample 1617 :: Sample
+x_808cy_13__Sample = Sample 1618 :: Sample
+x_808cy_14__Sample = Sample 1619 :: Sample
+x_808cy_15__Sample = Sample 1620 :: Sample
+x_808cy_16__Sample = Sample 1621 :: Sample
+x_808cy_17__Sample = Sample 1622 :: Sample
+x_808cy_18__Sample = Sample 1623 :: Sample
+x_808cy_19__Sample = Sample 1624 :: Sample
+x_808cy_20__Sample = Sample 1625 :: Sample
+x_808cy_21__Sample = Sample 1626 :: Sample
+x_808cy_22__Sample = Sample 1627 :: Sample
+x_808cy_23__Sample = Sample 1628 :: Sample
+x_808cy_24__Sample = Sample 1629 :: Sample
+world_0__Sample = Sample 1630 :: Sample
+world_1__Sample = Sample 1631 :: Sample
+world_2__Sample = Sample 1632 :: Sample
+f_0__Sample = Sample 1633 :: Sample
+numbers_0__Sample = Sample 1634 :: Sample
+numbers_1__Sample = Sample 1635 :: Sample
+numbers_2__Sample = Sample 1636 :: Sample
+numbers_3__Sample = Sample 1637 :: Sample
+numbers_4__Sample = Sample 1638 :: Sample
+numbers_5__Sample = Sample 1639 :: Sample
+numbers_6__Sample = Sample 1640 :: Sample
+numbers_7__Sample = Sample 1641 :: Sample
+numbers_8__Sample = Sample 1642 :: Sample
+d_0__Sample = Sample 1643 :: Sample
+d_1__Sample = Sample 1644 :: Sample
+d_2__Sample = Sample 1645 :: Sample
+d_3__Sample = Sample 1646 :: Sample
+padlong_0__Sample = Sample 1647 :: Sample
+sequential_0__Sample = Sample 1648 :: Sample
+sequential_1__Sample = Sample 1649 :: Sample
+sequential_2__Sample = Sample 1650 :: Sample
+sequential_3__Sample = Sample 1651 :: Sample
+sequential_4__Sample = Sample 1652 :: Sample
+sequential_5__Sample = Sample 1653 :: Sample
+sequential_6__Sample = Sample 1654 :: Sample
+sequential_7__Sample = Sample 1655 :: Sample
+stab_0__Sample = Sample 1656 :: Sample
+stab_1__Sample = Sample 1657 :: Sample
+stab_2__Sample = Sample 1658 :: Sample
+stab_3__Sample = Sample 1659 :: Sample
+stab_4__Sample = Sample 1660 :: Sample
+stab_5__Sample = Sample 1661 :: Sample
+stab_6__Sample = Sample 1662 :: Sample
+stab_7__Sample = Sample 1663 :: Sample
+stab_8__Sample = Sample 1664 :: Sample
+stab_9__Sample = Sample 1665 :: Sample
+stab_10__Sample = Sample 1666 :: Sample
+stab_11__Sample = Sample 1667 :: Sample
+stab_12__Sample = Sample 1668 :: Sample
+stab_13__Sample = Sample 1669 :: Sample
+stab_14__Sample = Sample 1670 :: Sample
+stab_15__Sample = Sample 1671 :: Sample
+stab_16__Sample = Sample 1672 :: Sample
+stab_17__Sample = Sample 1673 :: Sample
+stab_18__Sample = Sample 1674 :: Sample
+stab_19__Sample = Sample 1675 :: Sample
+stab_20__Sample = Sample 1676 :: Sample
+stab_21__Sample = Sample 1677 :: Sample
+stab_22__Sample = Sample 1678 :: Sample
+electro1_0__Sample = Sample 1679 :: Sample
+electro1_1__Sample = Sample 1680 :: Sample
+electro1_2__Sample = Sample 1681 :: Sample
+electro1_3__Sample = Sample 1682 :: Sample
+electro1_4__Sample = Sample 1683 :: Sample
+electro1_5__Sample = Sample 1684 :: Sample
+electro1_6__Sample = Sample 1685 :: Sample
+electro1_7__Sample = Sample 1686 :: Sample
+electro1_8__Sample = Sample 1687 :: Sample
+electro1_9__Sample = Sample 1688 :: Sample
+electro1_10__Sample = Sample 1689 :: Sample
+electro1_11__Sample = Sample 1690 :: Sample
+electro1_12__Sample = Sample 1691 :: Sample
+ifdrums_0__Sample = Sample 1692 :: Sample
+ifdrums_1__Sample = Sample 1693 :: Sample
+ifdrums_2__Sample = Sample 1694 :: Sample
+invaders_0__Sample = Sample 1695 :: Sample
+invaders_1__Sample = Sample 1696 :: Sample
+invaders_2__Sample = Sample 1697 :: Sample
+invaders_3__Sample = Sample 1698 :: Sample
+invaders_4__Sample = Sample 1699 :: Sample
+invaders_5__Sample = Sample 1700 :: Sample
+invaders_6__Sample = Sample 1701 :: Sample
+invaders_7__Sample = Sample 1702 :: Sample
+invaders_8__Sample = Sample 1703 :: Sample
+invaders_9__Sample = Sample 1704 :: Sample
+invaders_10__Sample = Sample 1705 :: Sample
+invaders_11__Sample = Sample 1706 :: Sample
+invaders_12__Sample = Sample 1707 :: Sample
+invaders_13__Sample = Sample 1708 :: Sample
+invaders_14__Sample = Sample 1709 :: Sample
+invaders_15__Sample = Sample 1710 :: Sample
+invaders_16__Sample = Sample 1711 :: Sample
+invaders_17__Sample = Sample 1712 :: Sample
+dist_0__Sample = Sample 1713 :: Sample
+dist_1__Sample = Sample 1714 :: Sample
+dist_2__Sample = Sample 1715 :: Sample
+dist_3__Sample = Sample 1716 :: Sample
+dist_4__Sample = Sample 1717 :: Sample
+dist_5__Sample = Sample 1718 :: Sample
+dist_6__Sample = Sample 1719 :: Sample
+dist_7__Sample = Sample 1720 :: Sample
+dist_8__Sample = Sample 1721 :: Sample
+dist_9__Sample = Sample 1722 :: Sample
+dist_10__Sample = Sample 1723 :: Sample
+dist_11__Sample = Sample 1724 :: Sample
+dist_12__Sample = Sample 1725 :: Sample
+dist_13__Sample = Sample 1726 :: Sample
+dist_14__Sample = Sample 1727 :: Sample
+dist_15__Sample = Sample 1728 :: Sample
+sundance_0__Sample = Sample 1729 :: Sample
+sundance_1__Sample = Sample 1730 :: Sample
+sundance_2__Sample = Sample 1731 :: Sample
+sundance_3__Sample = Sample 1732 :: Sample
+sundance_4__Sample = Sample 1733 :: Sample
+sundance_5__Sample = Sample 1734 :: Sample
+speech_0__Sample = Sample 1735 :: Sample
+speech_1__Sample = Sample 1736 :: Sample
+speech_2__Sample = Sample 1737 :: Sample
+speech_3__Sample = Sample 1738 :: Sample
+speech_4__Sample = Sample 1739 :: Sample
+speech_5__Sample = Sample 1740 :: Sample
+speech_6__Sample = Sample 1741 :: Sample
+toys_0__Sample = Sample 1742 :: Sample
+toys_1__Sample = Sample 1743 :: Sample
+toys_2__Sample = Sample 1744 :: Sample
+toys_3__Sample = Sample 1745 :: Sample
+toys_4__Sample = Sample 1746 :: Sample
+toys_5__Sample = Sample 1747 :: Sample
+toys_6__Sample = Sample 1748 :: Sample
+toys_7__Sample = Sample 1749 :: Sample
+toys_8__Sample = Sample 1750 :: Sample
+toys_9__Sample = Sample 1751 :: Sample
+toys_10__Sample = Sample 1752 :: Sample
+toys_11__Sample = Sample 1753 :: Sample
+toys_12__Sample = Sample 1754 :: Sample
+bass0_0__Sample = Sample 1755 :: Sample
+bass0_1__Sample = Sample 1756 :: Sample
+bass0_2__Sample = Sample 1757 :: Sample
+realclaps_0__Sample = Sample 1758 :: Sample
+realclaps_1__Sample = Sample 1759 :: Sample
+realclaps_2__Sample = Sample 1760 :: Sample
+realclaps_3__Sample = Sample 1761 :: Sample
+dorkbot_0__Sample = Sample 1762 :: Sample
+dorkbot_1__Sample = Sample 1763 :: Sample
+arpy_0__Sample = Sample 1764 :: Sample
+arpy_1__Sample = Sample 1765 :: Sample
+arpy_2__Sample = Sample 1766 :: Sample
+arpy_3__Sample = Sample 1767 :: Sample
+arpy_4__Sample = Sample 1768 :: Sample
+arpy_5__Sample = Sample 1769 :: Sample
+arpy_6__Sample = Sample 1770 :: Sample
+arpy_7__Sample = Sample 1771 :: Sample
+arpy_8__Sample = Sample 1772 :: Sample
+arpy_9__Sample = Sample 1773 :: Sample
+arpy_10__Sample = Sample 1774 :: Sample
+fire_0__Sample = Sample 1775 :: Sample
+hoover_0__Sample = Sample 1776 :: Sample
+hoover_1__Sample = Sample 1777 :: Sample
+hoover_2__Sample = Sample 1778 :: Sample
+hoover_3__Sample = Sample 1779 :: Sample
+hoover_4__Sample = Sample 1780 :: Sample
+hoover_5__Sample = Sample 1781 :: Sample
+breath_0__Sample = Sample 1782 :: Sample
+rave_0__Sample = Sample 1783 :: Sample
+rave_1__Sample = Sample 1784 :: Sample
+rave_2__Sample = Sample 1785 :: Sample
+rave_3__Sample = Sample 1786 :: Sample
+rave_4__Sample = Sample 1787 :: Sample
+rave_5__Sample = Sample 1788 :: Sample
+rave_6__Sample = Sample 1789 :: Sample
+rave_7__Sample = Sample 1790 :: Sample
+bottle_0__Sample = Sample 1791 :: Sample
+bottle_1__Sample = Sample 1792 :: Sample
+bottle_2__Sample = Sample 1793 :: Sample
+bottle_3__Sample = Sample 1794 :: Sample
+bottle_4__Sample = Sample 1795 :: Sample
+bottle_5__Sample = Sample 1796 :: Sample
+bottle_6__Sample = Sample 1797 :: Sample
+bottle_7__Sample = Sample 1798 :: Sample
+bottle_8__Sample = Sample 1799 :: Sample
+bottle_9__Sample = Sample 1800 :: Sample
+bottle_10__Sample = Sample 1801 :: Sample
+bottle_11__Sample = Sample 1802 :: Sample
+bottle_12__Sample = Sample 1803 :: Sample
+east_0__Sample = Sample 1804 :: Sample
+east_1__Sample = Sample 1805 :: Sample
+east_2__Sample = Sample 1806 :: Sample
+east_3__Sample = Sample 1807 :: Sample
+east_4__Sample = Sample 1808 :: Sample
+east_5__Sample = Sample 1809 :: Sample
+east_6__Sample = Sample 1810 :: Sample
+east_7__Sample = Sample 1811 :: Sample
+east_8__Sample = Sample 1812 :: Sample
+linnhats_0__Sample = Sample 1813 :: Sample
+linnhats_1__Sample = Sample 1814 :: Sample
+linnhats_2__Sample = Sample 1815 :: Sample
+linnhats_3__Sample = Sample 1816 :: Sample
+linnhats_4__Sample = Sample 1817 :: Sample
+linnhats_5__Sample = Sample 1818 :: Sample
+speedupdown_0__Sample = Sample 1819 :: Sample
+speedupdown_1__Sample = Sample 1820 :: Sample
+speedupdown_2__Sample = Sample 1821 :: Sample
+speedupdown_3__Sample = Sample 1822 :: Sample
+speedupdown_4__Sample = Sample 1823 :: Sample
+speedupdown_5__Sample = Sample 1824 :: Sample
+speedupdown_6__Sample = Sample 1825 :: Sample
+speedupdown_7__Sample = Sample 1826 :: Sample
+speedupdown_8__Sample = Sample 1827 :: Sample
+cosmicg_0__Sample = Sample 1828 :: Sample
+cosmicg_1__Sample = Sample 1829 :: Sample
+cosmicg_2__Sample = Sample 1830 :: Sample
+cosmicg_3__Sample = Sample 1831 :: Sample
+cosmicg_4__Sample = Sample 1832 :: Sample
+cosmicg_5__Sample = Sample 1833 :: Sample
+cosmicg_6__Sample = Sample 1834 :: Sample
+cosmicg_7__Sample = Sample 1835 :: Sample
+cosmicg_8__Sample = Sample 1836 :: Sample
+cosmicg_9__Sample = Sample 1837 :: Sample
+cosmicg_10__Sample = Sample 1838 :: Sample
+cosmicg_11__Sample = Sample 1839 :: Sample
+cosmicg_12__Sample = Sample 1840 :: Sample
+cosmicg_13__Sample = Sample 1841 :: Sample
+cosmicg_14__Sample = Sample 1842 :: Sample
+jvbass_0__Sample = Sample 1843 :: Sample
+jvbass_1__Sample = Sample 1844 :: Sample
+jvbass_2__Sample = Sample 1845 :: Sample
+jvbass_3__Sample = Sample 1846 :: Sample
+jvbass_4__Sample = Sample 1847 :: Sample
+jvbass_5__Sample = Sample 1848 :: Sample
+jvbass_6__Sample = Sample 1849 :: Sample
+jvbass_7__Sample = Sample 1850 :: Sample
+jvbass_8__Sample = Sample 1851 :: Sample
+jvbass_9__Sample = Sample 1852 :: Sample
+jvbass_10__Sample = Sample 1853 :: Sample
+jvbass_11__Sample = Sample 1854 :: Sample
+jvbass_12__Sample = Sample 1855 :: Sample
+mash_0__Sample = Sample 1856 :: Sample
+mash_1__Sample = Sample 1857 :: Sample
+feel_0__Sample = Sample 1858 :: Sample
+feel_1__Sample = Sample 1859 :: Sample
+feel_2__Sample = Sample 1860 :: Sample
+feel_3__Sample = Sample 1861 :: Sample
+feel_4__Sample = Sample 1862 :: Sample
+feel_5__Sample = Sample 1863 :: Sample
+feel_6__Sample = Sample 1864 :: Sample
+short_0__Sample = Sample 1865 :: Sample
+short_1__Sample = Sample 1866 :: Sample
+short_2__Sample = Sample 1867 :: Sample
+short_3__Sample = Sample 1868 :: Sample
+short_4__Sample = Sample 1869 :: Sample
+incoming_0__Sample = Sample 1870 :: Sample
+incoming_1__Sample = Sample 1871 :: Sample
+incoming_2__Sample = Sample 1872 :: Sample
+incoming_3__Sample = Sample 1873 :: Sample
+incoming_4__Sample = Sample 1874 :: Sample
+incoming_5__Sample = Sample 1875 :: Sample
+incoming_6__Sample = Sample 1876 :: Sample
+incoming_7__Sample = Sample 1877 :: Sample
+flick_0__Sample = Sample 1878 :: Sample
+flick_1__Sample = Sample 1879 :: Sample
+flick_2__Sample = Sample 1880 :: Sample
+flick_3__Sample = Sample 1881 :: Sample
+flick_4__Sample = Sample 1882 :: Sample
+flick_5__Sample = Sample 1883 :: Sample
+flick_6__Sample = Sample 1884 :: Sample
+flick_7__Sample = Sample 1885 :: Sample
+flick_8__Sample = Sample 1886 :: Sample
+flick_9__Sample = Sample 1887 :: Sample
+flick_10__Sample = Sample 1888 :: Sample
+flick_11__Sample = Sample 1889 :: Sample
+flick_12__Sample = Sample 1890 :: Sample
+flick_13__Sample = Sample 1891 :: Sample
+flick_14__Sample = Sample 1892 :: Sample
+flick_15__Sample = Sample 1893 :: Sample
+flick_16__Sample = Sample 1894 :: Sample
+reverbkick_0__Sample = Sample 1895 :: Sample
+bass2_0__Sample = Sample 1896 :: Sample
+bass2_1__Sample = Sample 1897 :: Sample
+bass2_2__Sample = Sample 1898 :: Sample
+bass2_3__Sample = Sample 1899 :: Sample
+bass2_4__Sample = Sample 1900 :: Sample
+baa_0__Sample = Sample 1901 :: Sample
+baa_1__Sample = Sample 1902 :: Sample
+baa_2__Sample = Sample 1903 :: Sample
+baa_3__Sample = Sample 1904 :: Sample
+baa_4__Sample = Sample 1905 :: Sample
+baa_5__Sample = Sample 1906 :: Sample
+baa_6__Sample = Sample 1907 :: Sample
+fm_0__Sample = Sample 1908 :: Sample
+fm_1__Sample = Sample 1909 :: Sample
+fm_2__Sample = Sample 1910 :: Sample
+fm_3__Sample = Sample 1911 :: Sample
+fm_4__Sample = Sample 1912 :: Sample
+fm_5__Sample = Sample 1913 :: Sample
+fm_6__Sample = Sample 1914 :: Sample
+fm_7__Sample = Sample 1915 :: Sample
+fm_8__Sample = Sample 1916 :: Sample
+fm_9__Sample = Sample 1917 :: Sample
+fm_10__Sample = Sample 1918 :: Sample
+fm_11__Sample = Sample 1919 :: Sample
+fm_12__Sample = Sample 1920 :: Sample
+fm_13__Sample = Sample 1921 :: Sample
+fm_14__Sample = Sample 1922 :: Sample
+fm_15__Sample = Sample 1923 :: Sample
+fm_16__Sample = Sample 1924 :: Sample
+click_0__Sample = Sample 1925 :: Sample
+click_1__Sample = Sample 1926 :: Sample
+click_2__Sample = Sample 1927 :: Sample
+click_3__Sample = Sample 1928 :: Sample
+control_0__Sample = Sample 1929 :: Sample
+control_1__Sample = Sample 1930 :: Sample
+peri_0__Sample = Sample 1931 :: Sample
+peri_1__Sample = Sample 1932 :: Sample
+peri_2__Sample = Sample 1933 :: Sample
+peri_3__Sample = Sample 1934 :: Sample
+peri_4__Sample = Sample 1935 :: Sample
+peri_5__Sample = Sample 1936 :: Sample
+peri_6__Sample = Sample 1937 :: Sample
+peri_7__Sample = Sample 1938 :: Sample
+peri_8__Sample = Sample 1939 :: Sample
+peri_9__Sample = Sample 1940 :: Sample
+peri_10__Sample = Sample 1941 :: Sample
+peri_11__Sample = Sample 1942 :: Sample
+peri_12__Sample = Sample 1943 :: Sample
+peri_13__Sample = Sample 1944 :: Sample
+peri_14__Sample = Sample 1945 :: Sample
+procshort_0__Sample = Sample 1946 :: Sample
+procshort_1__Sample = Sample 1947 :: Sample
+procshort_2__Sample = Sample 1948 :: Sample
+procshort_3__Sample = Sample 1949 :: Sample
+procshort_4__Sample = Sample 1950 :: Sample
+procshort_5__Sample = Sample 1951 :: Sample
+procshort_6__Sample = Sample 1952 :: Sample
+procshort_7__Sample = Sample 1953 :: Sample
+hand_0__Sample = Sample 1954 :: Sample
+hand_1__Sample = Sample 1955 :: Sample
+hand_2__Sample = Sample 1956 :: Sample
+hand_3__Sample = Sample 1957 :: Sample
+hand_4__Sample = Sample 1958 :: Sample
+hand_5__Sample = Sample 1959 :: Sample
+hand_6__Sample = Sample 1960 :: Sample
+hand_7__Sample = Sample 1961 :: Sample
+hand_8__Sample = Sample 1962 :: Sample
+hand_9__Sample = Sample 1963 :: Sample
+hand_10__Sample = Sample 1964 :: Sample
+hand_11__Sample = Sample 1965 :: Sample
+hand_12__Sample = Sample 1966 :: Sample
+hand_13__Sample = Sample 1967 :: Sample
+hand_14__Sample = Sample 1968 :: Sample
+hand_15__Sample = Sample 1969 :: Sample
+hand_16__Sample = Sample 1970 :: Sample
+future_0__Sample = Sample 1971 :: Sample
+future_1__Sample = Sample 1972 :: Sample
+future_2__Sample = Sample 1973 :: Sample
+future_3__Sample = Sample 1974 :: Sample
+future_4__Sample = Sample 1975 :: Sample
+future_5__Sample = Sample 1976 :: Sample
+future_6__Sample = Sample 1977 :: Sample
+future_7__Sample = Sample 1978 :: Sample
+future_8__Sample = Sample 1979 :: Sample
+future_9__Sample = Sample 1980 :: Sample
+future_10__Sample = Sample 1981 :: Sample
+future_11__Sample = Sample 1982 :: Sample
+future_12__Sample = Sample 1983 :: Sample
+future_13__Sample = Sample 1984 :: Sample
+future_14__Sample = Sample 1985 :: Sample
+future_15__Sample = Sample 1986 :: Sample
+future_16__Sample = Sample 1987 :: Sample
+hh_0__Sample = Sample 1988 :: Sample
+hh_1__Sample = Sample 1989 :: Sample
+hh_2__Sample = Sample 1990 :: Sample
+hh_3__Sample = Sample 1991 :: Sample
+hh_4__Sample = Sample 1992 :: Sample
+hh_5__Sample = Sample 1993 :: Sample
+hh_6__Sample = Sample 1994 :: Sample
+hh_7__Sample = Sample 1995 :: Sample
+hh_8__Sample = Sample 1996 :: Sample
+hh_9__Sample = Sample 1997 :: Sample
+hh_10__Sample = Sample 1998 :: Sample
+hh_11__Sample = Sample 1999 :: Sample
+hh_12__Sample = Sample 2000 :: Sample
+x_808ht_0__Sample = Sample 2001 :: Sample
+x_808ht_1__Sample = Sample 2002 :: Sample
+x_808ht_2__Sample = Sample 2003 :: Sample
+x_808ht_3__Sample = Sample 2004 :: Sample
+x_808ht_4__Sample = Sample 2005 :: Sample
+db_0__Sample = Sample 2006 :: Sample
+db_1__Sample = Sample 2007 :: Sample
+db_2__Sample = Sample 2008 :: Sample
+db_3__Sample = Sample 2009 :: Sample
+db_4__Sample = Sample 2010 :: Sample
+db_5__Sample = Sample 2011 :: Sample
+db_6__Sample = Sample 2012 :: Sample
+db_7__Sample = Sample 2013 :: Sample
+db_8__Sample = Sample 2014 :: Sample
+db_9__Sample = Sample 2015 :: Sample
+db_10__Sample = Sample 2016 :: Sample
+db_11__Sample = Sample 2017 :: Sample
+db_12__Sample = Sample 2018 :: Sample
+
+nameToSampleO :: Object Sample
+nameToSampleO = Object.fromFoldable nameToSample
+
+nameToSampleMO :: Object (Maybe Sample)
+nameToSampleMO = Object.union (map Just nameToSampleO) (Object.singleton "~" Nothing)
+
+nameToSampleMNO :: Object (Maybe Note)
+nameToSampleMNO = (map <<< map) (Note <<< { sample: _, rateFoT: const 1.0, volumeFoT: const 1.0 }) nameToSampleMO
+
+nameToSample :: Array (String /\ Sample)
+nameToSample =
+  [ "intentionalSilenceForInternalUseOnly" /\ intentionalSilenceForInternalUseOnly__Sample
+  , "kicklinn" /\ kicklinn_0__Sample
+  , "kicklinn:0" /\ kicklinn_0__Sample
+  , "msg" /\ msg_0__Sample
+  , "msg:0" /\ msg_0__Sample
+  , "msg:1" /\ msg_1__Sample
+  , "msg:2" /\ msg_2__Sample
+  , "msg:3" /\ msg_3__Sample
+  , "msg:4" /\ msg_4__Sample
+  , "msg:5" /\ msg_5__Sample
+  , "msg:6" /\ msg_6__Sample
+  , "msg:7" /\ msg_7__Sample
+  , "msg:8" /\ msg_8__Sample
+  , "gabbalouder" /\ gabbalouder_0__Sample
+  , "gabbalouder:0" /\ gabbalouder_0__Sample
+  , "gabbalouder:1" /\ gabbalouder_1__Sample
+  , "gabbalouder:2" /\ gabbalouder_2__Sample
+  , "gabbalouder:3" /\ gabbalouder_3__Sample
+  , "kurt" /\ kurt_0__Sample
+  , "kurt:0" /\ kurt_0__Sample
+  , "kurt:1" /\ kurt_1__Sample
+  , "kurt:2" /\ kurt_2__Sample
+  , "kurt:3" /\ kurt_3__Sample
+  , "kurt:4" /\ kurt_4__Sample
+  , "kurt:5" /\ kurt_5__Sample
+  , "kurt:6" /\ kurt_6__Sample
+  , "bassdm" /\ bassdm_0__Sample
+  , "bassdm:0" /\ bassdm_0__Sample
+  , "bassdm:1" /\ bassdm_1__Sample
+  , "bassdm:2" /\ bassdm_2__Sample
+  , "bassdm:3" /\ bassdm_3__Sample
+  , "bassdm:4" /\ bassdm_4__Sample
+  , "bassdm:5" /\ bassdm_5__Sample
+  , "bassdm:6" /\ bassdm_6__Sample
+  , "bassdm:7" /\ bassdm_7__Sample
+  , "bassdm:8" /\ bassdm_8__Sample
+  , "bassdm:9" /\ bassdm_9__Sample
+  , "bassdm:10" /\ bassdm_10__Sample
+  , "bassdm:11" /\ bassdm_11__Sample
+  , "bassdm:12" /\ bassdm_12__Sample
+  , "bassdm:13" /\ bassdm_13__Sample
+  , "bassdm:14" /\ bassdm_14__Sample
+  , "bassdm:15" /\ bassdm_15__Sample
+  , "bassdm:16" /\ bassdm_16__Sample
+  , "bassdm:17" /\ bassdm_17__Sample
+  , "bassdm:18" /\ bassdm_18__Sample
+  , "bassdm:19" /\ bassdm_19__Sample
+  , "bassdm:20" /\ bassdm_20__Sample
+  , "bassdm:21" /\ bassdm_21__Sample
+  , "bassdm:22" /\ bassdm_22__Sample
+  , "bassdm:23" /\ bassdm_23__Sample
+  , "tabla2" /\ tabla2_0__Sample
+  , "tabla2:0" /\ tabla2_0__Sample
+  , "tabla2:1" /\ tabla2_1__Sample
+  , "tabla2:2" /\ tabla2_2__Sample
+  , "tabla2:3" /\ tabla2_3__Sample
+  , "tabla2:4" /\ tabla2_4__Sample
+  , "tabla2:5" /\ tabla2_5__Sample
+  , "tabla2:6" /\ tabla2_6__Sample
+  , "tabla2:7" /\ tabla2_7__Sample
+  , "tabla2:8" /\ tabla2_8__Sample
+  , "tabla2:9" /\ tabla2_9__Sample
+  , "tabla2:10" /\ tabla2_10__Sample
+  , "tabla2:11" /\ tabla2_11__Sample
+  , "tabla2:12" /\ tabla2_12__Sample
+  , "tabla2:13" /\ tabla2_13__Sample
+  , "tabla2:14" /\ tabla2_14__Sample
+  , "tabla2:15" /\ tabla2_15__Sample
+  , "tabla2:16" /\ tabla2_16__Sample
+  , "tabla2:17" /\ tabla2_17__Sample
+  , "tabla2:18" /\ tabla2_18__Sample
+  , "tabla2:19" /\ tabla2_19__Sample
+  , "tabla2:20" /\ tabla2_20__Sample
+  , "tabla2:21" /\ tabla2_21__Sample
+  , "tabla2:22" /\ tabla2_22__Sample
+  , "tabla2:23" /\ tabla2_23__Sample
+  , "tabla2:24" /\ tabla2_24__Sample
+  , "tabla2:25" /\ tabla2_25__Sample
+  , "tabla2:26" /\ tabla2_26__Sample
+  , "tabla2:27" /\ tabla2_27__Sample
+  , "tabla2:28" /\ tabla2_28__Sample
+  , "tabla2:29" /\ tabla2_29__Sample
+  , "tabla2:30" /\ tabla2_30__Sample
+  , "tabla2:31" /\ tabla2_31__Sample
+  , "tabla2:32" /\ tabla2_32__Sample
+  , "tabla2:33" /\ tabla2_33__Sample
+  , "tabla2:34" /\ tabla2_34__Sample
+  , "tabla2:35" /\ tabla2_35__Sample
+  , "tabla2:36" /\ tabla2_36__Sample
+  , "tabla2:37" /\ tabla2_37__Sample
+  , "tabla2:38" /\ tabla2_38__Sample
+  , "tabla2:39" /\ tabla2_39__Sample
+  , "tabla2:40" /\ tabla2_40__Sample
+  , "tabla2:41" /\ tabla2_41__Sample
+  , "tabla2:42" /\ tabla2_42__Sample
+  , "tabla2:43" /\ tabla2_43__Sample
+  , "tabla2:44" /\ tabla2_44__Sample
+  , "tabla2:45" /\ tabla2_45__Sample
+  , "chin" /\ chin_0__Sample
+  , "chin:0" /\ chin_0__Sample
+  , "chin:1" /\ chin_1__Sample
+  , "chin:2" /\ chin_2__Sample
+  , "chin:3" /\ chin_3__Sample
+  , "mp3" /\ mp3_0__Sample
+  , "mp3:0" /\ mp3_0__Sample
+  , "mp3:1" /\ mp3_1__Sample
+  , "mp3:2" /\ mp3_2__Sample
+  , "mp3:3" /\ mp3_3__Sample
+  , "tablex" /\ tablex_0__Sample
+  , "tablex:0" /\ tablex_0__Sample
+  , "tablex:1" /\ tablex_1__Sample
+  , "tablex:2" /\ tablex_2__Sample
+  , "sf" /\ sf_0__Sample
+  , "sf:0" /\ sf_0__Sample
+  , "sf:1" /\ sf_1__Sample
+  , "sf:2" /\ sf_2__Sample
+  , "sf:3" /\ sf_3__Sample
+  , "sf:4" /\ sf_4__Sample
+  , "sf:5" /\ sf_5__Sample
+  , "sf:6" /\ sf_6__Sample
+  , "sf:7" /\ sf_7__Sample
+  , "sf:8" /\ sf_8__Sample
+  , "sf:9" /\ sf_9__Sample
+  , "sf:10" /\ sf_10__Sample
+  , "sf:11" /\ sf_11__Sample
+  , "sf:12" /\ sf_12__Sample
+  , "sf:13" /\ sf_13__Sample
+  , "sf:14" /\ sf_14__Sample
+  , "sf:15" /\ sf_15__Sample
+  , "sf:16" /\ sf_16__Sample
+  , "sf:17" /\ sf_17__Sample
+  , "speakspell" /\ speakspell_0__Sample
+  , "speakspell:0" /\ speakspell_0__Sample
+  , "speakspell:1" /\ speakspell_1__Sample
+  , "speakspell:2" /\ speakspell_2__Sample
+  , "speakspell:3" /\ speakspell_3__Sample
+  , "speakspell:4" /\ speakspell_4__Sample
+  , "speakspell:5" /\ speakspell_5__Sample
+  , "speakspell:6" /\ speakspell_6__Sample
+  , "speakspell:7" /\ speakspell_7__Sample
+  , "speakspell:8" /\ speakspell_8__Sample
+  , "speakspell:9" /\ speakspell_9__Sample
+  , "speakspell:10" /\ speakspell_10__Sample
+  , "speakspell:11" /\ speakspell_11__Sample
+  , "cc" /\ cc_0__Sample
+  , "cc:0" /\ cc_0__Sample
+  , "cc:1" /\ cc_1__Sample
+  , "cc:2" /\ cc_2__Sample
+  , "cc:3" /\ cc_3__Sample
+  , "cc:4" /\ cc_4__Sample
+  , "cc:5" /\ cc_5__Sample
+  , "gabbaloud" /\ gabbaloud_0__Sample
+  , "gabbaloud:0" /\ gabbaloud_0__Sample
+  , "gabbaloud:1" /\ gabbaloud_1__Sample
+  , "gabbaloud:2" /\ gabbaloud_2__Sample
+  , "gabbaloud:3" /\ gabbaloud_3__Sample
+  , "ades2" /\ ades2_0__Sample
+  , "ades2:0" /\ ades2_0__Sample
+  , "ades2:1" /\ ades2_1__Sample
+  , "ades2:2" /\ ades2_2__Sample
+  , "ades2:3" /\ ades2_3__Sample
+  , "ades2:4" /\ ades2_4__Sample
+  , "ades2:5" /\ ades2_5__Sample
+  , "ades2:6" /\ ades2_6__Sample
+  , "ades2:7" /\ ades2_7__Sample
+  , "ades2:8" /\ ades2_8__Sample
+  , "space" /\ space_0__Sample
+  , "space:0" /\ space_0__Sample
+  , "space:1" /\ space_1__Sample
+  , "space:2" /\ space_2__Sample
+  , "space:3" /\ space_3__Sample
+  , "space:4" /\ space_4__Sample
+  , "space:5" /\ space_5__Sample
+  , "space:6" /\ space_6__Sample
+  , "space:7" /\ space_7__Sample
+  , "space:8" /\ space_8__Sample
+  , "space:9" /\ space_9__Sample
+  , "space:10" /\ space_10__Sample
+  , "space:11" /\ space_11__Sample
+  , "space:12" /\ space_12__Sample
+  , "space:13" /\ space_13__Sample
+  , "space:14" /\ space_14__Sample
+  , "space:15" /\ space_15__Sample
+  , "space:16" /\ space_16__Sample
+  , "space:17" /\ space_17__Sample
+  , "battles" /\ battles_0__Sample
+  , "battles:0" /\ battles_0__Sample
+  , "battles:1" /\ battles_1__Sample
+  , "voodoo" /\ voodoo_0__Sample
+  , "voodoo:0" /\ voodoo_0__Sample
+  , "voodoo:1" /\ voodoo_1__Sample
+  , "voodoo:2" /\ voodoo_2__Sample
+  , "voodoo:3" /\ voodoo_3__Sample
+  , "voodoo:4" /\ voodoo_4__Sample
+  , "ravemono" /\ ravemono_0__Sample
+  , "ravemono:0" /\ ravemono_0__Sample
+  , "ravemono:1" /\ ravemono_1__Sample
+  , "psr" /\ psr_0__Sample
+  , "psr:0" /\ psr_0__Sample
+  , "psr:1" /\ psr_1__Sample
+  , "psr:2" /\ psr_2__Sample
+  , "psr:3" /\ psr_3__Sample
+  , "psr:4" /\ psr_4__Sample
+  , "psr:5" /\ psr_5__Sample
+  , "psr:6" /\ psr_6__Sample
+  , "psr:7" /\ psr_7__Sample
+  , "psr:8" /\ psr_8__Sample
+  , "psr:9" /\ psr_9__Sample
+  , "psr:10" /\ psr_10__Sample
+  , "psr:11" /\ psr_11__Sample
+  , "psr:12" /\ psr_12__Sample
+  , "psr:13" /\ psr_13__Sample
+  , "psr:14" /\ psr_14__Sample
+  , "psr:15" /\ psr_15__Sample
+  , "psr:16" /\ psr_16__Sample
+  , "psr:17" /\ psr_17__Sample
+  , "psr:18" /\ psr_18__Sample
+  , "psr:19" /\ psr_19__Sample
+  , "psr:20" /\ psr_20__Sample
+  , "psr:21" /\ psr_21__Sample
+  , "psr:22" /\ psr_22__Sample
+  , "psr:23" /\ psr_23__Sample
+  , "psr:24" /\ psr_24__Sample
+  , "psr:25" /\ psr_25__Sample
+  , "psr:26" /\ psr_26__Sample
+  , "psr:27" /\ psr_27__Sample
+  , "psr:28" /\ psr_28__Sample
+  , "psr:29" /\ psr_29__Sample
+  , "metal" /\ metal_0__Sample
+  , "metal:0" /\ metal_0__Sample
+  , "metal:1" /\ metal_1__Sample
+  , "metal:2" /\ metal_2__Sample
+  , "metal:3" /\ metal_3__Sample
+  , "metal:4" /\ metal_4__Sample
+  , "metal:5" /\ metal_5__Sample
+  , "metal:6" /\ metal_6__Sample
+  , "metal:7" /\ metal_7__Sample
+  , "metal:8" /\ metal_8__Sample
+  , "metal:9" /\ metal_9__Sample
+  , "hardcore" /\ hardcore_0__Sample
+  , "hardcore:0" /\ hardcore_0__Sample
+  , "hardcore:1" /\ hardcore_1__Sample
+  , "hardcore:2" /\ hardcore_2__Sample
+  , "hardcore:3" /\ hardcore_3__Sample
+  , "hardcore:4" /\ hardcore_4__Sample
+  , "hardcore:5" /\ hardcore_5__Sample
+  , "hardcore:6" /\ hardcore_6__Sample
+  , "hardcore:7" /\ hardcore_7__Sample
+  , "hardcore:8" /\ hardcore_8__Sample
+  , "hardcore:9" /\ hardcore_9__Sample
+  , "hardcore:10" /\ hardcore_10__Sample
+  , "hardcore:11" /\ hardcore_11__Sample
+  , "mouth" /\ mouth_0__Sample
+  , "mouth:0" /\ mouth_0__Sample
+  , "mouth:1" /\ mouth_1__Sample
+  , "mouth:2" /\ mouth_2__Sample
+  , "mouth:3" /\ mouth_3__Sample
+  , "mouth:4" /\ mouth_4__Sample
+  , "mouth:5" /\ mouth_5__Sample
+  , "mouth:6" /\ mouth_6__Sample
+  , "mouth:7" /\ mouth_7__Sample
+  , "mouth:8" /\ mouth_8__Sample
+  , "mouth:9" /\ mouth_9__Sample
+  , "mouth:10" /\ mouth_10__Sample
+  , "mouth:11" /\ mouth_11__Sample
+  , "mouth:12" /\ mouth_12__Sample
+  , "mouth:13" /\ mouth_13__Sample
+  , "mouth:14" /\ mouth_14__Sample
+  , "sugar" /\ sugar_0__Sample
+  , "sugar:0" /\ sugar_0__Sample
+  , "sugar:1" /\ sugar_1__Sample
+  , "odx" /\ odx_0__Sample
+  , "odx:0" /\ odx_0__Sample
+  , "odx:1" /\ odx_1__Sample
+  , "odx:2" /\ odx_2__Sample
+  , "odx:3" /\ odx_3__Sample
+  , "odx:4" /\ odx_4__Sample
+  , "odx:5" /\ odx_5__Sample
+  , "odx:6" /\ odx_6__Sample
+  , "odx:7" /\ odx_7__Sample
+  , "odx:8" /\ odx_8__Sample
+  , "odx:9" /\ odx_9__Sample
+  , "odx:10" /\ odx_10__Sample
+  , "odx:11" /\ odx_11__Sample
+  , "odx:12" /\ odx_12__Sample
+  , "odx:13" /\ odx_13__Sample
+  , "odx:14" /\ odx_14__Sample
+  , "x_808lc" /\ x_808lc_0__Sample
+  , "x_808lc:0" /\ x_808lc_0__Sample
+  , "x_808lc:1" /\ x_808lc_1__Sample
+  , "x_808lc:2" /\ x_808lc_2__Sample
+  , "x_808lc:3" /\ x_808lc_3__Sample
+  , "x_808lc:4" /\ x_808lc_4__Sample
+  , "mt" /\ mt_0__Sample
+  , "mt:0" /\ mt_0__Sample
+  , "mt:1" /\ mt_1__Sample
+  , "mt:2" /\ mt_2__Sample
+  , "mt:3" /\ mt_3__Sample
+  , "mt:4" /\ mt_4__Sample
+  , "mt:5" /\ mt_5__Sample
+  , "mt:6" /\ mt_6__Sample
+  , "mt:7" /\ mt_7__Sample
+  , "mt:8" /\ mt_8__Sample
+  , "mt:9" /\ mt_9__Sample
+  , "mt:10" /\ mt_10__Sample
+  , "mt:11" /\ mt_11__Sample
+  , "mt:12" /\ mt_12__Sample
+  , "mt:13" /\ mt_13__Sample
+  , "mt:14" /\ mt_14__Sample
+  , "mt:15" /\ mt_15__Sample
+  , "drumtraks" /\ drumtraks_0__Sample
+  , "drumtraks:0" /\ drumtraks_0__Sample
+  , "drumtraks:1" /\ drumtraks_1__Sample
+  , "drumtraks:2" /\ drumtraks_2__Sample
+  , "drumtraks:3" /\ drumtraks_3__Sample
+  , "drumtraks:4" /\ drumtraks_4__Sample
+  , "drumtraks:5" /\ drumtraks_5__Sample
+  , "drumtraks:6" /\ drumtraks_6__Sample
+  , "drumtraks:7" /\ drumtraks_7__Sample
+  , "drumtraks:8" /\ drumtraks_8__Sample
+  , "drumtraks:9" /\ drumtraks_9__Sample
+  , "drumtraks:10" /\ drumtraks_10__Sample
+  , "drumtraks:11" /\ drumtraks_11__Sample
+  , "drumtraks:12" /\ drumtraks_12__Sample
+  , "print" /\ print_0__Sample
+  , "print:0" /\ print_0__Sample
+  , "print:1" /\ print_1__Sample
+  , "print:2" /\ print_2__Sample
+  , "print:3" /\ print_3__Sample
+  , "print:4" /\ print_4__Sample
+  , "print:5" /\ print_5__Sample
+  , "print:6" /\ print_6__Sample
+  , "print:7" /\ print_7__Sample
+  , "print:8" /\ print_8__Sample
+  , "print:9" /\ print_9__Sample
+  , "print:10" /\ print_10__Sample
+  , "blip" /\ blip_0__Sample
+  , "blip:0" /\ blip_0__Sample
+  , "blip:1" /\ blip_1__Sample
+  , "wobble" /\ wobble_0__Sample
+  , "wobble:0" /\ wobble_0__Sample
+  , "made" /\ made_0__Sample
+  , "made:0" /\ made_0__Sample
+  , "made:1" /\ made_1__Sample
+  , "made:2" /\ made_2__Sample
+  , "made:3" /\ made_3__Sample
+  , "made:4" /\ made_4__Sample
+  , "made:5" /\ made_5__Sample
+  , "made:6" /\ made_6__Sample
+  , "bass3" /\ bass3_0__Sample
+  , "bass3:0" /\ bass3_0__Sample
+  , "bass3:1" /\ bass3_1__Sample
+  , "bass3:2" /\ bass3_2__Sample
+  , "bass3:3" /\ bass3_3__Sample
+  , "bass3:4" /\ bass3_4__Sample
+  , "bass3:5" /\ bass3_5__Sample
+  , "bass3:6" /\ bass3_6__Sample
+  , "bass3:7" /\ bass3_7__Sample
+  , "bass3:8" /\ bass3_8__Sample
+  , "bass3:9" /\ bass3_9__Sample
+  , "bass3:10" /\ bass3_10__Sample
+  , "speechless" /\ speechless_0__Sample
+  , "speechless:0" /\ speechless_0__Sample
+  , "speechless:1" /\ speechless_1__Sample
+  , "speechless:2" /\ speechless_2__Sample
+  , "speechless:3" /\ speechless_3__Sample
+  , "speechless:4" /\ speechless_4__Sample
+  , "speechless:5" /\ speechless_5__Sample
+  , "speechless:6" /\ speechless_6__Sample
+  , "speechless:7" /\ speechless_7__Sample
+  , "speechless:8" /\ speechless_8__Sample
+  , "speechless:9" /\ speechless_9__Sample
+  , "sine" /\ sine_0__Sample
+  , "sine:0" /\ sine_0__Sample
+  , "sine:1" /\ sine_1__Sample
+  , "sine:2" /\ sine_2__Sample
+  , "sine:3" /\ sine_3__Sample
+  , "sine:4" /\ sine_4__Sample
+  , "sine:5" /\ sine_5__Sample
+  , "noise" /\ noise_0__Sample
+  , "noise:0" /\ noise_0__Sample
+  , "x_808lt" /\ x_808lt_0__Sample
+  , "x_808lt:0" /\ x_808lt_0__Sample
+  , "x_808lt:1" /\ x_808lt_1__Sample
+  , "x_808lt:2" /\ x_808lt_2__Sample
+  , "x_808lt:3" /\ x_808lt_3__Sample
+  , "x_808lt:4" /\ x_808lt_4__Sample
+  , "sd" /\ sd_0__Sample
+  , "sd:0" /\ sd_0__Sample
+  , "sd:1" /\ sd_1__Sample
+  , "alphabet" /\ alphabet_0__Sample
+  , "alphabet:0" /\ alphabet_0__Sample
+  , "alphabet:1" /\ alphabet_1__Sample
+  , "alphabet:2" /\ alphabet_2__Sample
+  , "alphabet:3" /\ alphabet_3__Sample
+  , "alphabet:4" /\ alphabet_4__Sample
+  , "alphabet:5" /\ alphabet_5__Sample
+  , "alphabet:6" /\ alphabet_6__Sample
+  , "alphabet:7" /\ alphabet_7__Sample
+  , "alphabet:8" /\ alphabet_8__Sample
+  , "alphabet:9" /\ alphabet_9__Sample
+  , "alphabet:10" /\ alphabet_10__Sample
+  , "alphabet:11" /\ alphabet_11__Sample
+  , "alphabet:12" /\ alphabet_12__Sample
+  , "alphabet:13" /\ alphabet_13__Sample
+  , "alphabet:14" /\ alphabet_14__Sample
+  , "alphabet:15" /\ alphabet_15__Sample
+  , "alphabet:16" /\ alphabet_16__Sample
+  , "alphabet:17" /\ alphabet_17__Sample
+  , "alphabet:18" /\ alphabet_18__Sample
+  , "alphabet:19" /\ alphabet_19__Sample
+  , "alphabet:20" /\ alphabet_20__Sample
+  , "alphabet:21" /\ alphabet_21__Sample
+  , "alphabet:22" /\ alphabet_22__Sample
+  , "alphabet:23" /\ alphabet_23__Sample
+  , "alphabet:24" /\ alphabet_24__Sample
+  , "alphabet:25" /\ alphabet_25__Sample
+  , "baa2" /\ baa2_0__Sample
+  , "baa2:0" /\ baa2_0__Sample
+  , "baa2:1" /\ baa2_1__Sample
+  , "baa2:2" /\ baa2_2__Sample
+  , "baa2:3" /\ baa2_3__Sample
+  , "baa2:4" /\ baa2_4__Sample
+  , "baa2:5" /\ baa2_5__Sample
+  , "baa2:6" /\ baa2_6__Sample
+  , "tok" /\ tok_0__Sample
+  , "tok:0" /\ tok_0__Sample
+  , "tok:1" /\ tok_1__Sample
+  , "tok:2" /\ tok_2__Sample
+  , "tok:3" /\ tok_3__Sample
+  , "ades3" /\ ades3_0__Sample
+  , "ades3:0" /\ ades3_0__Sample
+  , "ades3:1" /\ ades3_1__Sample
+  , "ades3:2" /\ ades3_2__Sample
+  , "ades3:3" /\ ades3_3__Sample
+  , "ades3:4" /\ ades3_4__Sample
+  , "ades3:5" /\ ades3_5__Sample
+  , "ades3:6" /\ ades3_6__Sample
+  , "x_909" /\ x_909_0__Sample
+  , "x_909:0" /\ x_909_0__Sample
+  , "sid" /\ sid_0__Sample
+  , "sid:0" /\ sid_0__Sample
+  , "sid:1" /\ sid_1__Sample
+  , "sid:2" /\ sid_2__Sample
+  , "sid:3" /\ sid_3__Sample
+  , "sid:4" /\ sid_4__Sample
+  , "sid:5" /\ sid_5__Sample
+  , "sid:6" /\ sid_6__Sample
+  , "sid:7" /\ sid_7__Sample
+  , "sid:8" /\ sid_8__Sample
+  , "sid:9" /\ sid_9__Sample
+  , "sid:10" /\ sid_10__Sample
+  , "sid:11" /\ sid_11__Sample
+  , "jungbass" /\ jungbass_0__Sample
+  , "jungbass:0" /\ jungbass_0__Sample
+  , "jungbass:1" /\ jungbass_1__Sample
+  , "jungbass:2" /\ jungbass_2__Sample
+  , "jungbass:3" /\ jungbass_3__Sample
+  , "jungbass:4" /\ jungbass_4__Sample
+  , "jungbass:5" /\ jungbass_5__Sample
+  , "jungbass:6" /\ jungbass_6__Sample
+  , "jungbass:7" /\ jungbass_7__Sample
+  , "jungbass:8" /\ jungbass_8__Sample
+  , "jungbass:9" /\ jungbass_9__Sample
+  , "jungbass:10" /\ jungbass_10__Sample
+  , "jungbass:11" /\ jungbass_11__Sample
+  , "jungbass:12" /\ jungbass_12__Sample
+  , "jungbass:13" /\ jungbass_13__Sample
+  , "jungbass:14" /\ jungbass_14__Sample
+  , "jungbass:15" /\ jungbass_15__Sample
+  , "jungbass:16" /\ jungbass_16__Sample
+  , "jungbass:17" /\ jungbass_17__Sample
+  , "jungbass:18" /\ jungbass_18__Sample
+  , "jungbass:19" /\ jungbass_19__Sample
+  , "gabba" /\ gabba_0__Sample
+  , "gabba:0" /\ gabba_0__Sample
+  , "gabba:1" /\ gabba_1__Sample
+  , "gabba:2" /\ gabba_2__Sample
+  , "gabba:3" /\ gabba_3__Sample
+  , "crow" /\ crow_0__Sample
+  , "crow:0" /\ crow_0__Sample
+  , "crow:1" /\ crow_1__Sample
+  , "crow:2" /\ crow_2__Sample
+  , "crow:3" /\ crow_3__Sample
+  , "birds3" /\ birds3_0__Sample
+  , "birds3:0" /\ birds3_0__Sample
+  , "birds3:1" /\ birds3_1__Sample
+  , "birds3:2" /\ birds3_2__Sample
+  , "birds3:3" /\ birds3_3__Sample
+  , "birds3:4" /\ birds3_4__Sample
+  , "birds3:5" /\ birds3_5__Sample
+  , "birds3:6" /\ birds3_6__Sample
+  , "birds3:7" /\ birds3_7__Sample
+  , "birds3:8" /\ birds3_8__Sample
+  , "birds3:9" /\ birds3_9__Sample
+  , "birds3:10" /\ birds3_10__Sample
+  , "birds3:11" /\ birds3_11__Sample
+  , "birds3:12" /\ birds3_12__Sample
+  , "birds3:13" /\ birds3_13__Sample
+  , "birds3:14" /\ birds3_14__Sample
+  , "birds3:15" /\ birds3_15__Sample
+  , "birds3:16" /\ birds3_16__Sample
+  , "birds3:17" /\ birds3_17__Sample
+  , "birds3:18" /\ birds3_18__Sample
+  , "auto" /\ auto_0__Sample
+  , "auto:0" /\ auto_0__Sample
+  , "auto:1" /\ auto_1__Sample
+  , "auto:2" /\ auto_2__Sample
+  , "auto:3" /\ auto_3__Sample
+  , "auto:4" /\ auto_4__Sample
+  , "auto:5" /\ auto_5__Sample
+  , "auto:6" /\ auto_6__Sample
+  , "auto:7" /\ auto_7__Sample
+  , "auto:8" /\ auto_8__Sample
+  , "auto:9" /\ auto_9__Sample
+  , "auto:10" /\ auto_10__Sample
+  , "mute" /\ mute_0__Sample
+  , "mute:0" /\ mute_0__Sample
+  , "mute:1" /\ mute_1__Sample
+  , "mute:2" /\ mute_2__Sample
+  , "mute:3" /\ mute_3__Sample
+  , "mute:4" /\ mute_4__Sample
+  , "mute:5" /\ mute_5__Sample
+  , "mute:6" /\ mute_6__Sample
+  , "mute:7" /\ mute_7__Sample
+  , "mute:8" /\ mute_8__Sample
+  , "mute:9" /\ mute_9__Sample
+  , "mute:10" /\ mute_10__Sample
+  , "mute:11" /\ mute_11__Sample
+  , "mute:12" /\ mute_12__Sample
+  , "mute:13" /\ mute_13__Sample
+  , "mute:14" /\ mute_14__Sample
+  , "mute:15" /\ mute_15__Sample
+  , "mute:16" /\ mute_16__Sample
+  , "mute:17" /\ mute_17__Sample
+  , "mute:18" /\ mute_18__Sample
+  , "mute:19" /\ mute_19__Sample
+  , "mute:20" /\ mute_20__Sample
+  , "mute:21" /\ mute_21__Sample
+  , "mute:22" /\ mute_22__Sample
+  , "mute:23" /\ mute_23__Sample
+  , "mute:24" /\ mute_24__Sample
+  , "mute:25" /\ mute_25__Sample
+  , "mute:26" /\ mute_26__Sample
+  , "mute:27" /\ mute_27__Sample
+  , "sheffield" /\ sheffield_0__Sample
+  , "sheffield:0" /\ sheffield_0__Sample
+  , "casio" /\ casio_0__Sample
+  , "casio:0" /\ casio_0__Sample
+  , "casio:1" /\ casio_1__Sample
+  , "casio:2" /\ casio_2__Sample
+  , "sax" /\ sax_0__Sample
+  , "sax:0" /\ sax_0__Sample
+  , "sax:1" /\ sax_1__Sample
+  , "sax:2" /\ sax_2__Sample
+  , "sax:3" /\ sax_3__Sample
+  , "sax:4" /\ sax_4__Sample
+  , "sax:5" /\ sax_5__Sample
+  , "sax:6" /\ sax_6__Sample
+  , "sax:7" /\ sax_7__Sample
+  , "sax:8" /\ sax_8__Sample
+  , "sax:9" /\ sax_9__Sample
+  , "sax:10" /\ sax_10__Sample
+  , "sax:11" /\ sax_11__Sample
+  , "sax:12" /\ sax_12__Sample
+  , "sax:13" /\ sax_13__Sample
+  , "sax:14" /\ sax_14__Sample
+  , "sax:15" /\ sax_15__Sample
+  , "sax:16" /\ sax_16__Sample
+  , "sax:17" /\ sax_17__Sample
+  , "sax:18" /\ sax_18__Sample
+  , "sax:19" /\ sax_19__Sample
+  , "sax:20" /\ sax_20__Sample
+  , "sax:21" /\ sax_21__Sample
+  , "circus" /\ circus_0__Sample
+  , "circus:0" /\ circus_0__Sample
+  , "circus:1" /\ circus_1__Sample
+  , "circus:2" /\ circus_2__Sample
+  , "yeah" /\ yeah_0__Sample
+  , "yeah:0" /\ yeah_0__Sample
+  , "yeah:1" /\ yeah_1__Sample
+  , "yeah:2" /\ yeah_2__Sample
+  , "yeah:3" /\ yeah_3__Sample
+  , "yeah:4" /\ yeah_4__Sample
+  , "yeah:5" /\ yeah_5__Sample
+  , "yeah:6" /\ yeah_6__Sample
+  , "yeah:7" /\ yeah_7__Sample
+  , "yeah:8" /\ yeah_8__Sample
+  , "yeah:9" /\ yeah_9__Sample
+  , "yeah:10" /\ yeah_10__Sample
+  , "yeah:11" /\ yeah_11__Sample
+  , "yeah:12" /\ yeah_12__Sample
+  , "yeah:13" /\ yeah_13__Sample
+  , "yeah:14" /\ yeah_14__Sample
+  , "yeah:15" /\ yeah_15__Sample
+  , "yeah:16" /\ yeah_16__Sample
+  , "yeah:17" /\ yeah_17__Sample
+  , "yeah:18" /\ yeah_18__Sample
+  , "yeah:19" /\ yeah_19__Sample
+  , "yeah:20" /\ yeah_20__Sample
+  , "yeah:21" /\ yeah_21__Sample
+  , "yeah:22" /\ yeah_22__Sample
+  , "yeah:23" /\ yeah_23__Sample
+  , "yeah:24" /\ yeah_24__Sample
+  , "yeah:25" /\ yeah_25__Sample
+  , "yeah:26" /\ yeah_26__Sample
+  , "yeah:27" /\ yeah_27__Sample
+  , "yeah:28" /\ yeah_28__Sample
+  , "yeah:29" /\ yeah_29__Sample
+  , "yeah:30" /\ yeah_30__Sample
+  , "oc" /\ oc_0__Sample
+  , "oc:0" /\ oc_0__Sample
+  , "oc:1" /\ oc_1__Sample
+  , "oc:2" /\ oc_2__Sample
+  , "oc:3" /\ oc_3__Sample
+  , "alex" /\ alex_0__Sample
+  , "alex:0" /\ alex_0__Sample
+  , "alex:1" /\ alex_1__Sample
+  , "can" /\ can_0__Sample
+  , "can:0" /\ can_0__Sample
+  , "can:1" /\ can_1__Sample
+  , "can:2" /\ can_2__Sample
+  , "can:3" /\ can_3__Sample
+  , "can:4" /\ can_4__Sample
+  , "can:5" /\ can_5__Sample
+  , "can:6" /\ can_6__Sample
+  , "can:7" /\ can_7__Sample
+  , "can:8" /\ can_8__Sample
+  , "can:9" /\ can_9__Sample
+  , "can:10" /\ can_10__Sample
+  , "can:11" /\ can_11__Sample
+  , "can:12" /\ can_12__Sample
+  , "can:13" /\ can_13__Sample
+  , "jungle" /\ jungle_0__Sample
+  , "jungle:0" /\ jungle_0__Sample
+  , "jungle:1" /\ jungle_1__Sample
+  , "jungle:2" /\ jungle_2__Sample
+  , "jungle:3" /\ jungle_3__Sample
+  , "jungle:4" /\ jungle_4__Sample
+  , "jungle:5" /\ jungle_5__Sample
+  , "jungle:6" /\ jungle_6__Sample
+  , "jungle:7" /\ jungle_7__Sample
+  , "jungle:8" /\ jungle_8__Sample
+  , "jungle:9" /\ jungle_9__Sample
+  , "jungle:10" /\ jungle_10__Sample
+  , "jungle:11" /\ jungle_11__Sample
+  , "jungle:12" /\ jungle_12__Sample
+  , "moog" /\ moog_0__Sample
+  , "moog:0" /\ moog_0__Sample
+  , "moog:1" /\ moog_1__Sample
+  , "moog:2" /\ moog_2__Sample
+  , "moog:3" /\ moog_3__Sample
+  , "moog:4" /\ moog_4__Sample
+  , "moog:5" /\ moog_5__Sample
+  , "moog:6" /\ moog_6__Sample
+  , "h" /\ h_0__Sample
+  , "h:0" /\ h_0__Sample
+  , "h:1" /\ h_1__Sample
+  , "h:2" /\ h_2__Sample
+  , "h:3" /\ h_3__Sample
+  , "h:4" /\ h_4__Sample
+  , "h:5" /\ h_5__Sample
+  , "h:6" /\ h_6__Sample
+  , "wind" /\ wind_0__Sample
+  , "wind:0" /\ wind_0__Sample
+  , "wind:1" /\ wind_1__Sample
+  , "wind:2" /\ wind_2__Sample
+  , "wind:3" /\ wind_3__Sample
+  , "wind:4" /\ wind_4__Sample
+  , "wind:5" /\ wind_5__Sample
+  , "wind:6" /\ wind_6__Sample
+  , "wind:7" /\ wind_7__Sample
+  , "wind:8" /\ wind_8__Sample
+  , "wind:9" /\ wind_9__Sample
+  , "rs" /\ rs_0__Sample
+  , "rs:0" /\ rs_0__Sample
+  , "em2" /\ em2_0__Sample
+  , "em2:0" /\ em2_0__Sample
+  , "em2:1" /\ em2_1__Sample
+  , "em2:2" /\ em2_2__Sample
+  , "em2:3" /\ em2_3__Sample
+  , "em2:4" /\ em2_4__Sample
+  , "em2:5" /\ em2_5__Sample
+  , "noise2" /\ noise2_0__Sample
+  , "noise2:0" /\ noise2_0__Sample
+  , "noise2:1" /\ noise2_1__Sample
+  , "noise2:2" /\ noise2_2__Sample
+  , "noise2:3" /\ noise2_3__Sample
+  , "noise2:4" /\ noise2_4__Sample
+  , "noise2:5" /\ noise2_5__Sample
+  , "noise2:6" /\ noise2_6__Sample
+  , "noise2:7" /\ noise2_7__Sample
+  , "foo" /\ foo_0__Sample
+  , "foo:0" /\ foo_0__Sample
+  , "foo:1" /\ foo_1__Sample
+  , "foo:2" /\ foo_2__Sample
+  , "foo:3" /\ foo_3__Sample
+  , "foo:4" /\ foo_4__Sample
+  , "foo:5" /\ foo_5__Sample
+  , "foo:6" /\ foo_6__Sample
+  , "foo:7" /\ foo_7__Sample
+  , "foo:8" /\ foo_8__Sample
+  , "foo:9" /\ foo_9__Sample
+  , "foo:10" /\ foo_10__Sample
+  , "foo:11" /\ foo_11__Sample
+  , "foo:12" /\ foo_12__Sample
+  , "foo:13" /\ foo_13__Sample
+  , "foo:14" /\ foo_14__Sample
+  , "foo:15" /\ foo_15__Sample
+  , "foo:16" /\ foo_16__Sample
+  , "foo:17" /\ foo_17__Sample
+  , "foo:18" /\ foo_18__Sample
+  , "foo:19" /\ foo_19__Sample
+  , "foo:20" /\ foo_20__Sample
+  , "foo:21" /\ foo_21__Sample
+  , "foo:22" /\ foo_22__Sample
+  , "foo:23" /\ foo_23__Sample
+  , "foo:24" /\ foo_24__Sample
+  , "foo:25" /\ foo_25__Sample
+  , "foo:26" /\ foo_26__Sample
+  , "armora" /\ armora_0__Sample
+  , "armora:0" /\ armora_0__Sample
+  , "armora:1" /\ armora_1__Sample
+  , "armora:2" /\ armora_2__Sample
+  , "armora:3" /\ armora_3__Sample
+  , "armora:4" /\ armora_4__Sample
+  , "armora:5" /\ armora_5__Sample
+  , "armora:6" /\ armora_6__Sample
+  , "bend" /\ bend_0__Sample
+  , "bend:0" /\ bend_0__Sample
+  , "bend:1" /\ bend_1__Sample
+  , "bend:2" /\ bend_2__Sample
+  , "bend:3" /\ bend_3__Sample
+  , "newnotes" /\ newnotes_0__Sample
+  , "newnotes:0" /\ newnotes_0__Sample
+  , "newnotes:1" /\ newnotes_1__Sample
+  , "newnotes:2" /\ newnotes_2__Sample
+  , "newnotes:3" /\ newnotes_3__Sample
+  , "newnotes:4" /\ newnotes_4__Sample
+  , "newnotes:5" /\ newnotes_5__Sample
+  , "newnotes:6" /\ newnotes_6__Sample
+  , "newnotes:7" /\ newnotes_7__Sample
+  , "newnotes:8" /\ newnotes_8__Sample
+  , "newnotes:9" /\ newnotes_9__Sample
+  , "newnotes:10" /\ newnotes_10__Sample
+  , "newnotes:11" /\ newnotes_11__Sample
+  , "newnotes:12" /\ newnotes_12__Sample
+  , "newnotes:13" /\ newnotes_13__Sample
+  , "newnotes:14" /\ newnotes_14__Sample
+  , "pebbles" /\ pebbles_0__Sample
+  , "pebbles:0" /\ pebbles_0__Sample
+  , "mash2" /\ mash2_0__Sample
+  , "mash2:0" /\ mash2_0__Sample
+  , "mash2:1" /\ mash2_1__Sample
+  , "mash2:2" /\ mash2_2__Sample
+  , "mash2:3" /\ mash2_3__Sample
+  , "diphone2" /\ diphone2_0__Sample
+  , "diphone2:0" /\ diphone2_0__Sample
+  , "diphone2:1" /\ diphone2_1__Sample
+  , "diphone2:2" /\ diphone2_2__Sample
+  , "diphone2:3" /\ diphone2_3__Sample
+  , "diphone2:4" /\ diphone2_4__Sample
+  , "diphone2:5" /\ diphone2_5__Sample
+  , "diphone2:6" /\ diphone2_6__Sample
+  , "diphone2:7" /\ diphone2_7__Sample
+  , "diphone2:8" /\ diphone2_8__Sample
+  , "diphone2:9" /\ diphone2_9__Sample
+  , "diphone2:10" /\ diphone2_10__Sample
+  , "diphone2:11" /\ diphone2_11__Sample
+  , "e" /\ e_0__Sample
+  , "e:0" /\ e_0__Sample
+  , "e:1" /\ e_1__Sample
+  , "e:2" /\ e_2__Sample
+  , "e:3" /\ e_3__Sample
+  , "e:4" /\ e_4__Sample
+  , "e:5" /\ e_5__Sample
+  , "e:6" /\ e_6__Sample
+  , "e:7" /\ e_7__Sample
+  , "bubble" /\ bubble_0__Sample
+  , "bubble:0" /\ bubble_0__Sample
+  , "bubble:1" /\ bubble_1__Sample
+  , "bubble:2" /\ bubble_2__Sample
+  , "bubble:3" /\ bubble_3__Sample
+  , "bubble:4" /\ bubble_4__Sample
+  , "bubble:5" /\ bubble_5__Sample
+  , "bubble:6" /\ bubble_6__Sample
+  , "bubble:7" /\ bubble_7__Sample
+  , "insect" /\ insect_0__Sample
+  , "insect:0" /\ insect_0__Sample
+  , "insect:1" /\ insect_1__Sample
+  , "insect:2" /\ insect_2__Sample
+  , "ade" /\ ade_0__Sample
+  , "ade:0" /\ ade_0__Sample
+  , "ade:1" /\ ade_1__Sample
+  , "ade:2" /\ ade_2__Sample
+  , "ade:3" /\ ade_3__Sample
+  , "ade:4" /\ ade_4__Sample
+  , "ade:5" /\ ade_5__Sample
+  , "ade:6" /\ ade_6__Sample
+  , "ade:7" /\ ade_7__Sample
+  , "ade:8" /\ ade_8__Sample
+  , "ade:9" /\ ade_9__Sample
+  , "glitch" /\ glitch_0__Sample
+  , "glitch:0" /\ glitch_0__Sample
+  , "glitch:1" /\ glitch_1__Sample
+  , "glitch:2" /\ glitch_2__Sample
+  , "glitch:3" /\ glitch_3__Sample
+  , "glitch:4" /\ glitch_4__Sample
+  , "glitch:5" /\ glitch_5__Sample
+  , "glitch:6" /\ glitch_6__Sample
+  , "glitch:7" /\ glitch_7__Sample
+  , "haw" /\ haw_0__Sample
+  , "haw:0" /\ haw_0__Sample
+  , "haw:1" /\ haw_1__Sample
+  , "haw:2" /\ haw_2__Sample
+  , "haw:3" /\ haw_3__Sample
+  , "haw:4" /\ haw_4__Sample
+  , "haw:5" /\ haw_5__Sample
+  , "popkick" /\ popkick_0__Sample
+  , "popkick:0" /\ popkick_0__Sample
+  , "popkick:1" /\ popkick_1__Sample
+  , "popkick:2" /\ popkick_2__Sample
+  , "popkick:3" /\ popkick_3__Sample
+  , "popkick:4" /\ popkick_4__Sample
+  , "popkick:5" /\ popkick_5__Sample
+  , "popkick:6" /\ popkick_6__Sample
+  , "popkick:7" /\ popkick_7__Sample
+  , "popkick:8" /\ popkick_8__Sample
+  , "popkick:9" /\ popkick_9__Sample
+  , "breaks157" /\ breaks157_0__Sample
+  , "breaks157:0" /\ breaks157_0__Sample
+  , "gtr" /\ gtr_0__Sample
+  , "gtr:0" /\ gtr_0__Sample
+  , "gtr:1" /\ gtr_1__Sample
+  , "gtr:2" /\ gtr_2__Sample
+  , "clubkick" /\ clubkick_0__Sample
+  , "clubkick:0" /\ clubkick_0__Sample
+  , "clubkick:1" /\ clubkick_1__Sample
+  , "clubkick:2" /\ clubkick_2__Sample
+  , "clubkick:3" /\ clubkick_3__Sample
+  , "clubkick:4" /\ clubkick_4__Sample
+  , "breaks152" /\ breaks152_0__Sample
+  , "breaks152:0" /\ breaks152_0__Sample
+  , "x_808bd" /\ x_808bd_0__Sample
+  , "x_808bd:0" /\ x_808bd_0__Sample
+  , "x_808bd:1" /\ x_808bd_1__Sample
+  , "x_808bd:2" /\ x_808bd_2__Sample
+  , "x_808bd:3" /\ x_808bd_3__Sample
+  , "x_808bd:4" /\ x_808bd_4__Sample
+  , "x_808bd:5" /\ x_808bd_5__Sample
+  , "x_808bd:6" /\ x_808bd_6__Sample
+  , "x_808bd:7" /\ x_808bd_7__Sample
+  , "x_808bd:8" /\ x_808bd_8__Sample
+  , "x_808bd:9" /\ x_808bd_9__Sample
+  , "x_808bd:10" /\ x_808bd_10__Sample
+  , "x_808bd:11" /\ x_808bd_11__Sample
+  , "x_808bd:12" /\ x_808bd_12__Sample
+  , "x_808bd:13" /\ x_808bd_13__Sample
+  , "x_808bd:14" /\ x_808bd_14__Sample
+  , "x_808bd:15" /\ x_808bd_15__Sample
+  , "x_808bd:16" /\ x_808bd_16__Sample
+  , "x_808bd:17" /\ x_808bd_17__Sample
+  , "x_808bd:18" /\ x_808bd_18__Sample
+  , "x_808bd:19" /\ x_808bd_19__Sample
+  , "x_808bd:20" /\ x_808bd_20__Sample
+  , "x_808bd:21" /\ x_808bd_21__Sample
+  , "x_808bd:22" /\ x_808bd_22__Sample
+  , "x_808bd:23" /\ x_808bd_23__Sample
+  , "x_808bd:24" /\ x_808bd_24__Sample
+  , "miniyeah" /\ miniyeah_0__Sample
+  , "miniyeah:0" /\ miniyeah_0__Sample
+  , "miniyeah:1" /\ miniyeah_1__Sample
+  , "miniyeah:2" /\ miniyeah_2__Sample
+  , "miniyeah:3" /\ miniyeah_3__Sample
+  , "if" /\ if_0__Sample
+  , "if:0" /\ if_0__Sample
+  , "if:1" /\ if_1__Sample
+  , "if:2" /\ if_2__Sample
+  , "if:3" /\ if_3__Sample
+  , "if:4" /\ if_4__Sample
+  , "x_808oh" /\ x_808oh_0__Sample
+  , "x_808oh:0" /\ x_808oh_0__Sample
+  , "x_808oh:1" /\ x_808oh_1__Sample
+  , "x_808oh:2" /\ x_808oh_2__Sample
+  , "x_808oh:3" /\ x_808oh_3__Sample
+  , "x_808oh:4" /\ x_808oh_4__Sample
+  , "house" /\ house_0__Sample
+  , "house:0" /\ house_0__Sample
+  , "house:1" /\ house_1__Sample
+  , "house:2" /\ house_2__Sample
+  , "house:3" /\ house_3__Sample
+  , "house:4" /\ house_4__Sample
+  , "house:5" /\ house_5__Sample
+  , "house:6" /\ house_6__Sample
+  , "house:7" /\ house_7__Sample
+  , "dr" /\ dr_0__Sample
+  , "dr:0" /\ dr_0__Sample
+  , "dr:1" /\ dr_1__Sample
+  , "dr:2" /\ dr_2__Sample
+  , "dr:3" /\ dr_3__Sample
+  , "dr:4" /\ dr_4__Sample
+  , "dr:5" /\ dr_5__Sample
+  , "dr:6" /\ dr_6__Sample
+  , "dr:7" /\ dr_7__Sample
+  , "dr:8" /\ dr_8__Sample
+  , "dr:9" /\ dr_9__Sample
+  , "dr:10" /\ dr_10__Sample
+  , "dr:11" /\ dr_11__Sample
+  , "dr:12" /\ dr_12__Sample
+  , "dr:13" /\ dr_13__Sample
+  , "dr:14" /\ dr_14__Sample
+  , "dr:15" /\ dr_15__Sample
+  , "dr:16" /\ dr_16__Sample
+  , "dr:17" /\ dr_17__Sample
+  , "dr:18" /\ dr_18__Sample
+  , "dr:19" /\ dr_19__Sample
+  , "dr:20" /\ dr_20__Sample
+  , "dr:21" /\ dr_21__Sample
+  , "dr:22" /\ dr_22__Sample
+  , "dr:23" /\ dr_23__Sample
+  , "dr:24" /\ dr_24__Sample
+  , "dr:25" /\ dr_25__Sample
+  , "dr:26" /\ dr_26__Sample
+  , "dr:27" /\ dr_27__Sample
+  , "dr:28" /\ dr_28__Sample
+  , "dr:29" /\ dr_29__Sample
+  , "dr:30" /\ dr_30__Sample
+  , "dr:31" /\ dr_31__Sample
+  , "dr:32" /\ dr_32__Sample
+  , "dr:33" /\ dr_33__Sample
+  , "dr:34" /\ dr_34__Sample
+  , "dr:35" /\ dr_35__Sample
+  , "dr:36" /\ dr_36__Sample
+  , "dr:37" /\ dr_37__Sample
+  , "dr:38" /\ dr_38__Sample
+  , "dr:39" /\ dr_39__Sample
+  , "dr:40" /\ dr_40__Sample
+  , "dr:41" /\ dr_41__Sample
+  , "dr55" /\ dr55_0__Sample
+  , "dr55:0" /\ dr55_0__Sample
+  , "dr55:1" /\ dr55_1__Sample
+  , "dr55:2" /\ dr55_2__Sample
+  , "dr55:3" /\ dr55_3__Sample
+  , "bass" /\ bass_0__Sample
+  , "bass:0" /\ bass_0__Sample
+  , "bass:1" /\ bass_1__Sample
+  , "bass:2" /\ bass_2__Sample
+  , "bass:3" /\ bass_3__Sample
+  , "ho" /\ ho_0__Sample
+  , "ho:0" /\ ho_0__Sample
+  , "ho:1" /\ ho_1__Sample
+  , "ho:2" /\ ho_2__Sample
+  , "ho:3" /\ ho_3__Sample
+  , "ho:4" /\ ho_4__Sample
+  , "ho:5" /\ ho_5__Sample
+  , "hardkick" /\ hardkick_0__Sample
+  , "hardkick:0" /\ hardkick_0__Sample
+  , "hardkick:1" /\ hardkick_1__Sample
+  , "hardkick:2" /\ hardkick_2__Sample
+  , "hardkick:3" /\ hardkick_3__Sample
+  , "hardkick:4" /\ hardkick_4__Sample
+  , "hardkick:5" /\ hardkick_5__Sample
+  , "x_808hc" /\ x_808hc_0__Sample
+  , "x_808hc:0" /\ x_808hc_0__Sample
+  , "x_808hc:1" /\ x_808hc_1__Sample
+  , "x_808hc:2" /\ x_808hc_2__Sample
+  , "x_808hc:3" /\ x_808hc_3__Sample
+  , "x_808hc:4" /\ x_808hc_4__Sample
+  , "hit" /\ hit_0__Sample
+  , "hit:0" /\ hit_0__Sample
+  , "hit:1" /\ hit_1__Sample
+  , "hit:2" /\ hit_2__Sample
+  , "hit:3" /\ hit_3__Sample
+  , "hit:4" /\ hit_4__Sample
+  , "hit:5" /\ hit_5__Sample
+  , "breaks165" /\ breaks165_0__Sample
+  , "breaks165:0" /\ breaks165_0__Sample
+  , "dr2" /\ dr2_0__Sample
+  , "dr2:0" /\ dr2_0__Sample
+  , "dr2:1" /\ dr2_1__Sample
+  , "dr2:2" /\ dr2_2__Sample
+  , "dr2:3" /\ dr2_3__Sample
+  , "dr2:4" /\ dr2_4__Sample
+  , "dr2:5" /\ dr2_5__Sample
+  , "tabla" /\ tabla_0__Sample
+  , "tabla:0" /\ tabla_0__Sample
+  , "tabla:1" /\ tabla_1__Sample
+  , "tabla:2" /\ tabla_2__Sample
+  , "tabla:3" /\ tabla_3__Sample
+  , "tabla:4" /\ tabla_4__Sample
+  , "tabla:5" /\ tabla_5__Sample
+  , "tabla:6" /\ tabla_6__Sample
+  , "tabla:7" /\ tabla_7__Sample
+  , "tabla:8" /\ tabla_8__Sample
+  , "tabla:9" /\ tabla_9__Sample
+  , "tabla:10" /\ tabla_10__Sample
+  , "tabla:11" /\ tabla_11__Sample
+  , "tabla:12" /\ tabla_12__Sample
+  , "tabla:13" /\ tabla_13__Sample
+  , "tabla:14" /\ tabla_14__Sample
+  , "tabla:15" /\ tabla_15__Sample
+  , "tabla:16" /\ tabla_16__Sample
+  , "tabla:17" /\ tabla_17__Sample
+  , "tabla:18" /\ tabla_18__Sample
+  , "tabla:19" /\ tabla_19__Sample
+  , "tabla:20" /\ tabla_20__Sample
+  , "tabla:21" /\ tabla_21__Sample
+  , "tabla:22" /\ tabla_22__Sample
+  , "tabla:23" /\ tabla_23__Sample
+  , "tabla:24" /\ tabla_24__Sample
+  , "tabla:25" /\ tabla_25__Sample
+  , "dork2" /\ dork2_0__Sample
+  , "dork2:0" /\ dork2_0__Sample
+  , "dork2:1" /\ dork2_1__Sample
+  , "dork2:2" /\ dork2_2__Sample
+  , "dork2:3" /\ dork2_3__Sample
+  , "hc" /\ hc_0__Sample
+  , "hc:0" /\ hc_0__Sample
+  , "hc:1" /\ hc_1__Sample
+  , "hc:2" /\ hc_2__Sample
+  , "hc:3" /\ hc_3__Sample
+  , "hc:4" /\ hc_4__Sample
+  , "hc:5" /\ hc_5__Sample
+  , "bassfoo" /\ bassfoo_0__Sample
+  , "bassfoo:0" /\ bassfoo_0__Sample
+  , "bassfoo:1" /\ bassfoo_1__Sample
+  , "bassfoo:2" /\ bassfoo_2__Sample
+  , "seawolf" /\ seawolf_0__Sample
+  , "seawolf:0" /\ seawolf_0__Sample
+  , "seawolf:1" /\ seawolf_1__Sample
+  , "seawolf:2" /\ seawolf_2__Sample
+  , "cp" /\ cp_0__Sample
+  , "cp:0" /\ cp_0__Sample
+  , "cp:1" /\ cp_1__Sample
+  , "jazz" /\ jazz_0__Sample
+  , "jazz:0" /\ jazz_0__Sample
+  , "jazz:1" /\ jazz_1__Sample
+  , "jazz:2" /\ jazz_2__Sample
+  , "jazz:3" /\ jazz_3__Sample
+  , "jazz:4" /\ jazz_4__Sample
+  , "jazz:5" /\ jazz_5__Sample
+  , "jazz:6" /\ jazz_6__Sample
+  , "jazz:7" /\ jazz_7__Sample
+  , "juno" /\ juno_0__Sample
+  , "juno:0" /\ juno_0__Sample
+  , "juno:1" /\ juno_1__Sample
+  , "juno:2" /\ juno_2__Sample
+  , "juno:3" /\ juno_3__Sample
+  , "juno:4" /\ juno_4__Sample
+  , "juno:5" /\ juno_5__Sample
+  , "juno:6" /\ juno_6__Sample
+  , "juno:7" /\ juno_7__Sample
+  , "juno:8" /\ juno_8__Sample
+  , "juno:9" /\ juno_9__Sample
+  , "juno:10" /\ juno_10__Sample
+  , "juno:11" /\ juno_11__Sample
+  , "birds" /\ birds_0__Sample
+  , "birds:0" /\ birds_0__Sample
+  , "birds:1" /\ birds_1__Sample
+  , "birds:2" /\ birds_2__Sample
+  , "birds:3" /\ birds_3__Sample
+  , "birds:4" /\ birds_4__Sample
+  , "birds:5" /\ birds_5__Sample
+  , "birds:6" /\ birds_6__Sample
+  , "birds:7" /\ birds_7__Sample
+  , "birds:8" /\ birds_8__Sample
+  , "birds:9" /\ birds_9__Sample
+  , "glasstap" /\ glasstap_0__Sample
+  , "glasstap:0" /\ glasstap_0__Sample
+  , "glasstap:1" /\ glasstap_1__Sample
+  , "glasstap:2" /\ glasstap_2__Sample
+  , "bass1" /\ bass1_0__Sample
+  , "bass1:0" /\ bass1_0__Sample
+  , "bass1:1" /\ bass1_1__Sample
+  , "bass1:2" /\ bass1_2__Sample
+  , "bass1:3" /\ bass1_3__Sample
+  , "bass1:4" /\ bass1_4__Sample
+  , "bass1:5" /\ bass1_5__Sample
+  , "bass1:6" /\ bass1_6__Sample
+  , "bass1:7" /\ bass1_7__Sample
+  , "bass1:8" /\ bass1_8__Sample
+  , "bass1:9" /\ bass1_9__Sample
+  , "bass1:10" /\ bass1_10__Sample
+  , "bass1:11" /\ bass1_11__Sample
+  , "bass1:12" /\ bass1_12__Sample
+  , "bass1:13" /\ bass1_13__Sample
+  , "bass1:14" /\ bass1_14__Sample
+  , "bass1:15" /\ bass1_15__Sample
+  , "bass1:16" /\ bass1_16__Sample
+  , "bass1:17" /\ bass1_17__Sample
+  , "bass1:18" /\ bass1_18__Sample
+  , "bass1:19" /\ bass1_19__Sample
+  , "bass1:20" /\ bass1_20__Sample
+  , "bass1:21" /\ bass1_21__Sample
+  , "bass1:22" /\ bass1_22__Sample
+  , "bass1:23" /\ bass1_23__Sample
+  , "bass1:24" /\ bass1_24__Sample
+  , "bass1:25" /\ bass1_25__Sample
+  , "bass1:26" /\ bass1_26__Sample
+  , "bass1:27" /\ bass1_27__Sample
+  , "bass1:28" /\ bass1_28__Sample
+  , "bass1:29" /\ bass1_29__Sample
+  , "hh27" /\ hh27_0__Sample
+  , "hh27:0" /\ hh27_0__Sample
+  , "hh27:1" /\ hh27_1__Sample
+  , "hh27:2" /\ hh27_2__Sample
+  , "hh27:3" /\ hh27_3__Sample
+  , "hh27:4" /\ hh27_4__Sample
+  , "hh27:5" /\ hh27_5__Sample
+  , "hh27:6" /\ hh27_6__Sample
+  , "hh27:7" /\ hh27_7__Sample
+  , "hh27:8" /\ hh27_8__Sample
+  , "hh27:9" /\ hh27_9__Sample
+  , "hh27:10" /\ hh27_10__Sample
+  , "hh27:11" /\ hh27_11__Sample
+  , "hh27:12" /\ hh27_12__Sample
+  , "x_808" /\ x_808_0__Sample
+  , "x_808:0" /\ x_808_0__Sample
+  , "x_808:1" /\ x_808_1__Sample
+  , "x_808:2" /\ x_808_2__Sample
+  , "x_808:3" /\ x_808_3__Sample
+  , "x_808:4" /\ x_808_4__Sample
+  , "x_808:5" /\ x_808_5__Sample
+  , "notes" /\ notes_0__Sample
+  , "notes:0" /\ notes_0__Sample
+  , "notes:1" /\ notes_1__Sample
+  , "notes:2" /\ notes_2__Sample
+  , "notes:3" /\ notes_3__Sample
+  , "notes:4" /\ notes_4__Sample
+  , "notes:5" /\ notes_5__Sample
+  , "notes:6" /\ notes_6__Sample
+  , "notes:7" /\ notes_7__Sample
+  , "notes:8" /\ notes_8__Sample
+  , "notes:9" /\ notes_9__Sample
+  , "notes:10" /\ notes_10__Sample
+  , "notes:11" /\ notes_11__Sample
+  , "notes:12" /\ notes_12__Sample
+  , "notes:13" /\ notes_13__Sample
+  , "notes:14" /\ notes_14__Sample
+  , "xmas" /\ xmas_0__Sample
+  , "xmas:0" /\ xmas_0__Sample
+  , "erk" /\ erk_0__Sample
+  , "erk:0" /\ erk_0__Sample
+  , "x_808mt" /\ x_808mt_0__Sample
+  , "x_808mt:0" /\ x_808mt_0__Sample
+  , "x_808mt:1" /\ x_808mt_1__Sample
+  , "x_808mt:2" /\ x_808mt_2__Sample
+  , "x_808mt:3" /\ x_808mt_3__Sample
+  , "x_808mt:4" /\ x_808mt_4__Sample
+  , "lighter" /\ lighter_0__Sample
+  , "lighter:0" /\ lighter_0__Sample
+  , "lighter:1" /\ lighter_1__Sample
+  , "lighter:2" /\ lighter_2__Sample
+  , "lighter:3" /\ lighter_3__Sample
+  , "lighter:4" /\ lighter_4__Sample
+  , "lighter:5" /\ lighter_5__Sample
+  , "lighter:6" /\ lighter_6__Sample
+  , "lighter:7" /\ lighter_7__Sample
+  , "lighter:8" /\ lighter_8__Sample
+  , "lighter:9" /\ lighter_9__Sample
+  , "lighter:10" /\ lighter_10__Sample
+  , "lighter:11" /\ lighter_11__Sample
+  , "lighter:12" /\ lighter_12__Sample
+  , "lighter:13" /\ lighter_13__Sample
+  , "lighter:14" /\ lighter_14__Sample
+  , "lighter:15" /\ lighter_15__Sample
+  , "lighter:16" /\ lighter_16__Sample
+  , "lighter:17" /\ lighter_17__Sample
+  , "lighter:18" /\ lighter_18__Sample
+  , "lighter:19" /\ lighter_19__Sample
+  , "lighter:20" /\ lighter_20__Sample
+  , "lighter:21" /\ lighter_21__Sample
+  , "lighter:22" /\ lighter_22__Sample
+  , "lighter:23" /\ lighter_23__Sample
+  , "lighter:24" /\ lighter_24__Sample
+  , "lighter:25" /\ lighter_25__Sample
+  , "lighter:26" /\ lighter_26__Sample
+  , "lighter:27" /\ lighter_27__Sample
+  , "lighter:28" /\ lighter_28__Sample
+  , "lighter:29" /\ lighter_29__Sample
+  , "lighter:30" /\ lighter_30__Sample
+  , "lighter:31" /\ lighter_31__Sample
+  , "lighter:32" /\ lighter_32__Sample
+  , "cb" /\ cb_0__Sample
+  , "cb:0" /\ cb_0__Sample
+  , "subroc3d" /\ subroc3d_0__Sample
+  , "subroc3d:0" /\ subroc3d_0__Sample
+  , "subroc3d:1" /\ subroc3d_1__Sample
+  , "subroc3d:2" /\ subroc3d_2__Sample
+  , "subroc3d:3" /\ subroc3d_3__Sample
+  , "subroc3d:4" /\ subroc3d_4__Sample
+  , "subroc3d:5" /\ subroc3d_5__Sample
+  , "subroc3d:6" /\ subroc3d_6__Sample
+  , "subroc3d:7" /\ subroc3d_7__Sample
+  , "subroc3d:8" /\ subroc3d_8__Sample
+  , "subroc3d:9" /\ subroc3d_9__Sample
+  , "subroc3d:10" /\ subroc3d_10__Sample
+  , "ul" /\ ul_0__Sample
+  , "ul:0" /\ ul_0__Sample
+  , "ul:1" /\ ul_1__Sample
+  , "ul:2" /\ ul_2__Sample
+  , "ul:3" /\ ul_3__Sample
+  , "ul:4" /\ ul_4__Sample
+  , "ul:5" /\ ul_5__Sample
+  , "ul:6" /\ ul_6__Sample
+  , "ul:7" /\ ul_7__Sample
+  , "ul:8" /\ ul_8__Sample
+  , "ul:9" /\ ul_9__Sample
+  , "gab" /\ gab_0__Sample
+  , "gab:0" /\ gab_0__Sample
+  , "gab:1" /\ gab_1__Sample
+  , "gab:2" /\ gab_2__Sample
+  , "gab:3" /\ gab_3__Sample
+  , "gab:4" /\ gab_4__Sample
+  , "gab:5" /\ gab_5__Sample
+  , "gab:6" /\ gab_6__Sample
+  , "gab:7" /\ gab_7__Sample
+  , "gab:8" /\ gab_8__Sample
+  , "gab:9" /\ gab_9__Sample
+  , "monsterb" /\ monsterb_0__Sample
+  , "monsterb:0" /\ monsterb_0__Sample
+  , "monsterb:1" /\ monsterb_1__Sample
+  , "monsterb:2" /\ monsterb_2__Sample
+  , "monsterb:3" /\ monsterb_3__Sample
+  , "monsterb:4" /\ monsterb_4__Sample
+  , "monsterb:5" /\ monsterb_5__Sample
+  , "diphone" /\ diphone_0__Sample
+  , "diphone:0" /\ diphone_0__Sample
+  , "diphone:1" /\ diphone_1__Sample
+  , "diphone:2" /\ diphone_2__Sample
+  , "diphone:3" /\ diphone_3__Sample
+  , "diphone:4" /\ diphone_4__Sample
+  , "diphone:5" /\ diphone_5__Sample
+  , "diphone:6" /\ diphone_6__Sample
+  , "diphone:7" /\ diphone_7__Sample
+  , "diphone:8" /\ diphone_8__Sample
+  , "diphone:9" /\ diphone_9__Sample
+  , "diphone:10" /\ diphone_10__Sample
+  , "diphone:11" /\ diphone_11__Sample
+  , "diphone:12" /\ diphone_12__Sample
+  , "diphone:13" /\ diphone_13__Sample
+  , "diphone:14" /\ diphone_14__Sample
+  , "diphone:15" /\ diphone_15__Sample
+  , "diphone:16" /\ diphone_16__Sample
+  , "diphone:17" /\ diphone_17__Sample
+  , "diphone:18" /\ diphone_18__Sample
+  , "diphone:19" /\ diphone_19__Sample
+  , "diphone:20" /\ diphone_20__Sample
+  , "diphone:21" /\ diphone_21__Sample
+  , "diphone:22" /\ diphone_22__Sample
+  , "diphone:23" /\ diphone_23__Sample
+  , "diphone:24" /\ diphone_24__Sample
+  , "diphone:25" /\ diphone_25__Sample
+  , "diphone:26" /\ diphone_26__Sample
+  , "diphone:27" /\ diphone_27__Sample
+  , "diphone:28" /\ diphone_28__Sample
+  , "diphone:29" /\ diphone_29__Sample
+  , "diphone:30" /\ diphone_30__Sample
+  , "diphone:31" /\ diphone_31__Sample
+  , "diphone:32" /\ diphone_32__Sample
+  , "diphone:33" /\ diphone_33__Sample
+  , "diphone:34" /\ diphone_34__Sample
+  , "diphone:35" /\ diphone_35__Sample
+  , "diphone:36" /\ diphone_36__Sample
+  , "diphone:37" /\ diphone_37__Sample
+  , "clak" /\ clak_0__Sample
+  , "clak:0" /\ clak_0__Sample
+  , "clak:1" /\ clak_1__Sample
+  , "sitar" /\ sitar_0__Sample
+  , "sitar:0" /\ sitar_0__Sample
+  , "sitar:1" /\ sitar_1__Sample
+  , "sitar:2" /\ sitar_2__Sample
+  , "sitar:3" /\ sitar_3__Sample
+  , "sitar:4" /\ sitar_4__Sample
+  , "sitar:5" /\ sitar_5__Sample
+  , "sitar:6" /\ sitar_6__Sample
+  , "sitar:7" /\ sitar_7__Sample
+  , "ab" /\ ab_0__Sample
+  , "ab:0" /\ ab_0__Sample
+  , "ab:1" /\ ab_1__Sample
+  , "ab:2" /\ ab_2__Sample
+  , "ab:3" /\ ab_3__Sample
+  , "ab:4" /\ ab_4__Sample
+  , "ab:5" /\ ab_5__Sample
+  , "ab:6" /\ ab_6__Sample
+  , "ab:7" /\ ab_7__Sample
+  , "ab:8" /\ ab_8__Sample
+  , "ab:9" /\ ab_9__Sample
+  , "ab:10" /\ ab_10__Sample
+  , "ab:11" /\ ab_11__Sample
+  , "cr" /\ cr_0__Sample
+  , "cr:0" /\ cr_0__Sample
+  , "cr:1" /\ cr_1__Sample
+  , "cr:2" /\ cr_2__Sample
+  , "cr:3" /\ cr_3__Sample
+  , "cr:4" /\ cr_4__Sample
+  , "cr:5" /\ cr_5__Sample
+  , "tacscan" /\ tacscan_0__Sample
+  , "tacscan:0" /\ tacscan_0__Sample
+  , "tacscan:1" /\ tacscan_1__Sample
+  , "tacscan:2" /\ tacscan_2__Sample
+  , "tacscan:3" /\ tacscan_3__Sample
+  , "tacscan:4" /\ tacscan_4__Sample
+  , "tacscan:5" /\ tacscan_5__Sample
+  , "tacscan:6" /\ tacscan_6__Sample
+  , "tacscan:7" /\ tacscan_7__Sample
+  , "tacscan:8" /\ tacscan_8__Sample
+  , "tacscan:9" /\ tacscan_9__Sample
+  , "tacscan:10" /\ tacscan_10__Sample
+  , "tacscan:11" /\ tacscan_11__Sample
+  , "tacscan:12" /\ tacscan_12__Sample
+  , "tacscan:13" /\ tacscan_13__Sample
+  , "tacscan:14" /\ tacscan_14__Sample
+  , "tacscan:15" /\ tacscan_15__Sample
+  , "tacscan:16" /\ tacscan_16__Sample
+  , "tacscan:17" /\ tacscan_17__Sample
+  , "tacscan:18" /\ tacscan_18__Sample
+  , "tacscan:19" /\ tacscan_19__Sample
+  , "tacscan:20" /\ tacscan_20__Sample
+  , "tacscan:21" /\ tacscan_21__Sample
+  , "v" /\ v_0__Sample
+  , "v:0" /\ v_0__Sample
+  , "v:1" /\ v_1__Sample
+  , "v:2" /\ v_2__Sample
+  , "v:3" /\ v_3__Sample
+  , "v:4" /\ v_4__Sample
+  , "v:5" /\ v_5__Sample
+  , "bd" /\ bd_0__Sample
+  , "bd:0" /\ bd_0__Sample
+  , "bd:1" /\ bd_1__Sample
+  , "bd:2" /\ bd_2__Sample
+  , "bd:3" /\ bd_3__Sample
+  , "bd:4" /\ bd_4__Sample
+  , "bd:5" /\ bd_5__Sample
+  , "bd:6" /\ bd_6__Sample
+  , "bd:7" /\ bd_7__Sample
+  , "bd:8" /\ bd_8__Sample
+  , "bd:9" /\ bd_9__Sample
+  , "bd:10" /\ bd_10__Sample
+  , "bd:11" /\ bd_11__Sample
+  , "bd:12" /\ bd_12__Sample
+  , "bd:13" /\ bd_13__Sample
+  , "bd:14" /\ bd_14__Sample
+  , "bd:15" /\ bd_15__Sample
+  , "bd:16" /\ bd_16__Sample
+  , "bd:17" /\ bd_17__Sample
+  , "bd:18" /\ bd_18__Sample
+  , "bd:19" /\ bd_19__Sample
+  , "bd:20" /\ bd_20__Sample
+  , "bd:21" /\ bd_21__Sample
+  , "bd:22" /\ bd_22__Sample
+  , "bd:23" /\ bd_23__Sample
+  , "rm" /\ rm_0__Sample
+  , "rm:0" /\ rm_0__Sample
+  , "rm:1" /\ rm_1__Sample
+  , "blue" /\ blue_0__Sample
+  , "blue:0" /\ blue_0__Sample
+  , "blue:1" /\ blue_1__Sample
+  , "latibro" /\ latibro_0__Sample
+  , "latibro:0" /\ latibro_0__Sample
+  , "latibro:1" /\ latibro_1__Sample
+  , "latibro:2" /\ latibro_2__Sample
+  , "latibro:3" /\ latibro_3__Sample
+  , "latibro:4" /\ latibro_4__Sample
+  , "latibro:5" /\ latibro_5__Sample
+  , "latibro:6" /\ latibro_6__Sample
+  , "latibro:7" /\ latibro_7__Sample
+  , "dr_few" /\ dr_few_0__Sample
+  , "dr_few:0" /\ dr_few_0__Sample
+  , "dr_few:1" /\ dr_few_1__Sample
+  , "dr_few:2" /\ dr_few_2__Sample
+  , "dr_few:3" /\ dr_few_3__Sample
+  , "dr_few:4" /\ dr_few_4__Sample
+  , "dr_few:5" /\ dr_few_5__Sample
+  , "dr_few:6" /\ dr_few_6__Sample
+  , "dr_few:7" /\ dr_few_7__Sample
+  , "rave2" /\ rave2_0__Sample
+  , "rave2:0" /\ rave2_0__Sample
+  , "rave2:1" /\ rave2_1__Sample
+  , "rave2:2" /\ rave2_2__Sample
+  , "rave2:3" /\ rave2_3__Sample
+  , "rave2:4" /\ rave2_4__Sample
+  , "rave2:5" /\ rave2_5__Sample
+  , "koy" /\ koy_0__Sample
+  , "koy:0" /\ koy_0__Sample
+  , "koy:1" /\ koy_1__Sample
+  , "glitch2" /\ glitch2_0__Sample
+  , "glitch2:0" /\ glitch2_0__Sample
+  , "glitch2:1" /\ glitch2_1__Sample
+  , "glitch2:2" /\ glitch2_2__Sample
+  , "glitch2:3" /\ glitch2_3__Sample
+  , "glitch2:4" /\ glitch2_4__Sample
+  , "glitch2:5" /\ glitch2_5__Sample
+  , "glitch2:6" /\ glitch2_6__Sample
+  , "glitch2:7" /\ glitch2_7__Sample
+  , "hmm" /\ hmm_0__Sample
+  , "hmm:0" /\ hmm_0__Sample
+  , "arp" /\ arp_0__Sample
+  , "arp:0" /\ arp_0__Sample
+  , "arp:1" /\ arp_1__Sample
+  , "made2" /\ made2_0__Sample
+  , "made2:0" /\ made2_0__Sample
+  , "uxay" /\ uxay_0__Sample
+  , "uxay:0" /\ uxay_0__Sample
+  , "uxay:1" /\ uxay_1__Sample
+  , "uxay:2" /\ uxay_2__Sample
+  , "stomp" /\ stomp_0__Sample
+  , "stomp:0" /\ stomp_0__Sample
+  , "stomp:1" /\ stomp_1__Sample
+  , "stomp:2" /\ stomp_2__Sample
+  , "stomp:3" /\ stomp_3__Sample
+  , "stomp:4" /\ stomp_4__Sample
+  , "stomp:5" /\ stomp_5__Sample
+  , "stomp:6" /\ stomp_6__Sample
+  , "stomp:7" /\ stomp_7__Sample
+  , "stomp:8" /\ stomp_8__Sample
+  , "stomp:9" /\ stomp_9__Sample
+  , "tech" /\ tech_0__Sample
+  , "tech:0" /\ tech_0__Sample
+  , "tech:1" /\ tech_1__Sample
+  , "tech:2" /\ tech_2__Sample
+  , "tech:3" /\ tech_3__Sample
+  , "tech:4" /\ tech_4__Sample
+  , "tech:5" /\ tech_5__Sample
+  , "tech:6" /\ tech_6__Sample
+  , "tech:7" /\ tech_7__Sample
+  , "tech:8" /\ tech_8__Sample
+  , "tech:9" /\ tech_9__Sample
+  , "tech:10" /\ tech_10__Sample
+  , "tech:11" /\ tech_11__Sample
+  , "tech:12" /\ tech_12__Sample
+  , "sn" /\ sn_0__Sample
+  , "sn:0" /\ sn_0__Sample
+  , "sn:1" /\ sn_1__Sample
+  , "sn:2" /\ sn_2__Sample
+  , "sn:3" /\ sn_3__Sample
+  , "sn:4" /\ sn_4__Sample
+  , "sn:5" /\ sn_5__Sample
+  , "sn:6" /\ sn_6__Sample
+  , "sn:7" /\ sn_7__Sample
+  , "sn:8" /\ sn_8__Sample
+  , "sn:9" /\ sn_9__Sample
+  , "sn:10" /\ sn_10__Sample
+  , "sn:11" /\ sn_11__Sample
+  , "sn:12" /\ sn_12__Sample
+  , "sn:13" /\ sn_13__Sample
+  , "sn:14" /\ sn_14__Sample
+  , "sn:15" /\ sn_15__Sample
+  , "sn:16" /\ sn_16__Sample
+  , "sn:17" /\ sn_17__Sample
+  , "sn:18" /\ sn_18__Sample
+  , "sn:19" /\ sn_19__Sample
+  , "sn:20" /\ sn_20__Sample
+  , "sn:21" /\ sn_21__Sample
+  , "sn:22" /\ sn_22__Sample
+  , "sn:23" /\ sn_23__Sample
+  , "sn:24" /\ sn_24__Sample
+  , "sn:25" /\ sn_25__Sample
+  , "sn:26" /\ sn_26__Sample
+  , "sn:27" /\ sn_27__Sample
+  , "sn:28" /\ sn_28__Sample
+  , "sn:29" /\ sn_29__Sample
+  , "sn:30" /\ sn_30__Sample
+  , "sn:31" /\ sn_31__Sample
+  , "sn:32" /\ sn_32__Sample
+  , "sn:33" /\ sn_33__Sample
+  , "sn:34" /\ sn_34__Sample
+  , "sn:35" /\ sn_35__Sample
+  , "sn:36" /\ sn_36__Sample
+  , "sn:37" /\ sn_37__Sample
+  , "sn:38" /\ sn_38__Sample
+  , "sn:39" /\ sn_39__Sample
+  , "sn:40" /\ sn_40__Sample
+  , "sn:41" /\ sn_41__Sample
+  , "sn:42" /\ sn_42__Sample
+  , "sn:43" /\ sn_43__Sample
+  , "sn:44" /\ sn_44__Sample
+  , "sn:45" /\ sn_45__Sample
+  , "sn:46" /\ sn_46__Sample
+  , "sn:47" /\ sn_47__Sample
+  , "sn:48" /\ sn_48__Sample
+  , "sn:49" /\ sn_49__Sample
+  , "sn:50" /\ sn_50__Sample
+  , "sn:51" /\ sn_51__Sample
+  , "less" /\ less_0__Sample
+  , "less:0" /\ less_0__Sample
+  , "less:1" /\ less_1__Sample
+  , "less:2" /\ less_2__Sample
+  , "less:3" /\ less_3__Sample
+  , "off" /\ off_0__Sample
+  , "off:0" /\ off_0__Sample
+  , "x_808sd" /\ x_808sd_0__Sample
+  , "x_808sd:0" /\ x_808sd_0__Sample
+  , "x_808sd:1" /\ x_808sd_1__Sample
+  , "x_808sd:2" /\ x_808sd_2__Sample
+  , "x_808sd:3" /\ x_808sd_3__Sample
+  , "x_808sd:4" /\ x_808sd_4__Sample
+  , "x_808sd:5" /\ x_808sd_5__Sample
+  , "x_808sd:6" /\ x_808sd_6__Sample
+  , "x_808sd:7" /\ x_808sd_7__Sample
+  , "x_808sd:8" /\ x_808sd_8__Sample
+  , "x_808sd:9" /\ x_808sd_9__Sample
+  , "x_808sd:10" /\ x_808sd_10__Sample
+  , "x_808sd:11" /\ x_808sd_11__Sample
+  , "x_808sd:12" /\ x_808sd_12__Sample
+  , "x_808sd:13" /\ x_808sd_13__Sample
+  , "x_808sd:14" /\ x_808sd_14__Sample
+  , "x_808sd:15" /\ x_808sd_15__Sample
+  , "x_808sd:16" /\ x_808sd_16__Sample
+  , "x_808sd:17" /\ x_808sd_17__Sample
+  , "x_808sd:18" /\ x_808sd_18__Sample
+  , "x_808sd:19" /\ x_808sd_19__Sample
+  , "x_808sd:20" /\ x_808sd_20__Sample
+  , "x_808sd:21" /\ x_808sd_21__Sample
+  , "x_808sd:22" /\ x_808sd_22__Sample
+  , "x_808sd:23" /\ x_808sd_23__Sample
+  , "x_808sd:24" /\ x_808sd_24__Sample
+  , "trump" /\ trump_0__Sample
+  , "trump:0" /\ trump_0__Sample
+  , "trump:1" /\ trump_1__Sample
+  , "trump:2" /\ trump_2__Sample
+  , "trump:3" /\ trump_3__Sample
+  , "trump:4" /\ trump_4__Sample
+  , "trump:5" /\ trump_5__Sample
+  , "trump:6" /\ trump_6__Sample
+  , "trump:7" /\ trump_7__Sample
+  , "trump:8" /\ trump_8__Sample
+  , "trump:9" /\ trump_9__Sample
+  , "trump:10" /\ trump_10__Sample
+  , "bev" /\ bev_0__Sample
+  , "bev:0" /\ bev_0__Sample
+  , "bev:1" /\ bev_1__Sample
+  , "pad" /\ pad_0__Sample
+  , "pad:0" /\ pad_0__Sample
+  , "pad:1" /\ pad_1__Sample
+  , "pad:2" /\ pad_2__Sample
+  , "led" /\ led_0__Sample
+  , "led:0" /\ led_0__Sample
+  , "perc" /\ perc_0__Sample
+  , "perc:0" /\ perc_0__Sample
+  , "perc:1" /\ perc_1__Sample
+  , "perc:2" /\ perc_2__Sample
+  , "perc:3" /\ perc_3__Sample
+  , "perc:4" /\ perc_4__Sample
+  , "perc:5" /\ perc_5__Sample
+  , "pluck" /\ pluck_0__Sample
+  , "pluck:0" /\ pluck_0__Sample
+  , "pluck:1" /\ pluck_1__Sample
+  , "pluck:2" /\ pluck_2__Sample
+  , "pluck:3" /\ pluck_3__Sample
+  , "pluck:4" /\ pluck_4__Sample
+  , "pluck:5" /\ pluck_5__Sample
+  , "pluck:6" /\ pluck_6__Sample
+  , "pluck:7" /\ pluck_7__Sample
+  , "pluck:8" /\ pluck_8__Sample
+  , "pluck:9" /\ pluck_9__Sample
+  , "pluck:10" /\ pluck_10__Sample
+  , "pluck:11" /\ pluck_11__Sample
+  , "pluck:12" /\ pluck_12__Sample
+  , "pluck:13" /\ pluck_13__Sample
+  , "pluck:14" /\ pluck_14__Sample
+  , "pluck:15" /\ pluck_15__Sample
+  , "pluck:16" /\ pluck_16__Sample
+  , "bleep" /\ bleep_0__Sample
+  , "bleep:0" /\ bleep_0__Sample
+  , "bleep:1" /\ bleep_1__Sample
+  , "bleep:2" /\ bleep_2__Sample
+  , "bleep:3" /\ bleep_3__Sample
+  , "bleep:4" /\ bleep_4__Sample
+  , "bleep:5" /\ bleep_5__Sample
+  , "bleep:6" /\ bleep_6__Sample
+  , "bleep:7" /\ bleep_7__Sample
+  , "bleep:8" /\ bleep_8__Sample
+  , "bleep:9" /\ bleep_9__Sample
+  , "bleep:10" /\ bleep_10__Sample
+  , "bleep:11" /\ bleep_11__Sample
+  , "bleep:12" /\ bleep_12__Sample
+  , "ht" /\ ht_0__Sample
+  , "ht:0" /\ ht_0__Sample
+  , "ht:1" /\ ht_1__Sample
+  , "ht:2" /\ ht_2__Sample
+  , "ht:3" /\ ht_3__Sample
+  , "ht:4" /\ ht_4__Sample
+  , "ht:5" /\ ht_5__Sample
+  , "ht:6" /\ ht_6__Sample
+  , "ht:7" /\ ht_7__Sample
+  , "ht:8" /\ ht_8__Sample
+  , "ht:9" /\ ht_9__Sample
+  , "ht:10" /\ ht_10__Sample
+  , "ht:11" /\ ht_11__Sample
+  , "ht:12" /\ ht_12__Sample
+  , "ht:13" /\ ht_13__Sample
+  , "ht:14" /\ ht_14__Sample
+  , "ht:15" /\ ht_15__Sample
+  , "ades4" /\ ades4_0__Sample
+  , "ades4:0" /\ ades4_0__Sample
+  , "ades4:1" /\ ades4_1__Sample
+  , "ades4:2" /\ ades4_2__Sample
+  , "ades4:3" /\ ades4_3__Sample
+  , "ades4:4" /\ ades4_4__Sample
+  , "ades4:5" /\ ades4_5__Sample
+  , "proc" /\ proc_0__Sample
+  , "proc:0" /\ proc_0__Sample
+  , "proc:1" /\ proc_1__Sample
+  , "gretsch" /\ gretsch_0__Sample
+  , "gretsch:0" /\ gretsch_0__Sample
+  , "gretsch:1" /\ gretsch_1__Sample
+  , "gretsch:2" /\ gretsch_2__Sample
+  , "gretsch:3" /\ gretsch_3__Sample
+  , "gretsch:4" /\ gretsch_4__Sample
+  , "gretsch:5" /\ gretsch_5__Sample
+  , "gretsch:6" /\ gretsch_6__Sample
+  , "gretsch:7" /\ gretsch_7__Sample
+  , "gretsch:8" /\ gretsch_8__Sample
+  , "gretsch:9" /\ gretsch_9__Sample
+  , "gretsch:10" /\ gretsch_10__Sample
+  , "gretsch:11" /\ gretsch_11__Sample
+  , "gretsch:12" /\ gretsch_12__Sample
+  , "gretsch:13" /\ gretsch_13__Sample
+  , "gretsch:14" /\ gretsch_14__Sample
+  , "gretsch:15" /\ gretsch_15__Sample
+  , "gretsch:16" /\ gretsch_16__Sample
+  , "gretsch:17" /\ gretsch_17__Sample
+  , "gretsch:18" /\ gretsch_18__Sample
+  , "gretsch:19" /\ gretsch_19__Sample
+  , "gretsch:20" /\ gretsch_20__Sample
+  , "gretsch:21" /\ gretsch_21__Sample
+  , "gretsch:22" /\ gretsch_22__Sample
+  , "gretsch:23" /\ gretsch_23__Sample
+  , "outdoor" /\ outdoor_0__Sample
+  , "outdoor:0" /\ outdoor_0__Sample
+  , "outdoor:1" /\ outdoor_1__Sample
+  , "outdoor:2" /\ outdoor_2__Sample
+  , "outdoor:3" /\ outdoor_3__Sample
+  , "outdoor:4" /\ outdoor_4__Sample
+  , "outdoor:5" /\ outdoor_5__Sample
+  , "techno" /\ techno_0__Sample
+  , "techno:0" /\ techno_0__Sample
+  , "techno:1" /\ techno_1__Sample
+  , "techno:2" /\ techno_2__Sample
+  , "techno:3" /\ techno_3__Sample
+  , "techno:4" /\ techno_4__Sample
+  , "techno:5" /\ techno_5__Sample
+  , "techno:6" /\ techno_6__Sample
+  , "ulgab" /\ ulgab_0__Sample
+  , "ulgab:0" /\ ulgab_0__Sample
+  , "ulgab:1" /\ ulgab_1__Sample
+  , "ulgab:2" /\ ulgab_2__Sample
+  , "ulgab:3" /\ ulgab_3__Sample
+  , "ulgab:4" /\ ulgab_4__Sample
+  , "breaks125" /\ breaks125_0__Sample
+  , "breaks125:0" /\ breaks125_0__Sample
+  , "breaks125:1" /\ breaks125_1__Sample
+  , "bin" /\ bin_0__Sample
+  , "bin:0" /\ bin_0__Sample
+  , "bin:1" /\ bin_1__Sample
+  , "x_808mc" /\ x_808mc_0__Sample
+  , "x_808mc:0" /\ x_808mc_0__Sample
+  , "x_808mc:1" /\ x_808mc_1__Sample
+  , "x_808mc:2" /\ x_808mc_2__Sample
+  , "x_808mc:3" /\ x_808mc_3__Sample
+  , "x_808mc:4" /\ x_808mc_4__Sample
+  , "lt" /\ lt_0__Sample
+  , "lt:0" /\ lt_0__Sample
+  , "lt:1" /\ lt_1__Sample
+  , "lt:2" /\ lt_2__Sample
+  , "lt:3" /\ lt_3__Sample
+  , "lt:4" /\ lt_4__Sample
+  , "lt:5" /\ lt_5__Sample
+  , "lt:6" /\ lt_6__Sample
+  , "lt:7" /\ lt_7__Sample
+  , "lt:8" /\ lt_8__Sample
+  , "lt:9" /\ lt_9__Sample
+  , "lt:10" /\ lt_10__Sample
+  , "lt:11" /\ lt_11__Sample
+  , "lt:12" /\ lt_12__Sample
+  , "lt:13" /\ lt_13__Sample
+  , "lt:14" /\ lt_14__Sample
+  , "lt:15" /\ lt_15__Sample
+  , "amencutup" /\ amencutup_0__Sample
+  , "amencutup:0" /\ amencutup_0__Sample
+  , "amencutup:1" /\ amencutup_1__Sample
+  , "amencutup:2" /\ amencutup_2__Sample
+  , "amencutup:3" /\ amencutup_3__Sample
+  , "amencutup:4" /\ amencutup_4__Sample
+  , "amencutup:5" /\ amencutup_5__Sample
+  , "amencutup:6" /\ amencutup_6__Sample
+  , "amencutup:7" /\ amencutup_7__Sample
+  , "amencutup:8" /\ amencutup_8__Sample
+  , "amencutup:9" /\ amencutup_9__Sample
+  , "amencutup:10" /\ amencutup_10__Sample
+  , "amencutup:11" /\ amencutup_11__Sample
+  , "amencutup:12" /\ amencutup_12__Sample
+  , "amencutup:13" /\ amencutup_13__Sample
+  , "amencutup:14" /\ amencutup_14__Sample
+  , "amencutup:15" /\ amencutup_15__Sample
+  , "amencutup:16" /\ amencutup_16__Sample
+  , "amencutup:17" /\ amencutup_17__Sample
+  , "amencutup:18" /\ amencutup_18__Sample
+  , "amencutup:19" /\ amencutup_19__Sample
+  , "amencutup:20" /\ amencutup_20__Sample
+  , "amencutup:21" /\ amencutup_21__Sample
+  , "amencutup:22" /\ amencutup_22__Sample
+  , "amencutup:23" /\ amencutup_23__Sample
+  , "amencutup:24" /\ amencutup_24__Sample
+  , "amencutup:25" /\ amencutup_25__Sample
+  , "amencutup:26" /\ amencutup_26__Sample
+  , "amencutup:27" /\ amencutup_27__Sample
+  , "amencutup:28" /\ amencutup_28__Sample
+  , "amencutup:29" /\ amencutup_29__Sample
+  , "amencutup:30" /\ amencutup_30__Sample
+  , "amencutup:31" /\ amencutup_31__Sample
+  , "drum" /\ drum_0__Sample
+  , "drum:0" /\ drum_0__Sample
+  , "drum:1" /\ drum_1__Sample
+  , "drum:2" /\ drum_2__Sample
+  , "drum:3" /\ drum_3__Sample
+  , "drum:4" /\ drum_4__Sample
+  , "drum:5" /\ drum_5__Sample
+  , "coins" /\ coins_0__Sample
+  , "coins:0" /\ coins_0__Sample
+  , "industrial" /\ industrial_0__Sample
+  , "industrial:0" /\ industrial_0__Sample
+  , "industrial:1" /\ industrial_1__Sample
+  , "industrial:2" /\ industrial_2__Sample
+  , "industrial:3" /\ industrial_3__Sample
+  , "industrial:4" /\ industrial_4__Sample
+  , "industrial:5" /\ industrial_5__Sample
+  , "industrial:6" /\ industrial_6__Sample
+  , "industrial:7" /\ industrial_7__Sample
+  , "industrial:8" /\ industrial_8__Sample
+  , "industrial:9" /\ industrial_9__Sample
+  , "industrial:10" /\ industrial_10__Sample
+  , "industrial:11" /\ industrial_11__Sample
+  , "industrial:12" /\ industrial_12__Sample
+  , "industrial:13" /\ industrial_13__Sample
+  , "industrial:14" /\ industrial_14__Sample
+  , "industrial:15" /\ industrial_15__Sample
+  , "industrial:16" /\ industrial_16__Sample
+  , "industrial:17" /\ industrial_17__Sample
+  , "industrial:18" /\ industrial_18__Sample
+  , "industrial:19" /\ industrial_19__Sample
+  , "industrial:20" /\ industrial_20__Sample
+  , "industrial:21" /\ industrial_21__Sample
+  , "industrial:22" /\ industrial_22__Sample
+  , "industrial:23" /\ industrial_23__Sample
+  , "industrial:24" /\ industrial_24__Sample
+  , "industrial:25" /\ industrial_25__Sample
+  , "industrial:26" /\ industrial_26__Sample
+  , "industrial:27" /\ industrial_27__Sample
+  , "industrial:28" /\ industrial_28__Sample
+  , "industrial:29" /\ industrial_29__Sample
+  , "industrial:30" /\ industrial_30__Sample
+  , "industrial:31" /\ industrial_31__Sample
+  , "tink" /\ tink_0__Sample
+  , "tink:0" /\ tink_0__Sample
+  , "tink:1" /\ tink_1__Sample
+  , "tink:2" /\ tink_2__Sample
+  , "tink:3" /\ tink_3__Sample
+  , "tink:4" /\ tink_4__Sample
+  , "co" /\ co_0__Sample
+  , "co:0" /\ co_0__Sample
+  , "co:1" /\ co_1__Sample
+  , "co:2" /\ co_2__Sample
+  , "co:3" /\ co_3__Sample
+  , "fest" /\ fest_0__Sample
+  , "fest:0" /\ fest_0__Sample
+  , "feelfx" /\ feelfx_0__Sample
+  , "feelfx:0" /\ feelfx_0__Sample
+  , "feelfx:1" /\ feelfx_1__Sample
+  , "feelfx:2" /\ feelfx_2__Sample
+  , "feelfx:3" /\ feelfx_3__Sample
+  , "feelfx:4" /\ feelfx_4__Sample
+  , "feelfx:5" /\ feelfx_5__Sample
+  , "feelfx:6" /\ feelfx_6__Sample
+  , "feelfx:7" /\ feelfx_7__Sample
+  , "x_808cy" /\ x_808cy_0__Sample
+  , "x_808cy:0" /\ x_808cy_0__Sample
+  , "x_808cy:1" /\ x_808cy_1__Sample
+  , "x_808cy:2" /\ x_808cy_2__Sample
+  , "x_808cy:3" /\ x_808cy_3__Sample
+  , "x_808cy:4" /\ x_808cy_4__Sample
+  , "x_808cy:5" /\ x_808cy_5__Sample
+  , "x_808cy:6" /\ x_808cy_6__Sample
+  , "x_808cy:7" /\ x_808cy_7__Sample
+  , "x_808cy:8" /\ x_808cy_8__Sample
+  , "x_808cy:9" /\ x_808cy_9__Sample
+  , "x_808cy:10" /\ x_808cy_10__Sample
+  , "x_808cy:11" /\ x_808cy_11__Sample
+  , "x_808cy:12" /\ x_808cy_12__Sample
+  , "x_808cy:13" /\ x_808cy_13__Sample
+  , "x_808cy:14" /\ x_808cy_14__Sample
+  , "x_808cy:15" /\ x_808cy_15__Sample
+  , "x_808cy:16" /\ x_808cy_16__Sample
+  , "x_808cy:17" /\ x_808cy_17__Sample
+  , "x_808cy:18" /\ x_808cy_18__Sample
+  , "x_808cy:19" /\ x_808cy_19__Sample
+  , "x_808cy:20" /\ x_808cy_20__Sample
+  , "x_808cy:21" /\ x_808cy_21__Sample
+  , "x_808cy:22" /\ x_808cy_22__Sample
+  , "x_808cy:23" /\ x_808cy_23__Sample
+  , "x_808cy:24" /\ x_808cy_24__Sample
+  , "world" /\ world_0__Sample
+  , "world:0" /\ world_0__Sample
+  , "world:1" /\ world_1__Sample
+  , "world:2" /\ world_2__Sample
+  , "f" /\ f_0__Sample
+  , "f:0" /\ f_0__Sample
+  , "numbers" /\ numbers_0__Sample
+  , "numbers:0" /\ numbers_0__Sample
+  , "numbers:1" /\ numbers_1__Sample
+  , "numbers:2" /\ numbers_2__Sample
+  , "numbers:3" /\ numbers_3__Sample
+  , "numbers:4" /\ numbers_4__Sample
+  , "numbers:5" /\ numbers_5__Sample
+  , "numbers:6" /\ numbers_6__Sample
+  , "numbers:7" /\ numbers_7__Sample
+  , "numbers:8" /\ numbers_8__Sample
+  , "d" /\ d_0__Sample
+  , "d:0" /\ d_0__Sample
+  , "d:1" /\ d_1__Sample
+  , "d:2" /\ d_2__Sample
+  , "d:3" /\ d_3__Sample
+  , "padlong" /\ padlong_0__Sample
+  , "padlong:0" /\ padlong_0__Sample
+  , "sequential" /\ sequential_0__Sample
+  , "sequential:0" /\ sequential_0__Sample
+  , "sequential:1" /\ sequential_1__Sample
+  , "sequential:2" /\ sequential_2__Sample
+  , "sequential:3" /\ sequential_3__Sample
+  , "sequential:4" /\ sequential_4__Sample
+  , "sequential:5" /\ sequential_5__Sample
+  , "sequential:6" /\ sequential_6__Sample
+  , "sequential:7" /\ sequential_7__Sample
+  , "stab" /\ stab_0__Sample
+  , "stab:0" /\ stab_0__Sample
+  , "stab:1" /\ stab_1__Sample
+  , "stab:2" /\ stab_2__Sample
+  , "stab:3" /\ stab_3__Sample
+  , "stab:4" /\ stab_4__Sample
+  , "stab:5" /\ stab_5__Sample
+  , "stab:6" /\ stab_6__Sample
+  , "stab:7" /\ stab_7__Sample
+  , "stab:8" /\ stab_8__Sample
+  , "stab:9" /\ stab_9__Sample
+  , "stab:10" /\ stab_10__Sample
+  , "stab:11" /\ stab_11__Sample
+  , "stab:12" /\ stab_12__Sample
+  , "stab:13" /\ stab_13__Sample
+  , "stab:14" /\ stab_14__Sample
+  , "stab:15" /\ stab_15__Sample
+  , "stab:16" /\ stab_16__Sample
+  , "stab:17" /\ stab_17__Sample
+  , "stab:18" /\ stab_18__Sample
+  , "stab:19" /\ stab_19__Sample
+  , "stab:20" /\ stab_20__Sample
+  , "stab:21" /\ stab_21__Sample
+  , "stab:22" /\ stab_22__Sample
+  , "electro1" /\ electro1_0__Sample
+  , "electro1:0" /\ electro1_0__Sample
+  , "electro1:1" /\ electro1_1__Sample
+  , "electro1:2" /\ electro1_2__Sample
+  , "electro1:3" /\ electro1_3__Sample
+  , "electro1:4" /\ electro1_4__Sample
+  , "electro1:5" /\ electro1_5__Sample
+  , "electro1:6" /\ electro1_6__Sample
+  , "electro1:7" /\ electro1_7__Sample
+  , "electro1:8" /\ electro1_8__Sample
+  , "electro1:9" /\ electro1_9__Sample
+  , "electro1:10" /\ electro1_10__Sample
+  , "electro1:11" /\ electro1_11__Sample
+  , "electro1:12" /\ electro1_12__Sample
+  , "ifdrums" /\ ifdrums_0__Sample
+  , "ifdrums:0" /\ ifdrums_0__Sample
+  , "ifdrums:1" /\ ifdrums_1__Sample
+  , "ifdrums:2" /\ ifdrums_2__Sample
+  , "invaders" /\ invaders_0__Sample
+  , "invaders:0" /\ invaders_0__Sample
+  , "invaders:1" /\ invaders_1__Sample
+  , "invaders:2" /\ invaders_2__Sample
+  , "invaders:3" /\ invaders_3__Sample
+  , "invaders:4" /\ invaders_4__Sample
+  , "invaders:5" /\ invaders_5__Sample
+  , "invaders:6" /\ invaders_6__Sample
+  , "invaders:7" /\ invaders_7__Sample
+  , "invaders:8" /\ invaders_8__Sample
+  , "invaders:9" /\ invaders_9__Sample
+  , "invaders:10" /\ invaders_10__Sample
+  , "invaders:11" /\ invaders_11__Sample
+  , "invaders:12" /\ invaders_12__Sample
+  , "invaders:13" /\ invaders_13__Sample
+  , "invaders:14" /\ invaders_14__Sample
+  , "invaders:15" /\ invaders_15__Sample
+  , "invaders:16" /\ invaders_16__Sample
+  , "invaders:17" /\ invaders_17__Sample
+  , "dist" /\ dist_0__Sample
+  , "dist:0" /\ dist_0__Sample
+  , "dist:1" /\ dist_1__Sample
+  , "dist:2" /\ dist_2__Sample
+  , "dist:3" /\ dist_3__Sample
+  , "dist:4" /\ dist_4__Sample
+  , "dist:5" /\ dist_5__Sample
+  , "dist:6" /\ dist_6__Sample
+  , "dist:7" /\ dist_7__Sample
+  , "dist:8" /\ dist_8__Sample
+  , "dist:9" /\ dist_9__Sample
+  , "dist:10" /\ dist_10__Sample
+  , "dist:11" /\ dist_11__Sample
+  , "dist:12" /\ dist_12__Sample
+  , "dist:13" /\ dist_13__Sample
+  , "dist:14" /\ dist_14__Sample
+  , "dist:15" /\ dist_15__Sample
+  , "sundance" /\ sundance_0__Sample
+  , "sundance:0" /\ sundance_0__Sample
+  , "sundance:1" /\ sundance_1__Sample
+  , "sundance:2" /\ sundance_2__Sample
+  , "sundance:3" /\ sundance_3__Sample
+  , "sundance:4" /\ sundance_4__Sample
+  , "sundance:5" /\ sundance_5__Sample
+  , "speech" /\ speech_0__Sample
+  , "speech:0" /\ speech_0__Sample
+  , "speech:1" /\ speech_1__Sample
+  , "speech:2" /\ speech_2__Sample
+  , "speech:3" /\ speech_3__Sample
+  , "speech:4" /\ speech_4__Sample
+  , "speech:5" /\ speech_5__Sample
+  , "speech:6" /\ speech_6__Sample
+  , "toys" /\ toys_0__Sample
+  , "toys:0" /\ toys_0__Sample
+  , "toys:1" /\ toys_1__Sample
+  , "toys:2" /\ toys_2__Sample
+  , "toys:3" /\ toys_3__Sample
+  , "toys:4" /\ toys_4__Sample
+  , "toys:5" /\ toys_5__Sample
+  , "toys:6" /\ toys_6__Sample
+  , "toys:7" /\ toys_7__Sample
+  , "toys:8" /\ toys_8__Sample
+  , "toys:9" /\ toys_9__Sample
+  , "toys:10" /\ toys_10__Sample
+  , "toys:11" /\ toys_11__Sample
+  , "toys:12" /\ toys_12__Sample
+  , "bass0" /\ bass0_0__Sample
+  , "bass0:0" /\ bass0_0__Sample
+  , "bass0:1" /\ bass0_1__Sample
+  , "bass0:2" /\ bass0_2__Sample
+  , "realclaps" /\ realclaps_0__Sample
+  , "realclaps:0" /\ realclaps_0__Sample
+  , "realclaps:1" /\ realclaps_1__Sample
+  , "realclaps:2" /\ realclaps_2__Sample
+  , "realclaps:3" /\ realclaps_3__Sample
+  , "dorkbot" /\ dorkbot_0__Sample
+  , "dorkbot:0" /\ dorkbot_0__Sample
+  , "dorkbot:1" /\ dorkbot_1__Sample
+  , "arpy" /\ arpy_0__Sample
+  , "arpy:0" /\ arpy_0__Sample
+  , "arpy:1" /\ arpy_1__Sample
+  , "arpy:2" /\ arpy_2__Sample
+  , "arpy:3" /\ arpy_3__Sample
+  , "arpy:4" /\ arpy_4__Sample
+  , "arpy:5" /\ arpy_5__Sample
+  , "arpy:6" /\ arpy_6__Sample
+  , "arpy:7" /\ arpy_7__Sample
+  , "arpy:8" /\ arpy_8__Sample
+  , "arpy:9" /\ arpy_9__Sample
+  , "arpy:10" /\ arpy_10__Sample
+  , "fire" /\ fire_0__Sample
+  , "fire:0" /\ fire_0__Sample
+  , "hoover" /\ hoover_0__Sample
+  , "hoover:0" /\ hoover_0__Sample
+  , "hoover:1" /\ hoover_1__Sample
+  , "hoover:2" /\ hoover_2__Sample
+  , "hoover:3" /\ hoover_3__Sample
+  , "hoover:4" /\ hoover_4__Sample
+  , "hoover:5" /\ hoover_5__Sample
+  , "breath" /\ breath_0__Sample
+  , "breath:0" /\ breath_0__Sample
+  , "rave" /\ rave_0__Sample
+  , "rave:0" /\ rave_0__Sample
+  , "rave:1" /\ rave_1__Sample
+  , "rave:2" /\ rave_2__Sample
+  , "rave:3" /\ rave_3__Sample
+  , "rave:4" /\ rave_4__Sample
+  , "rave:5" /\ rave_5__Sample
+  , "rave:6" /\ rave_6__Sample
+  , "rave:7" /\ rave_7__Sample
+  , "bottle" /\ bottle_0__Sample
+  , "bottle:0" /\ bottle_0__Sample
+  , "bottle:1" /\ bottle_1__Sample
+  , "bottle:2" /\ bottle_2__Sample
+  , "bottle:3" /\ bottle_3__Sample
+  , "bottle:4" /\ bottle_4__Sample
+  , "bottle:5" /\ bottle_5__Sample
+  , "bottle:6" /\ bottle_6__Sample
+  , "bottle:7" /\ bottle_7__Sample
+  , "bottle:8" /\ bottle_8__Sample
+  , "bottle:9" /\ bottle_9__Sample
+  , "bottle:10" /\ bottle_10__Sample
+  , "bottle:11" /\ bottle_11__Sample
+  , "bottle:12" /\ bottle_12__Sample
+  , "east" /\ east_0__Sample
+  , "east:0" /\ east_0__Sample
+  , "east:1" /\ east_1__Sample
+  , "east:2" /\ east_2__Sample
+  , "east:3" /\ east_3__Sample
+  , "east:4" /\ east_4__Sample
+  , "east:5" /\ east_5__Sample
+  , "east:6" /\ east_6__Sample
+  , "east:7" /\ east_7__Sample
+  , "east:8" /\ east_8__Sample
+  , "linnhats" /\ linnhats_0__Sample
+  , "linnhats:0" /\ linnhats_0__Sample
+  , "linnhats:1" /\ linnhats_1__Sample
+  , "linnhats:2" /\ linnhats_2__Sample
+  , "linnhats:3" /\ linnhats_3__Sample
+  , "linnhats:4" /\ linnhats_4__Sample
+  , "linnhats:5" /\ linnhats_5__Sample
+  , "speedupdown" /\ speedupdown_0__Sample
+  , "speedupdown:0" /\ speedupdown_0__Sample
+  , "speedupdown:1" /\ speedupdown_1__Sample
+  , "speedupdown:2" /\ speedupdown_2__Sample
+  , "speedupdown:3" /\ speedupdown_3__Sample
+  , "speedupdown:4" /\ speedupdown_4__Sample
+  , "speedupdown:5" /\ speedupdown_5__Sample
+  , "speedupdown:6" /\ speedupdown_6__Sample
+  , "speedupdown:7" /\ speedupdown_7__Sample
+  , "speedupdown:8" /\ speedupdown_8__Sample
+  , "cosmicg" /\ cosmicg_0__Sample
+  , "cosmicg:0" /\ cosmicg_0__Sample
+  , "cosmicg:1" /\ cosmicg_1__Sample
+  , "cosmicg:2" /\ cosmicg_2__Sample
+  , "cosmicg:3" /\ cosmicg_3__Sample
+  , "cosmicg:4" /\ cosmicg_4__Sample
+  , "cosmicg:5" /\ cosmicg_5__Sample
+  , "cosmicg:6" /\ cosmicg_6__Sample
+  , "cosmicg:7" /\ cosmicg_7__Sample
+  , "cosmicg:8" /\ cosmicg_8__Sample
+  , "cosmicg:9" /\ cosmicg_9__Sample
+  , "cosmicg:10" /\ cosmicg_10__Sample
+  , "cosmicg:11" /\ cosmicg_11__Sample
+  , "cosmicg:12" /\ cosmicg_12__Sample
+  , "cosmicg:13" /\ cosmicg_13__Sample
+  , "cosmicg:14" /\ cosmicg_14__Sample
+  , "jvbass" /\ jvbass_0__Sample
+  , "jvbass:0" /\ jvbass_0__Sample
+  , "jvbass:1" /\ jvbass_1__Sample
+  , "jvbass:2" /\ jvbass_2__Sample
+  , "jvbass:3" /\ jvbass_3__Sample
+  , "jvbass:4" /\ jvbass_4__Sample
+  , "jvbass:5" /\ jvbass_5__Sample
+  , "jvbass:6" /\ jvbass_6__Sample
+  , "jvbass:7" /\ jvbass_7__Sample
+  , "jvbass:8" /\ jvbass_8__Sample
+  , "jvbass:9" /\ jvbass_9__Sample
+  , "jvbass:10" /\ jvbass_10__Sample
+  , "jvbass:11" /\ jvbass_11__Sample
+  , "jvbass:12" /\ jvbass_12__Sample
+  , "mash" /\ mash_0__Sample
+  , "mash:0" /\ mash_0__Sample
+  , "mash:1" /\ mash_1__Sample
+  , "feel" /\ feel_0__Sample
+  , "feel:0" /\ feel_0__Sample
+  , "feel:1" /\ feel_1__Sample
+  , "feel:2" /\ feel_2__Sample
+  , "feel:3" /\ feel_3__Sample
+  , "feel:4" /\ feel_4__Sample
+  , "feel:5" /\ feel_5__Sample
+  , "feel:6" /\ feel_6__Sample
+  , "short" /\ short_0__Sample
+  , "short:0" /\ short_0__Sample
+  , "short:1" /\ short_1__Sample
+  , "short:2" /\ short_2__Sample
+  , "short:3" /\ short_3__Sample
+  , "short:4" /\ short_4__Sample
+  , "incoming" /\ incoming_0__Sample
+  , "incoming:0" /\ incoming_0__Sample
+  , "incoming:1" /\ incoming_1__Sample
+  , "incoming:2" /\ incoming_2__Sample
+  , "incoming:3" /\ incoming_3__Sample
+  , "incoming:4" /\ incoming_4__Sample
+  , "incoming:5" /\ incoming_5__Sample
+  , "incoming:6" /\ incoming_6__Sample
+  , "incoming:7" /\ incoming_7__Sample
+  , "flick" /\ flick_0__Sample
+  , "flick:0" /\ flick_0__Sample
+  , "flick:1" /\ flick_1__Sample
+  , "flick:2" /\ flick_2__Sample
+  , "flick:3" /\ flick_3__Sample
+  , "flick:4" /\ flick_4__Sample
+  , "flick:5" /\ flick_5__Sample
+  , "flick:6" /\ flick_6__Sample
+  , "flick:7" /\ flick_7__Sample
+  , "flick:8" /\ flick_8__Sample
+  , "flick:9" /\ flick_9__Sample
+  , "flick:10" /\ flick_10__Sample
+  , "flick:11" /\ flick_11__Sample
+  , "flick:12" /\ flick_12__Sample
+  , "flick:13" /\ flick_13__Sample
+  , "flick:14" /\ flick_14__Sample
+  , "flick:15" /\ flick_15__Sample
+  , "flick:16" /\ flick_16__Sample
+  , "reverbkick" /\ reverbkick_0__Sample
+  , "reverbkick:0" /\ reverbkick_0__Sample
+  , "bass2" /\ bass2_0__Sample
+  , "bass2:0" /\ bass2_0__Sample
+  , "bass2:1" /\ bass2_1__Sample
+  , "bass2:2" /\ bass2_2__Sample
+  , "bass2:3" /\ bass2_3__Sample
+  , "bass2:4" /\ bass2_4__Sample
+  , "baa" /\ baa_0__Sample
+  , "baa:0" /\ baa_0__Sample
+  , "baa:1" /\ baa_1__Sample
+  , "baa:2" /\ baa_2__Sample
+  , "baa:3" /\ baa_3__Sample
+  , "baa:4" /\ baa_4__Sample
+  , "baa:5" /\ baa_5__Sample
+  , "baa:6" /\ baa_6__Sample
+  , "fm" /\ fm_0__Sample
+  , "fm:0" /\ fm_0__Sample
+  , "fm:1" /\ fm_1__Sample
+  , "fm:2" /\ fm_2__Sample
+  , "fm:3" /\ fm_3__Sample
+  , "fm:4" /\ fm_4__Sample
+  , "fm:5" /\ fm_5__Sample
+  , "fm:6" /\ fm_6__Sample
+  , "fm:7" /\ fm_7__Sample
+  , "fm:8" /\ fm_8__Sample
+  , "fm:9" /\ fm_9__Sample
+  , "fm:10" /\ fm_10__Sample
+  , "fm:11" /\ fm_11__Sample
+  , "fm:12" /\ fm_12__Sample
+  , "fm:13" /\ fm_13__Sample
+  , "fm:14" /\ fm_14__Sample
+  , "fm:15" /\ fm_15__Sample
+  , "fm:16" /\ fm_16__Sample
+  , "click" /\ click_0__Sample
+  , "click:0" /\ click_0__Sample
+  , "click:1" /\ click_1__Sample
+  , "click:2" /\ click_2__Sample
+  , "click:3" /\ click_3__Sample
+  , "control" /\ control_0__Sample
+  , "control:0" /\ control_0__Sample
+  , "control:1" /\ control_1__Sample
+  , "peri" /\ peri_0__Sample
+  , "peri:0" /\ peri_0__Sample
+  , "peri:1" /\ peri_1__Sample
+  , "peri:2" /\ peri_2__Sample
+  , "peri:3" /\ peri_3__Sample
+  , "peri:4" /\ peri_4__Sample
+  , "peri:5" /\ peri_5__Sample
+  , "peri:6" /\ peri_6__Sample
+  , "peri:7" /\ peri_7__Sample
+  , "peri:8" /\ peri_8__Sample
+  , "peri:9" /\ peri_9__Sample
+  , "peri:10" /\ peri_10__Sample
+  , "peri:11" /\ peri_11__Sample
+  , "peri:12" /\ peri_12__Sample
+  , "peri:13" /\ peri_13__Sample
+  , "peri:14" /\ peri_14__Sample
+  , "procshort" /\ procshort_0__Sample
+  , "procshort:0" /\ procshort_0__Sample
+  , "procshort:1" /\ procshort_1__Sample
+  , "procshort:2" /\ procshort_2__Sample
+  , "procshort:3" /\ procshort_3__Sample
+  , "procshort:4" /\ procshort_4__Sample
+  , "procshort:5" /\ procshort_5__Sample
+  , "procshort:6" /\ procshort_6__Sample
+  , "procshort:7" /\ procshort_7__Sample
+  , "hand" /\ hand_0__Sample
+  , "hand:0" /\ hand_0__Sample
+  , "hand:1" /\ hand_1__Sample
+  , "hand:2" /\ hand_2__Sample
+  , "hand:3" /\ hand_3__Sample
+  , "hand:4" /\ hand_4__Sample
+  , "hand:5" /\ hand_5__Sample
+  , "hand:6" /\ hand_6__Sample
+  , "hand:7" /\ hand_7__Sample
+  , "hand:8" /\ hand_8__Sample
+  , "hand:9" /\ hand_9__Sample
+  , "hand:10" /\ hand_10__Sample
+  , "hand:11" /\ hand_11__Sample
+  , "hand:12" /\ hand_12__Sample
+  , "hand:13" /\ hand_13__Sample
+  , "hand:14" /\ hand_14__Sample
+  , "hand:15" /\ hand_15__Sample
+  , "hand:16" /\ hand_16__Sample
+  , "future" /\ future_0__Sample
+  , "future:0" /\ future_0__Sample
+  , "future:1" /\ future_1__Sample
+  , "future:2" /\ future_2__Sample
+  , "future:3" /\ future_3__Sample
+  , "future:4" /\ future_4__Sample
+  , "future:5" /\ future_5__Sample
+  , "future:6" /\ future_6__Sample
+  , "future:7" /\ future_7__Sample
+  , "future:8" /\ future_8__Sample
+  , "future:9" /\ future_9__Sample
+  , "future:10" /\ future_10__Sample
+  , "future:11" /\ future_11__Sample
+  , "future:12" /\ future_12__Sample
+  , "future:13" /\ future_13__Sample
+  , "future:14" /\ future_14__Sample
+  , "future:15" /\ future_15__Sample
+  , "future:16" /\ future_16__Sample
+  , "hh" /\ hh_0__Sample
+  , "hh:0" /\ hh_0__Sample
+  , "hh:1" /\ hh_1__Sample
+  , "hh:2" /\ hh_2__Sample
+  , "hh:3" /\ hh_3__Sample
+  , "hh:4" /\ hh_4__Sample
+  , "hh:5" /\ hh_5__Sample
+  , "hh:6" /\ hh_6__Sample
+  , "hh:7" /\ hh_7__Sample
+  , "hh:8" /\ hh_8__Sample
+  , "hh:9" /\ hh_9__Sample
+  , "hh:10" /\ hh_10__Sample
+  , "hh:11" /\ hh_11__Sample
+  , "hh:12" /\ hh_12__Sample
+  , "x_808ht" /\ x_808ht_0__Sample
+  , "x_808ht:0" /\ x_808ht_0__Sample
+  , "x_808ht:1" /\ x_808ht_1__Sample
+  , "x_808ht:2" /\ x_808ht_2__Sample
+  , "x_808ht:3" /\ x_808ht_3__Sample
+  , "x_808ht:4" /\ x_808ht_4__Sample
+  , "db" /\ db_0__Sample
+  , "db:0" /\ db_0__Sample
+  , "db:1" /\ db_1__Sample
+  , "db:2" /\ db_2__Sample
+  , "db:3" /\ db_3__Sample
+  , "db:4" /\ db_4__Sample
+  , "db:5" /\ db_5__Sample
+  , "db:6" /\ db_6__Sample
+  , "db:7" /\ db_7__Sample
+  , "db:8" /\ db_8__Sample
+  , "db:9" /\ db_9__Sample
+  , "db:10" /\ db_10__Sample
+  , "db:11" /\ db_11__Sample
+  , "db:12" /\ db_12__Sample
+  ]
+
+type SampleGetter a = { | Samples a } -> a
+
+-- we need this dog and pony show because otherwise the type-checker tries to check 2000+
+-- SampleGetter functions and explodes
+foreign import unsafeSampleGetter :: forall a. String -> SampleGetter a
+
+samplesToSampleGetter :: forall a. Array (Sample /\ SampleGetter a)
+samplesToSampleGetter = (map <<< map) unsafeSampleGetter samplesToString
+
+sampleToBuffers' :: Map Sample (SampleGetter BrowserAudioBuffer)
+sampleToBuffers' = Map.fromFoldable samplesToSampleGetter
+
+sampleToBuffers :: Sample -> SampleGetter BrowserAudioBuffer
+sampleToBuffers sampy = fromMaybe
+  (unsafeSampleGetter "intentionalSilenceForInternalUseOnly")
+  (Map.lookup sampy sampleToBuffers')
+
+samplesToString :: Array (Sample /\ String)
+samplesToString =
+  [ intentionalSilenceForInternalUseOnly__Sample /\ "intentionalSilenceForInternalUseOnly"
+  , kicklinn_0__Sample /\ "kicklinn_0"
+  , msg_0__Sample /\ "msg_0"
+  , msg_1__Sample /\ "msg_1"
+  , msg_2__Sample /\ "msg_2"
+  , msg_3__Sample /\ "msg_3"
+  , msg_4__Sample /\ "msg_4"
+  , msg_5__Sample /\ "msg_5"
+  , msg_6__Sample /\ "msg_6"
+  , msg_7__Sample /\ "msg_7"
+  , msg_8__Sample /\ "msg_8"
+  , gabbalouder_0__Sample /\ "gabbalouder_0"
+  , gabbalouder_1__Sample /\ "gabbalouder_1"
+  , gabbalouder_2__Sample /\ "gabbalouder_2"
+  , gabbalouder_3__Sample /\ "gabbalouder_3"
+  , kurt_0__Sample /\ "kurt_0"
+  , kurt_1__Sample /\ "kurt_1"
+  , kurt_2__Sample /\ "kurt_2"
+  , kurt_3__Sample /\ "kurt_3"
+  , kurt_4__Sample /\ "kurt_4"
+  , kurt_5__Sample /\ "kurt_5"
+  , kurt_6__Sample /\ "kurt_6"
+  , bassdm_0__Sample /\ "bassdm_0"
+  , bassdm_1__Sample /\ "bassdm_1"
+  , bassdm_2__Sample /\ "bassdm_2"
+  , bassdm_3__Sample /\ "bassdm_3"
+  , bassdm_4__Sample /\ "bassdm_4"
+  , bassdm_5__Sample /\ "bassdm_5"
+  , bassdm_6__Sample /\ "bassdm_6"
+  , bassdm_7__Sample /\ "bassdm_7"
+  , bassdm_8__Sample /\ "bassdm_8"
+  , bassdm_9__Sample /\ "bassdm_9"
+  , bassdm_10__Sample /\ "bassdm_10"
+  , bassdm_11__Sample /\ "bassdm_11"
+  , bassdm_12__Sample /\ "bassdm_12"
+  , bassdm_13__Sample /\ "bassdm_13"
+  , bassdm_14__Sample /\ "bassdm_14"
+  , bassdm_15__Sample /\ "bassdm_15"
+  , bassdm_16__Sample /\ "bassdm_16"
+  , bassdm_17__Sample /\ "bassdm_17"
+  , bassdm_18__Sample /\ "bassdm_18"
+  , bassdm_19__Sample /\ "bassdm_19"
+  , bassdm_20__Sample /\ "bassdm_20"
+  , bassdm_21__Sample /\ "bassdm_21"
+  , bassdm_22__Sample /\ "bassdm_22"
+  , bassdm_23__Sample /\ "bassdm_23"
+  , tabla2_0__Sample /\ "tabla2_0"
+  , tabla2_1__Sample /\ "tabla2_1"
+  , tabla2_2__Sample /\ "tabla2_2"
+  , tabla2_3__Sample /\ "tabla2_3"
+  , tabla2_4__Sample /\ "tabla2_4"
+  , tabla2_5__Sample /\ "tabla2_5"
+  , tabla2_6__Sample /\ "tabla2_6"
+  , tabla2_7__Sample /\ "tabla2_7"
+  , tabla2_8__Sample /\ "tabla2_8"
+  , tabla2_9__Sample /\ "tabla2_9"
+  , tabla2_10__Sample /\ "tabla2_10"
+  , tabla2_11__Sample /\ "tabla2_11"
+  , tabla2_12__Sample /\ "tabla2_12"
+  , tabla2_13__Sample /\ "tabla2_13"
+  , tabla2_14__Sample /\ "tabla2_14"
+  , tabla2_15__Sample /\ "tabla2_15"
+  , tabla2_16__Sample /\ "tabla2_16"
+  , tabla2_17__Sample /\ "tabla2_17"
+  , tabla2_18__Sample /\ "tabla2_18"
+  , tabla2_19__Sample /\ "tabla2_19"
+  , tabla2_20__Sample /\ "tabla2_20"
+  , tabla2_21__Sample /\ "tabla2_21"
+  , tabla2_22__Sample /\ "tabla2_22"
+  , tabla2_23__Sample /\ "tabla2_23"
+  , tabla2_24__Sample /\ "tabla2_24"
+  , tabla2_25__Sample /\ "tabla2_25"
+  , tabla2_26__Sample /\ "tabla2_26"
+  , tabla2_27__Sample /\ "tabla2_27"
+  , tabla2_28__Sample /\ "tabla2_28"
+  , tabla2_29__Sample /\ "tabla2_29"
+  , tabla2_30__Sample /\ "tabla2_30"
+  , tabla2_31__Sample /\ "tabla2_31"
+  , tabla2_32__Sample /\ "tabla2_32"
+  , tabla2_33__Sample /\ "tabla2_33"
+  , tabla2_34__Sample /\ "tabla2_34"
+  , tabla2_35__Sample /\ "tabla2_35"
+  , tabla2_36__Sample /\ "tabla2_36"
+  , tabla2_37__Sample /\ "tabla2_37"
+  , tabla2_38__Sample /\ "tabla2_38"
+  , tabla2_39__Sample /\ "tabla2_39"
+  , tabla2_40__Sample /\ "tabla2_40"
+  , tabla2_41__Sample /\ "tabla2_41"
+  , tabla2_42__Sample /\ "tabla2_42"
+  , tabla2_43__Sample /\ "tabla2_43"
+  , tabla2_44__Sample /\ "tabla2_44"
+  , tabla2_45__Sample /\ "tabla2_45"
+  , chin_0__Sample /\ "chin_0"
+  , chin_1__Sample /\ "chin_1"
+  , chin_2__Sample /\ "chin_2"
+  , chin_3__Sample /\ "chin_3"
+  , mp3_0__Sample /\ "mp3_0"
+  , mp3_1__Sample /\ "mp3_1"
+  , mp3_2__Sample /\ "mp3_2"
+  , mp3_3__Sample /\ "mp3_3"
+  , tablex_0__Sample /\ "tablex_0"
+  , tablex_1__Sample /\ "tablex_1"
+  , tablex_2__Sample /\ "tablex_2"
+  , sf_0__Sample /\ "sf_0"
+  , sf_1__Sample /\ "sf_1"
+  , sf_2__Sample /\ "sf_2"
+  , sf_3__Sample /\ "sf_3"
+  , sf_4__Sample /\ "sf_4"
+  , sf_5__Sample /\ "sf_5"
+  , sf_6__Sample /\ "sf_6"
+  , sf_7__Sample /\ "sf_7"
+  , sf_8__Sample /\ "sf_8"
+  , sf_9__Sample /\ "sf_9"
+  , sf_10__Sample /\ "sf_10"
+  , sf_11__Sample /\ "sf_11"
+  , sf_12__Sample /\ "sf_12"
+  , sf_13__Sample /\ "sf_13"
+  , sf_14__Sample /\ "sf_14"
+  , sf_15__Sample /\ "sf_15"
+  , sf_16__Sample /\ "sf_16"
+  , sf_17__Sample /\ "sf_17"
+  , speakspell_0__Sample /\ "speakspell_0"
+  , speakspell_1__Sample /\ "speakspell_1"
+  , speakspell_2__Sample /\ "speakspell_2"
+  , speakspell_3__Sample /\ "speakspell_3"
+  , speakspell_4__Sample /\ "speakspell_4"
+  , speakspell_5__Sample /\ "speakspell_5"
+  , speakspell_6__Sample /\ "speakspell_6"
+  , speakspell_7__Sample /\ "speakspell_7"
+  , speakspell_8__Sample /\ "speakspell_8"
+  , speakspell_9__Sample /\ "speakspell_9"
+  , speakspell_10__Sample /\ "speakspell_10"
+  , speakspell_11__Sample /\ "speakspell_11"
+  , cc_0__Sample /\ "cc_0"
+  , cc_1__Sample /\ "cc_1"
+  , cc_2__Sample /\ "cc_2"
+  , cc_3__Sample /\ "cc_3"
+  , cc_4__Sample /\ "cc_4"
+  , cc_5__Sample /\ "cc_5"
+  , gabbaloud_0__Sample /\ "gabbaloud_0"
+  , gabbaloud_1__Sample /\ "gabbaloud_1"
+  , gabbaloud_2__Sample /\ "gabbaloud_2"
+  , gabbaloud_3__Sample /\ "gabbaloud_3"
+  , ades2_0__Sample /\ "ades2_0"
+  , ades2_1__Sample /\ "ades2_1"
+  , ades2_2__Sample /\ "ades2_2"
+  , ades2_3__Sample /\ "ades2_3"
+  , ades2_4__Sample /\ "ades2_4"
+  , ades2_5__Sample /\ "ades2_5"
+  , ades2_6__Sample /\ "ades2_6"
+  , ades2_7__Sample /\ "ades2_7"
+  , ades2_8__Sample /\ "ades2_8"
+  , space_0__Sample /\ "space_0"
+  , space_1__Sample /\ "space_1"
+  , space_2__Sample /\ "space_2"
+  , space_3__Sample /\ "space_3"
+  , space_4__Sample /\ "space_4"
+  , space_5__Sample /\ "space_5"
+  , space_6__Sample /\ "space_6"
+  , space_7__Sample /\ "space_7"
+  , space_8__Sample /\ "space_8"
+  , space_9__Sample /\ "space_9"
+  , space_10__Sample /\ "space_10"
+  , space_11__Sample /\ "space_11"
+  , space_12__Sample /\ "space_12"
+  , space_13__Sample /\ "space_13"
+  , space_14__Sample /\ "space_14"
+  , space_15__Sample /\ "space_15"
+  , space_16__Sample /\ "space_16"
+  , space_17__Sample /\ "space_17"
+  , battles_0__Sample /\ "battles_0"
+  , battles_1__Sample /\ "battles_1"
+  , voodoo_0__Sample /\ "voodoo_0"
+  , voodoo_1__Sample /\ "voodoo_1"
+  , voodoo_2__Sample /\ "voodoo_2"
+  , voodoo_3__Sample /\ "voodoo_3"
+  , voodoo_4__Sample /\ "voodoo_4"
+  , ravemono_0__Sample /\ "ravemono_0"
+  , ravemono_1__Sample /\ "ravemono_1"
+  , psr_0__Sample /\ "psr_0"
+  , psr_1__Sample /\ "psr_1"
+  , psr_2__Sample /\ "psr_2"
+  , psr_3__Sample /\ "psr_3"
+  , psr_4__Sample /\ "psr_4"
+  , psr_5__Sample /\ "psr_5"
+  , psr_6__Sample /\ "psr_6"
+  , psr_7__Sample /\ "psr_7"
+  , psr_8__Sample /\ "psr_8"
+  , psr_9__Sample /\ "psr_9"
+  , psr_10__Sample /\ "psr_10"
+  , psr_11__Sample /\ "psr_11"
+  , psr_12__Sample /\ "psr_12"
+  , psr_13__Sample /\ "psr_13"
+  , psr_14__Sample /\ "psr_14"
+  , psr_15__Sample /\ "psr_15"
+  , psr_16__Sample /\ "psr_16"
+  , psr_17__Sample /\ "psr_17"
+  , psr_18__Sample /\ "psr_18"
+  , psr_19__Sample /\ "psr_19"
+  , psr_20__Sample /\ "psr_20"
+  , psr_21__Sample /\ "psr_21"
+  , psr_22__Sample /\ "psr_22"
+  , psr_23__Sample /\ "psr_23"
+  , psr_24__Sample /\ "psr_24"
+  , psr_25__Sample /\ "psr_25"
+  , psr_26__Sample /\ "psr_26"
+  , psr_27__Sample /\ "psr_27"
+  , psr_28__Sample /\ "psr_28"
+  , psr_29__Sample /\ "psr_29"
+  , metal_0__Sample /\ "metal_0"
+  , metal_1__Sample /\ "metal_1"
+  , metal_2__Sample /\ "metal_2"
+  , metal_3__Sample /\ "metal_3"
+  , metal_4__Sample /\ "metal_4"
+  , metal_5__Sample /\ "metal_5"
+  , metal_6__Sample /\ "metal_6"
+  , metal_7__Sample /\ "metal_7"
+  , metal_8__Sample /\ "metal_8"
+  , metal_9__Sample /\ "metal_9"
+  , hardcore_0__Sample /\ "hardcore_0"
+  , hardcore_1__Sample /\ "hardcore_1"
+  , hardcore_2__Sample /\ "hardcore_2"
+  , hardcore_3__Sample /\ "hardcore_3"
+  , hardcore_4__Sample /\ "hardcore_4"
+  , hardcore_5__Sample /\ "hardcore_5"
+  , hardcore_6__Sample /\ "hardcore_6"
+  , hardcore_7__Sample /\ "hardcore_7"
+  , hardcore_8__Sample /\ "hardcore_8"
+  , hardcore_9__Sample /\ "hardcore_9"
+  , hardcore_10__Sample /\ "hardcore_10"
+  , hardcore_11__Sample /\ "hardcore_11"
+  , mouth_0__Sample /\ "mouth_0"
+  , mouth_1__Sample /\ "mouth_1"
+  , mouth_2__Sample /\ "mouth_2"
+  , mouth_3__Sample /\ "mouth_3"
+  , mouth_4__Sample /\ "mouth_4"
+  , mouth_5__Sample /\ "mouth_5"
+  , mouth_6__Sample /\ "mouth_6"
+  , mouth_7__Sample /\ "mouth_7"
+  , mouth_8__Sample /\ "mouth_8"
+  , mouth_9__Sample /\ "mouth_9"
+  , mouth_10__Sample /\ "mouth_10"
+  , mouth_11__Sample /\ "mouth_11"
+  , mouth_12__Sample /\ "mouth_12"
+  , mouth_13__Sample /\ "mouth_13"
+  , mouth_14__Sample /\ "mouth_14"
+  , sugar_0__Sample /\ "sugar_0"
+  , sugar_1__Sample /\ "sugar_1"
+  , odx_0__Sample /\ "odx_0"
+  , odx_1__Sample /\ "odx_1"
+  , odx_2__Sample /\ "odx_2"
+  , odx_3__Sample /\ "odx_3"
+  , odx_4__Sample /\ "odx_4"
+  , odx_5__Sample /\ "odx_5"
+  , odx_6__Sample /\ "odx_6"
+  , odx_7__Sample /\ "odx_7"
+  , odx_8__Sample /\ "odx_8"
+  , odx_9__Sample /\ "odx_9"
+  , odx_10__Sample /\ "odx_10"
+  , odx_11__Sample /\ "odx_11"
+  , odx_12__Sample /\ "odx_12"
+  , odx_13__Sample /\ "odx_13"
+  , odx_14__Sample /\ "odx_14"
+  , x_808lc_0__Sample /\ "x_808lc_0"
+  , x_808lc_1__Sample /\ "x_808lc_1"
+  , x_808lc_2__Sample /\ "x_808lc_2"
+  , x_808lc_3__Sample /\ "x_808lc_3"
+  , x_808lc_4__Sample /\ "x_808lc_4"
+  , mt_0__Sample /\ "mt_0"
+  , mt_1__Sample /\ "mt_1"
+  , mt_2__Sample /\ "mt_2"
+  , mt_3__Sample /\ "mt_3"
+  , mt_4__Sample /\ "mt_4"
+  , mt_5__Sample /\ "mt_5"
+  , mt_6__Sample /\ "mt_6"
+  , mt_7__Sample /\ "mt_7"
+  , mt_8__Sample /\ "mt_8"
+  , mt_9__Sample /\ "mt_9"
+  , mt_10__Sample /\ "mt_10"
+  , mt_11__Sample /\ "mt_11"
+  , mt_12__Sample /\ "mt_12"
+  , mt_13__Sample /\ "mt_13"
+  , mt_14__Sample /\ "mt_14"
+  , mt_15__Sample /\ "mt_15"
+  , drumtraks_0__Sample /\ "drumtraks_0"
+  , drumtraks_1__Sample /\ "drumtraks_1"
+  , drumtraks_2__Sample /\ "drumtraks_2"
+  , drumtraks_3__Sample /\ "drumtraks_3"
+  , drumtraks_4__Sample /\ "drumtraks_4"
+  , drumtraks_5__Sample /\ "drumtraks_5"
+  , drumtraks_6__Sample /\ "drumtraks_6"
+  , drumtraks_7__Sample /\ "drumtraks_7"
+  , drumtraks_8__Sample /\ "drumtraks_8"
+  , drumtraks_9__Sample /\ "drumtraks_9"
+  , drumtraks_10__Sample /\ "drumtraks_10"
+  , drumtraks_11__Sample /\ "drumtraks_11"
+  , drumtraks_12__Sample /\ "drumtraks_12"
+  , print_0__Sample /\ "print_0"
+  , print_1__Sample /\ "print_1"
+  , print_2__Sample /\ "print_2"
+  , print_3__Sample /\ "print_3"
+  , print_4__Sample /\ "print_4"
+  , print_5__Sample /\ "print_5"
+  , print_6__Sample /\ "print_6"
+  , print_7__Sample /\ "print_7"
+  , print_8__Sample /\ "print_8"
+  , print_9__Sample /\ "print_9"
+  , print_10__Sample /\ "print_10"
+  , blip_0__Sample /\ "blip_0"
+  , blip_1__Sample /\ "blip_1"
+  , wobble_0__Sample /\ "wobble_0"
+  , made_0__Sample /\ "made_0"
+  , made_1__Sample /\ "made_1"
+  , made_2__Sample /\ "made_2"
+  , made_3__Sample /\ "made_3"
+  , made_4__Sample /\ "made_4"
+  , made_5__Sample /\ "made_5"
+  , made_6__Sample /\ "made_6"
+  , bass3_0__Sample /\ "bass3_0"
+  , bass3_1__Sample /\ "bass3_1"
+  , bass3_2__Sample /\ "bass3_2"
+  , bass3_3__Sample /\ "bass3_3"
+  , bass3_4__Sample /\ "bass3_4"
+  , bass3_5__Sample /\ "bass3_5"
+  , bass3_6__Sample /\ "bass3_6"
+  , bass3_7__Sample /\ "bass3_7"
+  , bass3_8__Sample /\ "bass3_8"
+  , bass3_9__Sample /\ "bass3_9"
+  , bass3_10__Sample /\ "bass3_10"
+  , speechless_0__Sample /\ "speechless_0"
+  , speechless_1__Sample /\ "speechless_1"
+  , speechless_2__Sample /\ "speechless_2"
+  , speechless_3__Sample /\ "speechless_3"
+  , speechless_4__Sample /\ "speechless_4"
+  , speechless_5__Sample /\ "speechless_5"
+  , speechless_6__Sample /\ "speechless_6"
+  , speechless_7__Sample /\ "speechless_7"
+  , speechless_8__Sample /\ "speechless_8"
+  , speechless_9__Sample /\ "speechless_9"
+  , sine_0__Sample /\ "sine_0"
+  , sine_1__Sample /\ "sine_1"
+  , sine_2__Sample /\ "sine_2"
+  , sine_3__Sample /\ "sine_3"
+  , sine_4__Sample /\ "sine_4"
+  , sine_5__Sample /\ "sine_5"
+  , noise_0__Sample /\ "noise_0"
+  , x_808lt_0__Sample /\ "x_808lt_0"
+  , x_808lt_1__Sample /\ "x_808lt_1"
+  , x_808lt_2__Sample /\ "x_808lt_2"
+  , x_808lt_3__Sample /\ "x_808lt_3"
+  , x_808lt_4__Sample /\ "x_808lt_4"
+  , sd_0__Sample /\ "sd_0"
+  , sd_1__Sample /\ "sd_1"
+  , alphabet_0__Sample /\ "alphabet_0"
+  , alphabet_1__Sample /\ "alphabet_1"
+  , alphabet_2__Sample /\ "alphabet_2"
+  , alphabet_3__Sample /\ "alphabet_3"
+  , alphabet_4__Sample /\ "alphabet_4"
+  , alphabet_5__Sample /\ "alphabet_5"
+  , alphabet_6__Sample /\ "alphabet_6"
+  , alphabet_7__Sample /\ "alphabet_7"
+  , alphabet_8__Sample /\ "alphabet_8"
+  , alphabet_9__Sample /\ "alphabet_9"
+  , alphabet_10__Sample /\ "alphabet_10"
+  , alphabet_11__Sample /\ "alphabet_11"
+  , alphabet_12__Sample /\ "alphabet_12"
+  , alphabet_13__Sample /\ "alphabet_13"
+  , alphabet_14__Sample /\ "alphabet_14"
+  , alphabet_15__Sample /\ "alphabet_15"
+  , alphabet_16__Sample /\ "alphabet_16"
+  , alphabet_17__Sample /\ "alphabet_17"
+  , alphabet_18__Sample /\ "alphabet_18"
+  , alphabet_19__Sample /\ "alphabet_19"
+  , alphabet_20__Sample /\ "alphabet_20"
+  , alphabet_21__Sample /\ "alphabet_21"
+  , alphabet_22__Sample /\ "alphabet_22"
+  , alphabet_23__Sample /\ "alphabet_23"
+  , alphabet_24__Sample /\ "alphabet_24"
+  , alphabet_25__Sample /\ "alphabet_25"
+  , baa2_0__Sample /\ "baa2_0"
+  , baa2_1__Sample /\ "baa2_1"
+  , baa2_2__Sample /\ "baa2_2"
+  , baa2_3__Sample /\ "baa2_3"
+  , baa2_4__Sample /\ "baa2_4"
+  , baa2_5__Sample /\ "baa2_5"
+  , baa2_6__Sample /\ "baa2_6"
+  , tok_0__Sample /\ "tok_0"
+  , tok_1__Sample /\ "tok_1"
+  , tok_2__Sample /\ "tok_2"
+  , tok_3__Sample /\ "tok_3"
+  , ades3_0__Sample /\ "ades3_0"
+  , ades3_1__Sample /\ "ades3_1"
+  , ades3_2__Sample /\ "ades3_2"
+  , ades3_3__Sample /\ "ades3_3"
+  , ades3_4__Sample /\ "ades3_4"
+  , ades3_5__Sample /\ "ades3_5"
+  , ades3_6__Sample /\ "ades3_6"
+  , x_909_0__Sample /\ "x_909_0"
+  , sid_0__Sample /\ "sid_0"
+  , sid_1__Sample /\ "sid_1"
+  , sid_2__Sample /\ "sid_2"
+  , sid_3__Sample /\ "sid_3"
+  , sid_4__Sample /\ "sid_4"
+  , sid_5__Sample /\ "sid_5"
+  , sid_6__Sample /\ "sid_6"
+  , sid_7__Sample /\ "sid_7"
+  , sid_8__Sample /\ "sid_8"
+  , sid_9__Sample /\ "sid_9"
+  , sid_10__Sample /\ "sid_10"
+  , sid_11__Sample /\ "sid_11"
+  , jungbass_0__Sample /\ "jungbass_0"
+  , jungbass_1__Sample /\ "jungbass_1"
+  , jungbass_2__Sample /\ "jungbass_2"
+  , jungbass_3__Sample /\ "jungbass_3"
+  , jungbass_4__Sample /\ "jungbass_4"
+  , jungbass_5__Sample /\ "jungbass_5"
+  , jungbass_6__Sample /\ "jungbass_6"
+  , jungbass_7__Sample /\ "jungbass_7"
+  , jungbass_8__Sample /\ "jungbass_8"
+  , jungbass_9__Sample /\ "jungbass_9"
+  , jungbass_10__Sample /\ "jungbass_10"
+  , jungbass_11__Sample /\ "jungbass_11"
+  , jungbass_12__Sample /\ "jungbass_12"
+  , jungbass_13__Sample /\ "jungbass_13"
+  , jungbass_14__Sample /\ "jungbass_14"
+  , jungbass_15__Sample /\ "jungbass_15"
+  , jungbass_16__Sample /\ "jungbass_16"
+  , jungbass_17__Sample /\ "jungbass_17"
+  , jungbass_18__Sample /\ "jungbass_18"
+  , jungbass_19__Sample /\ "jungbass_19"
+  , gabba_0__Sample /\ "gabba_0"
+  , gabba_1__Sample /\ "gabba_1"
+  , gabba_2__Sample /\ "gabba_2"
+  , gabba_3__Sample /\ "gabba_3"
+  , crow_0__Sample /\ "crow_0"
+  , crow_1__Sample /\ "crow_1"
+  , crow_2__Sample /\ "crow_2"
+  , crow_3__Sample /\ "crow_3"
+  , birds3_0__Sample /\ "birds3_0"
+  , birds3_1__Sample /\ "birds3_1"
+  , birds3_2__Sample /\ "birds3_2"
+  , birds3_3__Sample /\ "birds3_3"
+  , birds3_4__Sample /\ "birds3_4"
+  , birds3_5__Sample /\ "birds3_5"
+  , birds3_6__Sample /\ "birds3_6"
+  , birds3_7__Sample /\ "birds3_7"
+  , birds3_8__Sample /\ "birds3_8"
+  , birds3_9__Sample /\ "birds3_9"
+  , birds3_10__Sample /\ "birds3_10"
+  , birds3_11__Sample /\ "birds3_11"
+  , birds3_12__Sample /\ "birds3_12"
+  , birds3_13__Sample /\ "birds3_13"
+  , birds3_14__Sample /\ "birds3_14"
+  , birds3_15__Sample /\ "birds3_15"
+  , birds3_16__Sample /\ "birds3_16"
+  , birds3_17__Sample /\ "birds3_17"
+  , birds3_18__Sample /\ "birds3_18"
+  , auto_0__Sample /\ "auto_0"
+  , auto_1__Sample /\ "auto_1"
+  , auto_2__Sample /\ "auto_2"
+  , auto_3__Sample /\ "auto_3"
+  , auto_4__Sample /\ "auto_4"
+  , auto_5__Sample /\ "auto_5"
+  , auto_6__Sample /\ "auto_6"
+  , auto_7__Sample /\ "auto_7"
+  , auto_8__Sample /\ "auto_8"
+  , auto_9__Sample /\ "auto_9"
+  , auto_10__Sample /\ "auto_10"
+  , mute_0__Sample /\ "mute_0"
+  , mute_1__Sample /\ "mute_1"
+  , mute_2__Sample /\ "mute_2"
+  , mute_3__Sample /\ "mute_3"
+  , mute_4__Sample /\ "mute_4"
+  , mute_5__Sample /\ "mute_5"
+  , mute_6__Sample /\ "mute_6"
+  , mute_7__Sample /\ "mute_7"
+  , mute_8__Sample /\ "mute_8"
+  , mute_9__Sample /\ "mute_9"
+  , mute_10__Sample /\ "mute_10"
+  , mute_11__Sample /\ "mute_11"
+  , mute_12__Sample /\ "mute_12"
+  , mute_13__Sample /\ "mute_13"
+  , mute_14__Sample /\ "mute_14"
+  , mute_15__Sample /\ "mute_15"
+  , mute_16__Sample /\ "mute_16"
+  , mute_17__Sample /\ "mute_17"
+  , mute_18__Sample /\ "mute_18"
+  , mute_19__Sample /\ "mute_19"
+  , mute_20__Sample /\ "mute_20"
+  , mute_21__Sample /\ "mute_21"
+  , mute_22__Sample /\ "mute_22"
+  , mute_23__Sample /\ "mute_23"
+  , mute_24__Sample /\ "mute_24"
+  , mute_25__Sample /\ "mute_25"
+  , mute_26__Sample /\ "mute_26"
+  , mute_27__Sample /\ "mute_27"
+  , sheffield_0__Sample /\ "sheffield_0"
+  , casio_0__Sample /\ "casio_0"
+  , casio_1__Sample /\ "casio_1"
+  , casio_2__Sample /\ "casio_2"
+  , sax_0__Sample /\ "sax_0"
+  , sax_1__Sample /\ "sax_1"
+  , sax_2__Sample /\ "sax_2"
+  , sax_3__Sample /\ "sax_3"
+  , sax_4__Sample /\ "sax_4"
+  , sax_5__Sample /\ "sax_5"
+  , sax_6__Sample /\ "sax_6"
+  , sax_7__Sample /\ "sax_7"
+  , sax_8__Sample /\ "sax_8"
+  , sax_9__Sample /\ "sax_9"
+  , sax_10__Sample /\ "sax_10"
+  , sax_11__Sample /\ "sax_11"
+  , sax_12__Sample /\ "sax_12"
+  , sax_13__Sample /\ "sax_13"
+  , sax_14__Sample /\ "sax_14"
+  , sax_15__Sample /\ "sax_15"
+  , sax_16__Sample /\ "sax_16"
+  , sax_17__Sample /\ "sax_17"
+  , sax_18__Sample /\ "sax_18"
+  , sax_19__Sample /\ "sax_19"
+  , sax_20__Sample /\ "sax_20"
+  , sax_21__Sample /\ "sax_21"
+  , circus_0__Sample /\ "circus_0"
+  , circus_1__Sample /\ "circus_1"
+  , circus_2__Sample /\ "circus_2"
+  , yeah_0__Sample /\ "yeah_0"
+  , yeah_1__Sample /\ "yeah_1"
+  , yeah_2__Sample /\ "yeah_2"
+  , yeah_3__Sample /\ "yeah_3"
+  , yeah_4__Sample /\ "yeah_4"
+  , yeah_5__Sample /\ "yeah_5"
+  , yeah_6__Sample /\ "yeah_6"
+  , yeah_7__Sample /\ "yeah_7"
+  , yeah_8__Sample /\ "yeah_8"
+  , yeah_9__Sample /\ "yeah_9"
+  , yeah_10__Sample /\ "yeah_10"
+  , yeah_11__Sample /\ "yeah_11"
+  , yeah_12__Sample /\ "yeah_12"
+  , yeah_13__Sample /\ "yeah_13"
+  , yeah_14__Sample /\ "yeah_14"
+  , yeah_15__Sample /\ "yeah_15"
+  , yeah_16__Sample /\ "yeah_16"
+  , yeah_17__Sample /\ "yeah_17"
+  , yeah_18__Sample /\ "yeah_18"
+  , yeah_19__Sample /\ "yeah_19"
+  , yeah_20__Sample /\ "yeah_20"
+  , yeah_21__Sample /\ "yeah_21"
+  , yeah_22__Sample /\ "yeah_22"
+  , yeah_23__Sample /\ "yeah_23"
+  , yeah_24__Sample /\ "yeah_24"
+  , yeah_25__Sample /\ "yeah_25"
+  , yeah_26__Sample /\ "yeah_26"
+  , yeah_27__Sample /\ "yeah_27"
+  , yeah_28__Sample /\ "yeah_28"
+  , yeah_29__Sample /\ "yeah_29"
+  , yeah_30__Sample /\ "yeah_30"
+  , oc_0__Sample /\ "oc_0"
+  , oc_1__Sample /\ "oc_1"
+  , oc_2__Sample /\ "oc_2"
+  , oc_3__Sample /\ "oc_3"
+  , alex_0__Sample /\ "alex_0"
+  , alex_1__Sample /\ "alex_1"
+  , can_0__Sample /\ "can_0"
+  , can_1__Sample /\ "can_1"
+  , can_2__Sample /\ "can_2"
+  , can_3__Sample /\ "can_3"
+  , can_4__Sample /\ "can_4"
+  , can_5__Sample /\ "can_5"
+  , can_6__Sample /\ "can_6"
+  , can_7__Sample /\ "can_7"
+  , can_8__Sample /\ "can_8"
+  , can_9__Sample /\ "can_9"
+  , can_10__Sample /\ "can_10"
+  , can_11__Sample /\ "can_11"
+  , can_12__Sample /\ "can_12"
+  , can_13__Sample /\ "can_13"
+  , jungle_0__Sample /\ "jungle_0"
+  , jungle_1__Sample /\ "jungle_1"
+  , jungle_2__Sample /\ "jungle_2"
+  , jungle_3__Sample /\ "jungle_3"
+  , jungle_4__Sample /\ "jungle_4"
+  , jungle_5__Sample /\ "jungle_5"
+  , jungle_6__Sample /\ "jungle_6"
+  , jungle_7__Sample /\ "jungle_7"
+  , jungle_8__Sample /\ "jungle_8"
+  , jungle_9__Sample /\ "jungle_9"
+  , jungle_10__Sample /\ "jungle_10"
+  , jungle_11__Sample /\ "jungle_11"
+  , jungle_12__Sample /\ "jungle_12"
+  , moog_0__Sample /\ "moog_0"
+  , moog_1__Sample /\ "moog_1"
+  , moog_2__Sample /\ "moog_2"
+  , moog_3__Sample /\ "moog_3"
+  , moog_4__Sample /\ "moog_4"
+  , moog_5__Sample /\ "moog_5"
+  , moog_6__Sample /\ "moog_6"
+  , h_0__Sample /\ "h_0"
+  , h_1__Sample /\ "h_1"
+  , h_2__Sample /\ "h_2"
+  , h_3__Sample /\ "h_3"
+  , h_4__Sample /\ "h_4"
+  , h_5__Sample /\ "h_5"
+  , h_6__Sample /\ "h_6"
+  , wind_0__Sample /\ "wind_0"
+  , wind_1__Sample /\ "wind_1"
+  , wind_2__Sample /\ "wind_2"
+  , wind_3__Sample /\ "wind_3"
+  , wind_4__Sample /\ "wind_4"
+  , wind_5__Sample /\ "wind_5"
+  , wind_6__Sample /\ "wind_6"
+  , wind_7__Sample /\ "wind_7"
+  , wind_8__Sample /\ "wind_8"
+  , wind_9__Sample /\ "wind_9"
+  , rs_0__Sample /\ "rs_0"
+  , em2_0__Sample /\ "em2_0"
+  , em2_1__Sample /\ "em2_1"
+  , em2_2__Sample /\ "em2_2"
+  , em2_3__Sample /\ "em2_3"
+  , em2_4__Sample /\ "em2_4"
+  , em2_5__Sample /\ "em2_5"
+  , noise2_0__Sample /\ "noise2_0"
+  , noise2_1__Sample /\ "noise2_1"
+  , noise2_2__Sample /\ "noise2_2"
+  , noise2_3__Sample /\ "noise2_3"
+  , noise2_4__Sample /\ "noise2_4"
+  , noise2_5__Sample /\ "noise2_5"
+  , noise2_6__Sample /\ "noise2_6"
+  , noise2_7__Sample /\ "noise2_7"
+  , foo_0__Sample /\ "foo_0"
+  , foo_1__Sample /\ "foo_1"
+  , foo_2__Sample /\ "foo_2"
+  , foo_3__Sample /\ "foo_3"
+  , foo_4__Sample /\ "foo_4"
+  , foo_5__Sample /\ "foo_5"
+  , foo_6__Sample /\ "foo_6"
+  , foo_7__Sample /\ "foo_7"
+  , foo_8__Sample /\ "foo_8"
+  , foo_9__Sample /\ "foo_9"
+  , foo_10__Sample /\ "foo_10"
+  , foo_11__Sample /\ "foo_11"
+  , foo_12__Sample /\ "foo_12"
+  , foo_13__Sample /\ "foo_13"
+  , foo_14__Sample /\ "foo_14"
+  , foo_15__Sample /\ "foo_15"
+  , foo_16__Sample /\ "foo_16"
+  , foo_17__Sample /\ "foo_17"
+  , foo_18__Sample /\ "foo_18"
+  , foo_19__Sample /\ "foo_19"
+  , foo_20__Sample /\ "foo_20"
+  , foo_21__Sample /\ "foo_21"
+  , foo_22__Sample /\ "foo_22"
+  , foo_23__Sample /\ "foo_23"
+  , foo_24__Sample /\ "foo_24"
+  , foo_25__Sample /\ "foo_25"
+  , foo_26__Sample /\ "foo_26"
+  , armora_0__Sample /\ "armora_0"
+  , armora_1__Sample /\ "armora_1"
+  , armora_2__Sample /\ "armora_2"
+  , armora_3__Sample /\ "armora_3"
+  , armora_4__Sample /\ "armora_4"
+  , armora_5__Sample /\ "armora_5"
+  , armora_6__Sample /\ "armora_6"
+  , bend_0__Sample /\ "bend_0"
+  , bend_1__Sample /\ "bend_1"
+  , bend_2__Sample /\ "bend_2"
+  , bend_3__Sample /\ "bend_3"
+  , newnotes_0__Sample /\ "newnotes_0"
+  , newnotes_1__Sample /\ "newnotes_1"
+  , newnotes_2__Sample /\ "newnotes_2"
+  , newnotes_3__Sample /\ "newnotes_3"
+  , newnotes_4__Sample /\ "newnotes_4"
+  , newnotes_5__Sample /\ "newnotes_5"
+  , newnotes_6__Sample /\ "newnotes_6"
+  , newnotes_7__Sample /\ "newnotes_7"
+  , newnotes_8__Sample /\ "newnotes_8"
+  , newnotes_9__Sample /\ "newnotes_9"
+  , newnotes_10__Sample /\ "newnotes_10"
+  , newnotes_11__Sample /\ "newnotes_11"
+  , newnotes_12__Sample /\ "newnotes_12"
+  , newnotes_13__Sample /\ "newnotes_13"
+  , newnotes_14__Sample /\ "newnotes_14"
+  , pebbles_0__Sample /\ "pebbles_0"
+  , mash2_0__Sample /\ "mash2_0"
+  , mash2_1__Sample /\ "mash2_1"
+  , mash2_2__Sample /\ "mash2_2"
+  , mash2_3__Sample /\ "mash2_3"
+  , diphone2_0__Sample /\ "diphone2_0"
+  , diphone2_1__Sample /\ "diphone2_1"
+  , diphone2_2__Sample /\ "diphone2_2"
+  , diphone2_3__Sample /\ "diphone2_3"
+  , diphone2_4__Sample /\ "diphone2_4"
+  , diphone2_5__Sample /\ "diphone2_5"
+  , diphone2_6__Sample /\ "diphone2_6"
+  , diphone2_7__Sample /\ "diphone2_7"
+  , diphone2_8__Sample /\ "diphone2_8"
+  , diphone2_9__Sample /\ "diphone2_9"
+  , diphone2_10__Sample /\ "diphone2_10"
+  , diphone2_11__Sample /\ "diphone2_11"
+  , e_0__Sample /\ "e_0"
+  , e_1__Sample /\ "e_1"
+  , e_2__Sample /\ "e_2"
+  , e_3__Sample /\ "e_3"
+  , e_4__Sample /\ "e_4"
+  , e_5__Sample /\ "e_5"
+  , e_6__Sample /\ "e_6"
+  , e_7__Sample /\ "e_7"
+  , bubble_0__Sample /\ "bubble_0"
+  , bubble_1__Sample /\ "bubble_1"
+  , bubble_2__Sample /\ "bubble_2"
+  , bubble_3__Sample /\ "bubble_3"
+  , bubble_4__Sample /\ "bubble_4"
+  , bubble_5__Sample /\ "bubble_5"
+  , bubble_6__Sample /\ "bubble_6"
+  , bubble_7__Sample /\ "bubble_7"
+  , insect_0__Sample /\ "insect_0"
+  , insect_1__Sample /\ "insect_1"
+  , insect_2__Sample /\ "insect_2"
+  , ade_0__Sample /\ "ade_0"
+  , ade_1__Sample /\ "ade_1"
+  , ade_2__Sample /\ "ade_2"
+  , ade_3__Sample /\ "ade_3"
+  , ade_4__Sample /\ "ade_4"
+  , ade_5__Sample /\ "ade_5"
+  , ade_6__Sample /\ "ade_6"
+  , ade_7__Sample /\ "ade_7"
+  , ade_8__Sample /\ "ade_8"
+  , ade_9__Sample /\ "ade_9"
+  , glitch_0__Sample /\ "glitch_0"
+  , glitch_1__Sample /\ "glitch_1"
+  , glitch_2__Sample /\ "glitch_2"
+  , glitch_3__Sample /\ "glitch_3"
+  , glitch_4__Sample /\ "glitch_4"
+  , glitch_5__Sample /\ "glitch_5"
+  , glitch_6__Sample /\ "glitch_6"
+  , glitch_7__Sample /\ "glitch_7"
+  , haw_0__Sample /\ "haw_0"
+  , haw_1__Sample /\ "haw_1"
+  , haw_2__Sample /\ "haw_2"
+  , haw_3__Sample /\ "haw_3"
+  , haw_4__Sample /\ "haw_4"
+  , haw_5__Sample /\ "haw_5"
+  , popkick_0__Sample /\ "popkick_0"
+  , popkick_1__Sample /\ "popkick_1"
+  , popkick_2__Sample /\ "popkick_2"
+  , popkick_3__Sample /\ "popkick_3"
+  , popkick_4__Sample /\ "popkick_4"
+  , popkick_5__Sample /\ "popkick_5"
+  , popkick_6__Sample /\ "popkick_6"
+  , popkick_7__Sample /\ "popkick_7"
+  , popkick_8__Sample /\ "popkick_8"
+  , popkick_9__Sample /\ "popkick_9"
+  , breaks157_0__Sample /\ "breaks157_0"
+  , gtr_0__Sample /\ "gtr_0"
+  , gtr_1__Sample /\ "gtr_1"
+  , gtr_2__Sample /\ "gtr_2"
+  , clubkick_0__Sample /\ "clubkick_0"
+  , clubkick_1__Sample /\ "clubkick_1"
+  , clubkick_2__Sample /\ "clubkick_2"
+  , clubkick_3__Sample /\ "clubkick_3"
+  , clubkick_4__Sample /\ "clubkick_4"
+  , breaks152_0__Sample /\ "breaks152_0"
+  , x_808bd_0__Sample /\ "x_808bd_0"
+  , x_808bd_1__Sample /\ "x_808bd_1"
+  , x_808bd_2__Sample /\ "x_808bd_2"
+  , x_808bd_3__Sample /\ "x_808bd_3"
+  , x_808bd_4__Sample /\ "x_808bd_4"
+  , x_808bd_5__Sample /\ "x_808bd_5"
+  , x_808bd_6__Sample /\ "x_808bd_6"
+  , x_808bd_7__Sample /\ "x_808bd_7"
+  , x_808bd_8__Sample /\ "x_808bd_8"
+  , x_808bd_9__Sample /\ "x_808bd_9"
+  , x_808bd_10__Sample /\ "x_808bd_10"
+  , x_808bd_11__Sample /\ "x_808bd_11"
+  , x_808bd_12__Sample /\ "x_808bd_12"
+  , x_808bd_13__Sample /\ "x_808bd_13"
+  , x_808bd_14__Sample /\ "x_808bd_14"
+  , x_808bd_15__Sample /\ "x_808bd_15"
+  , x_808bd_16__Sample /\ "x_808bd_16"
+  , x_808bd_17__Sample /\ "x_808bd_17"
+  , x_808bd_18__Sample /\ "x_808bd_18"
+  , x_808bd_19__Sample /\ "x_808bd_19"
+  , x_808bd_20__Sample /\ "x_808bd_20"
+  , x_808bd_21__Sample /\ "x_808bd_21"
+  , x_808bd_22__Sample /\ "x_808bd_22"
+  , x_808bd_23__Sample /\ "x_808bd_23"
+  , x_808bd_24__Sample /\ "x_808bd_24"
+  , miniyeah_0__Sample /\ "miniyeah_0"
+  , miniyeah_1__Sample /\ "miniyeah_1"
+  , miniyeah_2__Sample /\ "miniyeah_2"
+  , miniyeah_3__Sample /\ "miniyeah_3"
+  , if_0__Sample /\ "if_0"
+  , if_1__Sample /\ "if_1"
+  , if_2__Sample /\ "if_2"
+  , if_3__Sample /\ "if_3"
+  , if_4__Sample /\ "if_4"
+  , x_808oh_0__Sample /\ "x_808oh_0"
+  , x_808oh_1__Sample /\ "x_808oh_1"
+  , x_808oh_2__Sample /\ "x_808oh_2"
+  , x_808oh_3__Sample /\ "x_808oh_3"
+  , x_808oh_4__Sample /\ "x_808oh_4"
+  , house_0__Sample /\ "house_0"
+  , house_1__Sample /\ "house_1"
+  , house_2__Sample /\ "house_2"
+  , house_3__Sample /\ "house_3"
+  , house_4__Sample /\ "house_4"
+  , house_5__Sample /\ "house_5"
+  , house_6__Sample /\ "house_6"
+  , house_7__Sample /\ "house_7"
+  , dr_0__Sample /\ "dr_0"
+  , dr_1__Sample /\ "dr_1"
+  , dr_2__Sample /\ "dr_2"
+  , dr_3__Sample /\ "dr_3"
+  , dr_4__Sample /\ "dr_4"
+  , dr_5__Sample /\ "dr_5"
+  , dr_6__Sample /\ "dr_6"
+  , dr_7__Sample /\ "dr_7"
+  , dr_8__Sample /\ "dr_8"
+  , dr_9__Sample /\ "dr_9"
+  , dr_10__Sample /\ "dr_10"
+  , dr_11__Sample /\ "dr_11"
+  , dr_12__Sample /\ "dr_12"
+  , dr_13__Sample /\ "dr_13"
+  , dr_14__Sample /\ "dr_14"
+  , dr_15__Sample /\ "dr_15"
+  , dr_16__Sample /\ "dr_16"
+  , dr_17__Sample /\ "dr_17"
+  , dr_18__Sample /\ "dr_18"
+  , dr_19__Sample /\ "dr_19"
+  , dr_20__Sample /\ "dr_20"
+  , dr_21__Sample /\ "dr_21"
+  , dr_22__Sample /\ "dr_22"
+  , dr_23__Sample /\ "dr_23"
+  , dr_24__Sample /\ "dr_24"
+  , dr_25__Sample /\ "dr_25"
+  , dr_26__Sample /\ "dr_26"
+  , dr_27__Sample /\ "dr_27"
+  , dr_28__Sample /\ "dr_28"
+  , dr_29__Sample /\ "dr_29"
+  , dr_30__Sample /\ "dr_30"
+  , dr_31__Sample /\ "dr_31"
+  , dr_32__Sample /\ "dr_32"
+  , dr_33__Sample /\ "dr_33"
+  , dr_34__Sample /\ "dr_34"
+  , dr_35__Sample /\ "dr_35"
+  , dr_36__Sample /\ "dr_36"
+  , dr_37__Sample /\ "dr_37"
+  , dr_38__Sample /\ "dr_38"
+  , dr_39__Sample /\ "dr_39"
+  , dr_40__Sample /\ "dr_40"
+  , dr_41__Sample /\ "dr_41"
+  , dr55_0__Sample /\ "dr55_0"
+  , dr55_1__Sample /\ "dr55_1"
+  , dr55_2__Sample /\ "dr55_2"
+  , dr55_3__Sample /\ "dr55_3"
+  , bass_0__Sample /\ "bass_0"
+  , bass_1__Sample /\ "bass_1"
+  , bass_2__Sample /\ "bass_2"
+  , bass_3__Sample /\ "bass_3"
+  , ho_0__Sample /\ "ho_0"
+  , ho_1__Sample /\ "ho_1"
+  , ho_2__Sample /\ "ho_2"
+  , ho_3__Sample /\ "ho_3"
+  , ho_4__Sample /\ "ho_4"
+  , ho_5__Sample /\ "ho_5"
+  , hardkick_0__Sample /\ "hardkick_0"
+  , hardkick_1__Sample /\ "hardkick_1"
+  , hardkick_2__Sample /\ "hardkick_2"
+  , hardkick_3__Sample /\ "hardkick_3"
+  , hardkick_4__Sample /\ "hardkick_4"
+  , hardkick_5__Sample /\ "hardkick_5"
+  , x_808hc_0__Sample /\ "x_808hc_0"
+  , x_808hc_1__Sample /\ "x_808hc_1"
+  , x_808hc_2__Sample /\ "x_808hc_2"
+  , x_808hc_3__Sample /\ "x_808hc_3"
+  , x_808hc_4__Sample /\ "x_808hc_4"
+  , hit_0__Sample /\ "hit_0"
+  , hit_1__Sample /\ "hit_1"
+  , hit_2__Sample /\ "hit_2"
+  , hit_3__Sample /\ "hit_3"
+  , hit_4__Sample /\ "hit_4"
+  , hit_5__Sample /\ "hit_5"
+  , breaks165_0__Sample /\ "breaks165_0"
+  , dr2_0__Sample /\ "dr2_0"
+  , dr2_1__Sample /\ "dr2_1"
+  , dr2_2__Sample /\ "dr2_2"
+  , dr2_3__Sample /\ "dr2_3"
+  , dr2_4__Sample /\ "dr2_4"
+  , dr2_5__Sample /\ "dr2_5"
+  , tabla_0__Sample /\ "tabla_0"
+  , tabla_1__Sample /\ "tabla_1"
+  , tabla_2__Sample /\ "tabla_2"
+  , tabla_3__Sample /\ "tabla_3"
+  , tabla_4__Sample /\ "tabla_4"
+  , tabla_5__Sample /\ "tabla_5"
+  , tabla_6__Sample /\ "tabla_6"
+  , tabla_7__Sample /\ "tabla_7"
+  , tabla_8__Sample /\ "tabla_8"
+  , tabla_9__Sample /\ "tabla_9"
+  , tabla_10__Sample /\ "tabla_10"
+  , tabla_11__Sample /\ "tabla_11"
+  , tabla_12__Sample /\ "tabla_12"
+  , tabla_13__Sample /\ "tabla_13"
+  , tabla_14__Sample /\ "tabla_14"
+  , tabla_15__Sample /\ "tabla_15"
+  , tabla_16__Sample /\ "tabla_16"
+  , tabla_17__Sample /\ "tabla_17"
+  , tabla_18__Sample /\ "tabla_18"
+  , tabla_19__Sample /\ "tabla_19"
+  , tabla_20__Sample /\ "tabla_20"
+  , tabla_21__Sample /\ "tabla_21"
+  , tabla_22__Sample /\ "tabla_22"
+  , tabla_23__Sample /\ "tabla_23"
+  , tabla_24__Sample /\ "tabla_24"
+  , tabla_25__Sample /\ "tabla_25"
+  , dork2_0__Sample /\ "dork2_0"
+  , dork2_1__Sample /\ "dork2_1"
+  , dork2_2__Sample /\ "dork2_2"
+  , dork2_3__Sample /\ "dork2_3"
+  , hc_0__Sample /\ "hc_0"
+  , hc_1__Sample /\ "hc_1"
+  , hc_2__Sample /\ "hc_2"
+  , hc_3__Sample /\ "hc_3"
+  , hc_4__Sample /\ "hc_4"
+  , hc_5__Sample /\ "hc_5"
+  , bassfoo_0__Sample /\ "bassfoo_0"
+  , bassfoo_1__Sample /\ "bassfoo_1"
+  , bassfoo_2__Sample /\ "bassfoo_2"
+  , seawolf_0__Sample /\ "seawolf_0"
+  , seawolf_1__Sample /\ "seawolf_1"
+  , seawolf_2__Sample /\ "seawolf_2"
+  , cp_0__Sample /\ "cp_0"
+  , cp_1__Sample /\ "cp_1"
+  , jazz_0__Sample /\ "jazz_0"
+  , jazz_1__Sample /\ "jazz_1"
+  , jazz_2__Sample /\ "jazz_2"
+  , jazz_3__Sample /\ "jazz_3"
+  , jazz_4__Sample /\ "jazz_4"
+  , jazz_5__Sample /\ "jazz_5"
+  , jazz_6__Sample /\ "jazz_6"
+  , jazz_7__Sample /\ "jazz_7"
+  , juno_0__Sample /\ "juno_0"
+  , juno_1__Sample /\ "juno_1"
+  , juno_2__Sample /\ "juno_2"
+  , juno_3__Sample /\ "juno_3"
+  , juno_4__Sample /\ "juno_4"
+  , juno_5__Sample /\ "juno_5"
+  , juno_6__Sample /\ "juno_6"
+  , juno_7__Sample /\ "juno_7"
+  , juno_8__Sample /\ "juno_8"
+  , juno_9__Sample /\ "juno_9"
+  , juno_10__Sample /\ "juno_10"
+  , juno_11__Sample /\ "juno_11"
+  , birds_0__Sample /\ "birds_0"
+  , birds_1__Sample /\ "birds_1"
+  , birds_2__Sample /\ "birds_2"
+  , birds_3__Sample /\ "birds_3"
+  , birds_4__Sample /\ "birds_4"
+  , birds_5__Sample /\ "birds_5"
+  , birds_6__Sample /\ "birds_6"
+  , birds_7__Sample /\ "birds_7"
+  , birds_8__Sample /\ "birds_8"
+  , birds_9__Sample /\ "birds_9"
+  , glasstap_0__Sample /\ "glasstap_0"
+  , glasstap_1__Sample /\ "glasstap_1"
+  , glasstap_2__Sample /\ "glasstap_2"
+  , bass1_0__Sample /\ "bass1_0"
+  , bass1_1__Sample /\ "bass1_1"
+  , bass1_2__Sample /\ "bass1_2"
+  , bass1_3__Sample /\ "bass1_3"
+  , bass1_4__Sample /\ "bass1_4"
+  , bass1_5__Sample /\ "bass1_5"
+  , bass1_6__Sample /\ "bass1_6"
+  , bass1_7__Sample /\ "bass1_7"
+  , bass1_8__Sample /\ "bass1_8"
+  , bass1_9__Sample /\ "bass1_9"
+  , bass1_10__Sample /\ "bass1_10"
+  , bass1_11__Sample /\ "bass1_11"
+  , bass1_12__Sample /\ "bass1_12"
+  , bass1_13__Sample /\ "bass1_13"
+  , bass1_14__Sample /\ "bass1_14"
+  , bass1_15__Sample /\ "bass1_15"
+  , bass1_16__Sample /\ "bass1_16"
+  , bass1_17__Sample /\ "bass1_17"
+  , bass1_18__Sample /\ "bass1_18"
+  , bass1_19__Sample /\ "bass1_19"
+  , bass1_20__Sample /\ "bass1_20"
+  , bass1_21__Sample /\ "bass1_21"
+  , bass1_22__Sample /\ "bass1_22"
+  , bass1_23__Sample /\ "bass1_23"
+  , bass1_24__Sample /\ "bass1_24"
+  , bass1_25__Sample /\ "bass1_25"
+  , bass1_26__Sample /\ "bass1_26"
+  , bass1_27__Sample /\ "bass1_27"
+  , bass1_28__Sample /\ "bass1_28"
+  , bass1_29__Sample /\ "bass1_29"
+  , hh27_0__Sample /\ "hh27_0"
+  , hh27_1__Sample /\ "hh27_1"
+  , hh27_2__Sample /\ "hh27_2"
+  , hh27_3__Sample /\ "hh27_3"
+  , hh27_4__Sample /\ "hh27_4"
+  , hh27_5__Sample /\ "hh27_5"
+  , hh27_6__Sample /\ "hh27_6"
+  , hh27_7__Sample /\ "hh27_7"
+  , hh27_8__Sample /\ "hh27_8"
+  , hh27_9__Sample /\ "hh27_9"
+  , hh27_10__Sample /\ "hh27_10"
+  , hh27_11__Sample /\ "hh27_11"
+  , hh27_12__Sample /\ "hh27_12"
+  , x_808_0__Sample /\ "x_808_0"
+  , x_808_1__Sample /\ "x_808_1"
+  , x_808_2__Sample /\ "x_808_2"
+  , x_808_3__Sample /\ "x_808_3"
+  , x_808_4__Sample /\ "x_808_4"
+  , x_808_5__Sample /\ "x_808_5"
+  , notes_0__Sample /\ "notes_0"
+  , notes_1__Sample /\ "notes_1"
+  , notes_2__Sample /\ "notes_2"
+  , notes_3__Sample /\ "notes_3"
+  , notes_4__Sample /\ "notes_4"
+  , notes_5__Sample /\ "notes_5"
+  , notes_6__Sample /\ "notes_6"
+  , notes_7__Sample /\ "notes_7"
+  , notes_8__Sample /\ "notes_8"
+  , notes_9__Sample /\ "notes_9"
+  , notes_10__Sample /\ "notes_10"
+  , notes_11__Sample /\ "notes_11"
+  , notes_12__Sample /\ "notes_12"
+  , notes_13__Sample /\ "notes_13"
+  , notes_14__Sample /\ "notes_14"
+  , xmas_0__Sample /\ "xmas_0"
+  , erk_0__Sample /\ "erk_0"
+  , x_808mt_0__Sample /\ "x_808mt_0"
+  , x_808mt_1__Sample /\ "x_808mt_1"
+  , x_808mt_2__Sample /\ "x_808mt_2"
+  , x_808mt_3__Sample /\ "x_808mt_3"
+  , x_808mt_4__Sample /\ "x_808mt_4"
+  , lighter_0__Sample /\ "lighter_0"
+  , lighter_1__Sample /\ "lighter_1"
+  , lighter_2__Sample /\ "lighter_2"
+  , lighter_3__Sample /\ "lighter_3"
+  , lighter_4__Sample /\ "lighter_4"
+  , lighter_5__Sample /\ "lighter_5"
+  , lighter_6__Sample /\ "lighter_6"
+  , lighter_7__Sample /\ "lighter_7"
+  , lighter_8__Sample /\ "lighter_8"
+  , lighter_9__Sample /\ "lighter_9"
+  , lighter_10__Sample /\ "lighter_10"
+  , lighter_11__Sample /\ "lighter_11"
+  , lighter_12__Sample /\ "lighter_12"
+  , lighter_13__Sample /\ "lighter_13"
+  , lighter_14__Sample /\ "lighter_14"
+  , lighter_15__Sample /\ "lighter_15"
+  , lighter_16__Sample /\ "lighter_16"
+  , lighter_17__Sample /\ "lighter_17"
+  , lighter_18__Sample /\ "lighter_18"
+  , lighter_19__Sample /\ "lighter_19"
+  , lighter_20__Sample /\ "lighter_20"
+  , lighter_21__Sample /\ "lighter_21"
+  , lighter_22__Sample /\ "lighter_22"
+  , lighter_23__Sample /\ "lighter_23"
+  , lighter_24__Sample /\ "lighter_24"
+  , lighter_25__Sample /\ "lighter_25"
+  , lighter_26__Sample /\ "lighter_26"
+  , lighter_27__Sample /\ "lighter_27"
+  , lighter_28__Sample /\ "lighter_28"
+  , lighter_29__Sample /\ "lighter_29"
+  , lighter_30__Sample /\ "lighter_30"
+  , lighter_31__Sample /\ "lighter_31"
+  , lighter_32__Sample /\ "lighter_32"
+  , cb_0__Sample /\ "cb_0"
+  , subroc3d_0__Sample /\ "subroc3d_0"
+  , subroc3d_1__Sample /\ "subroc3d_1"
+  , subroc3d_2__Sample /\ "subroc3d_2"
+  , subroc3d_3__Sample /\ "subroc3d_3"
+  , subroc3d_4__Sample /\ "subroc3d_4"
+  , subroc3d_5__Sample /\ "subroc3d_5"
+  , subroc3d_6__Sample /\ "subroc3d_6"
+  , subroc3d_7__Sample /\ "subroc3d_7"
+  , subroc3d_8__Sample /\ "subroc3d_8"
+  , subroc3d_9__Sample /\ "subroc3d_9"
+  , subroc3d_10__Sample /\ "subroc3d_10"
+  , ul_0__Sample /\ "ul_0"
+  , ul_1__Sample /\ "ul_1"
+  , ul_2__Sample /\ "ul_2"
+  , ul_3__Sample /\ "ul_3"
+  , ul_4__Sample /\ "ul_4"
+  , ul_5__Sample /\ "ul_5"
+  , ul_6__Sample /\ "ul_6"
+  , ul_7__Sample /\ "ul_7"
+  , ul_8__Sample /\ "ul_8"
+  , ul_9__Sample /\ "ul_9"
+  , gab_0__Sample /\ "gab_0"
+  , gab_1__Sample /\ "gab_1"
+  , gab_2__Sample /\ "gab_2"
+  , gab_3__Sample /\ "gab_3"
+  , gab_4__Sample /\ "gab_4"
+  , gab_5__Sample /\ "gab_5"
+  , gab_6__Sample /\ "gab_6"
+  , gab_7__Sample /\ "gab_7"
+  , gab_8__Sample /\ "gab_8"
+  , gab_9__Sample /\ "gab_9"
+  , monsterb_0__Sample /\ "monsterb_0"
+  , monsterb_1__Sample /\ "monsterb_1"
+  , monsterb_2__Sample /\ "monsterb_2"
+  , monsterb_3__Sample /\ "monsterb_3"
+  , monsterb_4__Sample /\ "monsterb_4"
+  , monsterb_5__Sample /\ "monsterb_5"
+  , diphone_0__Sample /\ "diphone_0"
+  , diphone_1__Sample /\ "diphone_1"
+  , diphone_2__Sample /\ "diphone_2"
+  , diphone_3__Sample /\ "diphone_3"
+  , diphone_4__Sample /\ "diphone_4"
+  , diphone_5__Sample /\ "diphone_5"
+  , diphone_6__Sample /\ "diphone_6"
+  , diphone_7__Sample /\ "diphone_7"
+  , diphone_8__Sample /\ "diphone_8"
+  , diphone_9__Sample /\ "diphone_9"
+  , diphone_10__Sample /\ "diphone_10"
+  , diphone_11__Sample /\ "diphone_11"
+  , diphone_12__Sample /\ "diphone_12"
+  , diphone_13__Sample /\ "diphone_13"
+  , diphone_14__Sample /\ "diphone_14"
+  , diphone_15__Sample /\ "diphone_15"
+  , diphone_16__Sample /\ "diphone_16"
+  , diphone_17__Sample /\ "diphone_17"
+  , diphone_18__Sample /\ "diphone_18"
+  , diphone_19__Sample /\ "diphone_19"
+  , diphone_20__Sample /\ "diphone_20"
+  , diphone_21__Sample /\ "diphone_21"
+  , diphone_22__Sample /\ "diphone_22"
+  , diphone_23__Sample /\ "diphone_23"
+  , diphone_24__Sample /\ "diphone_24"
+  , diphone_25__Sample /\ "diphone_25"
+  , diphone_26__Sample /\ "diphone_26"
+  , diphone_27__Sample /\ "diphone_27"
+  , diphone_28__Sample /\ "diphone_28"
+  , diphone_29__Sample /\ "diphone_29"
+  , diphone_30__Sample /\ "diphone_30"
+  , diphone_31__Sample /\ "diphone_31"
+  , diphone_32__Sample /\ "diphone_32"
+  , diphone_33__Sample /\ "diphone_33"
+  , diphone_34__Sample /\ "diphone_34"
+  , diphone_35__Sample /\ "diphone_35"
+  , diphone_36__Sample /\ "diphone_36"
+  , diphone_37__Sample /\ "diphone_37"
+  , clak_0__Sample /\ "clak_0"
+  , clak_1__Sample /\ "clak_1"
+  , sitar_0__Sample /\ "sitar_0"
+  , sitar_1__Sample /\ "sitar_1"
+  , sitar_2__Sample /\ "sitar_2"
+  , sitar_3__Sample /\ "sitar_3"
+  , sitar_4__Sample /\ "sitar_4"
+  , sitar_5__Sample /\ "sitar_5"
+  , sitar_6__Sample /\ "sitar_6"
+  , sitar_7__Sample /\ "sitar_7"
+  , ab_0__Sample /\ "ab_0"
+  , ab_1__Sample /\ "ab_1"
+  , ab_2__Sample /\ "ab_2"
+  , ab_3__Sample /\ "ab_3"
+  , ab_4__Sample /\ "ab_4"
+  , ab_5__Sample /\ "ab_5"
+  , ab_6__Sample /\ "ab_6"
+  , ab_7__Sample /\ "ab_7"
+  , ab_8__Sample /\ "ab_8"
+  , ab_9__Sample /\ "ab_9"
+  , ab_10__Sample /\ "ab_10"
+  , ab_11__Sample /\ "ab_11"
+  , cr_0__Sample /\ "cr_0"
+  , cr_1__Sample /\ "cr_1"
+  , cr_2__Sample /\ "cr_2"
+  , cr_3__Sample /\ "cr_3"
+  , cr_4__Sample /\ "cr_4"
+  , cr_5__Sample /\ "cr_5"
+  , tacscan_0__Sample /\ "tacscan_0"
+  , tacscan_1__Sample /\ "tacscan_1"
+  , tacscan_2__Sample /\ "tacscan_2"
+  , tacscan_3__Sample /\ "tacscan_3"
+  , tacscan_4__Sample /\ "tacscan_4"
+  , tacscan_5__Sample /\ "tacscan_5"
+  , tacscan_6__Sample /\ "tacscan_6"
+  , tacscan_7__Sample /\ "tacscan_7"
+  , tacscan_8__Sample /\ "tacscan_8"
+  , tacscan_9__Sample /\ "tacscan_9"
+  , tacscan_10__Sample /\ "tacscan_10"
+  , tacscan_11__Sample /\ "tacscan_11"
+  , tacscan_12__Sample /\ "tacscan_12"
+  , tacscan_13__Sample /\ "tacscan_13"
+  , tacscan_14__Sample /\ "tacscan_14"
+  , tacscan_15__Sample /\ "tacscan_15"
+  , tacscan_16__Sample /\ "tacscan_16"
+  , tacscan_17__Sample /\ "tacscan_17"
+  , tacscan_18__Sample /\ "tacscan_18"
+  , tacscan_19__Sample /\ "tacscan_19"
+  , tacscan_20__Sample /\ "tacscan_20"
+  , tacscan_21__Sample /\ "tacscan_21"
+  , v_0__Sample /\ "v_0"
+  , v_1__Sample /\ "v_1"
+  , v_2__Sample /\ "v_2"
+  , v_3__Sample /\ "v_3"
+  , v_4__Sample /\ "v_4"
+  , v_5__Sample /\ "v_5"
+  , bd_0__Sample /\ "bd_0"
+  , bd_1__Sample /\ "bd_1"
+  , bd_2__Sample /\ "bd_2"
+  , bd_3__Sample /\ "bd_3"
+  , bd_4__Sample /\ "bd_4"
+  , bd_5__Sample /\ "bd_5"
+  , bd_6__Sample /\ "bd_6"
+  , bd_7__Sample /\ "bd_7"
+  , bd_8__Sample /\ "bd_8"
+  , bd_9__Sample /\ "bd_9"
+  , bd_10__Sample /\ "bd_10"
+  , bd_11__Sample /\ "bd_11"
+  , bd_12__Sample /\ "bd_12"
+  , bd_13__Sample /\ "bd_13"
+  , bd_14__Sample /\ "bd_14"
+  , bd_15__Sample /\ "bd_15"
+  , bd_16__Sample /\ "bd_16"
+  , bd_17__Sample /\ "bd_17"
+  , bd_18__Sample /\ "bd_18"
+  , bd_19__Sample /\ "bd_19"
+  , bd_20__Sample /\ "bd_20"
+  , bd_21__Sample /\ "bd_21"
+  , bd_22__Sample /\ "bd_22"
+  , bd_23__Sample /\ "bd_23"
+  , rm_0__Sample /\ "rm_0"
+  , rm_1__Sample /\ "rm_1"
+  , blue_0__Sample /\ "blue_0"
+  , blue_1__Sample /\ "blue_1"
+  , latibro_0__Sample /\ "latibro_0"
+  , latibro_1__Sample /\ "latibro_1"
+  , latibro_2__Sample /\ "latibro_2"
+  , latibro_3__Sample /\ "latibro_3"
+  , latibro_4__Sample /\ "latibro_4"
+  , latibro_5__Sample /\ "latibro_5"
+  , latibro_6__Sample /\ "latibro_6"
+  , latibro_7__Sample /\ "latibro_7"
+  , dr_few_0__Sample /\ "dr_few_0"
+  , dr_few_1__Sample /\ "dr_few_1"
+  , dr_few_2__Sample /\ "dr_few_2"
+  , dr_few_3__Sample /\ "dr_few_3"
+  , dr_few_4__Sample /\ "dr_few_4"
+  , dr_few_5__Sample /\ "dr_few_5"
+  , dr_few_6__Sample /\ "dr_few_6"
+  , dr_few_7__Sample /\ "dr_few_7"
+  , rave2_0__Sample /\ "rave2_0"
+  , rave2_1__Sample /\ "rave2_1"
+  , rave2_2__Sample /\ "rave2_2"
+  , rave2_3__Sample /\ "rave2_3"
+  , rave2_4__Sample /\ "rave2_4"
+  , rave2_5__Sample /\ "rave2_5"
+  , koy_0__Sample /\ "koy_0"
+  , koy_1__Sample /\ "koy_1"
+  , glitch2_0__Sample /\ "glitch2_0"
+  , glitch2_1__Sample /\ "glitch2_1"
+  , glitch2_2__Sample /\ "glitch2_2"
+  , glitch2_3__Sample /\ "glitch2_3"
+  , glitch2_4__Sample /\ "glitch2_4"
+  , glitch2_5__Sample /\ "glitch2_5"
+  , glitch2_6__Sample /\ "glitch2_6"
+  , glitch2_7__Sample /\ "glitch2_7"
+  , hmm_0__Sample /\ "hmm_0"
+  , arp_0__Sample /\ "arp_0"
+  , arp_1__Sample /\ "arp_1"
+  , made2_0__Sample /\ "made2_0"
+  , uxay_0__Sample /\ "uxay_0"
+  , uxay_1__Sample /\ "uxay_1"
+  , uxay_2__Sample /\ "uxay_2"
+  , stomp_0__Sample /\ "stomp_0"
+  , stomp_1__Sample /\ "stomp_1"
+  , stomp_2__Sample /\ "stomp_2"
+  , stomp_3__Sample /\ "stomp_3"
+  , stomp_4__Sample /\ "stomp_4"
+  , stomp_5__Sample /\ "stomp_5"
+  , stomp_6__Sample /\ "stomp_6"
+  , stomp_7__Sample /\ "stomp_7"
+  , stomp_8__Sample /\ "stomp_8"
+  , stomp_9__Sample /\ "stomp_9"
+  , tech_0__Sample /\ "tech_0"
+  , tech_1__Sample /\ "tech_1"
+  , tech_2__Sample /\ "tech_2"
+  , tech_3__Sample /\ "tech_3"
+  , tech_4__Sample /\ "tech_4"
+  , tech_5__Sample /\ "tech_5"
+  , tech_6__Sample /\ "tech_6"
+  , tech_7__Sample /\ "tech_7"
+  , tech_8__Sample /\ "tech_8"
+  , tech_9__Sample /\ "tech_9"
+  , tech_10__Sample /\ "tech_10"
+  , tech_11__Sample /\ "tech_11"
+  , tech_12__Sample /\ "tech_12"
+  , sn_0__Sample /\ "sn_0"
+  , sn_1__Sample /\ "sn_1"
+  , sn_2__Sample /\ "sn_2"
+  , sn_3__Sample /\ "sn_3"
+  , sn_4__Sample /\ "sn_4"
+  , sn_5__Sample /\ "sn_5"
+  , sn_6__Sample /\ "sn_6"
+  , sn_7__Sample /\ "sn_7"
+  , sn_8__Sample /\ "sn_8"
+  , sn_9__Sample /\ "sn_9"
+  , sn_10__Sample /\ "sn_10"
+  , sn_11__Sample /\ "sn_11"
+  , sn_12__Sample /\ "sn_12"
+  , sn_13__Sample /\ "sn_13"
+  , sn_14__Sample /\ "sn_14"
+  , sn_15__Sample /\ "sn_15"
+  , sn_16__Sample /\ "sn_16"
+  , sn_17__Sample /\ "sn_17"
+  , sn_18__Sample /\ "sn_18"
+  , sn_19__Sample /\ "sn_19"
+  , sn_20__Sample /\ "sn_20"
+  , sn_21__Sample /\ "sn_21"
+  , sn_22__Sample /\ "sn_22"
+  , sn_23__Sample /\ "sn_23"
+  , sn_24__Sample /\ "sn_24"
+  , sn_25__Sample /\ "sn_25"
+  , sn_26__Sample /\ "sn_26"
+  , sn_27__Sample /\ "sn_27"
+  , sn_28__Sample /\ "sn_28"
+  , sn_29__Sample /\ "sn_29"
+  , sn_30__Sample /\ "sn_30"
+  , sn_31__Sample /\ "sn_31"
+  , sn_32__Sample /\ "sn_32"
+  , sn_33__Sample /\ "sn_33"
+  , sn_34__Sample /\ "sn_34"
+  , sn_35__Sample /\ "sn_35"
+  , sn_36__Sample /\ "sn_36"
+  , sn_37__Sample /\ "sn_37"
+  , sn_38__Sample /\ "sn_38"
+  , sn_39__Sample /\ "sn_39"
+  , sn_40__Sample /\ "sn_40"
+  , sn_41__Sample /\ "sn_41"
+  , sn_42__Sample /\ "sn_42"
+  , sn_43__Sample /\ "sn_43"
+  , sn_44__Sample /\ "sn_44"
+  , sn_45__Sample /\ "sn_45"
+  , sn_46__Sample /\ "sn_46"
+  , sn_47__Sample /\ "sn_47"
+  , sn_48__Sample /\ "sn_48"
+  , sn_49__Sample /\ "sn_49"
+  , sn_50__Sample /\ "sn_50"
+  , sn_51__Sample /\ "sn_51"
+  , less_0__Sample /\ "less_0"
+  , less_1__Sample /\ "less_1"
+  , less_2__Sample /\ "less_2"
+  , less_3__Sample /\ "less_3"
+  , off_0__Sample /\ "off_0"
+  , x_808sd_0__Sample /\ "x_808sd_0"
+  , x_808sd_1__Sample /\ "x_808sd_1"
+  , x_808sd_2__Sample /\ "x_808sd_2"
+  , x_808sd_3__Sample /\ "x_808sd_3"
+  , x_808sd_4__Sample /\ "x_808sd_4"
+  , x_808sd_5__Sample /\ "x_808sd_5"
+  , x_808sd_6__Sample /\ "x_808sd_6"
+  , x_808sd_7__Sample /\ "x_808sd_7"
+  , x_808sd_8__Sample /\ "x_808sd_8"
+  , x_808sd_9__Sample /\ "x_808sd_9"
+  , x_808sd_10__Sample /\ "x_808sd_10"
+  , x_808sd_11__Sample /\ "x_808sd_11"
+  , x_808sd_12__Sample /\ "x_808sd_12"
+  , x_808sd_13__Sample /\ "x_808sd_13"
+  , x_808sd_14__Sample /\ "x_808sd_14"
+  , x_808sd_15__Sample /\ "x_808sd_15"
+  , x_808sd_16__Sample /\ "x_808sd_16"
+  , x_808sd_17__Sample /\ "x_808sd_17"
+  , x_808sd_18__Sample /\ "x_808sd_18"
+  , x_808sd_19__Sample /\ "x_808sd_19"
+  , x_808sd_20__Sample /\ "x_808sd_20"
+  , x_808sd_21__Sample /\ "x_808sd_21"
+  , x_808sd_22__Sample /\ "x_808sd_22"
+  , x_808sd_23__Sample /\ "x_808sd_23"
+  , x_808sd_24__Sample /\ "x_808sd_24"
+  , trump_0__Sample /\ "trump_0"
+  , trump_1__Sample /\ "trump_1"
+  , trump_2__Sample /\ "trump_2"
+  , trump_3__Sample /\ "trump_3"
+  , trump_4__Sample /\ "trump_4"
+  , trump_5__Sample /\ "trump_5"
+  , trump_6__Sample /\ "trump_6"
+  , trump_7__Sample /\ "trump_7"
+  , trump_8__Sample /\ "trump_8"
+  , trump_9__Sample /\ "trump_9"
+  , trump_10__Sample /\ "trump_10"
+  , bev_0__Sample /\ "bev_0"
+  , bev_1__Sample /\ "bev_1"
+  , pad_0__Sample /\ "pad_0"
+  , pad_1__Sample /\ "pad_1"
+  , pad_2__Sample /\ "pad_2"
+  , led_0__Sample /\ "led_0"
+  , perc_0__Sample /\ "perc_0"
+  , perc_1__Sample /\ "perc_1"
+  , perc_2__Sample /\ "perc_2"
+  , perc_3__Sample /\ "perc_3"
+  , perc_4__Sample /\ "perc_4"
+  , perc_5__Sample /\ "perc_5"
+  , pluck_0__Sample /\ "pluck_0"
+  , pluck_1__Sample /\ "pluck_1"
+  , pluck_2__Sample /\ "pluck_2"
+  , pluck_3__Sample /\ "pluck_3"
+  , pluck_4__Sample /\ "pluck_4"
+  , pluck_5__Sample /\ "pluck_5"
+  , pluck_6__Sample /\ "pluck_6"
+  , pluck_7__Sample /\ "pluck_7"
+  , pluck_8__Sample /\ "pluck_8"
+  , pluck_9__Sample /\ "pluck_9"
+  , pluck_10__Sample /\ "pluck_10"
+  , pluck_11__Sample /\ "pluck_11"
+  , pluck_12__Sample /\ "pluck_12"
+  , pluck_13__Sample /\ "pluck_13"
+  , pluck_14__Sample /\ "pluck_14"
+  , pluck_15__Sample /\ "pluck_15"
+  , pluck_16__Sample /\ "pluck_16"
+  , bleep_0__Sample /\ "bleep_0"
+  , bleep_1__Sample /\ "bleep_1"
+  , bleep_2__Sample /\ "bleep_2"
+  , bleep_3__Sample /\ "bleep_3"
+  , bleep_4__Sample /\ "bleep_4"
+  , bleep_5__Sample /\ "bleep_5"
+  , bleep_6__Sample /\ "bleep_6"
+  , bleep_7__Sample /\ "bleep_7"
+  , bleep_8__Sample /\ "bleep_8"
+  , bleep_9__Sample /\ "bleep_9"
+  , bleep_10__Sample /\ "bleep_10"
+  , bleep_11__Sample /\ "bleep_11"
+  , bleep_12__Sample /\ "bleep_12"
+  , ht_0__Sample /\ "ht_0"
+  , ht_1__Sample /\ "ht_1"
+  , ht_2__Sample /\ "ht_2"
+  , ht_3__Sample /\ "ht_3"
+  , ht_4__Sample /\ "ht_4"
+  , ht_5__Sample /\ "ht_5"
+  , ht_6__Sample /\ "ht_6"
+  , ht_7__Sample /\ "ht_7"
+  , ht_8__Sample /\ "ht_8"
+  , ht_9__Sample /\ "ht_9"
+  , ht_10__Sample /\ "ht_10"
+  , ht_11__Sample /\ "ht_11"
+  , ht_12__Sample /\ "ht_12"
+  , ht_13__Sample /\ "ht_13"
+  , ht_14__Sample /\ "ht_14"
+  , ht_15__Sample /\ "ht_15"
+  , ades4_0__Sample /\ "ades4_0"
+  , ades4_1__Sample /\ "ades4_1"
+  , ades4_2__Sample /\ "ades4_2"
+  , ades4_3__Sample /\ "ades4_3"
+  , ades4_4__Sample /\ "ades4_4"
+  , ades4_5__Sample /\ "ades4_5"
+  , proc_0__Sample /\ "proc_0"
+  , proc_1__Sample /\ "proc_1"
+  , gretsch_0__Sample /\ "gretsch_0"
+  , gretsch_1__Sample /\ "gretsch_1"
+  , gretsch_2__Sample /\ "gretsch_2"
+  , gretsch_3__Sample /\ "gretsch_3"
+  , gretsch_4__Sample /\ "gretsch_4"
+  , gretsch_5__Sample /\ "gretsch_5"
+  , gretsch_6__Sample /\ "gretsch_6"
+  , gretsch_7__Sample /\ "gretsch_7"
+  , gretsch_8__Sample /\ "gretsch_8"
+  , gretsch_9__Sample /\ "gretsch_9"
+  , gretsch_10__Sample /\ "gretsch_10"
+  , gretsch_11__Sample /\ "gretsch_11"
+  , gretsch_12__Sample /\ "gretsch_12"
+  , gretsch_13__Sample /\ "gretsch_13"
+  , gretsch_14__Sample /\ "gretsch_14"
+  , gretsch_15__Sample /\ "gretsch_15"
+  , gretsch_16__Sample /\ "gretsch_16"
+  , gretsch_17__Sample /\ "gretsch_17"
+  , gretsch_18__Sample /\ "gretsch_18"
+  , gretsch_19__Sample /\ "gretsch_19"
+  , gretsch_20__Sample /\ "gretsch_20"
+  , gretsch_21__Sample /\ "gretsch_21"
+  , gretsch_22__Sample /\ "gretsch_22"
+  , gretsch_23__Sample /\ "gretsch_23"
+  , outdoor_0__Sample /\ "outdoor_0"
+  , outdoor_1__Sample /\ "outdoor_1"
+  , outdoor_2__Sample /\ "outdoor_2"
+  , outdoor_3__Sample /\ "outdoor_3"
+  , outdoor_4__Sample /\ "outdoor_4"
+  , outdoor_5__Sample /\ "outdoor_5"
+  , techno_0__Sample /\ "techno_0"
+  , techno_1__Sample /\ "techno_1"
+  , techno_2__Sample /\ "techno_2"
+  , techno_3__Sample /\ "techno_3"
+  , techno_4__Sample /\ "techno_4"
+  , techno_5__Sample /\ "techno_5"
+  , techno_6__Sample /\ "techno_6"
+  , ulgab_0__Sample /\ "ulgab_0"
+  , ulgab_1__Sample /\ "ulgab_1"
+  , ulgab_2__Sample /\ "ulgab_2"
+  , ulgab_3__Sample /\ "ulgab_3"
+  , ulgab_4__Sample /\ "ulgab_4"
+  , breaks125_0__Sample /\ "breaks125_0"
+  , breaks125_1__Sample /\ "breaks125_1"
+  , bin_0__Sample /\ "bin_0"
+  , bin_1__Sample /\ "bin_1"
+  , x_808mc_0__Sample /\ "x_808mc_0"
+  , x_808mc_1__Sample /\ "x_808mc_1"
+  , x_808mc_2__Sample /\ "x_808mc_2"
+  , x_808mc_3__Sample /\ "x_808mc_3"
+  , x_808mc_4__Sample /\ "x_808mc_4"
+  , lt_0__Sample /\ "lt_0"
+  , lt_1__Sample /\ "lt_1"
+  , lt_2__Sample /\ "lt_2"
+  , lt_3__Sample /\ "lt_3"
+  , lt_4__Sample /\ "lt_4"
+  , lt_5__Sample /\ "lt_5"
+  , lt_6__Sample /\ "lt_6"
+  , lt_7__Sample /\ "lt_7"
+  , lt_8__Sample /\ "lt_8"
+  , lt_9__Sample /\ "lt_9"
+  , lt_10__Sample /\ "lt_10"
+  , lt_11__Sample /\ "lt_11"
+  , lt_12__Sample /\ "lt_12"
+  , lt_13__Sample /\ "lt_13"
+  , lt_14__Sample /\ "lt_14"
+  , lt_15__Sample /\ "lt_15"
+  , amencutup_0__Sample /\ "amencutup_0"
+  , amencutup_1__Sample /\ "amencutup_1"
+  , amencutup_2__Sample /\ "amencutup_2"
+  , amencutup_3__Sample /\ "amencutup_3"
+  , amencutup_4__Sample /\ "amencutup_4"
+  , amencutup_5__Sample /\ "amencutup_5"
+  , amencutup_6__Sample /\ "amencutup_6"
+  , amencutup_7__Sample /\ "amencutup_7"
+  , amencutup_8__Sample /\ "amencutup_8"
+  , amencutup_9__Sample /\ "amencutup_9"
+  , amencutup_10__Sample /\ "amencutup_10"
+  , amencutup_11__Sample /\ "amencutup_11"
+  , amencutup_12__Sample /\ "amencutup_12"
+  , amencutup_13__Sample /\ "amencutup_13"
+  , amencutup_14__Sample /\ "amencutup_14"
+  , amencutup_15__Sample /\ "amencutup_15"
+  , amencutup_16__Sample /\ "amencutup_16"
+  , amencutup_17__Sample /\ "amencutup_17"
+  , amencutup_18__Sample /\ "amencutup_18"
+  , amencutup_19__Sample /\ "amencutup_19"
+  , amencutup_20__Sample /\ "amencutup_20"
+  , amencutup_21__Sample /\ "amencutup_21"
+  , amencutup_22__Sample /\ "amencutup_22"
+  , amencutup_23__Sample /\ "amencutup_23"
+  , amencutup_24__Sample /\ "amencutup_24"
+  , amencutup_25__Sample /\ "amencutup_25"
+  , amencutup_26__Sample /\ "amencutup_26"
+  , amencutup_27__Sample /\ "amencutup_27"
+  , amencutup_28__Sample /\ "amencutup_28"
+  , amencutup_29__Sample /\ "amencutup_29"
+  , amencutup_30__Sample /\ "amencutup_30"
+  , amencutup_31__Sample /\ "amencutup_31"
+  , drum_0__Sample /\ "drum_0"
+  , drum_1__Sample /\ "drum_1"
+  , drum_2__Sample /\ "drum_2"
+  , drum_3__Sample /\ "drum_3"
+  , drum_4__Sample /\ "drum_4"
+  , drum_5__Sample /\ "drum_5"
+  , coins_0__Sample /\ "coins_0"
+  , industrial_0__Sample /\ "industrial_0"
+  , industrial_1__Sample /\ "industrial_1"
+  , industrial_2__Sample /\ "industrial_2"
+  , industrial_3__Sample /\ "industrial_3"
+  , industrial_4__Sample /\ "industrial_4"
+  , industrial_5__Sample /\ "industrial_5"
+  , industrial_6__Sample /\ "industrial_6"
+  , industrial_7__Sample /\ "industrial_7"
+  , industrial_8__Sample /\ "industrial_8"
+  , industrial_9__Sample /\ "industrial_9"
+  , industrial_10__Sample /\ "industrial_10"
+  , industrial_11__Sample /\ "industrial_11"
+  , industrial_12__Sample /\ "industrial_12"
+  , industrial_13__Sample /\ "industrial_13"
+  , industrial_14__Sample /\ "industrial_14"
+  , industrial_15__Sample /\ "industrial_15"
+  , industrial_16__Sample /\ "industrial_16"
+  , industrial_17__Sample /\ "industrial_17"
+  , industrial_18__Sample /\ "industrial_18"
+  , industrial_19__Sample /\ "industrial_19"
+  , industrial_20__Sample /\ "industrial_20"
+  , industrial_21__Sample /\ "industrial_21"
+  , industrial_22__Sample /\ "industrial_22"
+  , industrial_23__Sample /\ "industrial_23"
+  , industrial_24__Sample /\ "industrial_24"
+  , industrial_25__Sample /\ "industrial_25"
+  , industrial_26__Sample /\ "industrial_26"
+  , industrial_27__Sample /\ "industrial_27"
+  , industrial_28__Sample /\ "industrial_28"
+  , industrial_29__Sample /\ "industrial_29"
+  , industrial_30__Sample /\ "industrial_30"
+  , industrial_31__Sample /\ "industrial_31"
+  , tink_0__Sample /\ "tink_0"
+  , tink_1__Sample /\ "tink_1"
+  , tink_2__Sample /\ "tink_2"
+  , tink_3__Sample /\ "tink_3"
+  , tink_4__Sample /\ "tink_4"
+  , co_0__Sample /\ "co_0"
+  , co_1__Sample /\ "co_1"
+  , co_2__Sample /\ "co_2"
+  , co_3__Sample /\ "co_3"
+  , fest_0__Sample /\ "fest_0"
+  , feelfx_0__Sample /\ "feelfx_0"
+  , feelfx_1__Sample /\ "feelfx_1"
+  , feelfx_2__Sample /\ "feelfx_2"
+  , feelfx_3__Sample /\ "feelfx_3"
+  , feelfx_4__Sample /\ "feelfx_4"
+  , feelfx_5__Sample /\ "feelfx_5"
+  , feelfx_6__Sample /\ "feelfx_6"
+  , feelfx_7__Sample /\ "feelfx_7"
+  , x_808cy_0__Sample /\ "x_808cy_0"
+  , x_808cy_1__Sample /\ "x_808cy_1"
+  , x_808cy_2__Sample /\ "x_808cy_2"
+  , x_808cy_3__Sample /\ "x_808cy_3"
+  , x_808cy_4__Sample /\ "x_808cy_4"
+  , x_808cy_5__Sample /\ "x_808cy_5"
+  , x_808cy_6__Sample /\ "x_808cy_6"
+  , x_808cy_7__Sample /\ "x_808cy_7"
+  , x_808cy_8__Sample /\ "x_808cy_8"
+  , x_808cy_9__Sample /\ "x_808cy_9"
+  , x_808cy_10__Sample /\ "x_808cy_10"
+  , x_808cy_11__Sample /\ "x_808cy_11"
+  , x_808cy_12__Sample /\ "x_808cy_12"
+  , x_808cy_13__Sample /\ "x_808cy_13"
+  , x_808cy_14__Sample /\ "x_808cy_14"
+  , x_808cy_15__Sample /\ "x_808cy_15"
+  , x_808cy_16__Sample /\ "x_808cy_16"
+  , x_808cy_17__Sample /\ "x_808cy_17"
+  , x_808cy_18__Sample /\ "x_808cy_18"
+  , x_808cy_19__Sample /\ "x_808cy_19"
+  , x_808cy_20__Sample /\ "x_808cy_20"
+  , x_808cy_21__Sample /\ "x_808cy_21"
+  , x_808cy_22__Sample /\ "x_808cy_22"
+  , x_808cy_23__Sample /\ "x_808cy_23"
+  , x_808cy_24__Sample /\ "x_808cy_24"
+  , world_0__Sample /\ "world_0"
+  , world_1__Sample /\ "world_1"
+  , world_2__Sample /\ "world_2"
+  , f_0__Sample /\ "f_0"
+  , numbers_0__Sample /\ "numbers_0"
+  , numbers_1__Sample /\ "numbers_1"
+  , numbers_2__Sample /\ "numbers_2"
+  , numbers_3__Sample /\ "numbers_3"
+  , numbers_4__Sample /\ "numbers_4"
+  , numbers_5__Sample /\ "numbers_5"
+  , numbers_6__Sample /\ "numbers_6"
+  , numbers_7__Sample /\ "numbers_7"
+  , numbers_8__Sample /\ "numbers_8"
+  , d_0__Sample /\ "d_0"
+  , d_1__Sample /\ "d_1"
+  , d_2__Sample /\ "d_2"
+  , d_3__Sample /\ "d_3"
+  , padlong_0__Sample /\ "padlong_0"
+  , sequential_0__Sample /\ "sequential_0"
+  , sequential_1__Sample /\ "sequential_1"
+  , sequential_2__Sample /\ "sequential_2"
+  , sequential_3__Sample /\ "sequential_3"
+  , sequential_4__Sample /\ "sequential_4"
+  , sequential_5__Sample /\ "sequential_5"
+  , sequential_6__Sample /\ "sequential_6"
+  , sequential_7__Sample /\ "sequential_7"
+  , stab_0__Sample /\ "stab_0"
+  , stab_1__Sample /\ "stab_1"
+  , stab_2__Sample /\ "stab_2"
+  , stab_3__Sample /\ "stab_3"
+  , stab_4__Sample /\ "stab_4"
+  , stab_5__Sample /\ "stab_5"
+  , stab_6__Sample /\ "stab_6"
+  , stab_7__Sample /\ "stab_7"
+  , stab_8__Sample /\ "stab_8"
+  , stab_9__Sample /\ "stab_9"
+  , stab_10__Sample /\ "stab_10"
+  , stab_11__Sample /\ "stab_11"
+  , stab_12__Sample /\ "stab_12"
+  , stab_13__Sample /\ "stab_13"
+  , stab_14__Sample /\ "stab_14"
+  , stab_15__Sample /\ "stab_15"
+  , stab_16__Sample /\ "stab_16"
+  , stab_17__Sample /\ "stab_17"
+  , stab_18__Sample /\ "stab_18"
+  , stab_19__Sample /\ "stab_19"
+  , stab_20__Sample /\ "stab_20"
+  , stab_21__Sample /\ "stab_21"
+  , stab_22__Sample /\ "stab_22"
+  , electro1_0__Sample /\ "electro1_0"
+  , electro1_1__Sample /\ "electro1_1"
+  , electro1_2__Sample /\ "electro1_2"
+  , electro1_3__Sample /\ "electro1_3"
+  , electro1_4__Sample /\ "electro1_4"
+  , electro1_5__Sample /\ "electro1_5"
+  , electro1_6__Sample /\ "electro1_6"
+  , electro1_7__Sample /\ "electro1_7"
+  , electro1_8__Sample /\ "electro1_8"
+  , electro1_9__Sample /\ "electro1_9"
+  , electro1_10__Sample /\ "electro1_10"
+  , electro1_11__Sample /\ "electro1_11"
+  , electro1_12__Sample /\ "electro1_12"
+  , ifdrums_0__Sample /\ "ifdrums_0"
+  , ifdrums_1__Sample /\ "ifdrums_1"
+  , ifdrums_2__Sample /\ "ifdrums_2"
+  , invaders_0__Sample /\ "invaders_0"
+  , invaders_1__Sample /\ "invaders_1"
+  , invaders_2__Sample /\ "invaders_2"
+  , invaders_3__Sample /\ "invaders_3"
+  , invaders_4__Sample /\ "invaders_4"
+  , invaders_5__Sample /\ "invaders_5"
+  , invaders_6__Sample /\ "invaders_6"
+  , invaders_7__Sample /\ "invaders_7"
+  , invaders_8__Sample /\ "invaders_8"
+  , invaders_9__Sample /\ "invaders_9"
+  , invaders_10__Sample /\ "invaders_10"
+  , invaders_11__Sample /\ "invaders_11"
+  , invaders_12__Sample /\ "invaders_12"
+  , invaders_13__Sample /\ "invaders_13"
+  , invaders_14__Sample /\ "invaders_14"
+  , invaders_15__Sample /\ "invaders_15"
+  , invaders_16__Sample /\ "invaders_16"
+  , invaders_17__Sample /\ "invaders_17"
+  , dist_0__Sample /\ "dist_0"
+  , dist_1__Sample /\ "dist_1"
+  , dist_2__Sample /\ "dist_2"
+  , dist_3__Sample /\ "dist_3"
+  , dist_4__Sample /\ "dist_4"
+  , dist_5__Sample /\ "dist_5"
+  , dist_6__Sample /\ "dist_6"
+  , dist_7__Sample /\ "dist_7"
+  , dist_8__Sample /\ "dist_8"
+  , dist_9__Sample /\ "dist_9"
+  , dist_10__Sample /\ "dist_10"
+  , dist_11__Sample /\ "dist_11"
+  , dist_12__Sample /\ "dist_12"
+  , dist_13__Sample /\ "dist_13"
+  , dist_14__Sample /\ "dist_14"
+  , dist_15__Sample /\ "dist_15"
+  , sundance_0__Sample /\ "sundance_0"
+  , sundance_1__Sample /\ "sundance_1"
+  , sundance_2__Sample /\ "sundance_2"
+  , sundance_3__Sample /\ "sundance_3"
+  , sundance_4__Sample /\ "sundance_4"
+  , sundance_5__Sample /\ "sundance_5"
+  , speech_0__Sample /\ "speech_0"
+  , speech_1__Sample /\ "speech_1"
+  , speech_2__Sample /\ "speech_2"
+  , speech_3__Sample /\ "speech_3"
+  , speech_4__Sample /\ "speech_4"
+  , speech_5__Sample /\ "speech_5"
+  , speech_6__Sample /\ "speech_6"
+  , toys_0__Sample /\ "toys_0"
+  , toys_1__Sample /\ "toys_1"
+  , toys_2__Sample /\ "toys_2"
+  , toys_3__Sample /\ "toys_3"
+  , toys_4__Sample /\ "toys_4"
+  , toys_5__Sample /\ "toys_5"
+  , toys_6__Sample /\ "toys_6"
+  , toys_7__Sample /\ "toys_7"
+  , toys_8__Sample /\ "toys_8"
+  , toys_9__Sample /\ "toys_9"
+  , toys_10__Sample /\ "toys_10"
+  , toys_11__Sample /\ "toys_11"
+  , toys_12__Sample /\ "toys_12"
+  , bass0_0__Sample /\ "bass0_0"
+  , bass0_1__Sample /\ "bass0_1"
+  , bass0_2__Sample /\ "bass0_2"
+  , realclaps_0__Sample /\ "realclaps_0"
+  , realclaps_1__Sample /\ "realclaps_1"
+  , realclaps_2__Sample /\ "realclaps_2"
+  , realclaps_3__Sample /\ "realclaps_3"
+  , dorkbot_0__Sample /\ "dorkbot_0"
+  , dorkbot_1__Sample /\ "dorkbot_1"
+  , arpy_0__Sample /\ "arpy_0"
+  , arpy_1__Sample /\ "arpy_1"
+  , arpy_2__Sample /\ "arpy_2"
+  , arpy_3__Sample /\ "arpy_3"
+  , arpy_4__Sample /\ "arpy_4"
+  , arpy_5__Sample /\ "arpy_5"
+  , arpy_6__Sample /\ "arpy_6"
+  , arpy_7__Sample /\ "arpy_7"
+  , arpy_8__Sample /\ "arpy_8"
+  , arpy_9__Sample /\ "arpy_9"
+  , arpy_10__Sample /\ "arpy_10"
+  , fire_0__Sample /\ "fire_0"
+  , hoover_0__Sample /\ "hoover_0"
+  , hoover_1__Sample /\ "hoover_1"
+  , hoover_2__Sample /\ "hoover_2"
+  , hoover_3__Sample /\ "hoover_3"
+  , hoover_4__Sample /\ "hoover_4"
+  , hoover_5__Sample /\ "hoover_5"
+  , breath_0__Sample /\ "breath_0"
+  , rave_0__Sample /\ "rave_0"
+  , rave_1__Sample /\ "rave_1"
+  , rave_2__Sample /\ "rave_2"
+  , rave_3__Sample /\ "rave_3"
+  , rave_4__Sample /\ "rave_4"
+  , rave_5__Sample /\ "rave_5"
+  , rave_6__Sample /\ "rave_6"
+  , rave_7__Sample /\ "rave_7"
+  , bottle_0__Sample /\ "bottle_0"
+  , bottle_1__Sample /\ "bottle_1"
+  , bottle_2__Sample /\ "bottle_2"
+  , bottle_3__Sample /\ "bottle_3"
+  , bottle_4__Sample /\ "bottle_4"
+  , bottle_5__Sample /\ "bottle_5"
+  , bottle_6__Sample /\ "bottle_6"
+  , bottle_7__Sample /\ "bottle_7"
+  , bottle_8__Sample /\ "bottle_8"
+  , bottle_9__Sample /\ "bottle_9"
+  , bottle_10__Sample /\ "bottle_10"
+  , bottle_11__Sample /\ "bottle_11"
+  , bottle_12__Sample /\ "bottle_12"
+  , east_0__Sample /\ "east_0"
+  , east_1__Sample /\ "east_1"
+  , east_2__Sample /\ "east_2"
+  , east_3__Sample /\ "east_3"
+  , east_4__Sample /\ "east_4"
+  , east_5__Sample /\ "east_5"
+  , east_6__Sample /\ "east_6"
+  , east_7__Sample /\ "east_7"
+  , east_8__Sample /\ "east_8"
+  , linnhats_0__Sample /\ "linnhats_0"
+  , linnhats_1__Sample /\ "linnhats_1"
+  , linnhats_2__Sample /\ "linnhats_2"
+  , linnhats_3__Sample /\ "linnhats_3"
+  , linnhats_4__Sample /\ "linnhats_4"
+  , linnhats_5__Sample /\ "linnhats_5"
+  , speedupdown_0__Sample /\ "speedupdown_0"
+  , speedupdown_1__Sample /\ "speedupdown_1"
+  , speedupdown_2__Sample /\ "speedupdown_2"
+  , speedupdown_3__Sample /\ "speedupdown_3"
+  , speedupdown_4__Sample /\ "speedupdown_4"
+  , speedupdown_5__Sample /\ "speedupdown_5"
+  , speedupdown_6__Sample /\ "speedupdown_6"
+  , speedupdown_7__Sample /\ "speedupdown_7"
+  , speedupdown_8__Sample /\ "speedupdown_8"
+  , cosmicg_0__Sample /\ "cosmicg_0"
+  , cosmicg_1__Sample /\ "cosmicg_1"
+  , cosmicg_2__Sample /\ "cosmicg_2"
+  , cosmicg_3__Sample /\ "cosmicg_3"
+  , cosmicg_4__Sample /\ "cosmicg_4"
+  , cosmicg_5__Sample /\ "cosmicg_5"
+  , cosmicg_6__Sample /\ "cosmicg_6"
+  , cosmicg_7__Sample /\ "cosmicg_7"
+  , cosmicg_8__Sample /\ "cosmicg_8"
+  , cosmicg_9__Sample /\ "cosmicg_9"
+  , cosmicg_10__Sample /\ "cosmicg_10"
+  , cosmicg_11__Sample /\ "cosmicg_11"
+  , cosmicg_12__Sample /\ "cosmicg_12"
+  , cosmicg_13__Sample /\ "cosmicg_13"
+  , cosmicg_14__Sample /\ "cosmicg_14"
+  , jvbass_0__Sample /\ "jvbass_0"
+  , jvbass_1__Sample /\ "jvbass_1"
+  , jvbass_2__Sample /\ "jvbass_2"
+  , jvbass_3__Sample /\ "jvbass_3"
+  , jvbass_4__Sample /\ "jvbass_4"
+  , jvbass_5__Sample /\ "jvbass_5"
+  , jvbass_6__Sample /\ "jvbass_6"
+  , jvbass_7__Sample /\ "jvbass_7"
+  , jvbass_8__Sample /\ "jvbass_8"
+  , jvbass_9__Sample /\ "jvbass_9"
+  , jvbass_10__Sample /\ "jvbass_10"
+  , jvbass_11__Sample /\ "jvbass_11"
+  , jvbass_12__Sample /\ "jvbass_12"
+  , mash_0__Sample /\ "mash_0"
+  , mash_1__Sample /\ "mash_1"
+  , feel_0__Sample /\ "feel_0"
+  , feel_1__Sample /\ "feel_1"
+  , feel_2__Sample /\ "feel_2"
+  , feel_3__Sample /\ "feel_3"
+  , feel_4__Sample /\ "feel_4"
+  , feel_5__Sample /\ "feel_5"
+  , feel_6__Sample /\ "feel_6"
+  , short_0__Sample /\ "short_0"
+  , short_1__Sample /\ "short_1"
+  , short_2__Sample /\ "short_2"
+  , short_3__Sample /\ "short_3"
+  , short_4__Sample /\ "short_4"
+  , incoming_0__Sample /\ "incoming_0"
+  , incoming_1__Sample /\ "incoming_1"
+  , incoming_2__Sample /\ "incoming_2"
+  , incoming_3__Sample /\ "incoming_3"
+  , incoming_4__Sample /\ "incoming_4"
+  , incoming_5__Sample /\ "incoming_5"
+  , incoming_6__Sample /\ "incoming_6"
+  , incoming_7__Sample /\ "incoming_7"
+  , flick_0__Sample /\ "flick_0"
+  , flick_1__Sample /\ "flick_1"
+  , flick_2__Sample /\ "flick_2"
+  , flick_3__Sample /\ "flick_3"
+  , flick_4__Sample /\ "flick_4"
+  , flick_5__Sample /\ "flick_5"
+  , flick_6__Sample /\ "flick_6"
+  , flick_7__Sample /\ "flick_7"
+  , flick_8__Sample /\ "flick_8"
+  , flick_9__Sample /\ "flick_9"
+  , flick_10__Sample /\ "flick_10"
+  , flick_11__Sample /\ "flick_11"
+  , flick_12__Sample /\ "flick_12"
+  , flick_13__Sample /\ "flick_13"
+  , flick_14__Sample /\ "flick_14"
+  , flick_15__Sample /\ "flick_15"
+  , flick_16__Sample /\ "flick_16"
+  , reverbkick_0__Sample /\ "reverbkick_0"
+  , bass2_0__Sample /\ "bass2_0"
+  , bass2_1__Sample /\ "bass2_1"
+  , bass2_2__Sample /\ "bass2_2"
+  , bass2_3__Sample /\ "bass2_3"
+  , bass2_4__Sample /\ "bass2_4"
+  , baa_0__Sample /\ "baa_0"
+  , baa_1__Sample /\ "baa_1"
+  , baa_2__Sample /\ "baa_2"
+  , baa_3__Sample /\ "baa_3"
+  , baa_4__Sample /\ "baa_4"
+  , baa_5__Sample /\ "baa_5"
+  , baa_6__Sample /\ "baa_6"
+  , fm_0__Sample /\ "fm_0"
+  , fm_1__Sample /\ "fm_1"
+  , fm_2__Sample /\ "fm_2"
+  , fm_3__Sample /\ "fm_3"
+  , fm_4__Sample /\ "fm_4"
+  , fm_5__Sample /\ "fm_5"
+  , fm_6__Sample /\ "fm_6"
+  , fm_7__Sample /\ "fm_7"
+  , fm_8__Sample /\ "fm_8"
+  , fm_9__Sample /\ "fm_9"
+  , fm_10__Sample /\ "fm_10"
+  , fm_11__Sample /\ "fm_11"
+  , fm_12__Sample /\ "fm_12"
+  , fm_13__Sample /\ "fm_13"
+  , fm_14__Sample /\ "fm_14"
+  , fm_15__Sample /\ "fm_15"
+  , fm_16__Sample /\ "fm_16"
+  , click_0__Sample /\ "click_0"
+  , click_1__Sample /\ "click_1"
+  , click_2__Sample /\ "click_2"
+  , click_3__Sample /\ "click_3"
+  , control_0__Sample /\ "control_0"
+  , control_1__Sample /\ "control_1"
+  , peri_0__Sample /\ "peri_0"
+  , peri_1__Sample /\ "peri_1"
+  , peri_2__Sample /\ "peri_2"
+  , peri_3__Sample /\ "peri_3"
+  , peri_4__Sample /\ "peri_4"
+  , peri_5__Sample /\ "peri_5"
+  , peri_6__Sample /\ "peri_6"
+  , peri_7__Sample /\ "peri_7"
+  , peri_8__Sample /\ "peri_8"
+  , peri_9__Sample /\ "peri_9"
+  , peri_10__Sample /\ "peri_10"
+  , peri_11__Sample /\ "peri_11"
+  , peri_12__Sample /\ "peri_12"
+  , peri_13__Sample /\ "peri_13"
+  , peri_14__Sample /\ "peri_14"
+  , procshort_0__Sample /\ "procshort_0"
+  , procshort_1__Sample /\ "procshort_1"
+  , procshort_2__Sample /\ "procshort_2"
+  , procshort_3__Sample /\ "procshort_3"
+  , procshort_4__Sample /\ "procshort_4"
+  , procshort_5__Sample /\ "procshort_5"
+  , procshort_6__Sample /\ "procshort_6"
+  , procshort_7__Sample /\ "procshort_7"
+  , hand_0__Sample /\ "hand_0"
+  , hand_1__Sample /\ "hand_1"
+  , hand_2__Sample /\ "hand_2"
+  , hand_3__Sample /\ "hand_3"
+  , hand_4__Sample /\ "hand_4"
+  , hand_5__Sample /\ "hand_5"
+  , hand_6__Sample /\ "hand_6"
+  , hand_7__Sample /\ "hand_7"
+  , hand_8__Sample /\ "hand_8"
+  , hand_9__Sample /\ "hand_9"
+  , hand_10__Sample /\ "hand_10"
+  , hand_11__Sample /\ "hand_11"
+  , hand_12__Sample /\ "hand_12"
+  , hand_13__Sample /\ "hand_13"
+  , hand_14__Sample /\ "hand_14"
+  , hand_15__Sample /\ "hand_15"
+  , hand_16__Sample /\ "hand_16"
+  , future_0__Sample /\ "future_0"
+  , future_1__Sample /\ "future_1"
+  , future_2__Sample /\ "future_2"
+  , future_3__Sample /\ "future_3"
+  , future_4__Sample /\ "future_4"
+  , future_5__Sample /\ "future_5"
+  , future_6__Sample /\ "future_6"
+  , future_7__Sample /\ "future_7"
+  , future_8__Sample /\ "future_8"
+  , future_9__Sample /\ "future_9"
+  , future_10__Sample /\ "future_10"
+  , future_11__Sample /\ "future_11"
+  , future_12__Sample /\ "future_12"
+  , future_13__Sample /\ "future_13"
+  , future_14__Sample /\ "future_14"
+  , future_15__Sample /\ "future_15"
+  , future_16__Sample /\ "future_16"
+  , hh_0__Sample /\ "hh_0"
+  , hh_1__Sample /\ "hh_1"
+  , hh_2__Sample /\ "hh_2"
+  , hh_3__Sample /\ "hh_3"
+  , hh_4__Sample /\ "hh_4"
+  , hh_5__Sample /\ "hh_5"
+  , hh_6__Sample /\ "hh_6"
+  , hh_7__Sample /\ "hh_7"
+  , hh_8__Sample /\ "hh_8"
+  , hh_9__Sample /\ "hh_9"
+  , hh_10__Sample /\ "hh_10"
+  , hh_11__Sample /\ "hh_11"
+  , hh_12__Sample /\ "hh_12"
+  , x_808ht_0__Sample /\ "x_808ht_0"
+  , x_808ht_1__Sample /\ "x_808ht_1"
+  , x_808ht_2__Sample /\ "x_808ht_2"
+  , x_808ht_3__Sample /\ "x_808ht_3"
+  , x_808ht_4__Sample /\ "x_808ht_4"
+  , db_0__Sample /\ "db_0"
+  , db_1__Sample /\ "db_1"
+  , db_2__Sample /\ "db_2"
+  , db_3__Sample /\ "db_3"
+  , db_4__Sample /\ "db_4"
+  , db_5__Sample /\ "db_5"
+  , db_6__Sample /\ "db_6"
+  , db_7__Sample /\ "db_7"
+  , db_8__Sample /\ "db_8"
+  , db_9__Sample /\ "db_9"
+  , db_10__Sample /\ "db_10"
+  , db_11__Sample /\ "db_11"
+  , db_12__Sample /\ "db_12"
+  ]
