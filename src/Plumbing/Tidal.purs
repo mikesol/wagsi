@@ -20,6 +20,8 @@ module WAGSI.Plumbing.Tidal
   , i_
   , x_
   ---
+  , onTagsC
+  , onTagsC'
   , onTags
   , onTags'
   , onTag
@@ -39,6 +41,7 @@ module WAGSI.Plumbing.Tidal
   , lns
   , lnr
   , lnv
+  , lcw
   ---
   , when_
   , prune
@@ -55,6 +58,7 @@ module WAGSI.Plumbing.Tidal
   , RBuf
   , Next
   , TheFuture
+  , class S
   ) where
 
 import Prelude hiding (between)
@@ -70,7 +74,7 @@ import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Generic.Rep (class Generic)
 import Data.Int (fromString, toNumber)
-import Data.Lens (Lens', Prism', _1, _Just, over, prism')
+import Data.Lens (Lens', Prism', _1, _Just, lens, over, prism')
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.List (List(..), fold, foldMap, foldl, (:))
@@ -192,8 +196,14 @@ make cl rr = TheFuture $ hmapWithIndex (ZipProps z)
 plainly :: forall f. Functor f => f NextCycle -> f Voice
 plainly = map (Voice <<< { globals: Globals { gain: const 1.0 }, next: _ })
 
-s :: String -> CycleLength -> Voice
-s = plainly <<< parse
+class S s where
+  s :: s -> CycleLength -> Voice
+
+instance sString :: S String where
+  s = plainly <<< parse
+
+instance sCycle :: S (Cycle (Maybe Note)) where
+  s = plainly <<< rend
 
 --- @@ ---
 newtype CycleLength = CycleLength Number
@@ -284,6 +294,16 @@ lnr = unto Note <<< prop (Proxy :: _ "rateFoT")
 
 lnv :: Lens' Note FoT
 lnv = unto Note <<< prop (Proxy :: _ "volumeFoT")
+
+lcw :: forall note. Lens' (Cycle note) Number
+lcw = lens getWeight
+  ( case _ of
+      Branching ii -> \weight -> Branching $ ii { env = ii.env { weight = weight } }
+      Simultaneous ii -> \weight -> Simultaneous $ ii { env = ii.env { weight = weight } }
+      Sequential ii -> \weight -> Sequential $ ii { env = ii.env { weight = weight } }
+      Internal ii -> \weight -> Internal $ ii { env = ii.env { weight = weight } }
+      SingleNote ii -> \weight -> SingleNote $ ii { env = ii.env { weight = weight } }
+  )
 
 ---
 
@@ -458,28 +478,34 @@ getWeight (Sequential { env: { weight } }) = weight
 getWeight (Internal { env: { weight } }) = weight
 getWeight (SingleNote { env: { weight } }) = weight
 
-onTags :: forall a. (Set.Set String -> Boolean) -> (a -> a) -> Cycle a -> Cycle a
-onTags pf f = go Set.empty
+onTagsC :: forall a. (Set.Set String -> Boolean) -> (Cycle a -> Cycle a) -> Cycle a -> Cycle a
+onTagsC pf f = go Set.empty
   where
   go' st fx env nel = fx { env, nel: map (go ((Set.fromFoldable env.tag) <> st)) nel }
   go st (Branching { env, nel }) = go' st Branching env nel
   go st (Simultaneous { env, nel }) = go' st Simultaneous env nel
   go st (Sequential { env, nel }) = go' st Sequential env nel
   go st (Internal { env, nel }) = go' st Internal env nel
-  go st (SingleNote { env, val }) = let res = (Set.fromFoldable env.tag) <> st in if pf res then SingleNote { env, val: f val } else SingleNote { env, val }
+  go st (SingleNote { env, val }) = let res = (Set.fromFoldable env.tag) <> st in if pf res then f (SingleNote { env, val }) else SingleNote { env, val }
 
-onTag :: forall a. String -> (a -> a) -> Cycle a -> Cycle a
-onTag = onTags <<< Set.member
-
-onTags' :: forall a. (Set.Set String -> Boolean) -> (a -> a) -> Cycle a -> Cycle a
-onTags' pf f = go Set.empty
+onTagsC' :: forall a. (Set.Set String -> Boolean) -> (Cycle a -> Cycle a) -> Cycle a -> Cycle a
+onTagsC' pf f = go Set.empty
   where
   go' st fx env nel = fx { env, nel: map (go st) nel }
   go st (Branching { env, nel }) = go' st Branching env nel
   go st (Simultaneous { env, nel }) = go' st Simultaneous env nel
   go st (Sequential { env, nel }) = go' st Sequential env nel
   go st (Internal { env, nel }) = go' st Internal env nel
-  go st (SingleNote { env, val }) = let res = (Set.fromFoldable env.tag) <> st in if pf res then SingleNote { env, val: f val } else SingleNote { env, val }
+  go st (SingleNote { env, val }) = let res = (Set.fromFoldable env.tag) <> st in if pf res then f (SingleNote { env, val }) else SingleNote { env, val }
+
+onTags :: forall a. (Set.Set String -> Boolean) -> (a -> a) -> Cycle a -> Cycle a
+onTags pf = onTagsC pf <<< map
+
+onTags' :: forall a. (Set.Set String -> Boolean) -> (a -> a) -> Cycle a -> Cycle a
+onTags' pf = onTagsC' pf <<< map
+
+onTag :: forall a. String -> (a -> a) -> Cycle a -> Cycle a
+onTag = onTags <<< Set.member
 
 onTag' :: forall a. String -> (a -> a) -> Cycle a -> Cycle a
 onTag' = onTags' <<< Set.member

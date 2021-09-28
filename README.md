@@ -43,14 +43,10 @@ When you start, the top-level file has the following code:
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
 
-import Prelude
-
-import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly)
+import WAGSI.Plumbing.Tidal (TheFuture, make, s)
 
 wag :: TheFuture
-wag = make 1.0
-  { earth: s ""
-  }
+wag = make 1.0 { earth: s "" }
 ```
 
 The record has three channels to make music on - `earth`, `wind`, and `fire`. You can use all of them or none of them. `plainly` means that we're not adding any effects, and `parse` will parse a string of mini-notation and fail on silence.
@@ -62,9 +58,7 @@ Here's an example that uses mini-notation.
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
 
-import Prelude
-
-import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly)
+import WAGSI.Plumbing.Tidal (TheFuture, make, s)
 
 wag :: TheFuture
 wag = make 2.0
@@ -95,12 +89,13 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Tidal (TheFuture, b, make, plainly, r, rend, s, x, kick, kick1, hh27, gab)
+import WAGSI.Plumbing.Cycle (r, bassdm, bassdm_2, hh27, gab)
+import WAGSI.Plumbing.Tidal (TheFuture, make, s, i, b, x)
 
 wag :: TheFuture
 wag = make 2.0
   -- "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
-  { earth: plainly $ rend $ x (i bassdm [hh27, i kick1 [kick1], hh27]) [b (i r [gab, r, gab]) [r]]
+  { earth: s $ x (i bassdm [ hh27, i bassdm_2 [ bassdm_2 ], hh27 ]) [ b (i r [ gab, r, gab ]) [ r ] ]
   }
 ```
 
@@ -137,12 +132,11 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import Data.Lens (_Just, set, traversed)
-import WAGSI.Plumbing.Tidal (TheFuture, lnr, make, parse', plainly, rend)
+import WAGSI.Plumbing.Tidal (TheFuture, lnr, make, parse', s)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly
-      $ rend
+  { earth: s
       $ (set (traversed <<< _Just <<< lnr) (const 1.5))
       $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
@@ -157,12 +151,11 @@ import Prelude
 
 import Data.Lens (_Just, set, traversed)
 import WAGSI.Plumbing.Cycle (hh27, bassdm, r, gab)
-import WAGSI.Plumbing.Tidal (TheFuture, b, lnr, make, plainly, rend, s, x)
+import WAGSI.Plumbing.Tidal (TheFuture, i, b, lnr, make, s, x)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly
-      $ rend
+  { earth: s
       $ x
           ( i (set (traversed <<< _Just <<< lnr) (const 0.5) bassdm)
               [ hh27, i bassdm [ bassdm ], hh27 ]
@@ -180,21 +173,14 @@ import Prelude
 
 import Data.Lens (_Just, set, traversed, view)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Tidal (TheFuture, prune, lnr, lns, make, parse', plainly, rend)
+import WAGSI.Plumbing.Tidal (TheFuture, prune, lnr, lns, make, parse', s)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly
-      $ rend
+  { earth: s
       $ set
           (traversed <<< _Just <<< prune (eq S.gab_0__Sample <<< view lns) <<< lnr)
           (const 1.5)
       $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
-
-## Gotchyas from tidal
-
-Coming from tidal? There are a couple gotchyas to watch out for.
-
-1. The top-level is always `make n <stuff...>`. The `n` is the cycle length for the whole session. This keeps all of the cycles somewhat in phase. It is possible to hack around this restriction, but usually it's good to start with everyone in sync.
