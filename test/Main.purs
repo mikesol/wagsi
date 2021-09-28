@@ -35,6 +35,9 @@ main = do
           it "Works on internal cycles" do
             runParser cycleP
               "[tabla2:42 hc:0] tabla2:42" `shouldEqual` Right (Sequential { weight: 1.0, nel: NonEmptyList (Internal { weight: 1.0, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (noteFromSample S.hc_0__Sample) : Nil) } :| (noteFromSample S.tabla2_42__Sample) : Nil) })
+          it "Works on internal cycles 2" do
+            runParser cycleP
+              "tabla2:42*2 tabla2:41" `shouldEqual` Right (Sequential { weight: 1.0, nel: NonEmptyList (Internal { weight: 1.0, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (noteFromSample S.tabla2_42__Sample) : Nil) } :| (noteFromSample S.tabla2_41__Sample) : Nil) })
           it "Works on branching cycles" do
             runParser cycleP
               "[tabla2:42 <hc:0 tech:0>] tabla2:42" `shouldEqual` Right (Sequential { weight: 1.0, nel: NonEmptyList (Internal { weight: 1.0, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (Branching { weight: 1.0, nel: NonEmptyList ((noteFromSample S.hc_0__Sample) :| (noteFromSample S.tech_0__Sample) : Nil) }) : Nil) } :| (noteFromSample S.tabla2_42__Sample) : Nil) })

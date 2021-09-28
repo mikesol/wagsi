@@ -62,7 +62,7 @@ import Data.Filterable (compact, filter, filterMap, maybeBool)
 import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Generic.Rep (class Generic)
-import Data.Int (toNumber)
+import Data.Int (fromString, toNumber)
 import Data.Lens (Prism', Lens', _1, over, prism')
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
@@ -80,6 +80,7 @@ import Data.Symbol (class IsSymbol)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple.Nested (type (/\))
 import Data.Typelevel.Num (class Pos, D8)
+import Data.Unfoldable (replicate)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Random (randomInt)
@@ -92,8 +93,8 @@ import Prim.Row (class Lacks, class Nub, class Union)
 import Prim.Row as Row
 import Record as Record
 import Text.Parsing.StringParser (Parser, fail, runParser, try)
-import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, char)
-import Text.Parsing.StringParser.Combinators (between, many, many1, sepBy, sepEndBy)
+import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, anyDigit, char)
+import Text.Parsing.StringParser.Combinators (between, many, many1, optionMaybe, sepBy, sepEndBy)
 import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (speaker, gain, playBuf)
 import WAGS.Graph.AudioUnit (OnOff(..))
@@ -152,7 +153,7 @@ newtype Voice = Voice { globals :: Globals, next :: NextCycle }
 
 derive instance newtypeVoice :: Newtype Voice _
 
-type EWF (v :: Type) = (earth :: v, wind :: v, fire :: v)
+type EWF (v :: Type) = (earth :: v) --, wind :: v, fire :: v)
 
 newtype TheFuture = TheFuture { | EWF Voice }
 
@@ -299,6 +300,23 @@ whiteSpace1 = do
   cs <- many1 (satisfy \c -> c == '\n' || c == '\r' || c == ' ' || c == '\t')
   pure (foldMap singleton cs)
 
+type AfterMatter = { asInternal :: Maybe (NonEmptyList Unit) }
+
+afterMatterP :: Parser AfterMatter
+afterMatterP = do
+  asInternal <-
+    optionMaybe $
+      ( ( fromString
+            <<< fromCharArray
+            <<< A.fromFoldable <$> (char '*' *> many anyDigit)
+        ) >>= maybe (fail "Could not parse int")
+          ( \v -> case (NEL.fromList $ replicate v unit) of
+              Just vv -> pure vv
+              Nothing -> fail "Number must be positive"
+          )
+      )
+  pure { asInternal }
+
 weightP :: Parser Number
 weightP = do
   _ <- skipSpaces
@@ -363,12 +381,15 @@ sequentialcyclePInternal = Sequential <<< { weight: 1.0, nel: _ } <$> do
   pure (NonEmptyList (leadsWith :| rest))
 
 singleSampleP :: Parser (Cycle (Maybe Note))
-singleSampleP = SingleNote <$> do
+singleSampleP = do
   skipSpaces
   sample <- sampleP
+  afterMatter <- afterMatterP
   skipSpaces
   weight <- weightP
-  pure { weight, val: sample }
+  pure $ case afterMatter.asInternal of
+    Nothing -> SingleNote { weight, val: sample }
+    Just ntimes -> Internal { weight, nel: map (const $ SingleNote { weight: 1.0, val: sample }) ntimes }
 
 cyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
 cyclePInternal _ = try branchingcyclePInternal
@@ -643,7 +664,7 @@ instance zipProps ::
   MappingWithIndex (ZipProps fns) (Proxy sym) a b where
   mappingWithIndex (ZipProps fns) prop = Record.get prop fns
 
-futureMaker :: { | EWF (CfScoredBufferPool Next NBuf RBuf -> Globals -> { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals })}
+futureMaker :: { | EWF (CfScoredBufferPool Next NBuf RBuf -> Globals -> { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }) }
 futureMaker = hmap (\(_ :: Unit) -> { future: _, globals: _ } :: CfScoredBufferPool Next NBuf RBuf -> Globals -> { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }) (mempty :: { | EWF Unit })
 
 tidal :: FullSceneBuilder (theFuture :: TheFuture) (buffers :: { | S.Samples BrowserAudioBuffer }) Unit
