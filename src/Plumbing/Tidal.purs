@@ -163,7 +163,8 @@ newtype Voice = Voice { globals :: Globals, next :: NextCycle }
 
 derive instance newtypeVoice :: Newtype Voice _
 
-type EWF (v :: Type) = (earth :: v, wind :: v, fire :: v)
+type EWF' (v :: Type) r = (earth :: v, wind :: v, fire :: v | r)
+type EWF (v :: Type) = EWF' v ()
 
 newtype TheFuture = TheFuture { | EWF Voice }
 
@@ -171,15 +172,22 @@ unFuture :: TheFuture -> { | EWF Voice }
 unFuture (TheFuture ewf) = ewf
 
 make
-  :: forall inRec overfull
+  :: forall inRec overfull rest
    . Union inRec (EWF (CycleLength -> Voice)) overfull
-  => Nub overfull (EWF (CycleLength -> Voice))
+  => Nub overfull (EWF' (CycleLength -> Voice) rest)
   => Number
   -> { | inRec }
   -> TheFuture
-make cl rr = TheFuture $ hmapWithIndex (ZipProps z) (hmap (\(_ :: (CycleLength -> Voice)) -> (wrap cl)) z)
+
+make cl rr = TheFuture $ hmapWithIndex (ZipProps z)
+  ( hmap (\(_ :: (CycleLength -> Voice)) -> (wrap cl))
+      { earth: z.earth
+      , wind: z.wind
+      , fire: z.fire
+      }
+  )
   where
-  z = Record.merge rr openVoices :: { | EWF (CycleLength -> Voice) }
+  z = Record.merge rr openVoices :: { | EWF' (CycleLength -> Voice) rest }
 
 plainly :: forall f. Functor f => f NextCycle -> f Voice
 plainly = map (Voice <<< { globals: Globals { gain: const 1.0 }, next: _ })
