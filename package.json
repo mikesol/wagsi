@@ -27,6 +27,6 @@
     "start:gitpod": "webpack serve --mode=development --public \"$(gp url 8080 | sed 's+https://++'):443\"",
     "start:codespaces": "webpack serve --mode=development --public \"$npm_package_codespacesPublicUrl\"",
     "build": "webpack",
-    "test": "spago -x test.dhall test && python readme.py"
+    "test": "spago -x test.dhall test && python readme.py && spago -x cookbook.dhall build"
   }
 }
