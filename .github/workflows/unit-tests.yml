@@ -16,4 +16,4 @@ jobs:
       - name: Spago build
         run: npx spago -x test.dhall build
       - name: Spago test
-        run: npx spago -x test.dhall test
+        run: npm test
