@@ -3,13 +3,13 @@ module WAGSI.Plumbing.Tidal
   , make
   , parse
   , impatient
-  , parse'
   , tidal
   , plainly
   , s
   , rend
-  , rendT
+  , rendNit
   , c2s
+  , s2f
   , wag
   , openFuture
   ---
@@ -200,10 +200,34 @@ class S s where
   s :: s -> CycleLength -> Voice
 
 instance sString :: S String where
-  s = plainly <<< parse
+  s = plainly <<< parseInternal
 
 instance sCycle :: S (Cycle (Maybe Note)) where
   s = plainly <<< rend
+
+instance sNit :: S (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) where
+  s = plainly <<< pure <<< rendNit
+
+instance sNitFT :: S (CycleLength -> (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))))) where
+  s = plainly <<< map rendNit
+
+instance sNift :: S (NonEmptyList (NoteInFlattenedTime Note)) where
+  s = plainly <<< pure <<< asScore false
+
+instance sNiftFT :: S (CycleLength -> (NonEmptyList (NoteInFlattenedTime Note))) where
+  s = plainly <<< map (asScore false)
+
+instance sNextCycle :: S NextCycle where
+  s = plainly <<< pure
+
+instance sNextCycleFT :: S (CycleLength -> NextCycle) where
+  s = plainly
+
+instance sVoice :: S Voice where
+  s = const
+
+instance sVoiceFT :: S (CycleLength -> Voice) where
+  s = identity
 
 --- @@ ---
 newtype CycleLength = CycleLength Number
@@ -708,11 +732,11 @@ intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
   , tag: Nothing
   }
 
-parse' :: String -> Cycle (Maybe Note)
-parse' = fromMaybe intentionalSilenceForInternalUseOnly_ <<< hush <<< runParser cycleP
+parse :: String -> Cycle (Maybe Note)
+parse = fromMaybe intentionalSilenceForInternalUseOnly_ <<< hush <<< runParser cycleP
 
-parse :: String -> CycleLength -> NextCycle
-parse str dur = asScore false
+parseInternal :: String -> CycleLength -> NextCycle
+parseInternal str dur = asScore false
   $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
   $ join
   $ map
@@ -734,17 +758,18 @@ rend cyn dur = asScore false
   $ cycleToSequence dur
   $ cyn
 
-rendT :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> NextCycle
-rendT cyn = asScore false
-  $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
-  $ NEL.fromList
-  $ compact
-  $ map NEL.fromList
-  $ unrest
-  $ cyn
+rendNit :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> NextCycle
+rendNit = asScore false <<< s2f
 
 c2s :: CycleLength -> Cycle (Maybe Note) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 c2s = cycleToSequence
+
+s2f :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> NonEmptyList (NoteInFlattenedTime Note)
+s2f = maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
+  <<< NEL.fromList
+  <<< compact
+  <<< map NEL.fromList
+  <<< unrest
 
 newtype ZipProps fns = ZipProps { | fns }
 

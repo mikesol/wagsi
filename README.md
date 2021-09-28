@@ -107,18 +107,18 @@ wag = make 2.0
 | `x _ [ ]`  | Play multiple patterns at the same time. | `x (i bassdm [hh27]) [i cr [cr, cr, cr]]`            |
 | `b _ [ ]`  | Alternate between patterns.              | `i (i cr [cr, cr]) [i hh27 [gab, hh27, b gab [cr]]]` |
 
-It's often useful to create an initial beat with a string and then modify it using PureScript functions. To do this, you can use `parse'` instead of parse. This will give you low-level access to the underlying notes, which we'll take advantage of in the examples below.
+It's often useful to create an initial beat with a string and then modify it using PureScript functions. To do this, you can use `parse`. This will give you low-level access to the underlying notes, which we'll take advantage of in the examples below.
 
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Tidal (TheFuture, make, parse', plainly, rend)
+import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly, rend)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly $ rend $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
+  { earth: plainly $ rend $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
 
@@ -132,13 +132,13 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import Data.Lens (_Just, set, traversed)
-import WAGSI.Plumbing.Tidal (TheFuture, lnr, make, parse', s)
+import WAGSI.Plumbing.Tidal (TheFuture, lnr, make, parse, s)
 
 wag :: TheFuture
 wag = make 2.0
   { earth: s
       $ (set (traversed <<< _Just <<< lnr) (const 1.5))
-      $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
+      $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
 
@@ -173,7 +173,7 @@ import Prelude
 
 import Data.Lens (_Just, set, traversed, view)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Tidal (TheFuture, prune, lnr, lns, make, parse', s)
+import WAGSI.Plumbing.Tidal (TheFuture, prune, lnr, lns, make, parse, s)
 
 wag :: TheFuture
 wag = make 2.0
@@ -181,6 +181,6 @@ wag = make 2.0
       $ set
           (traversed <<< _Just <<< prune (eq S.gab_0__Sample <<< view lns) <<< lnr)
           (const 1.5)
-      $ parse' "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
+      $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
