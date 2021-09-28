@@ -163,7 +163,7 @@ newtype Voice = Voice { globals :: Globals, next :: NextCycle }
 
 derive instance newtypeVoice :: Newtype Voice _
 
-type EWF (v :: Type) = (earth :: v) --, wind :: v, fire :: v)
+type EWF (v :: Type) = (earth :: v, wind :: v, fire :: v)
 
 newtype TheFuture = TheFuture { | EWF Voice }
 
