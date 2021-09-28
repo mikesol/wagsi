@@ -92,7 +92,7 @@ main = do
             runParser cycleP
               "[tabla2:42 <[hc:0 hc:0] tech:0>] tabla2:42" `shouldEqual` Right (Sequential { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (Branching { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.hc_0__Sample) :| (noteFromSample S.hc_0__Sample) : Nil) }) :| (noteFromSample S.tech_0__Sample) : Nil) }) : Nil) } :| (noteFromSample S.tabla2_42__Sample) : Nil) })
         describe "Test cycle to sequence" do
-          let run = map (c2s $ wrap 1.0) <<< runParser cycleP
+          let run = map (flip c2s $ wrap 1.0) <<< runParser cycleP
           it "Works on simple imput" do
             run "tabla2:42" `shouldEqual` Right (pure (NonEmptyList (NoteInTime { tag: Nothing, duration: 1.0, startsAt: 0.0, cycleLength: 1.0, note: Just $ Note { sample: S.tabla2_42__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } :| Nil)))
             run "tabla2:42 hc:0" `shouldEqual` Right (pure (NonEmptyList (NoteInTime { tag: Nothing, duration: 0.5, startsAt: 0.0, cycleLength: 1.0, note: Just $ Note { sample: S.tabla2_42__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } :| NoteInTime { tag: Nothing, duration: 0.5, startsAt: 0.5, cycleLength: 1.0, note: Just $ Note { sample: S.hc_0__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } : Nil)))
@@ -109,7 +109,7 @@ main = do
           it "Works on simultaneous cycles" do
             run "[tabla2:42 <hc:0 ~>] , hc:0" `shouldEqual` Right (NonEmptyList ((NonEmptyList (NoteInTime { tag: Nothing, duration: 0.5, startsAt: 0.0, cycleLength: 1.0, note: Just $ Note { sample: S.tabla2_42__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } :| NoteInTime { tag: Nothing, duration: 1.0, startsAt: 0.0, cycleLength: 1.0, note: Just $ Note { sample: S.hc_0__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } : NoteInTime { tag: Nothing, duration: 0.5, startsAt: 0.5, cycleLength: 1.0, note: Just $ Note { sample: S.hc_0__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } : Nil)) :| (NonEmptyList (NoteInTime { tag: Nothing, duration: 0.5, startsAt: 0.0, cycleLength: 1.0, note: Just $ Note { sample: S.tabla2_42__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } :| NoteInTime { tag: Nothing, duration: 1.0, startsAt: 0.0, cycleLength: 1.0, note: Just $ Note { sample: S.hc_0__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } : NoteInTime { tag: Nothing, duration: 0.5, startsAt: 0.5, cycleLength: 1.0, note: Nothing } : Nil)) : Nil))
         describe "Test cycle to sequence without rests" do
-          let run = map (unrest <<< c2s (wrap 1.0)) <<< runParser cycleP
+          let run = map (unrest <<< flip c2s (wrap 1.0)) <<< runParser cycleP
           it "Works on simple imput" do
             run "tabla2:42" `shouldEqual` Right (pure ((NoteInTime { tag: Nothing, duration: 1.0, startsAt: 0.0, cycleLength: 1.0, note: Note { sample: S.tabla2_42__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } : Nil)))
             run "tabla2:42 hc:0" `shouldEqual` Right (pure ((NoteInTime { tag: Nothing, duration: 0.5, startsAt: 0.0, cycleLength: 1.0, note: Note { sample: S.tabla2_42__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } : NoteInTime { tag: Nothing, duration: 0.5, startsAt: 0.5, cycleLength: 1.0, note: Note { sample: S.hc_0__Sample, rateFoT: const 1.0, volumeFoT: const 1.0 } } : Nil)))

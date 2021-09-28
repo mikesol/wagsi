@@ -791,8 +791,8 @@ rend cyn dur = asScore false
 rendNit :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> NextCycle
 rendNit = asScore false <<< s2f
 
-c2s :: CycleLength -> Cycle (Maybe Note) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
-c2s = cycleToSequence
+c2s :: Cycle (Maybe Note) -> CycleLength -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
+c2s = flip cycleToSequence
 
 s2f :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> NonEmptyList (NoteInFlattenedTime Note)
 s2f = maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
