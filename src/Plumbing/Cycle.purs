@@ -14,11 +14,11 @@ import WAGSI.Plumbing.Samples (Sample, Note(..))
 import WAGSI.Plumbing.Samples as S
 
 data Cycle a
-  = Branching { nel :: NonEmptyList (Cycle a), weight :: Number }
-  | Simultaneous { nel :: NonEmptyList (Cycle a), weight :: Number }
-  | Sequential { nel :: NonEmptyList (Cycle a), weight :: Number }
-  | Internal { nel :: NonEmptyList (Cycle a), weight :: Number }
-  | SingleNote { val :: a, weight :: Number }
+  = Branching { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
+  | Simultaneous { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
+  | Sequential { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
+  | Internal { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
+  | SingleNote { val :: a, env :: { weight :: Number, tag :: Maybe String } }
 
 derive instance genericCycle :: Generic (Cycle a) _
 derive instance eqCycle :: Eq a => Eq (Cycle a)
@@ -31,13 +31,13 @@ derive instance functorCycle :: Functor Cycle
 instance functorWithIndexCycle :: FunctorWithIndex Int Cycle where
   mapWithIndex fff vvv = (go 0 vvv).val
     where
-    go' ff ii weight nel = let folded = foldl (\axc cyc -> axc <> (pure (go (NEL.last axc).i cyc))) (pure (go ii (NEL.head nel))) (NEL.tail nel) in { i: _.i $ NEL.last folded, val: ff { weight, nel: map _.val folded } }
+    go' ff ii env nel = let folded = foldl (\axc cyc -> axc <> (pure (go (NEL.last axc).i cyc))) (pure (go ii (NEL.head nel))) (NEL.tail nel) in { i: _.i $ NEL.last folded, val: ff { env, nel: map _.val folded } }
     go ii = case _ of
-      Branching { weight, nel } -> go' Branching ii weight nel
-      Simultaneous { weight, nel } -> go' Simultaneous ii weight nel
-      Sequential { weight, nel } -> go' Sequential ii weight nel
-      Internal { weight, nel } -> go' Internal ii weight nel
-      SingleNote { weight, val } -> { i: ii + 1, val: SingleNote { weight, val: fff ii val } }
+      Branching { env, nel } -> go' Branching ii env nel
+      Simultaneous { env, nel } -> go' Simultaneous ii env nel
+      Sequential { env, nel } -> go' Sequential ii env nel
+      Internal { env, nel } -> go' Internal ii env nel
+      SingleNote { env, val } -> { i: ii + 1, val: SingleNote { env, val: fff ii val } }
 
 instance foldableCycle :: Foldable Cycle where
   foldl fba aa fbb = foldl fba aa (flattenCycle fbb)
@@ -46,11 +46,11 @@ instance foldableCycle :: Foldable Cycle where
 
 instance traversableCycle :: Traversable Cycle where
   traverse ff = case _ of
-    Branching { weight, nel } -> Branching <<< { weight, nel: _ } <$> (traverse (traverse ff) nel)
-    Simultaneous { weight, nel } -> Simultaneous <<< { weight, nel: _ } <$> (traverse (traverse ff) nel)
-    Sequential { weight, nel } -> Sequential <<< { weight, nel: _ } <$> (traverse (traverse ff) nel)
-    Internal { weight, nel } -> Internal <<< { weight, nel: _ } <$> (traverse (traverse ff) nel)
-    SingleNote { weight, val } -> SingleNote <<< { weight, val: _ } <$> ff val
+    Branching { env, nel } -> Branching <<< { env, nel: _ } <$> (traverse (traverse ff) nel)
+    Simultaneous { env, nel } -> Simultaneous <<< { env, nel: _ } <$> (traverse (traverse ff) nel)
+    Sequential { env, nel } -> Sequential <<< { env, nel: _ } <$> (traverse (traverse ff) nel)
+    Internal { env, nel } -> Internal <<< { env, nel: _ } <$> (traverse (traverse ff) nel)
+    SingleNote { env, val } -> SingleNote <<< { env, val: _ } <$> ff val
   sequence = sequenceDefault
 
 flattenCycle :: Cycle ~> NonEmptyList
@@ -64,16 +64,16 @@ flattenCycle = case _ of
 reverse :: Cycle ~> Cycle
 reverse l = go l
   where
-  go' fff weight nel = fff { weight, nel: NEL.reverse (map reverse nel) }
+  go' fff env nel = fff { env, nel: NEL.reverse (map reverse nel) }
   go = case _ of
-    Branching { weight, nel } -> go' Branching weight nel
-    Simultaneous { weight, nel } -> go' Simultaneous weight nel
-    Sequential { weight, nel } -> go' Sequential weight nel
-    Internal { weight, nel } -> go' Internal weight nel
+    Branching { env, nel } -> go' Branching env nel
+    Simultaneous { env, nel } -> go' Simultaneous env nel
+    Sequential { env, nel } -> go' Sequential env nel
+    Internal { env, nel } -> go' Internal env nel
     SingleNote snnn -> SingleNote snnn
 
 noteFromSample' :: Number -> Sample -> Cycle (Maybe Note)
-noteFromSample' weight sample = SingleNote { weight, val: Just (Note { sample, rateFoT: const 1.0, volumeFoT: const 1.0 }) }
+noteFromSample' weight sample = SingleNote { env: { weight, tag: Nothing }, val: Just (Note { sample, rateFoT: const 1.0, volumeFoT: const 1.0 }) }
 
 noteFromSample :: Sample -> Cycle (Maybe Note)
 noteFromSample = noteFromSample' 1.0
@@ -82,7 +82,7 @@ intentionalSilenceForInternalUseOnly_ :: Cycle (Maybe Note)
 intentionalSilenceForInternalUseOnly_ = noteFromSample S.intentionalSilenceForInternalUseOnly__Sample
 
 r :: Cycle (Maybe Note)
-r = SingleNote { val: Nothing, weight: 1.0 }
+r = SingleNote { val: Nothing, env: { weight: 1.0, tag: Nothing } }
 
 kicklinn :: Cycle (Maybe Note)
 kicklinn = noteFromSample S.kicklinn_0__Sample

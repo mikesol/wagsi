@@ -22,6 +22,7 @@ module WAGSI.Plumbing.Tidal
   ---
   , lvg
   , lfn
+  , lft
   , lfb
   , lfl
   , lfc
@@ -29,6 +30,7 @@ module WAGSI.Plumbing.Tidal
   , ltn
   , lts
   , ltd
+  , ltt
   , lns
   , lnr
   , lnv
@@ -63,7 +65,7 @@ import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Generic.Rep (class Generic)
 import Data.Int (fromString, toNumber)
-import Data.Lens (Prism', Lens', _1, over, prism')
+import Data.Lens (Lens', Prism', _1, _Just, over, prism')
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.List (List(..), fold, foldMap, foldl, (:))
@@ -74,6 +76,8 @@ import Data.List.Types (NonEmptyList(..))
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.NonEmpty ((:|))
+import Data.Profunctor.Choice (class Choice)
+import Data.Profunctor.Strong (class Strong)
 import Data.Show.Generic (genericShow)
 import Data.String.CodeUnits (fromCharArray, singleton)
 import Data.Symbol (class IsSymbol)
@@ -93,7 +97,7 @@ import Prim.Row (class Lacks, class Nub, class Union)
 import Prim.Row as Row
 import Record as Record
 import Text.Parsing.StringParser (Parser, fail, runParser, try)
-import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, anyDigit, char)
+import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, alphaNum, anyDigit, char)
 import Text.Parsing.StringParser.Combinators (between, many, many1, optionMaybe, sepBy, sepEndBy)
 import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (speaker, gain, playBuf)
@@ -189,6 +193,7 @@ newtype NoteInTime note = NoteInTime
   , startsAt :: Number
   , duration :: Number
   , cycleLength :: Number
+  , tag :: Maybe String
   }
 
 derive instance newtypeNoteInTime :: Newtype (NoteInTime note) _
@@ -211,6 +216,7 @@ newtype NoteInFlattenedTime note = NoteInFlattenedTime
   , duration :: Number
   , bigCycleLength :: Number
   , littleCycleLength :: Number
+  , tag :: Maybe String
   }
 
 derive instance newtypeNoteInFlattenedTime :: Newtype (NoteInFlattenedTime note) _
@@ -241,6 +247,9 @@ lfc = unto NoteInFlattenedTime <<< prop (Proxy :: _ "currentCycle")
 lfd :: forall note. Lens' (NoteInFlattenedTime note) Number
 lfd = unto NoteInFlattenedTime <<< prop (Proxy :: _ "duration")
 
+lft :: forall p note. Choice p => Strong p => p String String -> p (NoteInFlattenedTime note) (NoteInFlattenedTime note)
+lft = unto NoteInFlattenedTime <<< prop (Proxy :: _ "tag") <<< _Just
+
 ltn :: forall note. Lens' (NoteInTime note) note
 ltn = unto NoteInTime <<< prop (Proxy :: _ "note")
 
@@ -249,6 +258,9 @@ lts = unto NoteInTime <<< prop (Proxy :: _ "startsAt")
 
 ltd :: forall note. Lens' (NoteInTime note) Number
 ltd = unto NoteInTime <<< prop (Proxy :: _ "duration")
+
+ltt :: forall p note. Choice p => Strong p => p String String -> p (NoteInTime note) (NoteInTime note)
+ltt = unto NoteInTime <<< prop (Proxy :: _ "tag") <<< _Just
 
 lns :: Lens' Note Sample
 lns = unto Note <<< prop (Proxy :: _ "sample")
@@ -274,19 +286,19 @@ mapmap = map <<< map
 
 ---
 b :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
-b bx by = Branching { weight: 1.0, nel: NonEmptyList (bx :| L.fromFoldable by) }
+b bx by = Branching { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (bx :| L.fromFoldable by) }
 
 b_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
 b_ bx = b bx []
 
 i :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
-i sx sy = Internal { weight: 1.0, nel: NonEmptyList (sx :| L.fromFoldable sy) }
+i sx sy = Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (sx :| L.fromFoldable sy) }
 
 i_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
 i_ sx = i sx []
 
 x :: Cycle (Maybe Note) -> Array (Cycle (Maybe Note)) -> Cycle (Maybe Note)
-x xx xy = Simultaneous { weight: 1.0, nel: NonEmptyList (xx :| L.fromFoldable xy) }
+x xx xy = Simultaneous { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (xx :| L.fromFoldable xy) }
 
 x_ :: Cycle (Maybe Note) -> Cycle (Maybe Note)
 x_ sx = x sx []
@@ -317,6 +329,13 @@ afterMatterP = do
       )
   pure { asInternal }
 
+type Tag = { tag :: Maybe String }
+
+tagP :: Parser Tag
+tagP = do
+  tag <- optionMaybe (map (fromCharArray <<< A.fromFoldable) (char ';' *> many1 alphaNum))
+  pure { tag }
+
 weightP :: Parser Number
 weightP = do
   _ <- skipSpaces
@@ -337,8 +356,9 @@ internalcyclePInternal = Internal <$> do
     case cyc of
       Sequential { nel } -> pure nel
       xx -> pure (pure xx)
+  { tag } <- tagP
   weight <- weightP
-  pure { nel, weight }
+  pure { nel, env: { weight, tag } }
 
 branchingcyclePInternal :: Parser (Cycle (Maybe Note))
 branchingcyclePInternal = Branching <$> do
@@ -348,11 +368,12 @@ branchingcyclePInternal = Branching <$> do
     case cyc of
       Sequential { nel } -> pure nel
       xx -> pure (pure xx)
+  { tag } <- tagP
   weight <- weightP
-  pure { nel, weight }
+  pure { nel, env: { weight, tag } }
 
 simultaneouscyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
-simultaneouscyclePInternal _ = Simultaneous <<< { weight: 1.0, nel: _ } <$> do
+simultaneouscyclePInternal _ = Simultaneous <<< { env:{weight: 1.0, tag: Nothing}, nel: _ } <$> do
   sep <- sepBy ((fromCharArray <<< A.fromFoldable) <$> many (satisfy (not <<< eq ','))) (string ",")
   case sep of
     Nil -> fail "Lacks comma"
@@ -373,7 +394,7 @@ joinSequential (Sequential { nel: NonEmptyList (aa :| bb) } : cc) = (aa : joinSe
 joinSequential (aa : bb) = aa : joinSequential bb
 
 sequentialcyclePInternal :: Parser (Cycle (Maybe Note))
-sequentialcyclePInternal = Sequential <<< { weight: 1.0, nel: _ } <$> do
+sequentialcyclePInternal = Sequential <<< { env:{weight: 1.0, tag: Nothing}, nel: _ } <$> do
   skipSpaces
   leadsWith <- try internalcyclePInternal <|> singleSampleP
   skipSpaces
@@ -386,10 +407,11 @@ singleSampleP = do
   sample <- sampleP
   afterMatter <- afterMatterP
   skipSpaces
+  { tag } <- tagP
   weight <- weightP
   pure $ case afterMatter.asInternal of
-    Nothing -> SingleNote { weight, val: sample }
-    Just ntimes -> Internal { weight, nel: map (const $ SingleNote { weight: 1.0, val: sample }) ntimes }
+    Nothing -> SingleNote { env: { weight, tag }, val: sample }
+    Just ntimes -> Internal { env: { weight, tag }, nel: map (const $ SingleNote { env: { weight: 1.0, tag: Nothing }, val: sample }) ntimes }
 
 cyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
 cyclePInternal _ = try branchingcyclePInternal
@@ -405,10 +427,10 @@ cycleP = go <$> cyclePInternal unit
   go (Simultaneous { nel: NonEmptyList (a :| Nil) }) = go a
   go (Sequential { nel: NonEmptyList (a :| Nil) }) = go a
   go (Internal { nel: NonEmptyList (a :| Nil) }) = go a
-  go (Branching { weight, nel }) = Branching { weight, nel: map go nel }
-  go (Simultaneous { weight, nel }) = Simultaneous { weight, nel: map go nel }
-  go (Sequential { weight, nel }) = Sequential { weight, nel: map go nel }
-  go (Internal { weight, nel }) = Internal { weight, nel: map go nel }
+  go (Branching { env, nel }) = Branching { env, nel: map go nel }
+  go (Simultaneous { env, nel }) = Simultaneous { env, nel: map go nel }
+  go (Sequential { env, nel }) = Sequential { env, nel: map go nel }
+  go (Internal { env, nel }) = Internal { env, nel: map go nel }
   go (SingleNote note) = SingleNote note
 
 flatMap :: NonEmptyList (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
@@ -416,11 +438,11 @@ flatMap (NonEmptyList (aa :| Nil)) = aa
 flatMap (NonEmptyList (aa :| bb : cc)) = join $ aa # map \a' -> flatMap (wrap (bb :| cc)) # map \b' -> a' <> b'
 
 getWeight :: forall a. Cycle a -> Number
-getWeight (Branching { weight }) = weight
-getWeight (Simultaneous { weight }) = weight
-getWeight (Sequential { weight }) = weight
-getWeight (Internal { weight }) = weight
-getWeight (SingleNote { weight }) = weight
+getWeight (Branching { env: { weight } }) = weight
+getWeight (Simultaneous { env: { weight } }) = weight
+getWeight (Sequential { env: { weight } }) = weight
+getWeight (Internal { env: { weight } }) = weight
+getWeight (SingleNote { env: { weight } }) = weight
 
 cycleToSequence :: CycleLength -> Cycle (Maybe Note) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength, currentOffset: 0.0 }
@@ -431,11 +453,12 @@ cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength
     $ map (go state) nel
   go state (Sequential { nel }) = seq state nel
   go state (Internal { nel }) = seq state nel
-  go state (SingleNote { val }) = pure $ pure $ NoteInTime
+  go state (SingleNote { env: { tag }, val }) = pure $ pure $ NoteInTime
     { duration: state.currentSubdivision
     , startsAt: state.currentOffset
     , note: val
     , cycleLength
+    , tag
     }
   seq state nel =
     let
@@ -463,8 +486,8 @@ unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
   where
   go =
     filterMap
-      ( \(NoteInTime { startsAt, duration, cycleLength, note }) ->
-          NoteInTime <<< { startsAt, duration, cycleLength, note: _ } <$> note
+      ( \(NoteInTime { startsAt, duration, cycleLength, tag, note }) ->
+          NoteInTime <<< { startsAt, duration, cycleLength, tag, note: _ } <$> note
       ) <<< NEL.toList
 
 asScore :: Boolean -> NonEmptyList (NoteInFlattenedTime Note) -> NextCycle
@@ -512,7 +535,7 @@ flattenScore l = flattened
   ll = NEL.length l
   flattened = join $ mapWithIndex
     ( \ii -> mapWithIndex
-        ( \jj (NoteInTime { note, duration, startsAt, cycleLength }) -> NoteInFlattenedTime
+        ( \jj (NoteInTime { note, duration, startsAt, cycleLength, tag }) -> NoteInFlattenedTime
             { note
             , duration
             , bigStartsAt: startsAt + cycleLength * toNumber ii
@@ -523,6 +546,7 @@ flattenScore l = flattened
             , littleStartsAt: startsAt
             , littleCycleLength: cycleLength
             , bigCycleLength: cycleLength * toNumber ll
+            , tag
             }
         )
     )
@@ -615,6 +639,7 @@ intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
   , currentCycle: 0
   , bigCycleLength: 0.25
   , littleCycleLength: 0.25
+  , tag: Nothing
   }
 
 parse' :: String -> Cycle (Maybe Note)

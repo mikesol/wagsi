@@ -6116,7 +6116,7 @@ newtype Note = Note
 derive instance newtypeNote :: Newtype Note _
 derive instance genericNote :: Generic Note _
 instance eqNote :: Eq Note where
-  eq = eq `on` (unwrap >>> _.sample)
+  eq = eq `on` (unwrap >>> _.sample) && eq `on` (unwrap >>> _.tag)
 
 instance ordNote :: Ord Note where
   compare = compare `on` (unwrap >>> _.sample)
