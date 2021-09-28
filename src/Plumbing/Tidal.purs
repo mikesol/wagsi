@@ -20,10 +20,16 @@ module WAGSI.Plumbing.Tidal
   , i_
   , x_
   ---
+  , onTagsCWithIndex
+  , onTagsCWithIndex'
   , onTagsC
   , onTagsC'
+  , onTagsWithIndex
+  , onTagsWithIndex'
   , onTags
   , onTags'
+  , onTagWithIndex
+  , onTagWithIndex'
   , onTag
   , onTag'
   ---
@@ -502,31 +508,55 @@ getWeight (Sequential { env: { weight } }) = weight
 getWeight (Internal { env: { weight } }) = weight
 getWeight (SingleNote { env: { weight } }) = weight
 
-onTagsC :: forall a. (Set.Set String -> Boolean) -> (Cycle a -> Cycle a) -> Cycle a -> Cycle a
-onTagsC pf f = go Set.empty
+onTagsCWithIndex :: forall a. (Set.Set String -> Boolean) -> (Int -> Cycle a -> Cycle a) -> Cycle a -> Cycle a
+onTagsCWithIndex pf fff vvv = (go Set.empty 0 vvv).val
   where
-  go' st fx env nel = fx { env, nel: map (go ((Set.fromFoldable env.tag) <> st)) nel }
-  go st (Branching { env, nel }) = go' st Branching env nel
-  go st (Simultaneous { env, nel }) = go' st Simultaneous env nel
-  go st (Sequential { env, nel }) = go' st Sequential env nel
-  go st (Internal { env, nel }) = go' st Internal env nel
-  go st (SingleNote { env, val }) = let res = (Set.fromFoldable env.tag) <> st in if pf res then f (SingleNote { env, val }) else SingleNote { env, val }
+  go' st ff ii env nel = let nst = ((Set.fromFoldable env.tag) <> st) in let folded = foldl (\axc cyc -> axc <> (pure (go nst (NEL.last axc).i cyc))) (pure (go nst ii (NEL.head nel))) (NEL.tail nel) in { i: _.i $ NEL.last folded, val: ff { env, nel: map _.val folded } }
+
+  go :: Set.Set String -> Int -> Cycle a -> { i :: Int, val :: Cycle a }
+  go st ii = case _ of
+    Branching { env, nel } -> go' st Branching ii env nel
+    Simultaneous { env, nel } -> go' st Simultaneous ii env nel
+    Sequential { env, nel } -> go' st Sequential ii env nel
+    Internal { env, nel } -> go' st Internal ii env nel
+    SingleNote { env, val } -> let res = (Set.fromFoldable env.tag) <> st in if pf res then { i: ii + 1, val: fff ii $ SingleNote { env, val } } else { i: ii, val: SingleNote { env, val } }
+
+onTagsC :: forall a. (Set.Set String -> Boolean) -> (Cycle a -> Cycle a) -> Cycle a -> Cycle a
+onTagsC pf f = onTagsCWithIndex pf \_ -> f
+
+onTagsCWithIndex' :: forall a. (Set.Set String -> Boolean) -> (Int -> Cycle a -> Cycle a) -> Cycle a -> Cycle a
+onTagsCWithIndex' pf fff vvv = (go Set.empty 0 vvv).val
+  where
+  go' st ff ii env nel = let nst = st in let folded = foldl (\axc cyc -> axc <> (pure (go nst (NEL.last axc).i cyc))) (pure (go nst ii (NEL.head nel))) (NEL.tail nel) in { i: _.i $ NEL.last folded, val: ff { env, nel: map _.val folded } }
+
+  go :: Set.Set String -> Int -> Cycle a -> { i :: Int, val :: Cycle a }
+  go st ii = case _ of
+    Branching { env, nel } -> go' st Branching ii env nel
+    Simultaneous { env, nel } -> go' st Simultaneous ii env nel
+    Sequential { env, nel } -> go' st Sequential ii env nel
+    Internal { env, nel } -> go' st Internal ii env nel
+    SingleNote { env, val } -> let res = (Set.fromFoldable env.tag) <> st in if pf res then { i: ii + 1, val: fff ii $ SingleNote { env, val } } else { i: ii, val: SingleNote { env, val } }
 
 onTagsC' :: forall a. (Set.Set String -> Boolean) -> (Cycle a -> Cycle a) -> Cycle a -> Cycle a
-onTagsC' pf f = go Set.empty
-  where
-  go' st fx env nel = fx { env, nel: map (go st) nel }
-  go st (Branching { env, nel }) = go' st Branching env nel
-  go st (Simultaneous { env, nel }) = go' st Simultaneous env nel
-  go st (Sequential { env, nel }) = go' st Sequential env nel
-  go st (Internal { env, nel }) = go' st Internal env nel
-  go st (SingleNote { env, val }) = let res = (Set.fromFoldable env.tag) <> st in if pf res then f (SingleNote { env, val }) else SingleNote { env, val }
+onTagsC' pf f = onTagsCWithIndex' pf \_ -> f
+
+onTagsWithIndex :: forall a. (Set.Set String -> Boolean) -> (Int -> a -> a) -> Cycle a -> Cycle a
+onTagsWithIndex pf zz = onTagsCWithIndex pf (map <<< zz)
+
+onTagsWithIndex' :: forall a. (Set.Set String -> Boolean) -> (Int -> a -> a) -> Cycle a -> Cycle a
+onTagsWithIndex' pf zz = onTagsCWithIndex' pf (map <<< zz)
 
 onTags :: forall a. (Set.Set String -> Boolean) -> (a -> a) -> Cycle a -> Cycle a
 onTags pf = onTagsC pf <<< map
 
 onTags' :: forall a. (Set.Set String -> Boolean) -> (a -> a) -> Cycle a -> Cycle a
 onTags' pf = onTagsC' pf <<< map
+
+onTagWithIndex :: forall a. String -> (Int -> a -> a) -> Cycle a -> Cycle a
+onTagWithIndex = onTagsWithIndex <<< Set.member
+
+onTagWithIndex' :: forall a. String -> (Int -> a -> a) -> Cycle a -> Cycle a
+onTagWithIndex' = onTagsWithIndex' <<< Set.member
 
 onTag :: forall a. String -> (a -> a) -> Cycle a -> Cycle a
 onTag = onTags <<< Set.member
