@@ -20,6 +20,11 @@ module WAGSI.Plumbing.Tidal
   , i_
   , x_
   ---
+  , onTags
+  , onTags'
+  , onTag
+  , onTag'
+  ---
   , lvg
   , lfn
   , lft
@@ -78,6 +83,7 @@ import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.NonEmpty ((:|))
 import Data.Profunctor.Choice (class Choice)
 import Data.Profunctor.Strong (class Strong)
+import Data.Set as Set
 import Data.Show.Generic (genericShow)
 import Data.String.CodeUnits (fromCharArray, singleton)
 import Data.Symbol (class IsSymbol)
@@ -373,7 +379,7 @@ branchingcyclePInternal = Branching <$> do
   pure { nel, env: { weight, tag } }
 
 simultaneouscyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
-simultaneouscyclePInternal _ = Simultaneous <<< { env:{weight: 1.0, tag: Nothing}, nel: _ } <$> do
+simultaneouscyclePInternal _ = Simultaneous <<< { env: { weight: 1.0, tag: Nothing }, nel: _ } <$> do
   sep <- sepBy ((fromCharArray <<< A.fromFoldable) <$> many (satisfy (not <<< eq ','))) (string ",")
   case sep of
     Nil -> fail "Lacks comma"
@@ -394,7 +400,7 @@ joinSequential (Sequential { nel: NonEmptyList (aa :| bb) } : cc) = (aa : joinSe
 joinSequential (aa : bb) = aa : joinSequential bb
 
 sequentialcyclePInternal :: Parser (Cycle (Maybe Note))
-sequentialcyclePInternal = Sequential <<< { env:{weight: 1.0, tag: Nothing}, nel: _ } <$> do
+sequentialcyclePInternal = Sequential <<< { env: { weight: 1.0, tag: Nothing }, nel: _ } <$> do
   skipSpaces
   leadsWith <- try internalcyclePInternal <|> singleSampleP
   skipSpaces
@@ -443,6 +449,32 @@ getWeight (Simultaneous { env: { weight } }) = weight
 getWeight (Sequential { env: { weight } }) = weight
 getWeight (Internal { env: { weight } }) = weight
 getWeight (SingleNote { env: { weight } }) = weight
+
+onTags :: forall a. (Set.Set String -> Boolean) -> (a -> a) -> Cycle a -> Cycle a
+onTags pf f = go Set.empty
+  where
+  go' st fx env nel = fx { env, nel: map (go ((Set.fromFoldable env.tag) <> st)) nel }
+  go st (Branching { env, nel }) = go' st Branching env nel
+  go st (Simultaneous { env, nel }) = go' st Simultaneous env nel
+  go st (Sequential { env, nel }) = go' st Sequential env nel
+  go st (Internal { env, nel }) = go' st Internal env nel
+  go st (SingleNote { env, val }) = let res = (Set.fromFoldable env.tag) <> st in if pf res then SingleNote { env, val: f val } else SingleNote { env, val }
+
+onTag :: forall a. String -> (a -> a) -> Cycle a -> Cycle a
+onTag = onTags <<< Set.member
+
+onTags' :: forall a. (Set.Set String -> Boolean) -> (a -> a) -> Cycle a -> Cycle a
+onTags' pf f = go Set.empty
+  where
+  go' st fx env nel = fx { env, nel: map (go st) nel }
+  go st (Branching { env, nel }) = go' st Branching env nel
+  go st (Simultaneous { env, nel }) = go' st Simultaneous env nel
+  go st (Sequential { env, nel }) = go' st Sequential env nel
+  go st (Internal { env, nel }) = go' st Internal env nel
+  go st (SingleNote { env, val }) = let res = (Set.fromFoldable env.tag) <> st in if pf res then SingleNote { env, val: f val } else SingleNote { env, val }
+
+onTag' :: forall a. String -> (a -> a) -> Cycle a -> Cycle a
+onTag' = onTags' <<< Set.member
 
 cycleToSequence :: CycleLength -> Cycle (Maybe Note) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength, currentOffset: 0.0 }
