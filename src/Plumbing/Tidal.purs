@@ -13,6 +13,8 @@ module WAGSI.Plumbing.Tidal
   , wag
   , openFuture
   ---
+  , djQuickCheck
+  ---
   , b
   , i
   , x
@@ -53,8 +55,11 @@ module WAGSI.Plumbing.Tidal
   , prune
   , mapmap
   ---
+  , openVoice
   , cycleP
   , unrest
+  , EWF'
+  , EWF
   , CycleLength(..)
   , NoteInTime(..)
   , NoteInFlattenedTime(..)
@@ -63,7 +68,7 @@ module WAGSI.Plumbing.Tidal
   , NextCycle(..)
   , RBuf
   , Next
-  , TheFuture
+  , TheFuture(..)
   , class S
   ) where
 
@@ -74,6 +79,8 @@ import Control.Comonad (extract)
 import Control.Comonad.Cofree ((:<))
 import Control.Monad.State (evalState, get, put)
 import Data.Array as A
+import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Array.NonEmpty as NEA
 import Data.Either (Either(..), hush)
 import Data.Filterable (compact, filter, filterMap, maybeBool)
 import Data.Function (on)
@@ -98,7 +105,8 @@ import Data.Show.Generic (genericShow)
 import Data.String.CodeUnits (fromCharArray, singleton)
 import Data.Symbol (class IsSymbol)
 import Data.Traversable (sequence, traverse)
-import Data.Tuple.Nested (type (/\))
+import Data.Tuple (fst, snd)
+import Data.Tuple.Nested (type (/\), (/\))
 import Data.Typelevel.Num (class Pos, D8)
 import Data.Unfoldable (replicate)
 import Effect (Effect)
@@ -112,6 +120,8 @@ import Heterogeneous.Mapping (class MappingWithIndex, hmap, hmapWithIndex)
 import Prim.Row (class Lacks, class Nub, class Union)
 import Prim.Row as Row
 import Record as Record
+import Test.QuickCheck (arbitrary)
+import Test.QuickCheck.Gen (Gen, arrayOf1, elements, frequency, resize)
 import Text.Parsing.StringParser (Parser, fail, runParser, try)
 import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, alphaNum, anyDigit, char)
 import Text.Parsing.StringParser.Combinators (between, many, many1, optionMaybe, sepBy, sepEndBy)
@@ -129,7 +139,8 @@ import WAGS.Template (fromTemplate)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
 import WAGSI.Plumbing.Download (downloadFiles)
-import WAGSI.Plumbing.Samples (Sample, Note(..), FoT)
+import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
+import WAGSI.Plumbing.Samples (FoT, Note(..), Sample)
 import WAGSI.Plumbing.Samples as S
 
 --- @@ ---
@@ -803,6 +814,126 @@ s2f = maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
   <<< compact
   <<< map NEL.fromList
   <<< unrest
+
+----------------
+-- dj quickcheck --
+
+qcSamples :: NonEmptyArray Sample
+qcSamples = map fst $ fromMaybe (sampleToDur') $ NEA.fromArray $ NEA.filter ((>) 0.8 <<< snd) sampleToDur
+
+genSingleSample :: Gen Sample
+genSingleSample = elements qcSamples
+
+genSingleNote :: Gen (Cycle (Maybe Note))
+genSingleNote =
+  SingleNote <<< { env: { weight: 1.0, tag: Nothing }, val: _ } <<< Just <<< Note <<<
+    { rateFoT: const 1.0
+    , volumeFoT: const 1.0
+    , sample: _
+    } <$> genSingleSample
+
+genRest :: Gen (Cycle (Maybe Note))
+genRest = pure $ SingleNote { env: { weight: 1.0, tag: Nothing }, val: Nothing }
+
+genSingleNoteOrRest :: Gen (Cycle (Maybe Note))
+genSingleNoteOrRest = frequency (NonEmptyList ((7.0 /\ genSingleNote) :| (3.0 /\ genRest) : Nil))
+
+nea2nel :: NonEmptyArray ~> NonEmptyList
+nea2nel = NonEmptyList <<< (\(aa :| bb) -> aa :| L.fromFoldable bb) <<< NEA.toNonEmpty
+
+genCycle :: Gen (Cycle (Maybe Note))
+genCycle = go 0
+  where
+  genSameInternal nn = do
+    sn <- genSingleNote
+    ii <- case nn of
+      0 -> elements $ NEA.fromNonEmpty (2 :| [ 3, 4, 5, 6 ])
+      1 -> elements $ NEA.fromNonEmpty (2 :| [ 3, 4, 6 ])
+      _ -> elements $ NEA.fromNonEmpty (2 :| [ 3, 4 ])
+    pure $ Internal { env: { weight: 1.0, tag: Nothing }, nel: nea2nel $ NEA.fromNonEmpty (sn :| A.replicate (ii - 1) sn) }
+  genDiffInternal nn = do
+    let gg = go (nn + 1)
+    ii <- case nn of
+      0 -> elements $ NEA.fromNonEmpty (2 :| [ 3, 4, 8 ])
+      1 -> elements $ NEA.fromNonEmpty (2 :| [ 4 ])
+      _ -> elements $ NEA.fromNonEmpty (2 :| [])
+    nel <- sequence $ nea2nel $ NEA.fromNonEmpty (gg :| A.replicate (ii - 1) gg)
+    pure $ Internal { env: { weight: 1.0, tag: Nothing }, nel }
+  genBranching nn = resize 3 (Branching <<< { env: { weight: 1.0, tag: Nothing }, nel: _ } <<< nea2nel <$> arrayOf1 (go (nn + 1)))
+  genSimultaneous nn = resize 3 (Simultaneous <<< { env: { weight: 1.0, tag: Nothing }, nel: _ } <<< nea2nel <$> arrayOf1 (go (nn + 1)))
+  go 0 =
+    let
+      zz = 0
+    in
+      frequency
+        ( NonEmptyList
+            ( (1.0 /\ (genBranching zz))
+                :| (1.0 /\ (genSimultaneous zz))
+                  : (1.0 /\ (genDiffInternal zz))
+                  : Nil
+            )
+        )
+  go 1 =
+    let
+      zz = 1
+    in
+      frequency
+        ( NonEmptyList
+            ( (1.0 /\ (genBranching zz))
+                :| (1.0 /\ (genSimultaneous zz))
+                  : (2.0 /\ (genDiffInternal zz))
+                  : (4.0 /\ (genSameInternal zz))
+                  : (3.0 /\ genSingleNoteOrRest)
+                  : Nil
+            )
+        )
+  go 2 =
+    let
+      zz = 2
+    in
+      frequency
+        ( NonEmptyList
+            ( (1.0 /\ (genBranching zz))
+                :| (1.0 /\ (genSimultaneous zz))
+                  : (1.0 /\ (genDiffInternal zz))
+                  : (4.0 /\ (genSameInternal zz))
+                  : (8.0 /\ genSingleNoteOrRest)
+                  : Nil
+            )
+        )
+  go 3 =
+    let
+      zz = 3
+    in
+      frequency
+        ( NonEmptyList
+            ( (1.0 /\ (genBranching zz))
+                :| (1.0 /\ genSimultaneous zz)
+                  : (1.0 /\ (genDiffInternal zz))
+                  : (4.0 /\ (genSameInternal zz))
+                  : (10.0 /\ genSingleNoteOrRest)
+                  : Nil
+            )
+        )
+  go _ = genSingleNoteOrRest
+
+genVoice :: Number -> Gen { cycle :: Cycle (Maybe Note), voice :: Voice }
+genVoice vol = do
+  let globals = Globals { gain: const $ vol }
+  cycle <- genCycle
+  cl' <- arbitrary
+  let cl = CycleLength (1.0 + 3.0 * cl')
+  let next = asScore false $ s2f $ c2s cycle cl
+  pure $ { cycle, voice: Voice { globals, next } }
+
+djQuickCheck :: Gen { cycle :: Cycle (Maybe Note), future :: TheFuture }
+djQuickCheck = do
+  { cycle, voice: earth } <- genVoice 1.0
+  wind <- pure openVoice
+  fire <- pure openVoice
+  pure $ { cycle, future: TheFuture { earth, wind, fire } }
+
+----------------
 
 newtype ZipProps fns = ZipProps { | fns }
 

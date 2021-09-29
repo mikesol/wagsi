@@ -2,12 +2,14 @@ module WAGSI.Plumbing.Cycle where
 
 import Prelude
 
-import Data.Foldable (class Foldable, foldMapDefaultR, foldl, foldr)
+import Data.Foldable (class Foldable, foldMapDefaultR, foldl, foldr, intercalate)
 import Data.FunctorWithIndex (class FunctorWithIndex)
 import Data.Generic.Rep (class Generic)
+import Data.Int (floor)
 import Data.List.NonEmpty as NEL
 import Data.List.Types (NonEmptyList)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
+import Data.Newtype (unwrap)
 import Data.Show.Generic (genericShow)
 import Data.Traversable (class Traversable, sequenceDefault, traverse)
 import WAGSI.Plumbing.Samples (Sample, Note(..))
@@ -66,6 +68,16 @@ reverse l = go l
     Simultaneous { env, nel } -> go' Simultaneous env nel
     Internal { env, nel } -> go' Internal env nel
     SingleNote snnn -> SingleNote snnn
+
+cycleToString :: Cycle (Maybe Note) -> String
+cycleToString = go
+  where
+  ws env = if env.weight >= 2.0 then "*" <> show (floor env.weight) else ""
+  tg env = maybe "" (append ";") env.tag
+  go (Branching { env, nel }) = "<" <> intercalate " " (map go nel) <> ">" <> ws env <> tg env
+  go (Simultaneous { env, nel }) = (intercalate " , "  (map go nel)) <> ws env <> tg env
+  go (Internal { env, nel }) = "[" <> intercalate " " (map go nel) <> "]" <> ws env <> tg env
+  go (SingleNote { env, val }) = (maybe "~" (S.sampleToString <<< _.sample <<< unwrap) val) <> ws env <> tg env
 
 noteFromSample' :: Number -> Sample -> Cycle (Maybe Note)
 noteFromSample' weight sample = SingleNote { env: { weight, tag: Nothing }, val: Just (Note { sample, rateFoT: const 1.0, volumeFoT: const 1.0 }) }

@@ -25,6 +25,7 @@ You can edit this file as you like.
   , "painting"
   , "prelude"
   , "psci-support"
+  , "quickcheck"
   , "record"
   , "refs"
   , "simple-json"

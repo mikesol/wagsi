@@ -1,4 +1,5 @@
-const path = require("path");
+var path = require("path");
+var webpack = require('webpack');
 
 module.exports = {
   mode: "production",
@@ -7,6 +8,7 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
   },
+  plugins: [new webpack.EnvironmentPlugin(['WAGSI_MODE'])],
   module: {
     rules: [
       {

@@ -5,6 +5,7 @@ module WAGSI.Plumbing.Samples
   , urls
   , Note(..)
   , FoT
+  , sampleToString
   , nameToSampleMNO
   , intentionalSilenceForInternalUseOnly__Sample
   , kicklinn_0__Sample
@@ -2036,6 +2037,7 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (class Newtype, unwrap)
+import Data.String as String
 import Data.Tuple.Nested ((/\), type (/\))
 import Foreign.Object (Object)
 import Foreign.Object as Object
@@ -6123,6 +6125,9 @@ instance ordNote :: Ord Note where
 
 instance showNote :: Show Note where
   show (Note { sample }) = "Note <" <> show sample <> ">"
+
+sampleToString :: Sample -> String
+sampleToString (Sample sample) = String.replace (String.Pattern "_") (String.Replacement ":") sample
 
 intentionalSilenceForInternalUseOnly__Sample = Sample "intentionalSilenceForInternalUseOnly" :: Sample
 kicklinn_0__Sample = Sample "kicklinn_0" :: Sample
