@@ -50,7 +50,7 @@ wag :: TheFuture
 wag = make 1.0 { earth: s "" }
 ```
 
-The record has three channels to make music on - `earth`, `wind`, and `fire`. You can use all of them or none of them. `plainly` means that we're not adding any effects, and `parse` will parse a string of mini-notation and fail on silence.
+The record has three channels to make music on - `earth`, `wind`, and `fire`. You can use all of them or none of them.
 
 ## Mini-notation
 
