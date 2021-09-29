@@ -25,6 +25,7 @@ Practice makes perfect! To try WagsI tidal out:
 
 1. Clone this repo.
 2. Open this repo with VSCode. Make sure the PureScript IDE extension is installed.
+3. Checkout the `tidal` branch: `git checkout tidal`.
 3. Run `npm install && npm start`.
 4. Navigate to `localhost:8080` in Chrome or Firefox and click on **Start Audio**.
 5. In VSCode, open `src/LiveCodeHere/Wagged.purs`. Start editing & save the file to render. You should hear some beats! If not, file an issue on this repo.
