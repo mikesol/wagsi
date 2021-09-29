@@ -31,20 +31,20 @@ main = do
             runParser cycleP
               "  tabla2:42" `shouldEqual` Right (noteFromSample S.tabla2_42__Sample)
             runParser cycleP
-              "tabla2:42 hc:0" `shouldEqual` Right (Sequential { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (noteFromSample S.hc_0__Sample) : Nil) })
+              "tabla2:42 hc:0" `shouldEqual` Right (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (noteFromSample S.hc_0__Sample) : Nil) })
           it "Works on internal cycles" do
             runParser cycleP
-              "[tabla2:42 hc:0] tabla2:42" `shouldEqual` Right (Sequential { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (noteFromSample S.hc_0__Sample) : Nil) } :| (noteFromSample S.tabla2_42__Sample) : Nil) })
+              "[tabla2:42 hc:0] tabla2:42" `shouldEqual` Right (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (noteFromSample S.hc_0__Sample) : Nil) } :| (noteFromSample S.tabla2_42__Sample) : Nil) })
           it "Works on internal cycles 2" do
             runParser cycleP
-              "tabla2:42*2 tabla2:41" `shouldEqual` Right (Sequential { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (noteFromSample S.tabla2_42__Sample) : Nil) } :| (noteFromSample S.tabla2_41__Sample) : Nil) })
+              "tabla2:42*2 tabla2:41" `shouldEqual` Right (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (noteFromSample S.tabla2_42__Sample) : Nil) } :| (noteFromSample S.tabla2_41__Sample) : Nil) })
           it "Works on branching cycles" do
             runParser cycleP
-              "[tabla2:42 <hc:0 tech:0>] tabla2:42" `shouldEqual` Right (Sequential { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (Branching { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.hc_0__Sample) :| (noteFromSample S.tech_0__Sample) : Nil) }) : Nil) } :| (noteFromSample S.tabla2_42__Sample) : Nil) })
+              "[tabla2:42 <hc:0 tech:0>] tabla2:42" `shouldEqual` Right (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (Branching { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.hc_0__Sample) :| (noteFromSample S.tech_0__Sample) : Nil) }) : Nil) } :| (noteFromSample S.tabla2_42__Sample) : Nil) })
           it "Works on dual groups" do
             runParser cycleP
               "[tabla2 tabla2] [diphone2 <sitar latibro>]" `shouldEqual` Right
-              ( Sequential
+              ( Internal
                   { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList
                       ( Internal
                           { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList
@@ -67,13 +67,13 @@ main = do
               "diphone2 diphone2  , tech:0 tech:2" `shouldEqual` Right
               ( Simultaneous
                   { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList
-                      ( Sequential
+                      ( Internal
                           { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList
                               ( (noteFromSample S.diphone2_0__Sample)
                                   :| (noteFromSample S.diphone2_0__Sample) : Nil
                               )
                           } :|
-                          Sequential
+                          Internal
                             { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList
                                 ( (noteFromSample S.tech_0__Sample)
                                     :| (noteFromSample S.tech_2__Sample) : Nil
@@ -90,7 +90,7 @@ main = do
               "[tabla2:42 _ <hc:0 tech:0>] , tabla2:42 _ _" `shouldEqual` Right (Simultaneous { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample' 2.0 S.tabla2_42__Sample) :| (Branching { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.hc_0__Sample) :| (noteFromSample S.tech_0__Sample) : Nil) }) : Nil) } :| (noteFromSample' 3.0 S.tabla2_42__Sample) : Nil) })
           it "Works on branching cycles with internal cycle" do
             runParser cycleP
-              "[tabla2:42 <[hc:0 hc:0] tech:0>] tabla2:42" `shouldEqual` Right (Sequential { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (Branching { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.hc_0__Sample) :| (noteFromSample S.hc_0__Sample) : Nil) }) :| (noteFromSample S.tech_0__Sample) : Nil) }) : Nil) } :| (noteFromSample S.tabla2_42__Sample) : Nil) })
+              "[tabla2:42 <[hc:0 hc:0] tech:0>] tabla2:42" `shouldEqual` Right (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList (Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.tabla2_42__Sample) :| (Branching { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((Internal { env: { weight: 1.0, tag: Nothing }, nel: NonEmptyList ((noteFromSample S.hc_0__Sample) :| (noteFromSample S.hc_0__Sample) : Nil) }) :| (noteFromSample S.tech_0__Sample) : Nil) }) : Nil) } :| (noteFromSample S.tabla2_42__Sample) : Nil) })
         describe "Test cycle to sequence" do
           let run = map (flip c2s $ wrap 1.0) <<< runParser cycleP
           it "Works on simple imput" do

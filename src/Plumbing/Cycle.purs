@@ -16,7 +16,6 @@ import WAGSI.Plumbing.Samples as S
 data Cycle a
   = Branching { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
   | Simultaneous { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
-  | Sequential { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
   | Internal { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
   | SingleNote { val :: a, env :: { weight :: Number, tag :: Maybe String } }
 
@@ -35,7 +34,6 @@ instance functorWithIndexCycle :: FunctorWithIndex Int Cycle where
     go ii = case _ of
       Branching { env, nel } -> go' Branching ii env nel
       Simultaneous { env, nel } -> go' Simultaneous ii env nel
-      Sequential { env, nel } -> go' Sequential ii env nel
       Internal { env, nel } -> go' Internal ii env nel
       SingleNote { env, val } -> { i: ii + 1, val: SingleNote { env, val: fff ii val } }
 
@@ -48,7 +46,6 @@ instance traversableCycle :: Traversable Cycle where
   traverse ff = case _ of
     Branching { env, nel } -> Branching <<< { env, nel: _ } <$> (traverse (traverse ff) nel)
     Simultaneous { env, nel } -> Simultaneous <<< { env, nel: _ } <$> (traverse (traverse ff) nel)
-    Sequential { env, nel } -> Sequential <<< { env, nel: _ } <$> (traverse (traverse ff) nel)
     Internal { env, nel } -> Internal <<< { env, nel: _ } <$> (traverse (traverse ff) nel)
     SingleNote { env, val } -> SingleNote <<< { env, val: _ } <$> ff val
   sequence = sequenceDefault
@@ -57,7 +54,6 @@ flattenCycle :: Cycle ~> NonEmptyList
 flattenCycle = case _ of
   Branching { nel } -> join $ map flattenCycle nel
   Simultaneous { nel } -> join $ map flattenCycle nel
-  Sequential { nel } -> join $ map flattenCycle nel
   Internal { nel } -> join $ map flattenCycle nel
   SingleNote { val } -> pure val
 
@@ -68,7 +64,6 @@ reverse l = go l
   go = case _ of
     Branching { env, nel } -> go' Branching env nel
     Simultaneous { env, nel } -> go' Simultaneous env nel
-    Sequential { env, nel } -> go' Sequential env nel
     Internal { env, nel } -> go' Internal env nel
     SingleNote snnn -> SingleNote snnn
 

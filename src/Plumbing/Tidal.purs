@@ -330,7 +330,6 @@ lcw = lens getWeight
   ( case _ of
       Branching ii -> \weight -> Branching $ ii { env = ii.env { weight = weight } }
       Simultaneous ii -> \weight -> Simultaneous $ ii { env = ii.env { weight = weight } }
-      Sequential ii -> \weight -> Sequential $ ii { env = ii.env { weight = weight } }
       Internal ii -> \weight -> Internal $ ii { env = ii.env { weight = weight } }
       SingleNote ii -> \weight -> SingleNote $ ii { env = ii.env { weight = weight } }
   )
@@ -369,6 +368,14 @@ x_ sx = x sx []
 
 sampleName :: Parser String
 sampleName = map (fromCharArray <<< A.fromFoldable <<< NEL.toList) (many1 $ oneOf [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', '~' ])
+
+---
+data ICycle a
+  = IBranching { nel :: NonEmptyList (ICycle a), env :: { weight :: Number, tag :: Maybe String } }
+  | ISimultaneous { nel :: NonEmptyList (ICycle a), env :: { weight :: Number, tag :: Maybe String } }
+  | ISequential { nel :: NonEmptyList (ICycle a), env :: { weight :: Number, tag :: Maybe String } }
+  | IInternal { nel :: NonEmptyList (ICycle a), env :: { weight :: Number, tag :: Maybe String } }
+  | ISingleNote { val :: a, env :: { weight :: Number, tag :: Maybe String } }
 
 ---
 whiteSpace1 :: Parser String
@@ -412,32 +419,32 @@ sampleP = do
     Nothing -> fail "Not a sample name"
     Just foundSample -> pure foundSample
 
-internalcyclePInternal :: Parser (Cycle (Maybe Note))
-internalcyclePInternal = Internal <$> do
+internalcyclePInternal :: Parser (ICycle (Maybe Note))
+internalcyclePInternal = IInternal <$> do
   nel <- between (skipSpaces *> char '[' *> skipSpaces) (skipSpaces *> char ']' *> skipSpaces) do
     pure unit -- breaks recursion
     cyc <- cyclePInternal unit
     case cyc of
-      Sequential { nel } -> pure nel
+      ISequential { nel } -> pure nel
       xx -> pure (pure xx)
   { tag } <- tagP
   weight <- weightP
   pure { nel, env: { weight, tag } }
 
-branchingcyclePInternal :: Parser (Cycle (Maybe Note))
-branchingcyclePInternal = Branching <$> do
+branchingcyclePInternal :: Parser (ICycle (Maybe Note))
+branchingcyclePInternal = IBranching <$> do
   nel <- between (skipSpaces *> char '<' *> skipSpaces) (skipSpaces *> char '>' *> skipSpaces) do
     pure unit -- breaks recursion
     cyc <- cyclePInternal unit
     case cyc of
-      Sequential { nel } -> pure nel
+      ISequential { nel } -> pure nel
       xx -> pure (pure xx)
   { tag } <- tagP
   weight <- weightP
   pure { nel, env: { weight, tag } }
 
-simultaneouscyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
-simultaneouscyclePInternal _ = Simultaneous <<< { env: { weight: 1.0, tag: Nothing }, nel: _ } <$> do
+simultaneouscyclePInternal :: Unit -> Parser (ICycle (Maybe Note))
+simultaneouscyclePInternal _ = ISimultaneous <<< { env: { weight: 1.0, tag: Nothing }, nel: _ } <$> do
   sep <- sepBy ((fromCharArray <<< A.fromFoldable) <$> many (satisfy (not <<< eq ','))) (string ",")
   case sep of
     Nil -> fail "Lacks comma"
@@ -452,20 +459,20 @@ simultaneouscyclePInternal _ = Simultaneous <<< { env: { weight: 1.0, tag: Nothi
     <|> try singleSampleP
     <|> fail "Could not parse cycle"
 
-joinSequential :: forall a. List (Cycle a) -> List (Cycle a)
+joinSequential :: forall a. List (ICycle a) -> List (ICycle a)
 joinSequential Nil = Nil
-joinSequential (Sequential { nel: NonEmptyList (aa :| bb) } : cc) = (aa : joinSequential bb) <> joinSequential cc
+joinSequential (ISequential { nel: NonEmptyList (aa :| bb) } : cc) = (aa : joinSequential bb) <> joinSequential cc
 joinSequential (aa : bb) = aa : joinSequential bb
 
-sequentialcyclePInternal :: Parser (Cycle (Maybe Note))
-sequentialcyclePInternal = Sequential <<< { env: { weight: 1.0, tag: Nothing }, nel: _ } <$> do
+sequentialcyclePInternal :: Parser (ICycle (Maybe Note))
+sequentialcyclePInternal = ISequential <<< { env: { weight: 1.0, tag: Nothing }, nel: _ } <$> do
   skipSpaces
   leadsWith <- try internalcyclePInternal <|> singleSampleP
   skipSpaces
   rest <- joinSequential <$> many (cyclePInternal unit)
   pure (NonEmptyList (leadsWith :| rest))
 
-singleSampleP :: Parser (Cycle (Maybe Note))
+singleSampleP :: Parser (ICycle (Maybe Note))
 singleSampleP = do
   skipSpaces
   sample <- sampleP
@@ -474,10 +481,10 @@ singleSampleP = do
   { tag } <- tagP
   weight <- weightP
   pure $ case afterMatter.asInternal of
-    Nothing -> SingleNote { env: { weight, tag }, val: sample }
-    Just ntimes -> Internal { env: { weight, tag }, nel: map (const $ SingleNote { env: { weight: 1.0, tag: Nothing }, val: sample }) ntimes }
+    Nothing -> ISingleNote { env: { weight, tag }, val: sample }
+    Just ntimes -> IInternal { env: { weight, tag }, nel: map (const $ ISingleNote { env: { weight: 1.0, tag: Nothing }, val: sample }) ntimes }
 
-cyclePInternal :: Unit -> Parser (Cycle (Maybe Note))
+cyclePInternal :: Unit -> Parser (ICycle (Maybe Note))
 cyclePInternal _ = try branchingcyclePInternal
   <|> try (simultaneouscyclePInternal unit)
   <|> try sequentialcyclePInternal
@@ -487,15 +494,15 @@ cyclePInternal _ = try branchingcyclePInternal
 cycleP :: Parser (Cycle (Maybe Note))
 cycleP = go <$> cyclePInternal unit
   where
-  go (Branching { nel: NonEmptyList (a :| Nil) }) = go a
-  go (Simultaneous { nel: NonEmptyList (a :| Nil) }) = go a
-  go (Sequential { nel: NonEmptyList (a :| Nil) }) = go a
-  go (Internal { nel: NonEmptyList (a :| Nil) }) = go a
-  go (Branching { env, nel }) = Branching { env, nel: map go nel }
-  go (Simultaneous { env, nel }) = Simultaneous { env, nel: map go nel }
-  go (Sequential { env, nel }) = Sequential { env, nel: map go nel }
-  go (Internal { env, nel }) = Internal { env, nel: map go nel }
-  go (SingleNote note) = SingleNote note
+  go (IBranching { nel: NonEmptyList (a :| Nil) }) = go a
+  go (ISimultaneous { nel: NonEmptyList (a :| Nil) }) = go a
+  go (ISequential { nel: NonEmptyList (a :| Nil) }) = go a
+  go (IInternal { nel: NonEmptyList (a :| Nil) }) = go a
+  go (IBranching { env, nel }) = Branching { env, nel: map go nel }
+  go (ISimultaneous { env, nel }) = Simultaneous { env, nel: map go nel }
+  go (ISequential { env, nel }) = Internal { env, nel: map go nel }
+  go (IInternal { env, nel }) = Internal { env, nel: map go nel }
+  go (ISingleNote note) = SingleNote note
 
 flatMap :: NonEmptyList (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 flatMap (NonEmptyList (aa :| Nil)) = aa
@@ -504,7 +511,6 @@ flatMap (NonEmptyList (aa :| bb : cc)) = join $ aa # map \a' -> flatMap (wrap (b
 getWeight :: forall a. Cycle a -> Number
 getWeight (Branching { env: { weight } }) = weight
 getWeight (Simultaneous { env: { weight } }) = weight
-getWeight (Sequential { env: { weight } }) = weight
 getWeight (Internal { env: { weight } }) = weight
 getWeight (SingleNote { env: { weight } }) = weight
 
@@ -517,7 +523,6 @@ onTagsCWithIndex pf fff vvv = (go Set.empty 0 vvv).val
   go st ii = case _ of
     Branching { env, nel } -> go' st Branching ii env nel
     Simultaneous { env, nel } -> go' st Simultaneous ii env nel
-    Sequential { env, nel } -> go' st Sequential ii env nel
     Internal { env, nel } -> go' st Internal ii env nel
     SingleNote { env, val } -> let res = (Set.fromFoldable env.tag) <> st in if pf res then { i: ii + 1, val: fff ii $ SingleNote { env, val } } else { i: ii, val: SingleNote { env, val } }
 
@@ -533,7 +538,6 @@ onTagsCWithIndex' pf fff vvv = (go Set.empty 0 vvv).val
   go st ii = case _ of
     Branching { env, nel } -> go' st Branching ii env nel
     Simultaneous { env, nel } -> go' st Simultaneous ii env nel
-    Sequential { env, nel } -> go' st Sequential ii env nel
     Internal { env, nel } -> go' st Internal ii env nel
     SingleNote { env, val } -> let res = (Set.fromFoldable env.tag) <> st in if pf res then { i: ii + 1, val: fff ii $ SingleNote { env, val } } else { i: ii, val: SingleNote { env, val } }
 
@@ -571,7 +575,6 @@ cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength
   go state (Simultaneous { nel }) = map (sortBy (compare `on` (unwrap >>> _.startsAt)))
     $ flatMap
     $ map (go state) nel
-  go state (Sequential { nel }) = seq state nel
   go state (Internal { nel }) = seq state nel
   go state (SingleNote { env: { tag }, val }) = pure $ pure $ NoteInTime
     { duration: state.currentSubdivision
