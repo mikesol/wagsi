@@ -35,7 +35,7 @@ import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserPeriodicWave)
 import WAGSI.Plumbing.Cycle (cycleToString)
 import WAGSI.Plumbing.Samples (Samples)
-import WAGSI.Plumbing.Tidal (TheFuture, djQuickCheck, tidal)
+import WAGSI.Plumbing.Tidal (TheFuture(..), djQuickCheck, openVoice, tidal)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
 
 main :: Effect Unit
@@ -120,7 +120,15 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc } =
                             DJQuickCheck -> "d j q u i c k c h e c k"
                         ]
                     ]
-                      <> maybe []
+                      <> maybe
+                        ( maybe []
+                            ( \v ->
+                                [ HH.p [ classes [ "text-center", "text-xxl" ] ]
+                                    [ HH.text ("Starting in " <> show v) ]
+                                ]
+                            )
+                            tick
+                        )
                         ( \v ->
                             [ HH.p [ classes [ "text-center", "text-xl" ] ]
                                 [ HH.text "Now Playing (or soon-to-be-playing)" ]
@@ -198,17 +206,23 @@ handleAction = case _ of
         { trigger, unsub } <- case wagsiMode of
           LiveCoding -> pure { trigger: trigger', unsub: pure unit }
           DJQuickCheck -> do
-            let ivl = E.fold (const $ add 1) (interval 1000) (-1)
+            let ivl = E.fold (const $ add 1) (interval 1000) (-4)
             theFuture :: EventIO TheFuture <- H.liftEffect create
             Log.info "subbing"
-            unsub <- H.liftEffect $ subscribe ivl \ck -> do
-              let mod20 = ck `mod` 20
-              HS.notify listener (Tick (20 - mod20))
-              when (mod20 == 0) do
-                seed <- randomSeed
-                let goDJ = evalGen djQuickCheck { newSeed: seed, size: 10 }
-                HS.notify listener (DJQC $ cycleToString goDJ.cycle)
-                theFuture.push goDJ.future
+            unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
+              (-3) -> do
+                HS.notify listener (Tick 3)
+                theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
+              (-2) -> HS.notify listener (Tick 2)
+              (-1) -> HS.notify listener (Tick 1)
+              ck -> do
+                let mod20 = ck `mod` 20
+                HS.notify listener (Tick (20 - mod20))
+                when (mod20 == 0) do
+                  seed <- randomSeed
+                  let goDJ = evalGen djQuickCheck { newSeed: seed, size: 10 }
+                  HS.notify listener (DJQC $ cycleToString goDJ.cycle)
+                  theFuture.push goDJ.future
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
         unsubscribeFromWags <-
           H.liftEffect do
@@ -222,7 +236,7 @@ handleAction = case _ of
         pure { ctx, unsubscribeFromWags }
     H.modify_
       _
-        { unsubscribe =   unsubscribeFromWags
+        { unsubscribe = unsubscribeFromWags
         , audioCtx = Just ctx
         , canStopAudio = true
         , unsubscribeFromHalogen = Just unsubscribeFromHalogen
@@ -232,4 +246,4 @@ handleAction = case _ of
     H.liftEffect unsubscribe
     for_ unsubscribeFromHalogen H.unsubscribe
     for_ audioCtx (H.liftEffect <<< close)
-    H.modify_ _ { unsubscribe = pure unit, audioCtx = Nothing, audioStarted = false, canStopAudio = false }
+    H.modify_ _ { unsubscribe = pure unit, audioCtx = Nothing, audioStarted = false, canStopAudio = false, tick = Nothing, djqc = Nothing }
