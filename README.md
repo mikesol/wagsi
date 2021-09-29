@@ -1,6 +1,8 @@
 # WagsI
 
-Collaborative nteractive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
+> Looking for the tidal cycles branch of wagsi? [Click here](https://github.com/mikesol/wagsi/tree/tidal).
+
+Collaborative interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
 
 ## Jam sessions!
 
