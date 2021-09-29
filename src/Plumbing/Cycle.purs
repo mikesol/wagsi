@@ -69,13 +69,19 @@ reverse l = go l
     Internal { env, nel } -> go' Internal env nel
     SingleNote snnn -> SingleNote snnn
 
+cycleLength :: forall a. Cycle a -> Int
+cycleLength (Branching { nel }) = foldr (+) 0 (map cycleLength nel)
+cycleLength (Simultaneous { nel }) = foldr (+) 0 (map cycleLength nel)
+cycleLength (Internal { nel }) = foldr (+) 0 (map cycleLength nel)
+cycleLength (SingleNote _) = 1
+
 cycleToString :: Cycle (Maybe Note) -> String
 cycleToString = go
   where
   ws env = if env.weight >= 2.0 then "*" <> show (floor env.weight) else ""
   tg env = maybe "" (append ";") env.tag
   go (Branching { env, nel }) = "<" <> intercalate " " (map go nel) <> ">" <> ws env <> tg env
-  go (Simultaneous { env, nel }) = (intercalate " , "  (map go nel)) <> ws env <> tg env
+  go (Simultaneous { env, nel }) = (intercalate " , " (map go nel)) <> ws env <> tg env
   go (Internal { env, nel }) = "[" <> intercalate " " (map go nel) <> "]" <> ws env <> tg env
   go (SingleNote { env, val }) = (maybe "~" (S.sampleToString <<< _.sample <<< unwrap) val) <> ws env <> tg env
 

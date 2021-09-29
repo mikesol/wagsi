@@ -15,6 +15,7 @@ import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console as Log
+import Effect.Ref as Ref
 import FRP.Behavior (Behavior)
 import FRP.Event (Event, EventIO, create, subscribe)
 import FRP.Event as E
@@ -33,7 +34,7 @@ import WAGS.Interpret (close, context, defaultFFIAudio, makePeriodicWave, makeUn
 import WAGS.Lib.Learn (FullSceneBuilder(..))
 import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserPeriodicWave)
-import WAGSI.Plumbing.Cycle (cycleToString)
+import WAGSI.Plumbing.Cycle (cycleLength, cycleToString)
 import WAGSI.Plumbing.Samples (Samples)
 import WAGSI.Plumbing.Tidal (TheFuture(..), djQuickCheck, openVoice, tidal)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
@@ -188,6 +189,7 @@ handleAction = case _ of
       (hush tw)
   StartAudio -> do
     handleAction StopAudio
+    nextCycleEnds <- H.liftEffect $ Ref.new 0
     H.modify_ _ { audioStarted = true, canStopAudio = false }
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
@@ -216,13 +218,16 @@ handleAction = case _ of
               (-2) -> HS.notify listener (Tick 2)
               (-1) -> HS.notify listener (Tick 1)
               ck -> do
-                let mod20 = ck `mod` 20
-                HS.notify listener (Tick (20 - mod20))
-                when (mod20 == 0) do
+                --let mod20 = ck `mod` 20
+                nce <- Ref.read nextCycleEnds
+                when (ck >= nce) do
                   seed <- randomSeed
                   let goDJ = evalGen djQuickCheck { newSeed: seed, size: 10 }
                   HS.notify listener (DJQC $ cycleToString goDJ.cycle)
                   theFuture.push goDJ.future
+                  Ref.write (if cycleLength goDJ.cycle < 6 then ck + 6 else ck + 20) nextCycleEnds
+                nce2 <- Ref.read nextCycleEnds
+                HS.notify listener (Tick (nce2 - ck))
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
         unsubscribeFromWags <-
           H.liftEffect do
