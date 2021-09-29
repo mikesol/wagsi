@@ -25,6 +25,7 @@ Practice makes perfect! To try WagsI tidal out:
 
 1. Clone this repo.
 2. Open this repo with VSCode. Make sure the PureScript IDE extension is installed.
+3. Checkout the `tidal` branch: `git checkout tidal`.
 3. Run `npm install && npm start`.
 4. Navigate to `localhost:8080` in Chrome or Firefox and click on **Start Audio**.
 5. In VSCode, open `src/LiveCodeHere/Wagged.purs`. Start editing & save the file to render. You should hear some beats! If not, file an issue on this repo.
@@ -49,7 +50,7 @@ wag :: TheFuture
 wag = make 1.0 { earth: s "" }
 ```
 
-The record has three channels to make music on - `earth`, `wind`, and `fire`. You can use all of them or none of them. `plainly` means that we're not adding any effects, and `parse` will parse a string of mini-notation and fail on silence.
+The record has three channels to make music on - `earth`, `wind`, and `fire`. You can use all of them or none of them.
 
 ## Mini-notation
 
