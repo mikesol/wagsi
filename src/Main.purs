@@ -35,7 +35,7 @@ import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserPeriodicWave)
 import WAGSI.Plumbing.Cycle (cycleLength, cycleToString)
 import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards)
-import WAGSI.Plumbing.Example (example, hasOrLacks)
+import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Samples (Samples)
 import WAGSI.Plumbing.Tidal (TheFuture(..), djQuickCheck, openVoice, tidal)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
@@ -97,7 +97,7 @@ initialState _ =
   , tick: Nothing
   , djqc: Nothing
   , hasOrLacks: case wagsiMode of
-      Example -> hasOrLacks
+      Example -> Example.hasOrLacks
       _ -> Nothing
   , unsubscribeFromHalogen: Nothing
   , doingGraphRendering: false
@@ -133,7 +133,7 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRenderin
                         [ HH.text $ case wagsiMode of
                             LiveCoding -> "wagsi - The Tidal Cycles jam"
                             DJQuickCheck -> "d j q u i c k c h e c k"
-                            Example -> "Example"
+                            Example -> Example.title
                         ]
                     ]
                       <>
@@ -247,7 +247,7 @@ handleAction = case _ of
                 HS.notify listener GraphRenderingDone
                 HS.notify listener (Tick $ Just 1)
                 theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
-              0 -> HS.notify listener (Tick $ Nothing) *> theFuture.push example
+              0 -> HS.notify listener (Tick $ Nothing) *> theFuture.push Example.example
               _ -> pure unit
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
           DJQuickCheck -> do
