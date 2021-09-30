@@ -49,6 +49,7 @@ module WAGSI.Plumbing.Tidal
   , lns
   , lnr
   , lnbo
+  , lnf
   , lnv
   , lcw
   ---
@@ -61,7 +62,7 @@ module WAGSI.Plumbing.Tidal
   , unrest
   , EWF'
   , EWF
-  , CycleLength(..)
+  , CycleDuration(..)
   , NoteInTime(..)
   , NoteInFlattenedTime(..)
   , Voice(..)
@@ -130,6 +131,7 @@ import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (speaker, gain, playBuf)
 import WAGS.Graph.AudioUnit (OnOff(..))
 import WAGS.Graph.Parameter (ff)
+import WAGS.Interpret (bufferDuration)
 import WAGS.Lib.BufferPool (AScoredBufferPool, Buffy(..), CfScoredBufferPool, makeScoredBufferPool)
 import WAGS.Lib.Cofree (tails)
 import WAGS.Lib.Learn (FullSceneBuilder, usingc)
@@ -153,8 +155,8 @@ type RBuf
   , bufferOffsetFoT :: FoT
   , volumeFoT :: FoT
   , cycleStartsAt :: Number
-  , bigCycleLength :: Number
-  , littleCycleLength :: Number
+  , bigCycleDuration :: Number
+  , littleCycleDuration :: Number
   , currentCycle :: Int
   , bigStartsAt :: Number
   , littleStartsAt :: Number
@@ -196,27 +198,27 @@ unFuture (TheFuture ewf) = ewf
 
 make
   :: forall inRec overfull rest
-   . Union inRec (EWF (CycleLength -> Voice)) overfull
-  => Nub overfull (EWF' (CycleLength -> Voice) rest)
+   . Union inRec (EWF (CycleDuration -> Voice)) overfull
+  => Nub overfull (EWF' (CycleDuration -> Voice) rest)
   => Number
   -> { | inRec }
   -> TheFuture
 
 make cl rr = TheFuture $ hmapWithIndex (ZipProps z)
-  ( hmap (\(_ :: (CycleLength -> Voice)) -> (wrap cl))
+  ( hmap (\(_ :: (CycleDuration -> Voice)) -> (wrap cl))
       { earth: z.earth
       , wind: z.wind
       , fire: z.fire
       }
   )
   where
-  z = Record.merge rr openVoices :: { | EWF' (CycleLength -> Voice) rest }
+  z = Record.merge rr openVoices :: { | EWF' (CycleDuration -> Voice) rest }
 
 plainly :: forall f. Functor f => f NextCycle -> f Voice
 plainly = map (Voice <<< { globals: Globals { gain: const 1.0 }, next: _ })
 
 class S s where
-  s :: s -> CycleLength -> Voice
+  s :: s -> CycleDuration -> Voice
 
 instance sString :: S String where
   s = plainly <<< parseInternal
@@ -227,39 +229,39 @@ instance sCycle :: S (Cycle (Maybe Note)) where
 instance sNit :: S (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) where
   s = plainly <<< pure <<< rendNit
 
-instance sNitFT :: S (CycleLength -> (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))))) where
+instance sNitFT :: S (CycleDuration -> (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))))) where
   s = plainly <<< map rendNit
 
 instance sNift :: S (NonEmptyList (NoteInFlattenedTime Note)) where
   s = plainly <<< pure <<< asScore false
 
-instance sNiftFT :: S (CycleLength -> (NonEmptyList (NoteInFlattenedTime Note))) where
+instance sNiftFT :: S (CycleDuration -> (NonEmptyList (NoteInFlattenedTime Note))) where
   s = plainly <<< map (asScore false)
 
 instance sNextCycle :: S NextCycle where
   s = plainly <<< pure
 
-instance sNextCycleFT :: S (CycleLength -> NextCycle) where
+instance sNextCycleFT :: S (CycleDuration -> NextCycle) where
   s = plainly
 
 instance sVoice :: S Voice where
   s = const
 
-instance sVoiceFT :: S (CycleLength -> Voice) where
+instance sVoiceFT :: S (CycleDuration -> Voice) where
   s = identity
 
 --- @@ ---
-newtype CycleLength = CycleLength Number
+newtype CycleDuration = CycleDuration Number
 
-derive instance newtypeCycleLength :: Newtype CycleLength _
-derive instance eqCycleLength :: Eq CycleLength
-derive instance ordCycleLength :: Ord CycleLength
+derive instance newtypeCycleDuration :: Newtype CycleDuration _
+derive instance eqCycleDuration :: Eq CycleDuration
+derive instance ordCycleDuration :: Ord CycleDuration
 
 newtype NoteInTime note = NoteInTime
   { note :: note
   , startsAt :: Number
   , duration :: Number
-  , cycleLength :: Number
+  , cycleDuration :: Number
   , tag :: Maybe String
   }
 
@@ -281,8 +283,8 @@ newtype NoteInFlattenedTime note = NoteInFlattenedTime
   , elementsInCycle :: Int
   , nCycles :: Int
   , duration :: Number
-  , bigCycleLength :: Number
-  , littleCycleLength :: Number
+  , bigCycleDuration :: Number
+  , littleCycleDuration :: Number
   , tag :: Maybe String
   }
 
@@ -337,6 +339,9 @@ lnr = unto Note <<< prop (Proxy :: _ "rateFoT")
 
 lnbo :: Lens' Note FoT
 lnbo = unto Note <<< prop (Proxy :: _ "bufferOffsetFoT")
+
+lnf :: Lens' Note Boolean
+lnf = unto Note <<< prop (Proxy :: _ "forward")
 
 lnv :: Lens' Note FoT
 lnv = unto Note <<< prop (Proxy :: _ "volumeFoT")
@@ -584,8 +589,8 @@ onTag = onTags <<< Set.member
 onTag' :: forall a. String -> (a -> a) -> Cycle a -> Cycle a
 onTag' = onTags' <<< Set.member
 
-cycleToSequence :: CycleLength -> Cycle (Maybe Note) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
-cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength, currentOffset: 0.0 }
+cycleToSequence :: CycleDuration -> Cycle (Maybe Note) -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
+cycleToSequence (CycleDuration cycleDuration) = go { currentSubdivision: cycleDuration, currentOffset: 0.0 }
   where
   go state (Branching { nel }) = join $ map (go state) nel
   go state (Simultaneous { nel }) = map (sortBy (compare `on` (unwrap >>> _.startsAt)))
@@ -596,7 +601,7 @@ cycleToSequence (CycleLength cycleLength) = go { currentSubdivision: cycleLength
     { duration: state.currentSubdivision
     , startsAt: state.currentOffset
     , note: val
-    , cycleLength
+    , cycleDuration
     , tag
     }
   seq state nel =
@@ -625,8 +630,8 @@ unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
   where
   go =
     filterMap
-      ( \(NoteInTime { startsAt, duration, cycleLength, tag, note }) ->
-          NoteInTime <<< { startsAt, duration, cycleLength, tag, note: _ } <$> note
+      ( \(NoteInTime { startsAt, duration, cycleDuration, tag, note }) ->
+          NoteInTime <<< { startsAt, duration, cycleDuration, tag, note: _ } <$> note
       ) <<< NEL.toList
 
 asScore :: Boolean -> NonEmptyList (NoteInFlattenedTime Note) -> NextCycle
@@ -649,8 +654,8 @@ asScore force flattened = NextCycle { force, func: scoreInput }
           , rateFoT: (unwrap aa.note).rateFoT
           , bufferOffsetFoT: (unwrap aa.note).bufferOffsetFoT
           , volumeFoT: (unwrap aa.note).volumeFoT
-          , bigCycleLength: aa.bigCycleLength
-          , littleCycleLength: aa.littleCycleLength
+          , bigCycleDuration: aa.bigCycleDuration
+          , littleCycleDuration: aa.littleCycleDuration
           , currentCycle: aa.currentCycle
           , bigStartsAt: aa.bigStartsAt
           , littleStartsAt: aa.littleStartsAt
@@ -661,14 +666,14 @@ asScore force flattened = NextCycle { force, func: scoreInput }
           case bb of
             Nil -> nc.func
               { currentCount: st
-              , prevCycleEnded: prevCycleEnded + aa.bigCycleLength
+              , prevCycleEnded: prevCycleEnded + aa.bigCycleDuration
               , time
               , headroomInSeconds
               }
             cc : dd ->
               if nc.force && aa.positionInCycle == aa.elementsInCycle - 1 then nc.func
                 { currentCount: st
-                , prevCycleEnded: prevCycleEnded + aa.littleCycleLength * toNumber (aa.currentCycle + 1)
+                , prevCycleEnded: prevCycleEnded + aa.littleCycleDuration * toNumber (aa.currentCycle + 1)
                 , time
                 , headroomInSeconds
                 }
@@ -680,17 +685,17 @@ flattenScore l = flattened
   ll = NEL.length l
   flattened = join $ mapWithIndex
     ( \ii -> mapWithIndex
-        ( \jj (NoteInTime { note, duration, startsAt, cycleLength, tag }) -> NoteInFlattenedTime
+        ( \jj (NoteInTime { note, duration, startsAt, cycleDuration, tag }) -> NoteInFlattenedTime
             { note
             , duration
-            , bigStartsAt: startsAt + cycleLength * toNumber ii
+            , bigStartsAt: startsAt + cycleDuration * toNumber ii
             , currentCycle: ii
             , elementsInCycle: NEL.length (NEL.head l)
             , nCycles: NEL.length l
             , positionInCycle: jj
             , littleStartsAt: startsAt
-            , littleCycleLength: cycleLength
-            , bigCycleLength: cycleLength * toNumber ll
+            , littleCycleDuration: cycleDuration
+            , bigCycleDuration: cycleDuration * toNumber ll
             , tag
             }
         )
@@ -733,7 +738,7 @@ openVoice = Voice
   , next: asScore false (pure intentionalSilenceForInternalUseOnly)
   }
 
-openVoices :: { | EWF (CycleLength -> Voice) }
+openVoices :: { | EWF (CycleDuration -> Voice) }
 openVoices = hmap (\(_ :: Unit) -> (const $ openVoice)) (mempty :: { | EWF Unit })
 
 openFuture :: TheFuture
@@ -784,15 +789,15 @@ intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
   , nCycles: 1
   , positionInCycle: 0
   , currentCycle: 0
-  , bigCycleLength: 0.25
-  , littleCycleLength: 0.25
+  , bigCycleDuration: 0.25
+  , littleCycleDuration: 0.25
   , tag: Nothing
   }
 
 parse :: String -> Cycle (Maybe Note)
 parse = fromMaybe intentionalSilenceForInternalUseOnly_ <<< hush <<< runParser cycleP
 
-parseInternal :: String -> CycleLength -> NextCycle
+parseInternal :: String -> CycleDuration -> NextCycle
 parseInternal str dur = asScore false
   $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
   $ join
@@ -805,7 +810,7 @@ parseInternal str dur = asScore false
   $ hush
   $ runParser cycleP str
 
-rend :: Cycle (Maybe Note) -> CycleLength -> NextCycle
+rend :: Cycle (Maybe Note) -> CycleDuration -> NextCycle
 rend cyn dur = asScore false
   $ maybe (pure intentionalSilenceForInternalUseOnly) flattenScore
   $ NEL.fromList
@@ -818,7 +823,7 @@ rend cyn dur = asScore false
 rendNit :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> NextCycle
 rendNit = asScore false <<< s2f
 
-c2s :: Cycle (Maybe Note) -> CycleLength -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
+c2s :: Cycle (Maybe Note) -> CycleDuration -> NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))
 c2s = flip cycleToSequence
 
 s2f :: NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))) -> NonEmptyList (NoteInFlattenedTime Note)
@@ -937,7 +942,7 @@ genVoice vol = do
   let globals = Globals { gain: const $ vol }
   cycle <- genCycle
   cl' <- arbitrary
-  let cl = CycleLength (1.0 + 3.0 * cl')
+  let cl = CycleDuration (1.0 + 3.0 * cl')
   let next = asScore false $ s2f $ c2s cycle cl
   pure $ { cycle, voice: Voice { globals, next } }
 
@@ -1008,15 +1013,16 @@ tidal hasOrLacks = usingc
                                   , duration
                                   , cycleStartsAt
                                   , currentCycle
-                                  , littleCycleLength
-                                  , bigCycleLength
+                                  , littleCycleDuration
+                                  , bigCycleDuration
                                   }
                               }
                           ) ->
                           let
                             sampleTime = time - startTime
                             bigCycleTime = time - cycleStartsAt
-                            littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleLength))
+                            littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
+                            buf = sampleF silence buffers
                             thisIsTime =
                               { sampleTime
                               , bigCycleTime
@@ -1024,8 +1030,11 @@ tidal hasOrLacks = usingc
                               , clockTime: time
                               , normalizedClockTime: 0.0 -- cuz it's infinite :-P
                               , normalizedSampleTime: sampleTime / duration
-                              , normalizedBigCycleTime: bigCycleTime / bigCycleLength
-                              , normalizedLittleCycleTime: littleCycleTime / littleCycleLength
+                              , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
+                              , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
+                              , littleCycleDuration
+                              , bigCycleDuration
+                              , bufferDuration: bufferDuration buf
                               }
                             vol = ff globalFF $ pure $ volumeFoT thisIsTime
                           in
@@ -1048,7 +1057,7 @@ tidal hasOrLacks = usingc
                                   , bufferOffset: bufferOffsetFoT thisIsTime
                                   , playbackRate: ff globalFF $ pure $ rateFoT thisIsTime
                                   }
-                                  (sampleF silence buffers)
+                                  buf
                               )
                         Nothing -> gain 0.0 (playBuf { onOff: Off } silence)
                     )

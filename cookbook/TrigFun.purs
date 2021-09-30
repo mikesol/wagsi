@@ -17,7 +17,7 @@ wag = make 2.0
   { earth: s
       $ map
           ( over (traversed <<< unto NoteInFlattenedTime)
-              (\i -> i { bigStartsAt = trigfun (i.bigStartsAt / i.bigCycleLength) * i.bigCycleLength }) <<< s2f
+              (\i -> i { bigStartsAt = trigfun (i.bigStartsAt / i.bigCycleDuration) * i.bigCycleDuration }) <<< s2f
           )
       $ c2s
       $ parse " bass:3 blip*4 "

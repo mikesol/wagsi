@@ -35,7 +35,7 @@ import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserPeriodicWave)
 import WAGSI.Plumbing.Cycle (cycleLength, cycleToString)
 import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards)
-import WAGSI.Plumbing.Example (example)
+import WAGSI.Plumbing.Example (example, hasOrLacks)
 import WAGSI.Plumbing.Samples (Samples)
 import WAGSI.Plumbing.Tidal (TheFuture(..), djQuickCheck, openVoice, tidal)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
@@ -94,7 +94,9 @@ initialState _ =
   , triggerWorld: Nothing
   , tick: Nothing
   , djqc: Nothing
-  , hasOrLacks: Nothing
+  , hasOrLacks: case wagsiMode of
+      Example -> hasOrLacks
+      _ -> Nothing
   , unsubscribeFromHalogen: Nothing
   }
 
@@ -192,8 +194,8 @@ handleAction = case _ of
     H.modify_ _ { djqc = Just djqc }
   Initialize -> do
     ctx <- H.liftEffect context
-    { hasOrLacks } <- H.get
-    let FullSceneBuilder { triggerWorld } = tidal hasOrLacks
+    state <- H.get
+    let FullSceneBuilder { triggerWorld } = tidal state.hasOrLacks
     tw <- H.liftAff $ try (snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {})))
     maybe (H.modify_ _ { loadingHack = Failed })
       (\triggerWorld -> H.modify_ _ { triggerWorld = Just triggerWorld, loadingHack = Loaded })
@@ -205,14 +207,14 @@ handleAction = case _ of
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
     tw <- H.gets _.triggerWorld
-    { hasOrLacks } <- H.get
+    state <- H.get
     { ctx, unsubscribeFromWags } <-
       H.liftAff do
         ctx <- H.liftEffect context
         unitCache <- H.liftEffect makeUnitCache
         let
           ffiAudio = defaultFFIAudio ctx unitCache
-        let FullSceneBuilder { triggerWorld, piece } = tidal hasOrLacks
+        let FullSceneBuilder { triggerWorld, piece } = tidal state.hasOrLacks
         trigger' /\ world <- case tw of
           Nothing -> do
             snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))

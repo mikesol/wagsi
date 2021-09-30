@@ -24,11 +24,13 @@
   "scripts": {
     "postinstall": "spago install && spago build",
     "start": "spago install && spago build && webpack serve --mode=development",
+    "start:example": "spago install && spago build && WAGSI_MODE=example webpack serve --mode=development",
     "start:djqc": "spago install && spago build && WAGSI_MODE=djqc webpack serve --mode=development",
     "start:gitpod": "webpack serve --mode=development --public \"$(gp url 8080 | sed 's+https://++'):443\"",
     "start:codespaces": "webpack serve --mode=development --public \"$npm_package_codespacesPublicUrl\"",
     "build": "webpack",
     "build:djqc": "WAGSI_MODE=djqc webpack",
+    "build:example": "WAGSI_MODE=example webpack",
     "test": "spago -x test.dhall test && python readme.py && spago -x cookbook.dhall build"
   }
 }

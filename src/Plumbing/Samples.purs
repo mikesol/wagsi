@@ -6106,6 +6106,9 @@ type FoT =
   , normalizedSampleTime :: Number
   , normalizedBigCycleTime :: Number
   , normalizedLittleCycleTime :: Number
+  , littleCycleDuration :: Number
+  , bigCycleDuration :: Number
+  , bufferDuration :: Number
   }
   -> Number
 
