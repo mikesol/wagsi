@@ -86,7 +86,18 @@ cycleToString = go
   go (SingleNote { env, val }) = (maybe "~" (S.sampleToString <<< _.sample <<< unwrap) val) <> ws env <> tg env
 
 noteFromSample' :: Number -> Sample -> Cycle (Maybe Note)
-noteFromSample' weight sample = SingleNote { env: { weight, tag: Nothing }, val: Just (Note { sample, rateFoT: const 1.0, volumeFoT: const 1.0 }) }
+noteFromSample' weight sample = SingleNote
+  { env: { weight, tag: Nothing }
+  , val: Just
+      ( Note
+          { sample
+          , rateFoT: const 1.0
+          , volumeFoT: const 1.0
+          , bufferOffsetFoT: const 0.0
+          , forward: true
+          }
+      )
+  }
 
 noteFromSample :: Sample -> Cycle (Maybe Note)
 noteFromSample = noteFromSample' 1.0

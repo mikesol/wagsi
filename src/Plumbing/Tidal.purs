@@ -48,6 +48,7 @@ module WAGSI.Plumbing.Tidal
   , ltt
   , lns
   , lnr
+  , lnbo
   , lnv
   , lcw
   ---
@@ -138,7 +139,7 @@ import WAGS.Run (SceneI(..))
 import WAGS.Template (fromTemplate)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
-import WAGSI.Plumbing.Download (downloadFiles)
+import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards, downloadFiles', downloadSilence)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
 import WAGSI.Plumbing.Samples (FoT, Note(..), Sample)
 import WAGSI.Plumbing.Samples as S
@@ -147,8 +148,9 @@ import WAGSI.Plumbing.Samples as S
 
 type RBuf
   =
-  { sampleF :: { | S.Samples BrowserAudioBuffer } -> BrowserAudioBuffer
+  { sampleF :: BrowserAudioBuffer -> { | S.Samples (Maybe ForwardBackwards) } -> BrowserAudioBuffer
   , rateFoT :: FoT
+  , bufferOffsetFoT :: FoT
   , volumeFoT :: FoT
   , cycleStartsAt :: Number
   , bigCycleLength :: Number
@@ -332,6 +334,9 @@ lns = unto Note <<< prop (Proxy :: _ "sample")
 
 lnr :: Lens' Note FoT
 lnr = unto Note <<< prop (Proxy :: _ "rateFoT")
+
+lnbo :: Lens' Note FoT
+lnbo = unto Note <<< prop (Proxy :: _ "bufferOffsetFoT")
 
 lnv :: Lens' Note FoT
 lnv = unto Note <<< prop (Proxy :: _ "volumeFoT")
@@ -634,9 +639,15 @@ asScore force flattened = NextCycle { force, func: scoreInput }
     in
       { startsAfter: st - currentCount
       , rest:
-          { sampleF: S.sampleToBuffers (unwrap aa.note).sample
+          { sampleF: \silence ->
+              let
+                unw = unwrap aa.note
+              in
+                maybe silence
+                  (if unw.forward then _.forward else _.backwards) <<< S.sampleToBuffers unw.sample
           , cycleStartsAt: prevCycleEnded
           , rateFoT: (unwrap aa.note).rateFoT
+          , bufferOffsetFoT: (unwrap aa.note).bufferOffsetFoT
           , volumeFoT: (unwrap aa.note).volumeFoT
           , bigCycleLength: aa.bigCycleLength
           , littleCycleLength: aa.littleCycleLength
@@ -762,7 +773,9 @@ intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
   { note: Note
       { sample: S.intentionalSilenceForInternalUseOnly__Sample
       , rateFoT: const 1.0
+      , forward: true
       , volumeFoT: const 1.0
+      , bufferOffsetFoT: const 0.0
       }
   , bigStartsAt: 0.0
   , littleStartsAt: 0.0
@@ -829,6 +842,8 @@ genSingleNote =
   SingleNote <<< { env: { weight: 1.0, tag: Nothing }, val: _ } <<< Just <<< Note <<<
     { rateFoT: const 1.0
     , volumeFoT: const 1.0
+    , forward: true
+    , bufferOffsetFoT: const 0.0
     , sample: _
     } <$> genSingleSample
 
@@ -947,11 +962,17 @@ instance zipProps ::
 futureMaker :: { | EWF (CfScoredBufferPool Next NBuf RBuf -> Globals -> { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }) }
 futureMaker = hmap (\(_ :: Unit) -> { future: _, globals: _ } :: CfScoredBufferPool Next NBuf RBuf -> Globals -> { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }) (mempty :: { | EWF Unit })
 
-tidal :: FullSceneBuilder (theFuture :: TheFuture) (buffers :: { | S.Samples BrowserAudioBuffer }) Unit
-tidal = usingc
-  (thePresent wag <<< downloadFiles)
+tidal
+  :: Maybe HasOrLacks
+  -> FullSceneBuilder (theFuture :: TheFuture)
+       ( buffers :: { | S.Samples (Maybe ForwardBackwards) }
+       , silence :: BrowserAudioBuffer
+       )
+       Unit
+tidal hasOrLacks = usingc
+  (thePresent wag <<< downloadFiles' hasOrLacks <<< downloadSilence)
   acc
-  \(SceneI { time, headroomInSeconds, trigger, world: { buffers } }) control ->
+  \(SceneI { time, headroomInSeconds, trigger, world: { buffers, silence } }) control ->
     let
       theFuture = maybe control.backToTheFuture _.theFuture trigger
       toActualize = hmap
@@ -982,6 +1003,7 @@ tidal = usingc
                               , rest:
                                   { sampleF
                                   , rateFoT
+                                  , bufferOffsetFoT
                                   , volumeFoT
                                   , duration
                                   , cycleStartsAt
@@ -1023,11 +1045,12 @@ tidal = usingc
                                             ff (max 0.0 (startTime - time)) (pure OffOn)
                                           else
                                             pure On
+                                  , bufferOffset: bufferOffsetFoT thisIsTime
                                   , playbackRate: ff globalFF $ pure $ rateFoT thisIsTime
                                   }
-                                  (sampleF buffers)
+                                  (sampleF silence buffers)
                               )
-                        Nothing -> gain 0.0 (playBuf { onOff: Off } buffers.intentionalSilenceForInternalUseOnly)
+                        Nothing -> gain 0.0 (playBuf { onOff: Off } silence)
                     )
               )
           )

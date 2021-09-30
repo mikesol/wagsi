@@ -14,7 +14,6 @@ import Data.Vec as V
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Effect.Class.Console as Log
 import Effect.Ref as Ref
 import FRP.Behavior (Behavior)
 import FRP.Event (Event, EventIO, create, subscribe)
@@ -35,6 +34,8 @@ import WAGS.Lib.Learn (FullSceneBuilder(..))
 import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserPeriodicWave)
 import WAGSI.Plumbing.Cycle (cycleLength, cycleToString)
+import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards)
+import WAGSI.Plumbing.Example (example)
 import WAGSI.Plumbing.Samples (Samples)
 import WAGSI.Plumbing.Tidal (TheFuture(..), djQuickCheck, openVoice, tidal)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
@@ -55,7 +56,14 @@ type State
   , audioCtx :: Maybe AudioContext
   , audioStarted :: Boolean
   , canStopAudio :: Boolean
-  , triggerWorld :: Maybe (Event { theFuture :: TheFuture } /\ Behavior { buffers :: { | Samples BrowserAudioBuffer } })
+  , triggerWorld ::
+      Maybe
+        ( Event { theFuture :: TheFuture } /\ Behavior
+            { buffers :: { | Samples (Maybe ForwardBackwards) }
+            , silence :: BrowserAudioBuffer
+            }
+        )
+  , hasOrLacks :: Maybe (HasOrLacks)
   , loadingHack :: LoadingHack
   , djqc :: Maybe String
   , tick :: Maybe Int
@@ -86,6 +94,7 @@ initialState _ =
   , triggerWorld: Nothing
   , tick: Nothing
   , djqc: Nothing
+  , hasOrLacks: Nothing
   , unsubscribeFromHalogen: Nothing
   }
 
@@ -119,6 +128,7 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc } =
                         [ HH.text $ case wagsiMode of
                             LiveCoding -> "wagsi - The Tidal Cycles jam"
                             DJQuickCheck -> "d j q u i c k c h e c k"
+                            Example -> "Example"
                         ]
                     ]
                       <> maybe
@@ -182,7 +192,8 @@ handleAction = case _ of
     H.modify_ _ { djqc = Just djqc }
   Initialize -> do
     ctx <- H.liftEffect context
-    let FullSceneBuilder { triggerWorld } = tidal
+    { hasOrLacks } <- H.get
+    let FullSceneBuilder { triggerWorld } = tidal hasOrLacks
     tw <- H.liftAff $ try (snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {})))
     maybe (H.modify_ _ { loadingHack = Failed })
       (\triggerWorld -> H.modify_ _ { triggerWorld = Just triggerWorld, loadingHack = Loaded })
@@ -194,23 +205,40 @@ handleAction = case _ of
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
     tw <- H.gets _.triggerWorld
+    { hasOrLacks } <- H.get
     { ctx, unsubscribeFromWags } <-
       H.liftAff do
         ctx <- H.liftEffect context
         unitCache <- H.liftEffect makeUnitCache
         let
           ffiAudio = defaultFFIAudio ctx unitCache
-        let FullSceneBuilder { triggerWorld, piece } = tidal
+        let FullSceneBuilder { triggerWorld, piece } = tidal hasOrLacks
         trigger' /\ world <- case tw of
           Nothing -> do
             snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
           Just ttww -> pure ttww
         { trigger, unsub } <- case wagsiMode of
-          LiveCoding -> pure { trigger: trigger', unsub: pure unit }
+          LiveCoding -> H.liftEffect $ do
+            -- we prime the pump by pushing an empty future
+            theFuture :: EventIO TheFuture <- create
+            theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
+            unsub <- subscribe trigger' (theFuture.push <<< _.theFuture)
+            pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
+          Example -> do
+            let ivl = E.fold (const $ add 1) (interval 1000) (-4)
+            theFuture :: EventIO TheFuture <- H.liftEffect create
+            unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
+              (-3) -> do
+                HS.notify listener (Tick 3)
+                theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
+              (-2) -> HS.notify listener (Tick 2)
+              (-1) -> HS.notify listener (Tick 1)
+              0 -> theFuture.push example
+              _ -> pure unit
+            pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
           DJQuickCheck -> do
             let ivl = E.fold (const $ add 1) (interval 1000) (-4)
             theFuture :: EventIO TheFuture <- H.liftEffect create
-            Log.info "subbing"
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
               (-3) -> do
                 HS.notify listener (Tick 3)
@@ -218,7 +246,6 @@ handleAction = case _ of
               (-2) -> HS.notify listener (Tick 2)
               (-1) -> HS.notify listener (Tick 1)
               ck -> do
-                --let mod20 = ck `mod` 20
                 nce <- Ref.read nextCycleEnds
                 when (ck >= nce) do
                   seed <- randomSeed

@@ -6111,7 +6111,9 @@ type FoT =
 
 newtype Note = Note
   { sample :: Sample
+  , forward :: Boolean
   , rateFoT :: FoT
+  , bufferOffsetFoT :: FoT
   , volumeFoT :: FoT
   }
 
@@ -8157,7 +8159,16 @@ nameToSampleMO :: Object (Maybe Sample)
 nameToSampleMO = Object.union (map Just nameToSampleO) (Object.singleton "~" Nothing)
 
 nameToSampleMNO :: Object (Maybe Note)
-nameToSampleMNO = (map <<< map) (Note <<< { sample: _, rateFoT: const 1.0, volumeFoT: const 1.0 }) nameToSampleMO
+nameToSampleMNO = (map <<< map)
+  ( Note <<<
+      { sample: _
+      , bufferOffsetFoT: const 0.0
+      , rateFoT: const 1.0
+      , forward: true
+      , volumeFoT: const 1.0
+      }
+  )
+  nameToSampleMO
 
 nameToSample :: Array (String /\ Sample)
 nameToSample =
@@ -10409,10 +10420,12 @@ foreign import unsafeSampleGetter :: forall a. String -> SampleGetter a
 samplesToSampleGetter :: forall a. Array (Sample /\ SampleGetter a)
 samplesToSampleGetter = (map <<< map) unsafeSampleGetter samplesToString
 
-sampleToBuffers' :: Map Sample (SampleGetter BrowserAudioBuffer)
+type ForwardBackwards = { forward :: BrowserAudioBuffer, backwards :: BrowserAudioBuffer }
+
+sampleToBuffers' :: Map Sample (SampleGetter (Maybe ForwardBackwards))
 sampleToBuffers' = Map.fromFoldable samplesToSampleGetter
 
-sampleToBuffers :: Sample -> SampleGetter BrowserAudioBuffer
+sampleToBuffers :: Sample -> SampleGetter (Maybe ForwardBackwards)
 sampleToBuffers sampy = fromMaybe
   (unsafeSampleGetter "intentionalSilenceForInternalUseOnly")
   (Map.lookup sampy sampleToBuffers')

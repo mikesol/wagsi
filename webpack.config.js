@@ -8,7 +8,7 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
   },
-  plugins: [new webpack.EnvironmentPlugin(['WAGSI_MODE'])],
+  plugins: [new webpack.EnvironmentPlugin({ 'WAGSI_MODE': 'live' })],
   module: {
     rules: [
       {
