@@ -67,12 +67,14 @@ type State
   , loadingHack :: LoadingHack
   , djqc :: Maybe String
   , tick :: Maybe Int
+  , doingGraphRendering :: Boolean
   }
 
 data Action
   = Initialize
   | StartAudio
-  | Tick Int
+  | GraphRenderingDone
+  | Tick (Maybe Int)
   | DJQC String
   | StopAudio
 
@@ -98,6 +100,7 @@ initialState _ =
       Example -> hasOrLacks
       _ -> Nothing
   , unsubscribeFromHalogen: Nothing
+  , doingGraphRendering: false
   }
 
 data LoadingHack = Loading | Failed | Loaded
@@ -106,7 +109,7 @@ classes :: forall r p. Array String -> HP.IProp (class :: String | r) p
 classes = HP.classes <<< map H.ClassName
 
 render :: forall m. State -> H.ComponentHTML Action () m
-render { audioStarted, canStopAudio, loadingHack, tick, djqc } =
+render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRendering } =
   HH.div [ classes [ "w-screen", "h-screen" ] ]
     [ HH.div [ classes [ "flex", "flex-col", "w-full", "h-full" ] ]
         [ HH.div [ classes [ "flex-grow" ] ] [ HH.div_ [] ]
@@ -133,11 +136,18 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc } =
                             Example -> "Example"
                         ]
                     ]
+                      <>
+                        ( if doingGraphRendering then
+                            [ HH.p [ classes [ "text-center", "text-xxl" ] ]
+                                [ HH.text ("Setting phasers on stun (pre-rendering audio graphs)...") ]
+                            ]
+                          else []
+                        )
                       <> maybe
                         ( maybe []
                             ( \v ->
                                 [ HH.p [ classes [ "text-center", "text-xxl" ] ]
-                                    [ HH.text ("Starting in " <> show v) ]
+                                    [ HH.text ("Starting in " <> show v <> "s") ]
                                 ]
                             )
                             tick
@@ -189,9 +199,11 @@ easingAlgorithm =
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Tick tick -> do
-    H.modify_ _ { tick = Just tick }
+    H.modify_ _ { tick = tick }
   DJQC djqc -> do
     H.modify_ _ { djqc = Just djqc }
+  GraphRenderingDone -> do
+    H.modify_ _ { doingGraphRendering = false }
   Initialize -> do
     ctx <- H.liftEffect context
     state <- H.get
@@ -203,7 +215,7 @@ handleAction = case _ of
   StartAudio -> do
     handleAction StopAudio
     nextCycleEnds <- H.liftEffect $ Ref.new 0
-    H.modify_ _ { audioStarted = true, canStopAudio = false }
+    H.modify_ _ { audioStarted = true, canStopAudio = false, doingGraphRendering = true }
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
     tw <- H.gets _.triggerWorld
@@ -225,17 +237,17 @@ handleAction = case _ of
             theFuture :: EventIO TheFuture <- create
             theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
             unsub <- subscribe trigger' (theFuture.push <<< _.theFuture)
+            HS.notify listener GraphRenderingDone
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
           Example -> do
-            let ivl = E.fold (const $ add 1) (interval 1000) (-4)
+            let ivl = E.fold (const $ add 1) (interval 1000) (-2)
             theFuture :: EventIO TheFuture <- H.liftEffect create
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
-              (-3) -> do
-                HS.notify listener (Tick 3)
+              (-1) -> do
+                HS.notify listener GraphRenderingDone
+                HS.notify listener (Tick $ Just 1)
                 theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
-              (-2) -> HS.notify listener (Tick 2)
-              (-1) -> HS.notify listener (Tick 1)
-              0 -> theFuture.push example
+              0 -> HS.notify listener (Tick $ Nothing) *> theFuture.push example
               _ -> pure unit
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
           DJQuickCheck -> do
@@ -243,10 +255,11 @@ handleAction = case _ of
             theFuture :: EventIO TheFuture <- H.liftEffect create
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
               (-3) -> do
-                HS.notify listener (Tick 3)
+                HS.notify listener GraphRenderingDone
+                HS.notify listener (Tick $ Just 3)
                 theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
-              (-2) -> HS.notify listener (Tick 2)
-              (-1) -> HS.notify listener (Tick 1)
+              (-2) -> HS.notify listener (Tick $ Just 2)
+              (-1) -> HS.notify listener (Tick $ Just 1)
               ck -> do
                 nce <- Ref.read nextCycleEnds
                 when (ck >= nce) do
@@ -256,7 +269,7 @@ handleAction = case _ of
                   theFuture.push goDJ.future
                   Ref.write (if cycleLength goDJ.cycle < 6 then ck + 6 else ck + 20) nextCycleEnds
                 nce2 <- Ref.read nextCycleEnds
-                HS.notify listener (Tick (nce2 - ck))
+                HS.notify listener (Tick $ Just (nce2 - ck))
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
         unsubscribeFromWags <-
           H.liftEffect do
