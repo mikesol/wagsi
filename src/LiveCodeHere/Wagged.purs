@@ -4,4 +4,4 @@ import WAGSI.Plumbing.Types (TheFuture)
 import WAGSI.Plumbing.Tidal (make, s)
 
 wag :: TheFuture
-wag = make 1.0 { earth: s " bassdm oc hh chin*4 , ~ psr " }
+wag = make 1.0 { earth: s "" }
