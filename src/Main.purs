@@ -6,7 +6,8 @@ import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Monad.Error.Class (try)
 import Data.Either (hush)
 import Data.Foldable (for_)
-import Data.Maybe (Maybe(..), maybe)
+import Control.Alt ((<|>))
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Pos)
@@ -19,6 +20,7 @@ import FRP.Behavior (Behavior)
 import FRP.Event (Event, EventIO, create, subscribe)
 import FRP.Event as E
 import FRP.Event.Time (interval)
+import Foreign (Foreign)
 import Halogen (SubscriptionId)
 import Halogen as H
 import Halogen.Aff (awaitBody, runHalogenAff)
@@ -35,11 +37,11 @@ import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserPeriodicWave)
 import WAGSI.Plumbing.Cycle (cycleLength, cycleToString)
 import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards)
+import WAGSI.Plumbing.Engine (engine)
 import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Samples (Samples)
+import WAGSI.Plumbing.Tidal (djQuickCheck, openVoice, src)
 import WAGSI.Plumbing.Types (TheFuture(..))
-import WAGSI.Plumbing.Tidal (djQuickCheck, openVoice)
-import WAGSI.Plumbing.Engine (engine)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
 
 main :: Effect Unit
@@ -58,6 +60,7 @@ type State
   , audioCtx :: Maybe AudioContext
   , audioStarted :: Boolean
   , canStopAudio :: Boolean
+  , srcCode :: Maybe String
   , triggerWorld ::
       Maybe
         ( Event { theFuture :: TheFuture } /\ Behavior
@@ -77,6 +80,7 @@ data Action
   | StartAudio
   | GraphRenderingDone
   | Tick (Maybe Int)
+  | Src (Maybe String)
   | DJQC String
   | StopAudio
 
@@ -98,6 +102,7 @@ initialState _ =
   , triggerWorld: Nothing
   , tick: Nothing
   , djqc: Nothing
+  , srcCode: Nothing
   , hasOrLacks: case wagsiMode of
       Example -> Example.hasOrLacks
       _ -> Nothing
@@ -111,7 +116,7 @@ classes :: forall r p. Array String -> HP.IProp (class :: String | r) p
 classes = HP.classes <<< map H.ClassName
 
 render :: forall m. State -> H.ComponentHTML Action () m
-render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRendering } =
+render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRendering, srcCode } =
   HH.div [ classes [ "w-screen", "h-screen" ] ]
     [ HH.div [ classes [ "flex", "flex-col", "w-full", "h-full" ] ]
         [ HH.div [ classes [ "flex-grow" ] ] [ HH.div_ [] ]
@@ -174,6 +179,20 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRenderin
                               ([ classes [ "text-2xl", "m-5", "bg-pink-500", "p-3", "rounded-lg", "text-white", "hover:bg-pink-400" ] ] <> if canStopAudio then [ HE.onClick \_ -> StopAudio ] else [])
                               [ HH.text "Stop audio" ]
                         ]
+                      <>
+                        ( case wagsiMode of
+                            LiveCoding -> maybe []
+                              ( \scd ->
+                                  [ HH.pre_
+                                      [ HH.code
+                                          [ classes [ "language-purescript" ] ]
+                                          [ HH.text scd ]
+                                      ]
+                                  ]
+                              )
+                              srcCode
+                            _ -> []
+                        )
             , HH.div [ classes [ "flex-grow" ] ] []
             ]
         , HH.div [ classes [ "flex-grow" ] ] []
@@ -198,10 +217,15 @@ easingAlgorithm =
   in
     fOf 15
 
+emptyFuture :: TheFuture
+emptyFuture = TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
+
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Tick tick -> do
     H.modify_ _ { tick = tick }
+  Src srcCode -> do
+    H.modify_ _ { srcCode = srcCode }
   DJQC djqc -> do
     H.modify_ _ { djqc = Just djqc }
   GraphRenderingDone -> do
@@ -237,10 +261,17 @@ handleAction = case _ of
           LiveCoding -> H.liftEffect $ do
             -- we prime the pump by pushing an empty future
             theFuture :: EventIO TheFuture <- create
-            theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
-            unsub <- subscribe trigger' (theFuture.push <<< _.theFuture)
+            cachedSrc Nothing Just >>= flip for_ (HS.notify listener <<< Src <<< Just)
+            unsub0 <- subscribe trigger' (theFuture.push <<< _.theFuture)
+            unsub1 <- subscribe src (HS.notify listener <<< Src <<< Just)
             HS.notify listener GraphRenderingDone
-            pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
+            pure
+              { trigger: { theFuture: _ } <$> theFuture.event
+              , unsub: do
+                  _ <- unsub0
+                  _ <- unsub1
+                  pure unit
+              }
           Example -> do
             let ivl = E.fold (const $ add 1) (interval 1000) (-2)
             theFuture :: EventIO TheFuture <- H.liftEffect create
@@ -273,10 +304,20 @@ handleAction = case _ of
                 nce2 <- Ref.read nextCycleEnds
                 HS.notify listener (Tick $ Just (nce2 - ck))
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
+        primePump <- fromMaybe emptyFuture <$> (H.liftEffect $ cachedWag Nothing Just)
         unsubscribeFromWags <-
           H.liftEffect do
             usu <- subscribe
-              (run trigger world { easingAlgorithm } ffiAudio piece)
+              ( run
+                  ( case wagsiMode of
+                      LiveCoding -> trigger <|> pure { theFuture: primePump }
+                      _ -> trigger <|> pure { theFuture: emptyFuture }
+                  )
+                  world
+                  { easingAlgorithm }
+                  ffiAudio
+                  piece
+              )
               (\(_ :: Run Unit ()) -> pure unit) -- (Log.info <<< show)
             pure $ do
               _ <- usu
@@ -295,4 +336,9 @@ handleAction = case _ of
     H.liftEffect unsubscribe
     for_ unsubscribeFromHalogen H.unsubscribe
     for_ audioCtx (H.liftEffect <<< close)
-    H.modify_ _ { unsubscribe = pure unit, audioCtx = Nothing, audioStarted = false, canStopAudio = false, tick = Nothing, djqc = Nothing }
+    H.modify_ _ { unsubscribe = pure unit, audioCtx = Nothing, audioStarted = false, canStopAudio = false, tick = Nothing, djqc = Nothing, srcCode = Nothing }
+
+foreign import cachedWag :: Maybe TheFuture -> (TheFuture -> Maybe TheFuture) -> Effect (Maybe TheFuture)
+foreign import storeWag :: Foreign
+foreign import cachedSrc :: Maybe String -> (String -> Maybe String) -> Effect (Maybe String)
+foreign import storeSrc :: Foreign
