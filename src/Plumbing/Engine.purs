@@ -46,7 +46,7 @@ acc =
 internal0 :: SubSceneSig "singleton" ()
   { buf :: Maybe (Buffy RBuf)
   , silence :: BrowserAudioBuffer
-  , buffers :: { | S.Samples (Maybe ForwardBackwards) }
+  , buffers :: S.Samples (Maybe ForwardBackwards)
   , time :: Number
   }
 internal0 = unit # SG.loopUsingScene \{ time, silence, buffers, buf: buf' } _ ->
@@ -118,7 +118,7 @@ internal0 = unit # SG.loopUsingScene \{ time, silence, buffers, buf: buf' } _ ->
 
 internal1 :: SubSceneSig "singleton" ()
   { fng :: FutureAndGlobals
-  , buffers :: { | S.Samples (Maybe ForwardBackwards) }
+  , buffers :: S.Samples (Maybe ForwardBackwards)
   , silence :: BrowserAudioBuffer
   , time :: Number
   }
@@ -177,7 +177,7 @@ emptyPool = makeScoredBufferPool
 engine
   :: Maybe HasOrLacks
   -> FullSceneBuilder (theFuture :: TheFuture)
-       ( buffers :: { | S.Samples (Maybe ForwardBackwards) }
+       ( buffers :: S.Samples (Maybe ForwardBackwards)
        , silence :: BrowserAudioBuffer
        )
        Unit

@@ -43,12 +43,12 @@ chunks n xs = pure (A.take n xs) <> (chunks n $ A.drop n xs)
 
 foreign import reverseAudioBuffer :: AudioContext -> BrowserAudioBuffer -> Effect BrowserAudioBuffer
 
-getBuffers :: AudioContext -> Maybe HasOrLacks -> Aff ({ | Samples (Maybe ForwardBackwards) })
+getBuffers :: AudioContext -> Maybe HasOrLacks -> Aff (Samples (Maybe ForwardBackwards))
 getBuffers audioCtx hasOrLacks = do
   res <- traverse (sequential <<< traverse (traverse (parallel <<< dl))) unfolded
   pure $ back2Samples (foldl Object.union Object.empty res)
   where
-  hacky' = (unsafeCoerce :: { | Samples String } -> Object String) urls
+  hacky' = (unsafeCoerce :: Samples String -> Object String) urls
   hacky = hacky' # Object.mapWithKey case hasOrLacks of
     Just (Has kvs) -> \k -> if Array.elem k kvs then Just else const Nothing
     Just (Lacks kvs) -> \k -> if Array.elem k kvs then const Nothing else Just
@@ -58,7 +58,7 @@ getBuffers audioCtx hasOrLacks = do
     forward <- toAffE $ decodeAudioDataFromUri audioCtx bf
     backwards <- liftEffect $ reverseAudioBuffer audioCtx forward
     pure { forward, backwards }
-  back2Samples = unsafeCoerce :: Object (Maybe ForwardBackwards) -> { | Samples (Maybe ForwardBackwards) }
+  back2Samples = unsafeCoerce :: Object (Maybe ForwardBackwards) -> Samples (Maybe ForwardBackwards)
 
 data HasOrLacks = Has (Array String) | Lacks (Array String)
 
@@ -67,7 +67,7 @@ downloadFiles'
    . Lacks "buffers" world
   => Maybe HasOrLacks
   -> AudioContext /\ Aff (Event { | trigger } /\ Behavior { | world })
-  -> AudioContext /\ Aff (Event { | trigger } /\ Behavior { buffers :: { | Samples (Maybe ForwardBackwards) } | world })
+  -> AudioContext /\ Aff (Event { | trigger } /\ Behavior { buffers :: Samples (Maybe ForwardBackwards) | world })
 downloadFiles' hasOrLacks (ac /\ aff) = ac /\ do
   trigger /\ world <- aff
   b' <- b
@@ -79,7 +79,7 @@ downloadFiles
   :: forall trigger world
    . Lacks "buffers" world
   => AudioContext /\ Aff (Event { | trigger } /\ Behavior { | world })
-  -> AudioContext /\ Aff (Event { | trigger } /\ Behavior { buffers :: { | Samples (Maybe ForwardBackwards) } | world })
+  -> AudioContext /\ Aff (Event { | trigger } /\ Behavior { buffers :: Samples (Maybe ForwardBackwards) | world })
 downloadFiles = downloadFiles' Nothing
 
 downloadSilence

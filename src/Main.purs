@@ -61,7 +61,7 @@ type State
   , triggerWorld ::
       Maybe
         ( Event { theFuture :: TheFuture } /\ Behavior
-            { buffers :: { | Samples (Maybe ForwardBackwards) }
+            { buffers :: Samples (Maybe ForwardBackwards)
             , silence :: BrowserAudioBuffer
             }
         )

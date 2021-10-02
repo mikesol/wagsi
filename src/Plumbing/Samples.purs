@@ -1,5 +1,6 @@
 module WAGSI.Plumbing.Samples
-  ( Samples
+  ( Samples(..)
+  , Samples'
   , Sample
   , sampleToBuffers
   , urls
@@ -2043,7 +2044,11 @@ import Foreign.Object (Object)
 import Foreign.Object as Object
 import WAGS.WebAPI (BrowserAudioBuffer)
 
-type Samples (a :: Type) =
+newtype Samples a = Samples { | Samples' a }
+
+derive instance newtypeSamples :: Newtype (Samples a) _
+
+type Samples' (a :: Type) =
   ( intentionalSilenceForInternalUseOnly :: a
   , kicklinn_0 :: a
   , msg_0 :: a
@@ -4066,8 +4071,8 @@ type Samples (a :: Type) =
   , db_12 :: a
   )
 
-urls :: { | Samples String }
-urls =
+urls :: Samples String
+urls = Samples
   { intentionalSilenceForInternalUseOnly: "https://freesound.org/data/previews/459/459659_4766646-lq.mp3"
   , kicklinn_0: "https://klank-share.s3.amazonaws.com/dirt-samples/kicklinn/Linn_Kick_1.ogg"
   , msg_0: "https://klank-share.s3.amazonaws.com/dirt-samples/msg/007_msg7.ogg"
@@ -10414,7 +10419,7 @@ nameToSample =
   , "db:12" /\ db_12__Sample
   ]
 
-type SampleGetter a = { | Samples a } -> a
+type SampleGetter a = Samples a -> a
 
 -- we need this dog and pony show because otherwise the type-checker tries to check 2000+
 -- SampleGetter functions and explodes

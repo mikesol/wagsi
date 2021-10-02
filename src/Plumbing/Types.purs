@@ -26,7 +26,7 @@ import WAGSI.Plumbing.Samples as S
 
 type RBuf
   =
-  { sampleF :: BrowserAudioBuffer -> { | S.Samples (Maybe ForwardBackwards) } -> BrowserAudioBuffer
+  { sampleF :: BrowserAudioBuffer -> S.Samples (Maybe ForwardBackwards) -> BrowserAudioBuffer
   , rateFoT :: FoT
   , bufferOffsetFoT :: FoT
   , volumeFoT :: FoT
