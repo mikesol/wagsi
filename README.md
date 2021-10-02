@@ -44,7 +44,8 @@ When you start, the top-level file has the following code:
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
 
-import WAGSI.Plumbing.Tidal (TheFuture, make, s)
+import WAGSI.Plumbing.Types (TheFuture)
+import WAGSI.Plumbing.Tidal (make, s)
 
 wag :: TheFuture
 wag = make 1.0 { earth: s "" }
@@ -59,7 +60,8 @@ Here's an example that uses mini-notation.
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
 
-import WAGSI.Plumbing.Tidal (TheFuture, make, s)
+import WAGSI.Plumbing.Types (TheFuture)
+import WAGSI.Plumbing.Tidal (make, s)
 
 wag :: TheFuture
 wag = make 2.0
@@ -90,8 +92,9 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
+import WAGSI.Plumbing.Types (TheFuture)
 import WAGSI.Plumbing.Cycle (r, bassdm, bassdm_2, hh27, gab)
-import WAGSI.Plumbing.Tidal (TheFuture, make, s, i, b, x)
+import WAGSI.Plumbing.Tidal (make, s, i, b, x)
 
 wag :: TheFuture
 wag = make 2.0
@@ -115,7 +118,8 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Tidal (TheFuture, make, parse, plainly, rend)
+import WAGSI.Plumbing.Types (TheFuture)
+import WAGSI.Plumbing.Tidal (make, parse, plainly, rend)
 
 wag :: TheFuture
 wag = make 2.0
@@ -132,8 +136,9 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
+import WAGSI.Plumbing.Types (TheFuture)
 import Data.Lens (_Just, set, traversed)
-import WAGSI.Plumbing.Tidal (TheFuture, lnr, make, parse, s)
+import WAGSI.Plumbing.Tidal (lnr, make, parse, s)
 
 wag :: TheFuture
 wag = make 2.0
@@ -150,9 +155,10 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
+import WAGSI.Plumbing.Types (TheFuture)
 import Data.Lens (_Just, set, traversed)
 import WAGSI.Plumbing.Cycle (hh27, bassdm, r, gab)
-import WAGSI.Plumbing.Tidal (TheFuture, i, b, lnr, make, s, x)
+import WAGSI.Plumbing.Tidal (i, b, lnr, make, s, x)
 
 wag :: TheFuture
 wag = make 2.0
@@ -174,7 +180,8 @@ import Prelude
 
 import Data.Lens (_Just, set, traversed, view)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Tidal (TheFuture, prune, lnr, lns, make, parse, s)
+import WAGSI.Plumbing.Types (TheFuture)
+import WAGSI.Plumbing.Tidal (prune, lnr, lns, make, parse, s)
 
 wag :: TheFuture
 wag = make 2.0

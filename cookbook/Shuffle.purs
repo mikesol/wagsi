@@ -2,6 +2,7 @@ module WAGSI.Cookbook.Shuffle where
 
 import Prelude
 
+import WAGSI.Plumbing.Types (TheFuture)
 import Data.Array.NonEmpty (head, replicate, sortBy, tail)
 import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
@@ -13,7 +14,7 @@ import Test.QuickCheck (arbitrary, mkSeed)
 import Test.QuickCheck.Gen (Gen, evalGen)
 import WAGS.Math (calcSlope)
 import WAGSI.Plumbing.Cycle (pad)
-import WAGSI.Plumbing.Tidal (TheFuture, i, lnbo, lnf, lnv, make, x, s)
+import WAGSI.Plumbing.Tidal (i, lnbo, lnf, lnv, make, x, s)
 
 shuffle xs = { newSeed: mkSeed 42, size: 10 } # evalGen do
   ns <- traverse (flip map (arbitrary :: Gen Int) <<< Tuple) xs
