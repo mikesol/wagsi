@@ -109,8 +109,9 @@ import Data.Symbol (class IsSymbol)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested (type (/\), (/\))
-import Data.Typelevel.Num (class Pos, D8)
+import Data.Typelevel.Num (class Nat, class Pos, class Succ, D0, D8)
 import Data.Unfoldable (replicate)
+import Data.Vec as V
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Random (randomInt)
@@ -119,8 +120,10 @@ import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
 import Foreign.Object as Object
 import Heterogeneous.Mapping (class MappingWithIndex, hmap, hmapWithIndex)
-import Prim.Row (class Lacks, class Nub, class Union)
+import Prim.Row (class Cons, class Lacks, class Nub, class Union)
 import Prim.Row as Row
+import Prim.RowList (class RowToList)
+import Prim.RowList as RL
 import Record as Record
 import Test.QuickCheck (arbitrary)
 import Test.QuickCheck.Gen (Gen, arrayOf1, elements, frequency, resize)
@@ -128,9 +131,10 @@ import Text.Parsing.StringParser (Parser, fail, runParser, try)
 import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, alphaNum, anyDigit, char)
 import Text.Parsing.StringParser.Combinators (between, many, many1, optionMaybe, sepBy, sepEndBy)
 import Type.Proxy (Proxy(..))
-import WAGS.Create.Optionals (speaker, gain, playBuf)
+import WAGS.Create.Optionals (gain, playBuf, speaker, subgraph)
 import WAGS.Graph.AudioUnit (OnOff(..))
 import WAGS.Graph.Parameter (ff)
+import WAGS.Control.Functions.Subgraph as SG
 import WAGS.Interpret (bufferDuration)
 import WAGS.Lib.BufferPool (AScoredBufferPool, Buffy(..), CfScoredBufferPool, makeScoredBufferPool)
 import WAGS.Lib.Cofree (tails)
@@ -138,7 +142,7 @@ import WAGS.Lib.Learn (FullSceneBuilder, usingc)
 import WAGS.Lib.Score (CfNoteStream')
 import WAGS.Math (calcSlope)
 import WAGS.Run (SceneI(..))
-import WAGS.Template (fromTemplate)
+import WAGS.Subgraph (SubSceneSig)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
 import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards, downloadFiles', downloadSilence)
@@ -955,6 +959,8 @@ djQuickCheck = do
 
 ----------------
 
+type FutureAndGlobals = { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }
+
 newtype ZipProps fns = ZipProps { | fns }
 
 instance zipProps ::
@@ -964,8 +970,27 @@ instance zipProps ::
   MappingWithIndex (ZipProps fns) (Proxy sym) a b where
   mappingWithIndex (ZipProps fns) prop = Record.get prop fns
 
-futureMaker :: { | EWF (CfScoredBufferPool Next NBuf RBuf -> Globals -> { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }) }
+futureMaker :: { | EWF (CfScoredBufferPool Next NBuf RBuf -> Globals -> FutureAndGlobals) }
 futureMaker = hmap (\(_ :: Unit) -> { future: _, globals: _ } :: CfScoredBufferPool Next NBuf RBuf -> Globals -> { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }) (mempty :: { | EWF Unit })
+
+class Nat n <= HomogenousToVec (rl :: RL.RowList Type) (r :: Row Type) (n :: Type) (a :: Type) | rl r -> n a where
+  h2v' :: forall proxy. proxy rl -> { | r } -> V.Vec n a
+
+instance h2vNil :: HomogenousToVec RL.Nil r D0 a where
+  h2v' _ _ = V.empty
+
+instance h2vCons ::
+  ( IsSymbol key
+  , Lacks key r'
+  , Cons key a r' r
+  , HomogenousToVec rest r n' a
+  , Succ n' n
+  ) =>
+  HomogenousToVec (RL.Cons key a rest) r n a where
+  h2v' _ r = V.cons (Record.get (Proxy :: _ key) r) (h2v' (Proxy :: _ rest) r)
+
+h2v :: forall r rl n a. RowToList r rl => HomogenousToVec rl r n a => { | r } -> V.Vec n a
+h2v = h2v' (Proxy :: _ rl)
 
 tidal
   :: Maybe HasOrLacks
@@ -977,12 +1002,12 @@ tidal
 tidal hasOrLacks = usingc
   (thePresent wag <<< downloadFiles' hasOrLacks <<< downloadSilence)
   acc
-  \(SceneI { time, headroomInSeconds, trigger, world: { buffers, silence } }) control ->
+  \(SceneI { time: time', headroomInSeconds, trigger, world: { buffers, silence } }) control ->
     let
       theFuture = maybe control.backToTheFuture _.theFuture trigger
       toActualize = hmap
         ( \(v :: Voice) ->
-            { time
+            { time: time'
             , headroomInSeconds
             , input: _
             } $ { next: _ } $ _.next $ unwrap v
@@ -993,75 +1018,97 @@ tidal hasOrLacks = usingc
         )
         (unFuture theFuture)
       actualized = hmapWithIndex (ZipProps control.buffers) toActualize
-      forTemplate = hmapWithIndex (ZipProps (hmapWithIndex (ZipProps futureMaker) actualized)) myGlobals
+      forTemplate' = hmapWithIndex (ZipProps (hmapWithIndex (ZipProps futureMaker) actualized)) myGlobals
+      forTemplate = h2v forTemplate'
+
+      internal0 :: SubSceneSig "singleton" ()
+        { buf :: Maybe (Buffy RBuf)
+        , time :: Number
+        }
+      internal0 = unit # SG.loopUsingScene \{ time, buf } _ ->
+        { control: unit
+        , scene:
+            { singleton: case buf of
+                Just
+                  ( Buffy
+                      { starting
+                      , startTime
+                      , rest:
+                          { sampleF
+                          , rateFoT
+                          , bufferOffsetFoT
+                          , volumeFoT
+                          , duration
+                          , cycleStartsAt
+                          , currentCycle
+                          , littleCycleDuration
+                          , bigCycleDuration
+                          }
+                      }
+                  ) ->
+                  let
+                    sampleTime = time - startTime
+                    bigCycleTime = time - cycleStartsAt
+                    littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
+                    buf = sampleF silence buffers
+                    thisIsTime =
+                      { sampleTime
+                      , bigCycleTime
+                      , littleCycleTime
+                      , clockTime: time
+                      , normalizedClockTime: 0.0 -- cuz it's infinite :-P
+                      , normalizedSampleTime: sampleTime / duration
+                      , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
+                      , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
+                      , littleCycleDuration
+                      , bigCycleDuration
+                      , bufferDuration: bufferDuration buf
+                      }
+                    vol = ff globalFF $ pure $ volumeFoT thisIsTime
+                  in
+                    gain
+                      ( if time > startTime + duration then
+                          let
+                            cs2 x0 x1 y1 t y0 = calcSlope x0 y0 x1 y1 t
+                          in
+                            cs2 (startTime + duration) (startTime + duration + 0.25) 0.0 time <$> vol
+                        else vol
+                      )
+                      ( playBuf
+                          { onOff:
+                              ff globalFF
+                                $
+                                  if starting then
+                                    ff (max 0.0 (startTime - time)) (pure OffOn)
+                                  else
+                                    pure On
+                          , bufferOffset: bufferOffsetFoT thisIsTime
+                          , playbackRate: ff globalFF $ pure $ rateFoT thisIsTime
+                          }
+                          buf
+                      )
+                Nothing -> gain 0.0 (playBuf { onOff: Off } silence)
+
+            }
+        }
+
+      internal1 :: SubSceneSig "singleton" ()
+        { fng :: FutureAndGlobals
+        , time :: Number
+        }
+      internal1 = unit # SG.loopUsingScene \{ time, fng: { future, globals } } _ ->
+        { control: unit
+        , scene:
+            { singleton: gain ((unwrap globals).gain { clockTime: time })
+                     { sg: subgraph
+                                 (extract future) (const $ const $ internal0) (const $ { time, buf: _ }) {} } }
+        }
     in
       { control: { buffers: tails actualized, backToTheFuture: theFuture }
       , scene: speaker
-          ( gain 1.0
-              ( fromTemplate (Proxy :: _ "voices") forTemplate \_ { future, globals } ->
-                  gain ((unwrap globals).gain { clockTime: time })
-                    ( fromTemplate (Proxy :: _ "instruments") (extract future) \_ -> case _ of
-                        Just
-                          ( Buffy
-                              { starting
-                              , startTime
-                              , rest:
-                                  { sampleF
-                                  , rateFoT
-                                  , bufferOffsetFoT
-                                  , volumeFoT
-                                  , duration
-                                  , cycleStartsAt
-                                  , currentCycle
-                                  , littleCycleDuration
-                                  , bigCycleDuration
-                                  }
-                              }
-                          ) ->
-                          let
-                            sampleTime = time - startTime
-                            bigCycleTime = time - cycleStartsAt
-                            littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
-                            buf = sampleF silence buffers
-                            thisIsTime =
-                              { sampleTime
-                              , bigCycleTime
-                              , littleCycleTime
-                              , clockTime: time
-                              , normalizedClockTime: 0.0 -- cuz it's infinite :-P
-                              , normalizedSampleTime: sampleTime / duration
-                              , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
-                              , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
-                              , littleCycleDuration
-                              , bigCycleDuration
-                              , bufferDuration: bufferDuration buf
-                              }
-                            vol = ff globalFF $ pure $ volumeFoT thisIsTime
-                          in
-                            gain
-                              ( if time > startTime + duration then
-                                  let
-                                    cs2 x0 x1 y1 t y0 = calcSlope x0 y0 x1 y1 t
-                                  in
-                                    cs2 (startTime + duration) (startTime + duration + 0.25) 0.0 time <$> vol
-                                else vol
-                              )
-                              ( playBuf
-                                  { onOff:
-                                      ff globalFF
-                                        $
-                                          if starting then
-                                            ff (max 0.0 (startTime - time)) (pure OffOn)
-                                          else
-                                            pure On
-                                  , bufferOffset: bufferOffsetFoT thisIsTime
-                                  , playbackRate: ff globalFF $ pure $ rateFoT thisIsTime
-                                  }
-                                  buf
-                              )
-                        Nothing -> gain 0.0 (playBuf { onOff: Off } silence)
-                    )
-              )
-          )
+          { mix: gain 1.0
+              { subs: subgraph forTemplate (const $ const $ internal1) (const $ { time: time', fng: _ }) {}
+              }
+          }
       }
 
