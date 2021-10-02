@@ -2,8 +2,9 @@ module WAGSI.Cookbook.Wagged where
 
 import Prelude
 
+import WAGSI.Plumbing.Types (TheFuture)
 import Data.Lens (_Just, set)
-import WAGSI.Plumbing.Tidal (TheFuture, lnr, lnv, make, onTag, parse, s)
+import WAGSI.Plumbing.Tidal (lnr, lnv, make, onTag, parse, s)
 import Wags.Learn.Oscillator (lfo)
 
 wag :: TheFuture

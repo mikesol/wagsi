@@ -5,7 +5,8 @@ import Prelude
 import Data.Lens (_Just, over, set, traversed)
 import Data.Lens.Iso.Newtype (unto)
 import Math (pi, cos)
-import WAGSI.Plumbing.Tidal (NoteInFlattenedTime(..), TheFuture, c2s, lnr, lnv, make, onTag, parse, s, s2f)
+import WAGSI.Plumbing.Tidal (c2s, lnr, lnv, make, onTag, parse, s, s2f)
+import WAGSI.Plumbing.Types (TheFuture, NoteInFlattenedTime(..))
 
 trigfun :: Number -> Number
 trigfun x

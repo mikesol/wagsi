@@ -2,8 +2,9 @@ module WAGSI.Cookbook.AlienMarch where
 
 import Prelude
 
+import WAGSI.Plumbing.Types (TheFuture)
 import Data.Lens (_Just, set)
-import WAGSI.Plumbing.Tidal (TheFuture, lnr, lnv, make, onTag, parse, s)
+import WAGSI.Plumbing.Tidal (lnr, lnv, make, onTag, parse, s)
 
 wag :: TheFuture
 wag = make 2.0

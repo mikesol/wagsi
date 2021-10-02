@@ -18,7 +18,8 @@ import Text.Parsing.StringParser (runParser)
 import WAGSI.Plumbing.Cycle (noteFromSample, noteFromSample')
 import WAGSI.Plumbing.Samples (Note(..))
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Tidal (Cycle(..), NoteInTime(..), cycleP, c2s, unrest)
+import WAGSI.Plumbing.Types (NoteInTime(..))
+import WAGSI.Plumbing.Tidal (Cycle(..), cycleP, c2s, unrest)
 
 main :: Effect Unit
 main = do
