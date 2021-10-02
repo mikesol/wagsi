@@ -22,6 +22,11 @@ module.exports = {
         },
       },
       {
+        test: /Wagged\.purs/,
+        include: path.resolve(__dirname, "src"),
+        type: 'asset/source'
+      },
+      {
         test: /\.css$/i,
         include: path.resolve(__dirname, "src"),
         use: ["style-loader", "css-loader", "postcss-loader"],
