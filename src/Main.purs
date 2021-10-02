@@ -37,7 +37,9 @@ import WAGSI.Plumbing.Cycle (cycleLength, cycleToString)
 import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards)
 import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Samples (Samples)
-import WAGSI.Plumbing.Tidal (TheFuture(..), djQuickCheck, openVoice, tidal)
+import WAGSI.Plumbing.Types (TheFuture(..))
+import WAGSI.Plumbing.Tidal (djQuickCheck, openVoice)
+import WAGSI.Plumbing.Engine (engine)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
 
 main :: Effect Unit
@@ -207,7 +209,7 @@ handleAction = case _ of
   Initialize -> do
     ctx <- H.liftEffect context
     state <- H.get
-    let FullSceneBuilder { triggerWorld } = tidal state.hasOrLacks
+    let FullSceneBuilder { triggerWorld } = engine state.hasOrLacks
     tw <- H.liftAff $ try (snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {})))
     maybe (H.modify_ _ { loadingHack = Failed })
       (\triggerWorld -> H.modify_ _ { triggerWorld = Just triggerWorld, loadingHack = Loaded })
@@ -226,7 +228,7 @@ handleAction = case _ of
         unitCache <- H.liftEffect makeUnitCache
         let
           ffiAudio = defaultFFIAudio ctx unitCache
-        let FullSceneBuilder { triggerWorld, piece } = tidal state.hasOrLacks
+        let FullSceneBuilder { triggerWorld, piece } = engine state.hasOrLacks
         trigger' /\ world <- case tw of
           Nothing -> do
             snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))

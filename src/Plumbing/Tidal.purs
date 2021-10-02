@@ -3,7 +3,6 @@ module WAGSI.Plumbing.Tidal
   , make
   , parse
   , impatient
-  , tidal
   , plainly
   , s
   , rend
@@ -57,27 +56,17 @@ module WAGSI.Plumbing.Tidal
   , prune
   , mapmap
   ---
+  , asScore
   , openVoice
   , cycleP
   , unrest
-  , EWF'
-  , EWF
-  , CycleDuration(..)
-  , NoteInTime(..)
-  , NoteInFlattenedTime(..)
-  , Voice(..)
-  , Globals(..)
-  , NextCycle(..)
-  , RBuf
-  , Next
-  , TheFuture(..)
   , class S
+  , intentionalSilenceForInternalUseOnly
   ) where
 
 import Prelude hiding (between)
 
 import Control.Alt ((<|>))
-import Control.Comonad (extract)
 import Control.Comonad.Cofree ((:<))
 import Control.Monad.State (evalState, get, put)
 import Data.Array as A
@@ -87,9 +76,8 @@ import Data.Either (Either(..), hush)
 import Data.Filterable (compact, filter, filterMap, maybeBool)
 import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
-import Data.Generic.Rep (class Generic)
 import Data.Int (fromString, toNumber)
-import Data.Lens (Lens', Prism', _1, _Just, lens, over, prism')
+import Data.Lens (Lens', Prism', _Just, lens, over, prism')
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.List (List(..), fold, foldMap, foldl, (:))
@@ -98,32 +86,23 @@ import Data.List.NonEmpty (sortBy)
 import Data.List.NonEmpty as NEL
 import Data.List.Types (NonEmptyList(..))
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Newtype (class Newtype, unwrap, wrap)
+import Data.Newtype (unwrap, wrap)
 import Data.NonEmpty ((:|))
 import Data.Profunctor.Choice (class Choice)
 import Data.Profunctor.Strong (class Strong)
 import Data.Set as Set
-import Data.Show.Generic (genericShow)
 import Data.String.CodeUnits (fromCharArray, singleton)
-import Data.Symbol (class IsSymbol)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (fst, snd)
-import Data.Tuple.Nested (type (/\), (/\))
-import Data.Typelevel.Num (class Nat, class Pos, class Succ, D0, D8)
+import Data.Tuple.Nested ((/\))
 import Data.Unfoldable (replicate)
-import Data.Vec as V
 import Effect (Effect)
-import Effect.Aff (Aff)
 import Effect.Random (randomInt)
-import FRP.Behavior (Behavior)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
 import Foreign.Object as Object
-import Heterogeneous.Mapping (class MappingWithIndex, hmap, hmapWithIndex)
-import Prim.Row (class Cons, class Lacks, class Nub, class Union)
-import Prim.Row as Row
-import Prim.RowList (class RowToList)
-import Prim.RowList as RL
+import Heterogeneous.Mapping (hmap, hmapWithIndex)
+import Prim.Row (class Nub, class Union)
 import Record as Record
 import Test.QuickCheck (arbitrary)
 import Test.QuickCheck.Gen (Gen, arrayOf1, elements, frequency, resize)
@@ -131,74 +110,16 @@ import Text.Parsing.StringParser (Parser, fail, runParser, try)
 import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, alphaNum, anyDigit, char)
 import Text.Parsing.StringParser.Combinators (between, many, many1, optionMaybe, sepBy, sepEndBy)
 import Type.Proxy (Proxy(..))
-import WAGS.Create.Optionals (gain, playBuf, speaker, subgraph)
-import WAGS.Graph.AudioUnit (OnOff(..))
-import WAGS.Graph.Parameter (ff)
-import WAGS.Control.Functions.Subgraph as SG
-import WAGS.Interpret (bufferDuration)
-import WAGS.Lib.BufferPool (AScoredBufferPool, Buffy(..), CfScoredBufferPool, makeScoredBufferPool)
-import WAGS.Lib.Cofree (tails)
-import WAGS.Lib.Learn (FullSceneBuilder, usingc)
-import WAGS.Lib.Score (CfNoteStream')
-import WAGS.Math (calcSlope)
-import WAGS.Run (SceneI(..))
-import WAGS.Subgraph (SubSceneSig)
-import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
-import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards, downloadFiles', downloadSilence)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
 import WAGSI.Plumbing.Samples (FoT, Note(..), Sample)
 import WAGSI.Plumbing.Samples as S
+import WAGSI.Plumbing.Types (AfterMatter, CycleDuration(..), EWF, EWF', Globals(..), ICycle(..), NextCycle(..), NoteInFlattenedTime(..), NoteInTime(..), Tag, TheFuture(..), Voice(..), ZipProps(..))
 
---- @@ ---
-
-type RBuf
-  =
-  { sampleF :: BrowserAudioBuffer -> { | S.Samples (Maybe ForwardBackwards) } -> BrowserAudioBuffer
-  , rateFoT :: FoT
-  , bufferOffsetFoT :: FoT
-  , volumeFoT :: FoT
-  , cycleStartsAt :: Number
-  , bigCycleDuration :: Number
-  , littleCycleDuration :: Number
-  , currentCycle :: Int
-  , bigStartsAt :: Number
-  , littleStartsAt :: Number
-  , duration :: Number
-  }
-
-newtype NextCycle = NextCycle
-  { force :: Boolean
-  , func ::
-      { currentCount :: Number
-      , prevCycleEnded :: Number
-      , time :: Number
-      , headroomInSeconds :: Number
-      }
-      -> CfNoteStream' RBuf Next
-  }
-
-derive instance newtypeNextCycle :: Newtype NextCycle _
 
 -- | Only play the first cycle, and truncate/interrupt the playing cycle at the next sub-ending.
 impatient :: NextCycle -> NextCycle
 impatient = over (unto NextCycle <<< prop (Proxy :: _ "force")) (const true)
-
-newtype Globals = Globals { gain :: { clockTime :: Number } -> Number }
-
-derive instance newtypeGlobals :: Newtype Globals _
-
-newtype Voice = Voice { globals :: Globals, next :: NextCycle }
-
-derive instance newtypeVoice :: Newtype Voice _
-
-type EWF' (v :: Type) r = (earth :: v, wind :: v, fire :: v | r)
-type EWF (v :: Type) = EWF' v ()
-
-newtype TheFuture = TheFuture { | EWF Voice }
-
-unFuture :: TheFuture -> { | EWF Voice }
-unFuture (TheFuture ewf) = ewf
 
 make
   :: forall inRec overfull rest
@@ -220,86 +141,6 @@ make cl rr = TheFuture $ hmapWithIndex (ZipProps z)
 
 plainly :: forall f. Functor f => f NextCycle -> f Voice
 plainly = map (Voice <<< { globals: Globals { gain: const 1.0 }, next: _ })
-
-class S s where
-  s :: s -> CycleDuration -> Voice
-
-instance sString :: S String where
-  s = plainly <<< parseInternal
-
-instance sCycle :: S (Cycle (Maybe Note)) where
-  s = plainly <<< rend
-
-instance sNit :: S (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) where
-  s = plainly <<< pure <<< rendNit
-
-instance sNitFT :: S (CycleDuration -> (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))))) where
-  s = plainly <<< map rendNit
-
-instance sNift :: S (NonEmptyList (NoteInFlattenedTime Note)) where
-  s = plainly <<< pure <<< asScore false
-
-instance sNiftFT :: S (CycleDuration -> (NonEmptyList (NoteInFlattenedTime Note))) where
-  s = plainly <<< map (asScore false)
-
-instance sNextCycle :: S NextCycle where
-  s = plainly <<< pure
-
-instance sNextCycleFT :: S (CycleDuration -> NextCycle) where
-  s = plainly
-
-instance sVoice :: S Voice where
-  s = const
-
-instance sVoiceFT :: S (CycleDuration -> Voice) where
-  s = identity
-
---- @@ ---
-newtype CycleDuration = CycleDuration Number
-
-derive instance newtypeCycleDuration :: Newtype CycleDuration _
-derive instance eqCycleDuration :: Eq CycleDuration
-derive instance ordCycleDuration :: Ord CycleDuration
-
-newtype NoteInTime note = NoteInTime
-  { note :: note
-  , startsAt :: Number
-  , duration :: Number
-  , cycleDuration :: Number
-  , tag :: Maybe String
-  }
-
-derive instance newtypeNoteInTime :: Newtype (NoteInTime note) _
-derive instance genericNoteInTime :: Generic (NoteInTime note) _
-derive instance eqNoteInTime :: Eq note => Eq (NoteInTime note)
-derive instance ordNoteInTime :: Ord note => Ord (NoteInTime note)
-instance showNoteInTime :: Show note => Show (NoteInTime note) where
-  show xx = genericShow xx
-
-derive instance functorNoteInTime :: Functor NoteInTime
-
-newtype NoteInFlattenedTime note = NoteInFlattenedTime
-  { note :: note
-  , bigStartsAt :: Number
-  , littleStartsAt :: Number
-  , currentCycle :: Int
-  , positionInCycle :: Int
-  , elementsInCycle :: Int
-  , nCycles :: Int
-  , duration :: Number
-  , bigCycleDuration :: Number
-  , littleCycleDuration :: Number
-  , tag :: Maybe String
-  }
-
-derive instance newtypeNoteInFlattenedTime :: Newtype (NoteInFlattenedTime note) _
-derive instance genericNoteInFlattenedTime :: Generic (NoteInFlattenedTime note) _
-derive instance eqNoteInFlattenedTime :: Eq note => Eq (NoteInFlattenedTime note)
-derive instance ordNoteInFlattenedTime :: Ord note => Ord (NoteInFlattenedTime note)
-instance showNoteInFlattenedTime :: Show note => Show (NoteInFlattenedTime note) where
-  show xx = genericShow xx
-
-derive instance functorNoteInFlattenedTime :: Functor NoteInFlattenedTime
 
 --- lenses
 lvg :: Lens' Voice ({ clockTime :: Number } -> Number)
@@ -395,20 +236,10 @@ sampleName :: Parser String
 sampleName = map (fromCharArray <<< A.fromFoldable <<< NEL.toList) (many1 $ oneOf [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', '~' ])
 
 ---
-data ICycle a
-  = IBranching { nel :: NonEmptyList (ICycle a), env :: { weight :: Number, tag :: Maybe String } }
-  | ISimultaneous { nel :: NonEmptyList (ICycle a), env :: { weight :: Number, tag :: Maybe String } }
-  | ISequential { nel :: NonEmptyList (ICycle a), env :: { weight :: Number, tag :: Maybe String } }
-  | IInternal { nel :: NonEmptyList (ICycle a), env :: { weight :: Number, tag :: Maybe String } }
-  | ISingleNote { val :: a, env :: { weight :: Number, tag :: Maybe String } }
-
----
 whiteSpace1 :: Parser String
 whiteSpace1 = do
   cs <- many1 (satisfy \c -> c == '\n' || c == '\r' || c == ' ' || c == '\t')
   pure (foldMap singleton cs)
-
-type AfterMatter = { asInternal :: Maybe (NonEmptyList Unit) }
 
 afterMatterP :: Parser AfterMatter
 afterMatterP = do
@@ -424,8 +255,6 @@ afterMatterP = do
           )
       )
   pure { asInternal }
-
-type Tag = { tag :: Maybe String }
 
 tagP :: Parser Tag
 tagP = do
@@ -706,36 +535,6 @@ flattenScore l = flattened
     )
     l
 
-type NBuf
-  = D8
-
-type Next = { next :: NextCycle }
-
-type Acc
-  =
-  { buffers :: { | EWF (AScoredBufferPool Next NBuf RBuf) }
-  , backToTheFuture :: TheFuture
-  }
-
-emptyPool :: forall n. Pos n => AScoredBufferPool Next n RBuf
-emptyPool = makeScoredBufferPool
-  { startsAt: 0.0
-  , noteStream: \_ ->
-      ( (#)
-          { currentCount: 0.0
-          , prevCycleEnded: 0.0
-          , time: 0.0
-          , headroomInSeconds: 0.03
-          } $ _.func $ unwrap $ asScore false (pure intentionalSilenceForInternalUseOnly)
-      ) # map \{ startsAfter, rest } ->
-        { startsAfter
-        , rest:
-            { rest: const rest
-            , duration: const $ const $ const Just rest.duration
-            }
-        }
-  }
-
 openVoice :: Voice
 openVoice = Voice
   { globals: Globals { gain: const 0.0 }
@@ -747,14 +546,6 @@ openVoices = hmap (\(_ :: Unit) -> (const $ openVoice)) (mempty :: { | EWF Unit 
 
 openFuture :: TheFuture
 openFuture = TheFuture $ hmap (\(_ :: Unit) -> openVoice) (mempty :: { | EWF Unit })
-
-acc :: Acc
-acc =
-  { buffers: hmap (\(_ :: Unit) -> emptyPool) (mempty :: { | EWF Unit })
-  , backToTheFuture: openFuture
-  }
-
-globalFF = 0.03 :: Number
 
 foreign import handlers :: Effect (Object (TheFuture -> Effect Unit))
 
@@ -768,14 +559,6 @@ wag =
     id <- (fold <<< map show) <$> (sequence $ A.replicate 24 (randomInt 0 9))
     wag_ id f
     pure (dewag_ id)
-
-thePresent
-  :: forall trigger world
-   . Lacks "theFuture" trigger
-  => Event TheFuture
-  -> AudioContext /\ Aff (Event { | trigger } /\ Behavior { | world })
-  -> AudioContext /\ Aff (Event { theFuture :: TheFuture | trigger } /\ Behavior { | world })
-thePresent ev = (map <<< map) (over _1 (\e -> Record.insert (Proxy :: _ "theFuture") <$> ev <*> e))
 
 intentionalSilenceForInternalUseOnly :: (NoteInFlattenedTime Note)
 intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
@@ -957,158 +740,35 @@ djQuickCheck = do
   fire <- pure openVoice
   pure $ { cycle, future: TheFuture { earth, wind, fire } }
 
-----------------
+class S s where
+  s :: s -> CycleDuration -> Voice
 
-type FutureAndGlobals = { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }
+instance sString :: S String where
+  s = plainly <<< parseInternal
 
-newtype ZipProps fns = ZipProps { | fns }
+instance sCycle :: S (Cycle (Maybe Note)) where
+  s = plainly <<< rend
 
-instance zipProps ::
-  ( IsSymbol sym
-  , Row.Cons sym (a -> b) x fns
-  ) =>
-  MappingWithIndex (ZipProps fns) (Proxy sym) a b where
-  mappingWithIndex (ZipProps fns) prop = Record.get prop fns
+instance sNit :: S (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) where
+  s = plainly <<< pure <<< rendNit
 
-futureMaker :: { | EWF (CfScoredBufferPool Next NBuf RBuf -> Globals -> FutureAndGlobals) }
-futureMaker = hmap (\(_ :: Unit) -> { future: _, globals: _ } :: CfScoredBufferPool Next NBuf RBuf -> Globals -> { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }) (mempty :: { | EWF Unit })
+instance sNitFT :: S (CycleDuration -> (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))))) where
+  s = plainly <<< map rendNit
 
-class Nat n <= HomogenousToVec (rl :: RL.RowList Type) (r :: Row Type) (n :: Type) (a :: Type) | rl r -> n a where
-  h2v' :: forall proxy. proxy rl -> { | r } -> V.Vec n a
+instance sNift :: S (NonEmptyList (NoteInFlattenedTime Note)) where
+  s = plainly <<< pure <<< asScore false
 
-instance h2vNil :: HomogenousToVec RL.Nil r D0 a where
-  h2v' _ _ = V.empty
+instance sNiftFT :: S (CycleDuration -> (NonEmptyList (NoteInFlattenedTime Note))) where
+  s = plainly <<< map (asScore false)
 
-instance h2vCons ::
-  ( IsSymbol key
-  , Lacks key r'
-  , Cons key a r' r
-  , HomogenousToVec rest r n' a
-  , Succ n' n
-  ) =>
-  HomogenousToVec (RL.Cons key a rest) r n a where
-  h2v' _ r = V.cons (Record.get (Proxy :: _ key) r) (h2v' (Proxy :: _ rest) r)
+instance sNextCycle :: S NextCycle where
+  s = plainly <<< pure
 
-h2v :: forall r rl n a. RowToList r rl => HomogenousToVec rl r n a => { | r } -> V.Vec n a
-h2v = h2v' (Proxy :: _ rl)
+instance sNextCycleFT :: S (CycleDuration -> NextCycle) where
+  s = plainly
 
-tidal
-  :: Maybe HasOrLacks
-  -> FullSceneBuilder (theFuture :: TheFuture)
-       ( buffers :: { | S.Samples (Maybe ForwardBackwards) }
-       , silence :: BrowserAudioBuffer
-       )
-       Unit
-tidal hasOrLacks = usingc
-  (thePresent wag <<< downloadFiles' hasOrLacks <<< downloadSilence)
-  acc
-  \(SceneI { time: time', headroomInSeconds, trigger, world: { buffers, silence } }) control ->
-    let
-      theFuture = maybe control.backToTheFuture _.theFuture trigger
-      toActualize = hmap
-        ( \(v :: Voice) ->
-            { time: time'
-            , headroomInSeconds
-            , input: _
-            } $ { next: _ } $ _.next $ unwrap v
-        )
-        (unFuture theFuture)
-      myGlobals = hmap
-        ( \(v :: Voice) -> _.globals $ unwrap v
-        )
-        (unFuture theFuture)
-      actualized = hmapWithIndex (ZipProps control.buffers) toActualize
-      forTemplate' = hmapWithIndex (ZipProps (hmapWithIndex (ZipProps futureMaker) actualized)) myGlobals
-      forTemplate = h2v forTemplate'
+instance sVoice :: S Voice where
+  s = const
 
-      internal0 :: SubSceneSig "singleton" ()
-        { buf :: Maybe (Buffy RBuf)
-        , time :: Number
-        }
-      internal0 = unit # SG.loopUsingScene \{ time, buf } _ ->
-        { control: unit
-        , scene:
-            { singleton: case buf of
-                Just
-                  ( Buffy
-                      { starting
-                      , startTime
-                      , rest:
-                          { sampleF
-                          , rateFoT
-                          , bufferOffsetFoT
-                          , volumeFoT
-                          , duration
-                          , cycleStartsAt
-                          , currentCycle
-                          , littleCycleDuration
-                          , bigCycleDuration
-                          }
-                      }
-                  ) ->
-                  let
-                    sampleTime = time - startTime
-                    bigCycleTime = time - cycleStartsAt
-                    littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
-                    buf = sampleF silence buffers
-                    thisIsTime =
-                      { sampleTime
-                      , bigCycleTime
-                      , littleCycleTime
-                      , clockTime: time
-                      , normalizedClockTime: 0.0 -- cuz it's infinite :-P
-                      , normalizedSampleTime: sampleTime / duration
-                      , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
-                      , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
-                      , littleCycleDuration
-                      , bigCycleDuration
-                      , bufferDuration: bufferDuration buf
-                      }
-                    vol = ff globalFF $ pure $ volumeFoT thisIsTime
-                  in
-                    gain
-                      ( if time > startTime + duration then
-                          let
-                            cs2 x0 x1 y1 t y0 = calcSlope x0 y0 x1 y1 t
-                          in
-                            cs2 (startTime + duration) (startTime + duration + 0.25) 0.0 time <$> vol
-                        else vol
-                      )
-                      ( playBuf
-                          { onOff:
-                              ff globalFF
-                                $
-                                  if starting then
-                                    ff (max 0.0 (startTime - time)) (pure OffOn)
-                                  else
-                                    pure On
-                          , bufferOffset: bufferOffsetFoT thisIsTime
-                          , playbackRate: ff globalFF $ pure $ rateFoT thisIsTime
-                          }
-                          buf
-                      )
-                Nothing -> gain 0.0 (playBuf { onOff: Off } silence)
-
-            }
-        }
-
-      internal1 :: SubSceneSig "singleton" ()
-        { fng :: FutureAndGlobals
-        , time :: Number
-        }
-      internal1 = unit # SG.loopUsingScene \{ time, fng: { future, globals } } _ ->
-        { control: unit
-        , scene:
-            { singleton: gain ((unwrap globals).gain { clockTime: time })
-                     { sg: subgraph
-                                 (extract future) (const $ const $ internal0) (const $ { time, buf: _ }) {} } }
-        }
-    in
-      { control: { buffers: tails actualized, backToTheFuture: theFuture }
-      , scene: speaker
-          { mix: gain 1.0
-              { subs: subgraph forTemplate (const $ const $ internal1) (const $ { time: time', fng: _ }) {}
-              }
-          }
-      }
-
+instance sVoiceFT :: S (CycleDuration -> Voice) where
+  s = identity

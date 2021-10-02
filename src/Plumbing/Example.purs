@@ -1,8 +1,9 @@
 module WAGSI.Plumbing.Example where
 
+import WAGSI.Plumbing.Types (TheFuture)
 import Data.Maybe (Maybe(..))
 import WAGSI.Plumbing.Download (HasOrLacks)
-import WAGSI.Plumbing.Tidal (TheFuture, make, s)
+import WAGSI.Plumbing.Tidal (make, s)
 
 title :: String
 title = "Example"
