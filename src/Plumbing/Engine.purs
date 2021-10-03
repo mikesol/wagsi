@@ -3,23 +3,27 @@ module WAGSI.Plumbing.Engine where
 import Prelude
 
 import Control.Comonad (extract)
+import Control.Comonad.Cofree (Cofree, (:<))
+import Control.Comonad.Cofree.Class (unwrapCofree)
 import Data.Int (toNumber)
 import Data.Lens (_1, over)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Newtype (unwrap)
 import Data.Tuple.Nested (type (/\))
 import Data.Typelevel.Num (class Pos)
+import Data.Vec ((+>))
 import Data.Vec as V
 import Effect.Aff (Aff)
 import FRP.Behavior (Behavior)
 import FRP.Event (Event)
 import Heterogeneous.Mapping (hmap, hmapWithIndex)
+import Math ((%))
 import Prim.Row (class Lacks)
 import Prim.RowList (class RowToList)
 import Record as Record
 import Type.Proxy (Proxy(..))
 import WAGS.Control.Functions.Subgraph as SG
-import WAGS.Create.Optionals (gain, playBuf, speaker, subgraph)
+import WAGS.Create.Optionals (gain, loopBuf, playBuf, speaker, subgraph)
 import WAGS.Graph.AudioUnit (OnOff(..))
 import WAGS.Graph.Parameter (ff)
 import WAGS.Interpret (bufferDuration)
@@ -31,6 +35,7 @@ import WAGS.Run (SceneI(..))
 import WAGS.Subgraph (SubSceneSig)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
 import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards, downloadFiles', downloadSilence)
+import WAGSI.Plumbing.Samples (DroneNote(..))
 import WAGSI.Plumbing.Samples as S
 import WAGSI.Plumbing.Tidal (asScore, intentionalSilenceForInternalUseOnly, openFuture, wag)
 import WAGSI.Plumbing.Types (class HomogenousToVec, Acc, EWF, FutureAndGlobals, Globals, NBuf, Next, RBuf, TheFuture, Voice, ZipProps(..), h2v')
@@ -141,6 +146,90 @@ internal1 = unit # SG.loopUsingScene \{ time, buffers, silence, fng: { future, g
       }
   }
 
+type CfLag a
+  = Cofree ((->) a) (Maybe a)
+
+makeLag :: forall a. CfLag a
+makeLag = Nothing :< go
+  where
+  go old = Just old :< go
+
+
+
+droneSg :: SubSceneSig "singleton" ()
+  { buf :: Maybe DroneNote
+  , silence :: BrowserAudioBuffer
+  , buffers :: S.Samples (Maybe ForwardBackwards)
+  , time :: Number
+  }
+droneSg = emptyLags
+  # SG.loopUsingScene \{ time: time', silence, buffers, buf: buf' } { timeLag, rateLag, volumeLag, loopStartLag, loopEndLag } ->
+      buf' # maybe'
+        ( \_ ->
+            { control: emptyLags
+            , scene: { singleton: gain 0.0 { airLoop: loopBuf { onOff: Off } silence } }
+            }
+        )
+        ( \(DroneNote { sample, forward, volumeFoT, loopStartFoT, loopEndFoT, rateFoT }) ->
+            let
+              bdur = bufferDuration buf
+              sampleTime = time' % bdur
+              bigCycleTime = time' % bdur -- time' - cycleStartsAt
+              littleCycleTime = time' % bdur -- time' - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
+              sampleF = maybe silence (if forward then _.forward else _.backwards) <<< S.sampleToBuffers sample
+              buf = sampleF buffers
+              littleCycleDuration = 1.0
+              bigCycleDuration = 1.0
+              prevTime = extract timeLag
+              prevVolume = extract volumeLag
+              volumeNow = volumeFoT prevTime thisIsTime prevVolume
+              prevLoopStart = extract loopStartLag
+              loopStartNow = loopStartFoT prevTime thisIsTime prevLoopStart
+              prevLoopEnd = extract loopEndLag
+              loopEndNow = loopEndFoT prevTime thisIsTime prevLoopEnd
+              prevRate = extract rateLag
+              rateNow = rateFoT prevTime thisIsTime prevRate
+              thisIsTime =
+                { sampleTime
+                , bigCycleTime
+                , littleCycleTime
+                , clockTime: time'
+                , normalizedClockTime: 0.0 -- cuz it's infinite :-P
+                , normalizedSampleTime: sampleTime / bdur
+                , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
+                , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
+                , littleCycleDuration
+                , bigCycleDuration
+                , bufferDuration: bufferDuration buf
+                }
+              vol = ff globalFF $ pure $ volumeNow
+            in
+              { control:
+                  { rateLag: unwrapCofree rateLag rateNow
+                  , volumeLag: unwrapCofree volumeLag volumeNow
+                  , loopStartLag: unwrapCofree loopStartLag loopStartNow
+                  , loopEndLag: unwrapCofree loopEndLag loopEndNow
+                  , timeLag: unwrapCofree timeLag thisIsTime
+                  }
+              , scene:
+                  { singleton:
+                      gain vol
+                        { airLoop: loopBuf
+                            { onOff:
+                                ff globalFF $ pure On
+                            , loopStart: loopStartNow
+                            , loopEnd: loopEndNow
+                            , playbackRate: ff globalFF $ pure $ rateNow
+                            }
+                            buf
+                        }
+                  }
+              }
+        )
+  where
+  emptyLags = { timeLag: makeLag
+    , rateLag: makeLag, volumeLag: makeLag, loopStartLag: makeLag, loopEndLag: makeLag }
+
 thePresent
   :: forall trigger world
    . Lacks "theFuture" trigger
@@ -187,6 +276,7 @@ engine hasOrLacks = usingc
   \(SceneI { time: time', headroomInSeconds, trigger, world: { buffers, silence } }) control ->
     let
       theFuture = maybe control.backToTheFuture _.theFuture trigger
+      ewf = Record.delete (Proxy :: _ "air") $ Record.delete (Proxy :: _ "heart") (unwrap theFuture)
       toActualize = hmap
         ( \(v :: Voice) ->
             { time: time'
@@ -194,11 +284,11 @@ engine hasOrLacks = usingc
             , input: _
             } $ { next: _ } $ _.next $ unwrap v
         )
-        (unwrap theFuture)
+        ewf
       myGlobals = hmap
         ( \(v :: Voice) -> _.globals $ unwrap v
         )
-        (unwrap theFuture)
+        ewf
       actualized = hmapWithIndex (ZipProps control.buffers) toActualize
       forTemplate' = hmapWithIndex (ZipProps (hmapWithIndex (ZipProps futureMaker) actualized)) myGlobals
       forTemplate = h2v forTemplate'
@@ -213,6 +303,17 @@ engine hasOrLacks = usingc
                       , buffers
                       , silence
                       , fng: _
+                      }
+                  )
+                  {}
+              , drones: subgraph
+                  ((unwrap theFuture).air +> (unwrap theFuture).heart +> V.empty)
+                  (const $ const $ droneSg)
+                  ( const $
+                      { time: time'
+                      , buffers
+                      , silence
+                      , buf: _
                       }
                   )
                   {}

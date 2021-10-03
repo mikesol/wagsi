@@ -4,8 +4,13 @@ module WAGSI.Plumbing.Samples
   , Sample
   , sampleToBuffers
   , urls
+  , note2drone
+  , drone2note
   , Note(..)
+  , DroneNote(..)
+  , TimeIs
   , FoT
+  , WithPast
   , sampleToString
   , nameToSampleMNO
   , intentionalSilenceForInternalUseOnly__Sample
@@ -2028,6 +2033,13 @@ module WAGSI.Plumbing.Samples
   , db_10__Sample
   , db_11__Sample
   , db_12__Sample
+  ------ drones
+  , spacewind_0__Sample
+  , ambienta_0__Sample
+  , lowdark_0__Sample
+  , harmonium_0__Sample
+  , hollowair_0__Sample
+  , digeridoo_0__Sample
   ) where
 
 import Prelude
@@ -4069,6 +4081,13 @@ type Samples' (a :: Type) =
   , db_10 :: a
   , db_11 :: a
   , db_12 :: a
+  ---- drones
+  , spacewind_0 :: a
+  , ambienta_0 :: a
+  , lowdark_0 :: a
+  , harmonium_0 :: a
+  , hollowair_0 :: a
+  , digeridoo_0 :: a
   )
 
 urls :: Samples String
@@ -6093,6 +6112,13 @@ urls = Samples
   , db_10: "https://klank-share.s3.amazonaws.com/dirt-samples/db/dbs12hit1.ogg"
   , db_11: "https://klank-share.s3.amazonaws.com/dirt-samples/db/dbs12kick2.ogg"
   , db_12: "https://klank-share.s3.amazonaws.com/dirt-samples/db/dbs12snare2.ogg"
+  ----- drones
+  , spacewind_0: "https://freesound.org/data/previews/370/370754_3104030-hq.mp3"
+  , ambienta_0: "https://freesound.org/data/previews/546/546360_10196790-hq.mp3"
+  , lowdark_0: "https://freesound.org/data/previews/579/579260_10522382-hq.mp3"
+  , harmonium_0: "https://freesound.org/data/previews/264/264442_4965426-hq.mp3"
+  , hollowair_0: "https://freesound.org/data/previews/370/370316_3104030-hq.mp3"
+  , digeridoo_0: "https://freesound.org/data/previews/197/197998_3684181-hq.mp3"
   }
 
 newtype Sample = Sample String
@@ -6102,7 +6128,7 @@ derive instance sampleOrd :: Ord Sample
 instance sampleShow :: Show Sample where
   show (Sample i) = "Sample <" <> show i <> ">"
 
-type FoT =
+type TimeIs =
   { clockTime :: Number
   , sampleTime :: Number
   , bigCycleTime :: Number
@@ -6115,7 +6141,10 @@ type FoT =
   , bigCycleDuration :: Number
   , bufferDuration :: Number
   }
-  -> Number
+
+type FoT = TimeIs -> Number
+
+type WithPast = Maybe TimeIs -> TimeIs -> Maybe Number -> Number
 
 newtype Note = Note
   { sample :: Sample
@@ -6135,6 +6164,45 @@ instance ordNote :: Ord Note where
 
 instance showNote :: Show Note where
   show (Note { sample }) = "Note <" <> show sample <> ">"
+
+newtype DroneNote = DroneNote
+  { sample :: Sample
+  , forward :: Boolean
+  , rateFoT :: WithPast
+  , loopStartFoT :: WithPast
+  , loopEndFoT :: WithPast
+  , volumeFoT :: WithPast
+  }
+
+derive instance newtypeDroneNote :: Newtype DroneNote _
+derive instance genericDroneNote :: Generic DroneNote _
+instance eqDroneNote :: Eq DroneNote where
+  eq = eq `on` (unwrap >>> _.sample)
+
+instance ordDroneNote :: Ord DroneNote where
+  compare = compare `on` (unwrap >>> _.sample)
+
+instance showDroneNote :: Show DroneNote where
+  show (DroneNote { sample }) = "DroneNote <" <> show sample <> ">"
+
+note2drone :: Note -> DroneNote
+note2drone (Note { sample, forward, rateFoT, volumeFoT, bufferOffsetFoT }) = DroneNote
+  { sample
+  , forward
+  , rateFoT: \_ x _ -> rateFoT x
+  , volumeFoT: \_ x _ -> volumeFoT x
+  , loopStartFoT: \_ x _ -> bufferOffsetFoT x
+  , loopEndFoT: const $ const $ const 0.0
+  }
+
+drone2note :: DroneNote -> Note
+drone2note (DroneNote { sample, forward, rateFoT, volumeFoT, loopStartFoT }) = Note
+  { sample
+  , forward
+  , rateFoT: \x -> rateFoT Nothing x Nothing
+  , volumeFoT: \x -> volumeFoT Nothing x Nothing
+  , bufferOffsetFoT: \x -> loopStartFoT Nothing x Nothing
+  }
 
 sampleToString :: Sample -> String
 sampleToString (Sample sample) = String.replace (String.Pattern "_") (String.Replacement ":") sample
@@ -8159,6 +8227,13 @@ db_9__Sample = Sample "db_9" :: Sample
 db_10__Sample = Sample "db_10" :: Sample
 db_11__Sample = Sample "db_11" :: Sample
 db_12__Sample = Sample "db_12" :: Sample
+------ drones
+spacewind_0__Sample = Sample "spacewind_0" :: Sample
+ambienta_0__Sample = Sample "ambienta_0" :: Sample
+lowdark_0__Sample = Sample "lowdark_0" :: Sample
+harmonium_0__Sample = Sample "harmonium_0" :: Sample
+hollowair_0__Sample = Sample "hollowair_0" :: Sample
+digeridoo_0__Sample = Sample "digeridoo_0" :: Sample
 
 nameToSampleO :: Object Sample
 nameToSampleO = Object.fromFoldable nameToSample
@@ -10417,6 +10492,19 @@ nameToSample =
   , "db:10" /\ db_10__Sample
   , "db:11" /\ db_11__Sample
   , "db:12" /\ db_12__Sample
+  ----- drones
+  , "spacewind" /\ spacewind_0__Sample
+  , "spacewind:0" /\ spacewind_0__Sample
+  , "ambienta" /\ ambienta_0__Sample
+  , "ambienta:0" /\ ambienta_0__Sample
+  , "lowdark" /\ lowdark_0__Sample
+  , "lowdark:0" /\ lowdark_0__Sample
+  , "harmonium" /\ harmonium_0__Sample
+  , "harmonium:0" /\ harmonium_0__Sample
+  , "hollowair" /\ hollowair_0__Sample
+  , "hollowair:0" /\ hollowair_0__Sample
+  , "digeridoo" /\ digeridoo_0__Sample
+  , "digeridoo:0" /\ digeridoo_0__Sample
   ]
 
 type SampleGetter a = Samples a -> a
@@ -12460,4 +12548,11 @@ samplesToString =
   , db_10__Sample /\ "db_10"
   , db_11__Sample /\ "db_11"
   , db_12__Sample /\ "db_12"
+  ----- drones
+  , spacewind_0__Sample /\ "spacewind_0"
+  , ambienta_0__Sample /\ "ambienta_0"
+  , lowdark_0__Sample /\ "lowdark_0"
+  , harmonium_0__Sample /\ "harmonium_0"
+  , hollowair_0__Sample /\ "hollowair_0"
+  , digeridoo_0__Sample /\ "digeridoo_0"
   ]
