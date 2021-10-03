@@ -94,7 +94,7 @@ import Data.List as L
 import Data.List.NonEmpty (sortBy)
 import Data.List.NonEmpty as NEL
 import Data.List.Types (NonEmptyList(..))
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, fromMaybe', maybe)
 import Data.Newtype (unwrap, wrap)
 import Data.NonEmpty ((:|))
 import Data.Profunctor.Choice (class Choice)
@@ -827,7 +827,7 @@ betwixt :: forall n. Ord n => n -> n -> n -> n
 betwixt mn mx n = if n < mn then mn else if n > mx then mx else n
 
 derivative :: (Maybe TimeIs -> TimeIs -> Maybe Number -> Number) -> Number -> Maybe TimeIs -> TimeIs -> Maybe Number -> Number
-derivative f y mti ti mn = fromMaybe (f mti ti mn) do
+derivative f y mti ti mn = fromMaybe' (\_ -> f mti ti mn) do
   mti' <- mti
   mn' <- mn
   pure $ (y * (ti.clockTime - mti'.clockTime)) + mn'
