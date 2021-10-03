@@ -57,12 +57,13 @@ module WAGSI.Plumbing.Tidal
   , ldle
   , ldf
   , ldv
-
   , lcw
   ---
   , when_
-  , prune
+  , focus
   , mapmap
+  , betwixt
+  , derivative
   ---
   , asScore
   , openVoice
@@ -120,7 +121,7 @@ import Text.Parsing.StringParser.Combinators (between, many, many1, optionMaybe,
 import Type.Proxy (Proxy(..))
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
-import WAGSI.Plumbing.Samples (DroneNote(..), FoT, Note(..), Sample)
+import WAGSI.Plumbing.Samples (DroneNote(..), FoT, Note(..), Sample, WithPast, TimeIs)
 import WAGSI.Plumbing.Samples as S
 import WAGSI.Plumbing.Types (AH, AfterMatter, CycleDuration(..), EWF, EWF', Globals(..), ICycle(..), NextCycle(..), NoteInFlattenedTime(..), NoteInTime(..), Tag, TheFuture(..), Voice(..), ZipProps(..), AH')
 
@@ -205,19 +206,19 @@ lnv = unto Note <<< prop (Proxy :: _ "volumeFoT")
 lds :: Lens' DroneNote Sample
 lds = unto DroneNote <<< prop (Proxy :: _ "sample")
 
-ldr :: Lens' DroneNote FoT
+ldr :: Lens' DroneNote WithPast
 ldr = unto DroneNote <<< prop (Proxy :: _ "rateFoT")
 
-ldls :: Lens' DroneNote FoT
+ldls :: Lens' DroneNote WithPast
 ldls = unto DroneNote <<< prop (Proxy :: _ "loopStartFoT")
 
-ldle :: Lens' DroneNote FoT
+ldle :: Lens' DroneNote WithPast
 ldle = unto DroneNote <<< prop (Proxy :: _ "loopEndFoT")
 
 ldf :: Lens' DroneNote Boolean
 ldf = unto DroneNote <<< prop (Proxy :: _ "forward")
 
-ldv :: Lens' DroneNote FoT
+ldv :: Lens' DroneNote WithPast
 ldv = unto DroneNote <<< prop (Proxy :: _ "volumeFoT")
 
 lcw :: forall note. Lens' (Cycle note) Number
@@ -234,8 +235,8 @@ lcw = lens getWeight
 when_ :: forall a. (a -> Boolean) -> (a -> a) -> a -> a
 when_ cond func aa = if cond aa then func aa else aa
 
-prune :: forall a. (a -> Boolean) -> Prism' a a
-prune = prism' identity <<< maybeBool
+focus :: forall a. (a -> Boolean) -> Prism' a a
+focus = prism' identity <<< maybeBool
 
 ---
 
@@ -821,3 +822,12 @@ instance sVoice :: S Voice where
 
 instance sVoiceFT :: S (CycleDuration -> Voice) where
   s = identity
+
+betwixt :: forall n. Ord n => n -> n -> n -> n
+betwixt mn mx n = if n < mn then mn else if n > mx then mx else n
+
+derivative :: (Maybe TimeIs -> TimeIs -> Maybe Number -> Number) -> Number -> Maybe TimeIs -> TimeIs -> Maybe Number -> Number
+derivative f y mti ti mn = fromMaybe (f mti ti mn) do
+  mti' <- mti
+  mn' <- mn
+  pure $ (y * (ti.clockTime - mti'.clockTime)) + mn'

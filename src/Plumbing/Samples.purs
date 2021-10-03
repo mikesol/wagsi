@@ -8,7 +8,9 @@ module WAGSI.Plumbing.Samples
   , drone2note
   , Note(..)
   , DroneNote(..)
+  , TimeIs
   , FoT
+  , WithPast
   , sampleToString
   , nameToSampleMNO
   , intentionalSilenceForInternalUseOnly__Sample
@@ -6126,7 +6128,7 @@ derive instance sampleOrd :: Ord Sample
 instance sampleShow :: Show Sample where
   show (Sample i) = "Sample <" <> show i <> ">"
 
-type FoT =
+type TimeIs =
   { clockTime :: Number
   , sampleTime :: Number
   , bigCycleTime :: Number
@@ -6139,7 +6141,10 @@ type FoT =
   , bigCycleDuration :: Number
   , bufferDuration :: Number
   }
-  -> Number
+
+type FoT = TimeIs -> Number
+
+type WithPast = Maybe TimeIs -> TimeIs -> Maybe Number -> Number
 
 newtype Note = Note
   { sample :: Sample
@@ -6163,10 +6168,10 @@ instance showNote :: Show Note where
 newtype DroneNote = DroneNote
   { sample :: Sample
   , forward :: Boolean
-  , rateFoT :: FoT
-  , loopStartFoT :: FoT
-  , loopEndFoT :: FoT
-  , volumeFoT :: FoT
+  , rateFoT :: WithPast
+  , loopStartFoT :: WithPast
+  , loopEndFoT :: WithPast
+  , volumeFoT :: WithPast
   }
 
 derive instance newtypeDroneNote :: Newtype DroneNote _
@@ -6184,19 +6189,19 @@ note2drone :: Note -> DroneNote
 note2drone (Note { sample, forward, rateFoT, volumeFoT, bufferOffsetFoT }) = DroneNote
   { sample
   , forward
-  , rateFoT
-  , volumeFoT
-  , loopStartFoT: bufferOffsetFoT
-  , loopEndFoT: const 0.0
+  , rateFoT: \_ x _ -> rateFoT x
+  , volumeFoT: \_ x _ -> volumeFoT x
+  , loopStartFoT: \_ x _ -> bufferOffsetFoT x
+  , loopEndFoT: const $ const $ const 0.0
   }
 
 drone2note :: DroneNote -> Note
 drone2note (DroneNote { sample, forward, rateFoT, volumeFoT, loopStartFoT }) = Note
   { sample
   , forward
-  , rateFoT
-  , volumeFoT
-  , bufferOffsetFoT: loopStartFoT
+  , rateFoT: \x -> rateFoT Nothing x Nothing
+  , volumeFoT: \x -> volumeFoT Nothing x Nothing
+  , bufferOffsetFoT: \x -> loopStartFoT Nothing x Nothing
   }
 
 sampleToString :: Sample -> String

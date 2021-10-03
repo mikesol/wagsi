@@ -3,14 +3,16 @@ module WAGSI.Plumbing.Engine where
 import Prelude
 
 import Control.Comonad (extract)
+import Control.Comonad.Cofree (Cofree, (:<))
+import Control.Comonad.Cofree.Class (unwrapCofree)
 import Data.Int (toNumber)
 import Data.Lens (_1, over)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Newtype (unwrap)
 import Data.Tuple.Nested (type (/\))
 import Data.Typelevel.Num (class Pos)
-import Data.Vec as V
 import Data.Vec ((+>))
+import Data.Vec as V
 import Effect.Aff (Aff)
 import FRP.Behavior (Behavior)
 import FRP.Event (Event)
@@ -144,56 +146,89 @@ internal1 = unit # SG.loopUsingScene \{ time, buffers, silence, fng: { future, g
       }
   }
 
+type CfLag a
+  = Cofree ((->) a) (Maybe a)
+
+makeLag :: forall a. CfLag a
+makeLag = Nothing :< go
+  where
+  go old = Just old :< go
+
+
+
 droneSg :: SubSceneSig "singleton" ()
   { buf :: Maybe DroneNote
   , silence :: BrowserAudioBuffer
   , buffers :: S.Samples (Maybe ForwardBackwards)
   , time :: Number
   }
-droneSg = unit # SG.loopUsingScene \{ time: time', silence, buffers, buf: buf' } _ ->
-  { control: unit
-  , scene:
-      { singleton: buf' # maybe (gain 0.0 { airLoop: loopBuf { onOff: Off } silence })
-          ( \(DroneNote { sample, forward, volumeFoT, loopStartFoT, loopEndFoT, rateFoT }) ->
-              let
-                bdur = bufferDuration buf
-                sampleTime = time' % bdur
-                bigCycleTime = time' % bdur -- time' - cycleStartsAt
-                littleCycleTime = time' % bdur -- time' - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
-                sampleF = maybe silence (if forward then _.forward else _.backwards) <<< S.sampleToBuffers sample
-                buf = sampleF buffers
-                littleCycleDuration = 1.0
-                bigCycleDuration = 1.0
-                thisIsTime =
-                  { sampleTime
-                  , bigCycleTime
-                  , littleCycleTime
-                  , clockTime: time'
-                  , normalizedClockTime: 0.0 -- cuz it's infinite :-P
-                  , normalizedSampleTime: sampleTime / bdur
-                  , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
-                  , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
-                  , littleCycleDuration
-                  , bigCycleDuration
-                  , bufferDuration: bufferDuration buf
+droneSg = emptyLags
+  # SG.loopUsingScene \{ time: time', silence, buffers, buf: buf' } { timeLag, rateLag, volumeLag, loopStartLag, loopEndLag } ->
+      buf' # maybe'
+        ( \_ ->
+            { control: emptyLags
+            , scene: { singleton: gain 0.0 { airLoop: loopBuf { onOff: Off } silence } }
+            }
+        )
+        ( \(DroneNote { sample, forward, volumeFoT, loopStartFoT, loopEndFoT, rateFoT }) ->
+            let
+              bdur = bufferDuration buf
+              sampleTime = time' % bdur
+              bigCycleTime = time' % bdur -- time' - cycleStartsAt
+              littleCycleTime = time' % bdur -- time' - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
+              sampleF = maybe silence (if forward then _.forward else _.backwards) <<< S.sampleToBuffers sample
+              buf = sampleF buffers
+              littleCycleDuration = 1.0
+              bigCycleDuration = 1.0
+              prevTime = extract timeLag
+              prevVolume = extract volumeLag
+              volumeNow = volumeFoT prevTime thisIsTime prevVolume
+              prevLoopStart = extract loopStartLag
+              loopStartNow = loopStartFoT prevTime thisIsTime prevLoopStart
+              prevLoopEnd = extract loopEndLag
+              loopEndNow = loopEndFoT prevTime thisIsTime prevLoopEnd
+              prevRate = extract rateLag
+              rateNow = rateFoT prevTime thisIsTime prevRate
+              thisIsTime =
+                { sampleTime
+                , bigCycleTime
+                , littleCycleTime
+                , clockTime: time'
+                , normalizedClockTime: 0.0 -- cuz it's infinite :-P
+                , normalizedSampleTime: sampleTime / bdur
+                , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
+                , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
+                , littleCycleDuration
+                , bigCycleDuration
+                , bufferDuration: bufferDuration buf
+                }
+              vol = ff globalFF $ pure $ volumeNow
+            in
+              { control:
+                  { rateLag: unwrapCofree rateLag rateNow
+                  , volumeLag: unwrapCofree volumeLag volumeNow
+                  , loopStartLag: unwrapCofree loopStartLag loopStartNow
+                  , loopEndLag: unwrapCofree loopEndLag loopEndNow
+                  , timeLag: unwrapCofree timeLag thisIsTime
                   }
-                vol = ff globalFF $ pure $ volumeFoT thisIsTime
-              in
-                gain vol
-                  { airLoop: loopBuf -- { airLoop: loopBuf silence }
-
-                      { onOff:
-                          ff globalFF $ pure On
-                      , loopStart: loopStartFoT thisIsTime
-                      , loopEnd: loopEndFoT thisIsTime
-                      , playbackRate: ff globalFF $ pure $ rateFoT thisIsTime
-                      }
-                      buf
+              , scene:
+                  { singleton:
+                      gain vol
+                        { airLoop: loopBuf
+                            { onOff:
+                                ff globalFF $ pure On
+                            , loopStart: loopStartNow
+                            , loopEnd: loopEndNow
+                            , playbackRate: ff globalFF $ pure $ rateNow
+                            }
+                            buf
+                        }
                   }
-          )
-
-      }
-  }
+              }
+        )
+  where
+  emptyLags = { timeLag: makeLag
+    , rateLag: makeLag, volumeLag: makeLag, loopStartLag: makeLag, loopEndLag: makeLag }
 
 thePresent
   :: forall trigger world
