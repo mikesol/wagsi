@@ -8,9 +8,34 @@ module WAGSI.Plumbing.Samples
   , drone2note
   , Note(..)
   , DroneNote(..)
-  , TimeIs
+  , TimeIs(..)
+  , TimeIsAndWas(..)
   , FoT
-  , WithPast
+  , FoP
+  --
+  , class ClockTime
+  , clockTime
+  , class SampleTime
+  , sampleTime
+  , class BigCycleTime
+  , bigCycleTime
+  , class LittleCycleTime
+  , littleCycleTime
+  , class NormalizedClockTime
+  , normalizedClockTime
+  , class NormalizedSampleTime
+  , normalizedSampleTime
+  , class NormalizedBigCycleTime
+  , normalizedBigCycleTime
+  , class NormalizedLittleCycleTime
+  , normalizedLittleCycleTime
+  , class LittleCycleDuration
+  , littleCycleDuration
+  , class BigCycleDuration
+  , bigCycleDuration
+  , class BufferDuration
+  , bufferDuration
+  --
   , sampleToString
   , nameToSampleMNO
   , intentionalSilenceForInternalUseOnly__Sample
@@ -6128,23 +6153,135 @@ derive instance sampleOrd :: Ord Sample
 instance sampleShow :: Show Sample where
   show (Sample i) = "Sample <" <> show i <> ">"
 
-type TimeIs =
-  { clockTime :: Number
-  , sampleTime :: Number
-  , bigCycleTime :: Number
-  , littleCycleTime :: Number
-  , normalizedClockTime :: Number
-  , normalizedSampleTime :: Number
-  , normalizedBigCycleTime :: Number
-  , normalizedLittleCycleTime :: Number
-  , littleCycleDuration :: Number
-  , bigCycleDuration :: Number
-  , bufferDuration :: Number
+newtype TimeIs =
+  TimeIs
+    { clockTime :: Number
+    , sampleTime :: Number
+    , bigCycleTime :: Number
+    , littleCycleTime :: Number
+    , normalizedClockTime :: Number
+    , normalizedSampleTime :: Number
+    , normalizedBigCycleTime :: Number
+    , normalizedLittleCycleTime :: Number
+    , littleCycleDuration :: Number
+    , bigCycleDuration :: Number
+    , bufferDuration :: Number
+    }
+
+derive instance newtypeTimeIs :: Newtype TimeIs _
+
+newtype TimeIsAndWas = TimeIsAndWas
+  { timeIs :: TimeIs
+  , valWas :: Maybe Number
+  , timeWas :: Maybe TimeIs
   }
+
+derive instance newtypeTimeIsAndWas :: Newtype TimeIsAndWas _
 
 type FoT = TimeIs -> Number
 
-type WithPast = Maybe TimeIs -> TimeIs -> Maybe Number -> Number
+type FoP = TimeIsAndWas -> Number
+
+---
+class ClockTime a where
+  clockTime :: a -> Number
+
+instance clockTimeTimeIs :: ClockTime TimeIs where
+  clockTime = unwrap >>> _.clockTime
+
+instance clockTimeTimeIsAndWas :: ClockTime TimeIsAndWas where
+  clockTime = unwrap >>> _.timeIs >>> unwrap >>> _.clockTime
+
+class SampleTime a where
+  sampleTime :: a -> Number
+
+instance sampleTimeTimeIs :: SampleTime TimeIs where
+  sampleTime = unwrap >>> _.sampleTime
+
+instance sampleTimeTimeIsAndWas :: SampleTime TimeIsAndWas where
+  sampleTime = unwrap >>> _.timeIs >>> unwrap >>> _.sampleTime
+
+class BigCycleTime a where
+  bigCycleTime :: a -> Number
+
+instance bigCycleTimeTimeIs :: BigCycleTime TimeIs where
+  bigCycleTime = unwrap >>> _.bigCycleTime
+
+instance bigCycleTimeTimeIsAndWas :: BigCycleTime TimeIsAndWas where
+  bigCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.bigCycleTime
+
+class LittleCycleTime a where
+  littleCycleTime :: a -> Number
+
+instance littleCycleTimeTimeIs :: LittleCycleTime TimeIs where
+  littleCycleTime = unwrap >>> _.littleCycleTime
+
+instance littleCycleTimeTimeIsAndWas :: LittleCycleTime TimeIsAndWas where
+  littleCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.littleCycleTime
+
+class NormalizedClockTime a where
+  normalizedClockTime :: a -> Number
+
+instance normalizedClockTimeTimeIs :: NormalizedClockTime TimeIs where
+  normalizedClockTime = unwrap >>> _.normalizedClockTime
+
+instance normalizedClockTimeTimeIsAndWas :: NormalizedClockTime TimeIsAndWas where
+  normalizedClockTime = unwrap >>> _.timeIs >>> unwrap >>> _.normalizedClockTime
+
+class NormalizedSampleTime a where
+  normalizedSampleTime :: a -> Number
+
+instance normalizedSampleTimeTimeIs :: NormalizedSampleTime TimeIs where
+  normalizedSampleTime = unwrap >>> _.normalizedSampleTime
+
+instance normalizedSampleTimeTimeIsAndWas :: NormalizedSampleTime TimeIsAndWas where
+  normalizedSampleTime = unwrap >>> _.timeIs >>> unwrap >>> _.normalizedSampleTime
+
+class NormalizedBigCycleTime a where
+  normalizedBigCycleTime :: a -> Number
+
+instance normalizedBigCycleTimeTimeIs :: NormalizedBigCycleTime TimeIs where
+  normalizedBigCycleTime = unwrap >>> _.normalizedBigCycleTime
+
+instance normalizedBigCycleTimeTimeIsAndWas :: NormalizedBigCycleTime TimeIsAndWas where
+  normalizedBigCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.normalizedBigCycleTime
+
+class NormalizedLittleCycleTime a where
+  normalizedLittleCycleTime :: a -> Number
+
+instance normalizedLittleCycleTimeTimeIs :: NormalizedLittleCycleTime TimeIs where
+  normalizedLittleCycleTime = unwrap >>> _.normalizedLittleCycleTime
+
+instance normalizedLittleCycleTimeTimeIsAndWas :: NormalizedLittleCycleTime TimeIsAndWas where
+  normalizedLittleCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.normalizedLittleCycleTime
+
+class LittleCycleDuration a where
+  littleCycleDuration :: a -> Number
+
+instance littleCycleDurationTimeIs :: LittleCycleDuration TimeIs where
+  littleCycleDuration = unwrap >>> _.littleCycleDuration
+
+instance littleCycleDurationTimeIsAndWas :: LittleCycleDuration TimeIsAndWas where
+  littleCycleDuration = unwrap >>> _.timeIs >>> unwrap >>> _.littleCycleDuration
+
+class BigCycleDuration a where
+  bigCycleDuration :: a -> Number
+
+instance bigCycleDurationTimeIs :: BigCycleDuration TimeIs where
+  bigCycleDuration = unwrap >>> _.bigCycleDuration
+
+instance bigCycleDurationTimeIsAndWas :: BigCycleDuration TimeIsAndWas where
+  bigCycleDuration = unwrap >>> _.timeIs >>> unwrap >>> _.bigCycleDuration
+
+class BufferDuration a where
+  bufferDuration :: a -> Number
+
+instance bufferDurationTimeIs :: BufferDuration TimeIs where
+  bufferDuration = unwrap >>> _.bufferDuration
+
+instance bufferDurationTimeIsAndWas :: BufferDuration TimeIsAndWas where
+  bufferDuration = unwrap >>> _.timeIs >>> unwrap >>> _.bufferDuration
+---
 
 newtype Note = Note
   { sample :: Sample
@@ -6168,10 +6305,10 @@ instance showNote :: Show Note where
 newtype DroneNote = DroneNote
   { sample :: Sample
   , forward :: Boolean
-  , rateFoT :: WithPast
-  , loopStartFoT :: WithPast
-  , loopEndFoT :: WithPast
-  , volumeFoT :: WithPast
+  , rateFoT :: FoP
+  , loopStartFoT :: FoP
+  , loopEndFoT :: FoP
+  , volumeFoT :: FoP
   }
 
 derive instance newtypeDroneNote :: Newtype DroneNote _
@@ -6189,19 +6326,19 @@ note2drone :: Note -> DroneNote
 note2drone (Note { sample, forward, rateFoT, volumeFoT, bufferOffsetFoT }) = DroneNote
   { sample
   , forward
-  , rateFoT: \_ x _ -> rateFoT x
-  , volumeFoT: \_ x _ -> volumeFoT x
-  , loopStartFoT: \_ x _ -> bufferOffsetFoT x
-  , loopEndFoT: const $ const $ const 0.0
+  , rateFoT: \(TimeIsAndWas { timeIs }) -> rateFoT timeIs
+  , volumeFoT: \(TimeIsAndWas { timeIs }) -> volumeFoT timeIs
+  , loopStartFoT: \(TimeIsAndWas { timeIs }) -> bufferOffsetFoT timeIs
+  , loopEndFoT: const 0.0
   }
 
 drone2note :: DroneNote -> Note
 drone2note (DroneNote { sample, forward, rateFoT, volumeFoT, loopStartFoT }) = Note
   { sample
   , forward
-  , rateFoT: \x -> rateFoT Nothing x Nothing
-  , volumeFoT: \x -> volumeFoT Nothing x Nothing
-  , bufferOffsetFoT: \x -> loopStartFoT Nothing x Nothing
+  , rateFoT: \timeIs -> rateFoT $ TimeIsAndWas { timeWas: Nothing, valWas: Nothing, timeIs }
+  , volumeFoT: \timeIs -> volumeFoT $ TimeIsAndWas { timeWas: Nothing, valWas: Nothing, timeIs }
+  , bufferOffsetFoT: \timeIs -> loopStartFoT $ TimeIsAndWas { timeWas: Nothing, valWas: Nothing, timeIs }
   }
 
 sampleToString :: Sample -> String

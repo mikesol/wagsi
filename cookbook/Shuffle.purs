@@ -2,19 +2,22 @@ module WAGSI.Cookbook.Shuffle where
 
 import Prelude
 
-import WAGSI.Plumbing.Types (TheFuture)
 import Data.Array.NonEmpty (head, replicate, sortBy, tail)
 import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Int (toNumber)
 import Data.Lens (_Just, set, traversed)
+import Data.Newtype (unwrap)
+import Data.Profunctor (lcmap)
 import Data.Traversable (traverse)
 import Data.Tuple (fst, snd, Tuple(..))
 import Test.QuickCheck (arbitrary, mkSeed)
 import Test.QuickCheck.Gen (Gen, evalGen)
 import WAGS.Math (calcSlope)
 import WAGSI.Plumbing.Cycle (pad)
+import WAGSI.Plumbing.Samples ( bufferDuration)
 import WAGSI.Plumbing.Tidal (i, lnbo, lnf, lnv, make, x, s)
+import WAGSI.Plumbing.Types (TheFuture)
 
 shuffle xs = { newSeed: mkSeed 42, size: 10 } # evalGen do
   ns <- traverse (flip map (arbitrary :: Gen Int) <<< Tuple) xs
@@ -28,7 +31,7 @@ hocket fwd len cyc =
 
 bkwd fwd = set (traversed <<< _Just <<< lnf) fwd
 
-short dv = set (traversed <<< _Just <<< lnv) \{ sampleTime, littleCycleDuration } ->
+short dv = set (traversed <<< _Just <<< lnv) $ lcmap unwrap \{ sampleTime, littleCycleDuration } ->
   let
     bar = littleCycleDuration / toNumber dv
     vl
@@ -38,7 +41,7 @@ short dv = set (traversed <<< _Just <<< lnv) \{ sampleTime, littleCycleDuration 
   in
     vl
 
-offsets l i = set (traversed <<< _Just <<< lnbo) \{ bufferDuration } -> bufferDuration * (toNumber i) / toNumber l
+offsets l i = set (traversed <<< _Just <<< lnbo) $ lcmap bufferDuration \d -> d * (toNumber i) / toNumber l
 
 wag :: TheFuture
 wag = make 4.0 { earth: s $ x (hocket false 8 pad) [ hocket true 8 pad ] }

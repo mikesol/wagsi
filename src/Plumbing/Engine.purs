@@ -8,7 +8,7 @@ import Control.Comonad.Cofree.Class (unwrapCofree)
 import Data.Int (toNumber)
 import Data.Lens (_1, over)
 import Data.Maybe (Maybe(..), maybe, maybe')
-import Data.Newtype (unwrap)
+import Data.Newtype (unwrap, wrap)
 import Data.Tuple.Nested (type (/\))
 import Data.Typelevel.Num (class Pos)
 import Data.Vec ((+>))
@@ -35,7 +35,7 @@ import WAGS.Run (SceneI(..))
 import WAGS.Subgraph (SubSceneSig)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
 import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards, downloadFiles', downloadSilence)
-import WAGSI.Plumbing.Samples (DroneNote(..))
+import WAGSI.Plumbing.Samples (DroneNote(..), TimeIs(..))
 import WAGSI.Plumbing.Samples as S
 import WAGSI.Plumbing.Tidal (asScore, intentionalSilenceForInternalUseOnly, openFuture, wag)
 import WAGSI.Plumbing.Types (class HomogenousToVec, Acc, EWF, FutureAndGlobals, Globals, NBuf, Next, RBuf, TheFuture, Voice, ZipProps(..), h2v')
@@ -81,18 +81,19 @@ internal0 = unit # SG.loopUsingScene \{ time, silence, buffers, buf: buf' } _ ->
               littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
               buf = sampleF silence buffers
               thisIsTime =
-                { sampleTime
-                , bigCycleTime
-                , littleCycleTime
-                , clockTime: time
-                , normalizedClockTime: 0.0 -- cuz it's infinite :-P
-                , normalizedSampleTime: sampleTime / duration
-                , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
-                , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
-                , littleCycleDuration
-                , bigCycleDuration
-                , bufferDuration: bufferDuration buf
-                }
+                TimeIs
+                  { sampleTime
+                  , bigCycleTime
+                  , littleCycleTime
+                  , clockTime: time
+                  , normalizedClockTime: 0.0 -- cuz it's infinite :-P
+                  , normalizedSampleTime: sampleTime / duration
+                  , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
+                  , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
+                  , littleCycleDuration
+                  , bigCycleDuration
+                  , bufferDuration: bufferDuration buf
+                  }
               vol = ff globalFF $ pure $ volumeFoT thisIsTime
             in
               gain
@@ -154,8 +155,6 @@ makeLag = Nothing :< go
   where
   go old = Just old :< go
 
-
-
 droneSg :: SubSceneSig "singleton" ()
   { buf :: Maybe DroneNote
   , silence :: BrowserAudioBuffer
@@ -182,14 +181,14 @@ droneSg = emptyLags
               bigCycleDuration = 1.0
               prevTime = extract timeLag
               prevVolume = extract volumeLag
-              volumeNow = volumeFoT prevTime thisIsTime prevVolume
+              volumeNow = volumeFoT $ wrap {timeWas: prevTime, timeIs: thisIsTime, valWas: prevVolume }
               prevLoopStart = extract loopStartLag
-              loopStartNow = loopStartFoT prevTime thisIsTime prevLoopStart
+              loopStartNow = loopStartFoT $ wrap {timeWas: prevTime, timeIs: thisIsTime, valWas: prevLoopStart }
               prevLoopEnd = extract loopEndLag
-              loopEndNow = loopEndFoT prevTime thisIsTime prevLoopEnd
+              loopEndNow = loopEndFoT $ wrap {timeWas: prevTime, timeIs: thisIsTime, valWas: prevLoopEnd }
               prevRate = extract rateLag
-              rateNow = rateFoT prevTime thisIsTime prevRate
-              thisIsTime =
+              rateNow = rateFoT $ wrap {timeWas: prevTime, timeIs: thisIsTime, valWas: prevRate }
+              thisIsTime = wrap
                 { sampleTime
                 , bigCycleTime
                 , littleCycleTime
@@ -227,8 +226,13 @@ droneSg = emptyLags
               }
         )
   where
-  emptyLags = { timeLag: makeLag
-    , rateLag: makeLag, volumeLag: makeLag, loopStartLag: makeLag, loopEndLag: makeLag }
+  emptyLags =
+    { timeLag: makeLag
+    , rateLag: makeLag
+    , volumeLag: makeLag
+    , loopStartLag: makeLag
+    , loopEndLag: makeLag
+    }
 
 thePresent
   :: forall trigger world

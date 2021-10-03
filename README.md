@@ -31,8 +31,6 @@ Practice makes perfect! To try WagsI tidal out:
 5. In VSCode, open `src/LiveCodeHere/Wagged.purs`. Start editing & save the file to render. You should hear some beats! If not, file an issue on this repo.
 6. Keep editing, keep saving, and listen to your creation!
 
-> Due to a glitch, when you start editing `Wagged.purs`, save it a couple times before you make any edits. This will help avoid pops on the first render. Hopefully this will be fixed soon.
-
 ## API
 
 WagsI Tidal implements a subset of the [tidal](https://tidalcycles.org/) API + a couple additional bells and whistles.

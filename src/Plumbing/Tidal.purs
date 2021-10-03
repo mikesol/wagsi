@@ -121,7 +121,7 @@ import Text.Parsing.StringParser.Combinators (between, many, many1, optionMaybe,
 import Type.Proxy (Proxy(..))
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
-import WAGSI.Plumbing.Samples (DroneNote(..), FoT, Note(..), Sample, WithPast, TimeIs)
+import WAGSI.Plumbing.Samples (DroneNote(..), FoT, Note(..), Sample, FoP)
 import WAGSI.Plumbing.Samples as S
 import WAGSI.Plumbing.Types (AH, AfterMatter, CycleDuration(..), EWF, EWF', Globals(..), ICycle(..), NextCycle(..), NoteInFlattenedTime(..), NoteInTime(..), Tag, TheFuture(..), Voice(..), ZipProps(..), AH')
 
@@ -206,19 +206,19 @@ lnv = unto Note <<< prop (Proxy :: _ "volumeFoT")
 lds :: Lens' DroneNote Sample
 lds = unto DroneNote <<< prop (Proxy :: _ "sample")
 
-ldr :: Lens' DroneNote WithPast
+ldr :: Lens' DroneNote FoP
 ldr = unto DroneNote <<< prop (Proxy :: _ "rateFoT")
 
-ldls :: Lens' DroneNote WithPast
+ldls :: Lens' DroneNote FoP
 ldls = unto DroneNote <<< prop (Proxy :: _ "loopStartFoT")
 
-ldle :: Lens' DroneNote WithPast
+ldle :: Lens' DroneNote FoP
 ldle = unto DroneNote <<< prop (Proxy :: _ "loopEndFoT")
 
 ldf :: Lens' DroneNote Boolean
 ldf = unto DroneNote <<< prop (Proxy :: _ "forward")
 
-ldv :: Lens' DroneNote WithPast
+ldv :: Lens' DroneNote FoP
 ldv = unto DroneNote <<< prop (Proxy :: _ "volumeFoT")
 
 lcw :: forall note. Lens' (Cycle note) Number
@@ -824,10 +824,15 @@ instance sVoiceFT :: S (CycleDuration -> Voice) where
   s = identity
 
 betwixt :: forall n. Ord n => n -> n -> n -> n
-betwixt mn mx n = if n < mn then mn else if n > mx then mx else n
+betwixt mn' mx' n = if n < mn then mn else if n > mx then mx else n
+  where
+  mn = min mn' mx'
+  mx = max mn' mx'
 
-derivative :: (Maybe TimeIs -> TimeIs -> Maybe Number -> Number) -> Number -> Maybe TimeIs -> TimeIs -> Maybe Number -> Number
-derivative f y mti ti mn = fromMaybe' (\_ -> f mti ti mn) do
-  mti' <- mti
-  mn' <- mn
-  pure $ (y * (ti.clockTime - mti'.clockTime)) + mn'
+derivative :: FoP -> Number -> FoP
+derivative f y v = fromMaybe' (\_ -> f v) do
+  let v' = unwrap v
+  let ti = v'.timeIs
+  mti' <- v'.timeWas
+  mn' <- v'.valWas
+  pure $ (y * ((unwrap ti).clockTime - (unwrap mti').clockTime)) + mn'
