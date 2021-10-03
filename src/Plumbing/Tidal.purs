@@ -51,6 +51,13 @@ module WAGSI.Plumbing.Tidal
   , lnbo
   , lnf
   , lnv
+  , lds
+  , ldr
+  , ldls
+  , ldle
+  , ldf
+  , ldv
+
   , lcw
   ---
   , when_
@@ -113,10 +120,9 @@ import Text.Parsing.StringParser.Combinators (between, many, many1, optionMaybe,
 import Type.Proxy (Proxy(..))
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
-import WAGSI.Plumbing.Samples (FoT, Note(..), Sample)
+import WAGSI.Plumbing.Samples (DroneNote(..), FoT, Note(..), Sample)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types (AfterMatter, CycleDuration(..), EWF, EWF', Globals(..), ICycle(..), NextCycle(..), NoteInFlattenedTime(..), NoteInTime(..), Tag, TheFuture(..), Voice(..), ZipProps(..))
-
+import WAGSI.Plumbing.Types (AH, AfterMatter, CycleDuration(..), EWF, EWF', Globals(..), ICycle(..), NextCycle(..), NoteInFlattenedTime(..), NoteInTime(..), Tag, TheFuture(..), Voice(..), ZipProps(..), AH')
 
 -- | Only play the first cycle, and truncate/interrupt the playing cycle at the next sub-ending.
 impatient :: NextCycle -> NextCycle
@@ -124,21 +130,25 @@ impatient = over (unto NextCycle <<< prop (Proxy :: _ "force")) (const true)
 
 make
   :: forall inRec overfull rest
-   . Union inRec (EWF (CycleDuration -> Voice)) overfull
-  => Nub overfull (EWF' (CycleDuration -> Voice) rest)
+   . Union inRec (EWF' (CycleDuration -> Voice) (AH (Maybe DroneNote))) overfull
+  => Nub overfull (EWF' (CycleDuration -> Voice) (AH' (Maybe DroneNote) rest))
   => Number
   -> { | inRec }
   -> TheFuture
-
-make cl rr = TheFuture $ hmapWithIndex (ZipProps z)
-  ( hmap (\(_ :: (CycleDuration -> Voice)) -> (wrap cl))
-      { earth: z.earth
-      , wind: z.wind
-      , fire: z.fire
-      }
+make cl rr = TheFuture $ Record.union
+  ( hmapWithIndex (ZipProps z)
+      ( hmap (\(_ :: (CycleDuration -> Voice)) -> (wrap cl))
+          { earth: z.earth
+          , wind: z.wind
+          , fire: z.fire
+          }
+      )
   )
+  { air: z.air, heart: z.heart }
   where
-  z = Record.merge rr openVoices :: { | EWF' (CycleDuration -> Voice) rest }
+  z =
+    Record.merge rr (Record.union openVoices openDrones)
+      :: { | EWF' (CycleDuration -> Voice) (AH' (Maybe DroneNote) rest) }
 
 plainly :: forall f. Functor f => f NextCycle -> f Voice
 plainly = map (Voice <<< { globals: Globals { gain: const 1.0 }, next: _ })
@@ -191,6 +201,24 @@ lnf = unto Note <<< prop (Proxy :: _ "forward")
 
 lnv :: Lens' Note FoT
 lnv = unto Note <<< prop (Proxy :: _ "volumeFoT")
+
+lds :: Lens' DroneNote Sample
+lds = unto DroneNote <<< prop (Proxy :: _ "sample")
+
+ldr :: Lens' DroneNote FoT
+ldr = unto DroneNote <<< prop (Proxy :: _ "rateFoT")
+
+ldls :: Lens' DroneNote FoT
+ldls = unto DroneNote <<< prop (Proxy :: _ "loopStartFoT")
+
+ldle :: Lens' DroneNote FoT
+ldle = unto DroneNote <<< prop (Proxy :: _ "loopEndFoT")
+
+ldf :: Lens' DroneNote Boolean
+ldf = unto DroneNote <<< prop (Proxy :: _ "forward")
+
+ldv :: Lens' DroneNote FoT
+ldv = unto DroneNote <<< prop (Proxy :: _ "volumeFoT")
 
 lcw :: forall note. Lens' (Cycle note) Number
 lcw = lens getWeight
@@ -545,8 +573,15 @@ openVoice = Voice
 openVoices :: { | EWF (CycleDuration -> Voice) }
 openVoices = hmap (\(_ :: Unit) -> (const $ openVoice)) (mempty :: { | EWF Unit })
 
+openDrones :: { | AH (Maybe DroneNote) }
+openDrones = hmap (\(_ :: Unit) -> Nothing) (mempty :: { | AH Unit })
+
 openFuture :: TheFuture
-openFuture = TheFuture $ hmap (\(_ :: Unit) -> openVoice) (mempty :: { | EWF Unit })
+openFuture = TheFuture $ Record.union
+  ( hmap (\(_ :: Unit) -> openVoice)
+      (mempty :: { | EWF Unit })
+  )
+  (hmap (\(_ :: Unit) -> Nothing) (mempty :: { | AH Unit }))
 
 foreign import wagHandlers :: Effect (Object (TheFuture -> Effect Unit))
 
@@ -566,7 +601,6 @@ wag =
     id <- (fold <<< map show) <$> (sequence $ A.replicate 24 (randomInt 0 9))
     wag_ id f
     pure (dewag_ id)
-
 
 src :: Event String
 src =
@@ -753,7 +787,7 @@ djQuickCheck = do
   { cycle, voice: earth } <- genVoice 1.0
   wind <- pure openVoice
   fire <- pure openVoice
-  pure $ { cycle, future: TheFuture { earth, wind, fire } }
+  pure $ { cycle, future: TheFuture { earth, wind, fire, air: Nothing, heart: Nothing } }
 
 class S s where
   s :: s -> CycleDuration -> Voice

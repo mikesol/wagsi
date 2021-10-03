@@ -6,13 +6,14 @@ import Data.Foldable (class Foldable, foldMapDefaultR, foldl, foldr, intercalate
 import Data.FunctorWithIndex (class FunctorWithIndex)
 import Data.Generic.Rep (class Generic)
 import Data.Int (floor)
+import Data.List.NonEmpty (NonEmptyList(..))
 import Data.List.NonEmpty as NEL
-import Data.List.Types (NonEmptyList)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
+import Data.NonEmpty ((:|))
 import Data.Show.Generic (genericShow)
 import Data.Traversable (class Traversable, sequenceDefault, traverse)
-import WAGSI.Plumbing.Samples (Sample, Note(..))
+import WAGSI.Plumbing.Samples (DroneNote, Note(..), Sample, note2drone)
 import WAGSI.Plumbing.Samples as S
 
 data Cycle a
@@ -58,6 +59,29 @@ flattenCycle = case _ of
   Simultaneous { nel } -> join $ map flattenCycle nel
   Internal { nel } -> join $ map flattenCycle nel
   SingleNote { val } -> pure val
+
+firstCycle :: forall a. Cycle a -> a
+firstCycle = go
+  where
+  go' (NonEmptyList (aa :| _)) = go aa
+  go = case _ of 
+    Branching { nel } -> go' nel
+    Simultaneous { nel } -> go' nel
+    Internal { nel } -> go' nel
+    SingleNote { val } -> val
+
+lastCycle :: forall a. Cycle a -> a
+lastCycle = go
+  where
+  go' aa = go (NEL.last aa)
+  go = case _ of 
+    Branching { nel } -> go' nel
+    Simultaneous { nel } -> go' nel
+    Internal { nel } -> go' nel
+    SingleNote { val } -> val
+
+c2d :: Cycle (Maybe Note) -> Maybe DroneNote
+c2d = firstCycle >>> map note2drone
 
 reverse :: Cycle ~> Cycle
 reverse l = go l
@@ -6815,3 +6839,41 @@ db_11 = noteFromSample S.db_11__Sample
 
 db_12 :: Cycle (Maybe Note)
 db_12 = noteFromSample S.db_12__Sample
+
+--- drones
+
+spacewind :: Cycle (Maybe Note)
+spacewind = noteFromSample S.spacewind_0__Sample
+
+spacewind_0 :: Cycle (Maybe Note)
+spacewind_0 = noteFromSample S.spacewind_0__Sample
+
+ambienta :: Cycle (Maybe Note)
+ambienta = noteFromSample S.ambienta_0__Sample
+
+ambienta_0 :: Cycle (Maybe Note)
+ambienta_0 = noteFromSample S.ambienta_0__Sample
+
+lowdark :: Cycle (Maybe Note)
+lowdark = noteFromSample S.lowdark_0__Sample
+
+lowdark_0 :: Cycle (Maybe Note)
+lowdark_0 = noteFromSample S.lowdark_0__Sample
+
+harmonium :: Cycle (Maybe Note)
+harmonium = noteFromSample S.harmonium_0__Sample
+
+harmonium_0 :: Cycle (Maybe Note)
+harmonium_0 = noteFromSample S.harmonium_0__Sample
+
+hollowair :: Cycle (Maybe Note)
+hollowair = noteFromSample S.hollowair_0__Sample
+
+hollowair_0 :: Cycle (Maybe Note)
+hollowair_0 = noteFromSample S.hollowair_0__Sample
+
+digeridoo :: Cycle (Maybe Note)
+digeridoo = noteFromSample S.digeridoo_0__Sample
+
+digeridoo_0 :: Cycle (Maybe Note)
+digeridoo_0 = noteFromSample S.digeridoo_0__Sample

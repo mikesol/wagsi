@@ -19,7 +19,7 @@ import WAGS.Lib.BufferPool (AScoredBufferPool, CfScoredBufferPool)
 import WAGS.Lib.Score (CfNoteStream')
 import WAGS.WebAPI (BrowserAudioBuffer)
 import WAGSI.Plumbing.Download (ForwardBackwards)
-import WAGSI.Plumbing.Samples (FoT)
+import WAGSI.Plumbing.Samples (DroneNote, FoT)
 import WAGSI.Plumbing.Samples as S
 
 --- @@ ---
@@ -63,11 +63,12 @@ derive instance newtypeVoice :: Newtype Voice _
 type EWF' (v :: Type) r = (earth :: v, wind :: v, fire :: v | r)
 type EWF (v :: Type) = EWF' v ()
 
-newtype TheFuture = TheFuture { | EWF Voice }
+type AH' (v :: Type) r = (air :: v, heart :: v | r)
+type AH (v :: Type) = AH' v ()
+
+newtype TheFuture = TheFuture { | EWF' Voice (AH (Maybe DroneNote)) }
 
 derive instance newtypeTheFuture :: Newtype TheFuture _
-
-
 
 --- @@ ---
 newtype CycleDuration = CycleDuration Number

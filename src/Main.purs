@@ -2,11 +2,11 @@ module WAGSI.Main where
 
 import Prelude
 
+import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Monad.Error.Class (try)
 import Data.Either (hush)
 import Data.Foldable (for_)
-import Control.Alt ((<|>))
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
@@ -40,8 +40,8 @@ import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards)
 import WAGSI.Plumbing.Engine (engine)
 import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Samples (Samples)
-import WAGSI.Plumbing.Tidal (djQuickCheck, openVoice, src)
-import WAGSI.Plumbing.Types (TheFuture(..))
+import WAGSI.Plumbing.Tidal (djQuickCheck, openFuture, src)
+import WAGSI.Plumbing.Types (TheFuture)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
 
 main :: Effect Unit
@@ -217,9 +217,6 @@ easingAlgorithm =
   in
     fOf 15
 
-emptyFuture :: TheFuture
-emptyFuture = TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
-
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Tick tick -> do
@@ -279,7 +276,7 @@ handleAction = case _ of
               (-1) -> do
                 HS.notify listener GraphRenderingDone
                 HS.notify listener (Tick $ Just 1)
-                theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
+                theFuture.push $ openFuture
               0 -> HS.notify listener (Tick $ Nothing) *> theFuture.push Example.example
               _ -> pure unit
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
@@ -290,7 +287,7 @@ handleAction = case _ of
               (-3) -> do
                 HS.notify listener GraphRenderingDone
                 HS.notify listener (Tick $ Just 3)
-                theFuture.push $ TheFuture { earth: openVoice, wind: openVoice, fire: openVoice }
+                theFuture.push $ openFuture
               (-2) -> HS.notify listener (Tick $ Just 2)
               (-1) -> HS.notify listener (Tick $ Just 1)
               ck -> do
@@ -304,14 +301,14 @@ handleAction = case _ of
                 nce2 <- Ref.read nextCycleEnds
                 HS.notify listener (Tick $ Just (nce2 - ck))
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
-        primePump <- fromMaybe emptyFuture <$> (H.liftEffect $ cachedWag Nothing Just)
+        primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
         unsubscribeFromWags <-
           H.liftEffect do
             usu <- subscribe
               ( run
                   ( case wagsiMode of
                       LiveCoding -> trigger <|> pure { theFuture: primePump }
-                      _ -> trigger <|> pure { theFuture: emptyFuture }
+                      _ -> trigger <|> pure { theFuture: openFuture }
                   )
                   world
                   { easingAlgorithm }
