@@ -1,8 +1,6 @@
 # WagsI
 
-> The tidal branch
-
-Collaborative interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags). This branch emulates a [Tidal](https://tidalcycles.org/)-like system in the browser.
+Collaborative interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags). Emulates a [Tidal](https://tidalcycles.org/)-like system in the browser.
 
 **The first tidal jam session is on October 3 at 9PM Finnish time, 8PM in Berlin, 11AM in LA. More info on the `#music` channel of the [PureScript Discord](https://purescript.org/chat).**
 
@@ -12,6 +10,7 @@ Collaborative interactive coding with [`purescript-wags`](https://github.com/mik
 
 If you're attending a wagsi Jam session, please make sure to follow these instructions.
 
+<<<<<<< HEAD
 1. Either:
   - Install VSCode, the PureScript IDE extension, and the VSCode Live Share extension. Once the extension is installed, click on the Live Share button on the left bar (the arrow bending counterclockwise around a circle). To use Live Share, you'll need to sign in with GitHub account, so make sure to have one of those as well.
   - Find a link to the live-coding session the `#music` channel of [PureScript Discord](https://purescript.org/chat). You can join right from the browser without installing VSCode. However, you'll still need a GitHub account. 
@@ -22,6 +21,11 @@ If you're attending a wagsi Jam session, please make sure to follow these instru
 ## Practicing before the jam
 
 Practice makes perfect! To try WagsI tidal out:
+=======
+1. Install VSCode and the VSCode Live Share extension. Once the extension is installed, click on the Live Share button on the left bar (the arrow bending counterclockwise around a circle). To use Live Share, you'll need to sign in with GitHub or a Microsoft account, so make sure to have one of those as well.
+1. Make sure to join the live chat on the `#music` channel of [PureScript Discord](https://purescript.org/chat) from a **different** device than the one making the music you're listening to. For example, you can use your computer to render the audio and the phone for joining the meetup or vice versa. It's generally a good idea to use headphones.
+1. If you're not already familiar with PureScript, check out some of the [existing resources on PureScript](https://leanpub.com/fp-made-easier) to get started. If you're a noob or novice and on the fence about joining a jam session, fear not - other folks will be there that can help you out.
+>>>>>>> main
 
 1. Clone this repo.
 2. Open this repo with VSCode. Make sure the PureScript IDE extension is installed.
