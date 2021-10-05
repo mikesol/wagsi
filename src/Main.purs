@@ -312,7 +312,7 @@ handleAction = case _ of
               ( run
                   ( case wagsiMode of
                       LiveCoding -> trigger <|> pure { theFuture: primePump }
-                      _ -> trigger
+                      _ -> trigger <|> pure { theFuture: openFuture }
                   )
                   world
                   { easingAlgorithm }
