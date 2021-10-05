@@ -22,7 +22,7 @@ module.exports = {
         },
       },
       {
-        test: /Wagged\.purs/,
+        test: /(Example|Wagged)\.purs/,
         include: path.resolve(__dirname, "src"),
         type: 'asset/source'
       },

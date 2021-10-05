@@ -119,7 +119,7 @@ import WAGSI.Plumbing.Tidal (make, parse, plainly, rend)
 
 wag :: TheFuture
 wag = make 2.0
-  { earth: plainly $ rend $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
+  { earth: map plainly $ rend $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
 

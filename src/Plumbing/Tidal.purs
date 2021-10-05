@@ -36,6 +36,7 @@ module WAGSI.Plumbing.Tidal
   , onTag'
   ---
   , lvg
+  , lvt
   , lfn
   , lft
   , lfb
@@ -58,6 +59,7 @@ module WAGSI.Plumbing.Tidal
   , ldf
   , ldv
   , lcw
+  , ldt
   ---
   , when_
   , focus
@@ -103,8 +105,11 @@ import Data.Set as Set
 import Data.String.CodeUnits (fromCharArray, singleton)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (fst, snd)
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested ((/\), type (/\))
+import Data.Typelevel.Num (D1)
 import Data.Unfoldable (replicate)
+import Data.Vec ((+>))
+import Data.Vec as V
 import Effect (Effect)
 import Effect.Random (randomInt)
 import FRP.Event (Event, makeEvent)
@@ -112,6 +117,7 @@ import Foreign.Object (Object)
 import Foreign.Object as Object
 import Heterogeneous.Mapping (hmap, hmapWithIndex)
 import Prim.Row (class Nub, class Union)
+import Prim.RowList (class RowToList)
 import Record as Record
 import Test.QuickCheck (arbitrary)
 import Test.QuickCheck.Gen (Gen, arrayOf1, elements, frequency, resize)
@@ -119,11 +125,39 @@ import Text.Parsing.StringParser (Parser, fail, runParser, try)
 import Text.Parsing.StringParser.CodeUnits (satisfy, oneOf, skipSpaces, string, alphaNum, anyDigit, char)
 import Text.Parsing.StringParser.Combinators (between, many, many1, optionMaybe, sepBy, sepEndBy)
 import Type.Proxy (Proxy(..))
+import WAGS.Create (class Create)
+import WAGS.Create.Optionals (input)
+import WAGS.Graph.AudioUnit as CTOR
+import WAGS.Tumult (Tumultuous)
+import WAGS.Tumult.Make (tumultuously)
+import WAGS.Validation (class NodesCanBeTumultuous, class SubgraphIsRenderable)
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
+import WAGSI.Plumbing.FX (WAGSITumult)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
-import WAGSI.Plumbing.Samples (DroneNote(..), FoT, Note(..), Sample, FoP)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types (AH, AfterMatter, CycleDuration(..), EWF, EWF', Globals(..), ICycle(..), NextCycle(..), NoteInFlattenedTime(..), NoteInTime(..), Tag, TheFuture(..), Voice(..), ZipProps(..), AH')
+import WAGSI.Plumbing.Types
+  ( AH
+  , AH'
+  , AfterMatter
+  , CycleDuration(..)
+  , DroneNote(..)
+  , EWF
+  , EWF'
+  , FoP
+  , FoT
+  , Globals(..)
+  , ICycle(..)
+  , NextCycle(..)
+  , Note(..)
+  , NoteInFlattenedTime(..)
+  , NoteInTime(..)
+  , Sample
+  , Tag
+  , TheFuture(..)
+  , TimeIs
+  , Voice(..)
+  , ZipProps(..)
+  )
 
 -- | Only play the first cycle, and truncate/interrupt the playing cycle at the next sub-ending.
 impatient :: NextCycle -> NextCycle
@@ -151,12 +185,34 @@ make cl rr = TheFuture $ Record.union
     Record.merge rr (Record.union openVoices openDrones)
       :: { | EWF' (CycleDuration -> Voice) (AH' (Maybe DroneNote) rest) }
 
-plainly :: forall f. Functor f => f NextCycle -> f Voice
-plainly = map (Voice <<< { globals: Globals { gain: const 1.0 }, next: _ })
+fx
+  :: forall scene graph graphRL
+   . RowToList graph graphRL
+  => Create scene () graph
+  => SubgraphIsRenderable graph "output" (voice :: Unit)
+  => NodesCanBeTumultuous graphRL
+  => { | scene }
+  -> Tumultuous D1 "output" (voice :: Unit)
+fx scene = tumultuously (scene +> V.empty)
+
+hello :: CTOR.Input "voice" /\ {}
+hello = input (Proxy :: _ "voice")
+
+goodbye :: forall a. a -> { output :: a }
+goodbye = { output: _ }
+
+calm :: Tumultuous D1 "output" (voice :: Unit)
+calm = fx $ goodbye hello
+
+plainly :: NextCycle -> Voice
+plainly = Voice <<< { globals: Globals { gain: const 1.0, fx: const calm }, next: _ }
 
 --- lenses
 lvg :: Lens' Voice ({ clockTime :: Number } -> Number)
 lvg = unto Voice <<< prop (Proxy :: _ "globals") <<< unto Globals <<< prop (Proxy :: _ "gain")
+
+lvt :: Lens' Voice ({ clockTime :: Number } -> Tumultuous D1 "output" (voice :: Unit))
+lvt = unto Voice <<< prop (Proxy :: _ "globals") <<< unto Globals <<< prop (Proxy :: _ "fx")
 
 lfn :: forall note. Lens' (NoteInFlattenedTime note) note
 lfn = unto NoteInFlattenedTime <<< prop (Proxy :: _ "note")
@@ -220,6 +276,9 @@ ldf = unto DroneNote <<< prop (Proxy :: _ "forward")
 
 ldv :: Lens' DroneNote FoP
 ldv = unto DroneNote <<< prop (Proxy :: _ "volumeFoT")
+
+ldt :: Lens' DroneNote (TimeIs -> WAGSITumult)
+ldt = unto DroneNote <<< prop (Proxy :: _ "tumultFoT")
 
 lcw :: forall note. Lens' (Cycle note) Number
 lcw = lens getWeight
@@ -567,7 +626,7 @@ flattenScore l = flattened
 
 openVoice :: Voice
 openVoice = Voice
-  { globals: Globals { gain: const 0.0 }
+  { globals: Globals { gain: const 0.0, fx: const calm }
   , next: asScore false (pure intentionalSilenceForInternalUseOnly)
   }
 
@@ -776,7 +835,7 @@ genCycle = go 0
 
 genVoice :: Number -> Gen { cycle :: Cycle (Maybe Note), voice :: Voice }
 genVoice vol = do
-  let globals = Globals { gain: const $ vol }
+  let globals = Globals { gain: const vol, fx: const calm }
   cycle <- genCycle
   cl' <- arbitrary
   let cl = CycleDuration (1.0 + 3.0 * cl')
@@ -794,28 +853,28 @@ class S s where
   s :: s -> CycleDuration -> Voice
 
 instance sString :: S String where
-  s = plainly <<< parseInternal
+  s = map plainly <<< parseInternal
 
 instance sCycle :: S (Cycle (Maybe Note)) where
-  s = plainly <<< rend
+  s = map plainly <<< rend
 
 instance sNit :: S (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note)))) where
-  s = plainly <<< pure <<< rendNit
+  s = map plainly <<< pure <<< rendNit
 
 instance sNitFT :: S (CycleDuration -> (NonEmptyList (NonEmptyList (NoteInTime (Maybe Note))))) where
-  s = plainly <<< map rendNit
+  s = map plainly <<< map rendNit
 
 instance sNift :: S (NonEmptyList (NoteInFlattenedTime Note)) where
-  s = plainly <<< pure <<< asScore false
+  s = map plainly <<< pure <<< asScore false
 
 instance sNiftFT :: S (CycleDuration -> (NonEmptyList (NoteInFlattenedTime Note))) where
-  s = plainly <<< map (asScore false)
+  s = map plainly <<< map (asScore false)
 
 instance sNextCycle :: S NextCycle where
-  s = plainly <<< pure
+  s = map plainly <<< pure
 
 instance sNextCycleFT :: S (CycleDuration -> NextCycle) where
-  s = plainly
+  s = map plainly
 
 instance sVoice :: S Voice where
   s = const

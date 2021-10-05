@@ -6,11 +6,12 @@ import Data.Array.NonEmpty (NonEmptyArray, fromNonEmpty)
 import Data.NonEmpty ((:|))
 import Data.Tuple.Nested (type (/\), (/\))
 import WAGSI.Plumbing.Samples as S
+import WAGSI.Plumbing.Types (Sample)
 
-sampleToDur' :: NonEmptyArray (S.Sample /\ Number)
+sampleToDur' :: NonEmptyArray (Sample /\ Number)
 sampleToDur' = fromNonEmpty $ (S.kicklinn_0__Sample /\ 0.200658) :| []
 
-sampleToDur :: NonEmptyArray (S.Sample /\ Number)
+sampleToDur :: NonEmptyArray (Sample /\ Number)
 sampleToDur = fromNonEmpty $ (S.kicklinn_0__Sample /\ 0.200658) :|
   [ S.msg_0__Sample /\ 0.011773
   , S.msg_1__Sample /\ 0.015818

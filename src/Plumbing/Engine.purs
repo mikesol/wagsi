@@ -23,7 +23,7 @@ import Prim.RowList (class RowToList)
 import Record as Record
 import Type.Proxy (Proxy(..))
 import WAGS.Control.Functions.Subgraph as SG
-import WAGS.Create.Optionals (gain, loopBuf, playBuf, speaker, subgraph)
+import WAGS.Create.Optionals (gain, loopBuf, playBuf, speaker, subgraph, tumult)
 import WAGS.Graph.AudioUnit (OnOff(..))
 import WAGS.Graph.Parameter (ff)
 import WAGS.Interpret (bufferDuration)
@@ -34,11 +34,11 @@ import WAGS.Math (calcSlope)
 import WAGS.Run (SceneI(..))
 import WAGS.Subgraph (SubSceneSig)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
-import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards, downloadFiles', downloadSilence)
-import WAGSI.Plumbing.Samples (DroneNote(..), TimeIs(..))
+import WAGSI.Plumbing.Download (HasOrLacks, downloadFiles', downloadSilence)
+import WAGSI.Plumbing.FX (calm)
 import WAGSI.Plumbing.Samples as S
 import WAGSI.Plumbing.Tidal (asScore, intentionalSilenceForInternalUseOnly, openFuture, wag)
-import WAGSI.Plumbing.Types (class HomogenousToVec, Acc, EWF, FutureAndGlobals, Globals, NBuf, Next, RBuf, TheFuture, Voice, ZipProps(..), h2v')
+import WAGSI.Plumbing.Types (class HomogenousToVec, Acc, EWF, FutureAndGlobals, Globals, NBuf, Next, RBuf, TheFuture, Voice, ZipProps(..), h2v', Samples, ForwardBackwards, DroneNote(..), TimeIs(..))
 
 globalFF = 0.03 :: Number
 
@@ -51,7 +51,7 @@ acc =
 internal0 :: SubSceneSig "singleton" ()
   { buf :: Maybe (Buffy RBuf)
   , silence :: BrowserAudioBuffer
-  , buffers :: S.Samples (Maybe ForwardBackwards)
+  , buffers :: Samples (Maybe ForwardBackwards)
   , time :: Number
   }
 internal0 = unit # SG.loopUsingScene \{ time, silence, buffers, buf: buf' } _ ->
@@ -124,7 +124,7 @@ internal0 = unit # SG.loopUsingScene \{ time, silence, buffers, buf: buf' } _ ->
 
 internal1 :: SubSceneSig "singleton" ()
   { fng :: FutureAndGlobals
-  , buffers :: S.Samples (Maybe ForwardBackwards)
+  , buffers :: Samples (Maybe ForwardBackwards)
   , silence :: BrowserAudioBuffer
   , time :: Number
   }
@@ -132,17 +132,19 @@ internal1 = unit # SG.loopUsingScene \{ time, buffers, silence, fng: { future, g
   { control: unit
   , scene:
       { singleton: gain ((unwrap globals).gain { clockTime: time })
-          { sg: subgraph
-              (extract future)
-              (const $ const $ internal0)
-              ( const $
-                  { time
-                  , buffers
-                  , silence
-                  , buf: _
-                  }
-              )
-              {}
+          { tmlt: tumult ((unwrap globals).fx { clockTime: time })
+              { voice: subgraph
+                  (extract future)
+                  (const $ const $ internal0)
+                  ( const $
+                      { time
+                      , buffers
+                      , silence
+                      , buf: _
+                      }
+                  )
+                  {}
+              }
           }
       }
   }
@@ -158,7 +160,7 @@ makeLag = Nothing :< go
 droneSg :: SubSceneSig "singleton" ()
   { buf :: Maybe DroneNote
   , silence :: BrowserAudioBuffer
-  , buffers :: S.Samples (Maybe ForwardBackwards)
+  , buffers :: Samples (Maybe ForwardBackwards)
   , time :: Number
   }
 droneSg = emptyLags
@@ -166,10 +168,12 @@ droneSg = emptyLags
       buf' # maybe'
         ( \_ ->
             { control: emptyLags
-            , scene: { singleton: gain 0.0 { airLoop: loopBuf { onOff: Off } silence } }
+            , scene:
+                { singleton: gain 0.0 { dronetmlt: tumult calm { voice: loopBuf { onOff: Off } silence } }
+                }
             }
         )
-        ( \(DroneNote { sample, forward, volumeFoT, loopStartFoT, loopEndFoT, rateFoT }) ->
+        ( \(DroneNote { sample, forward, volumeFoT, loopStartFoT, loopEndFoT, rateFoT, tumultFoT }) ->
             let
               bdur = bufferDuration buf
               sampleTime = time' % bdur
@@ -181,13 +185,13 @@ droneSg = emptyLags
               bigCycleDuration = 1.0
               prevTime = extract timeLag
               prevVolume = extract volumeLag
-              volumeNow = volumeFoT $ wrap {timeWas: prevTime, timeIs: thisIsTime, valWas: prevVolume }
+              volumeNow = volumeFoT $ wrap { timeWas: prevTime, timeIs: thisIsTime, valWas: prevVolume }
               prevLoopStart = extract loopStartLag
-              loopStartNow = loopStartFoT $ wrap {timeWas: prevTime, timeIs: thisIsTime, valWas: prevLoopStart }
+              loopStartNow = loopStartFoT $ wrap { timeWas: prevTime, timeIs: thisIsTime, valWas: prevLoopStart }
               prevLoopEnd = extract loopEndLag
-              loopEndNow = loopEndFoT $ wrap {timeWas: prevTime, timeIs: thisIsTime, valWas: prevLoopEnd }
+              loopEndNow = loopEndFoT $ wrap { timeWas: prevTime, timeIs: thisIsTime, valWas: prevLoopEnd }
               prevRate = extract rateLag
-              rateNow = rateFoT $ wrap {timeWas: prevTime, timeIs: thisIsTime, valWas: prevRate }
+              rateNow = rateFoT $ wrap { timeWas: prevTime, timeIs: thisIsTime, valWas: prevRate }
               thisIsTime = wrap
                 { sampleTime
                 , bigCycleTime
@@ -213,14 +217,16 @@ droneSg = emptyLags
               , scene:
                   { singleton:
                       gain vol
-                        { airLoop: loopBuf
-                            { onOff:
-                                ff globalFF $ pure On
-                            , loopStart: loopStartNow
-                            , loopEnd: loopEndNow
-                            , playbackRate: ff globalFF $ pure $ rateNow
+                        { dronetmlt: tumult (tumultFoT thisIsTime)
+                            { voice: loopBuf
+                                { onOff:
+                                    ff globalFF $ pure On
+                                , loopStart: loopStartNow
+                                , loopEnd: loopEndNow
+                                , playbackRate: ff globalFF $ pure $ rateNow
+                                }
+                                buf
                             }
-                            buf
                         }
                   }
               }
@@ -270,7 +276,7 @@ emptyPool = makeScoredBufferPool
 engine
   :: Maybe HasOrLacks
   -> FullSceneBuilder (theFuture :: TheFuture)
-       ( buffers :: S.Samples (Maybe ForwardBackwards)
+       ( buffers :: Samples (Maybe ForwardBackwards)
        , silence :: BrowserAudioBuffer
        )
        Unit

@@ -16,9 +16,8 @@ import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (runSpec)
 import Text.Parsing.StringParser (runParser)
 import WAGSI.Plumbing.Cycle (noteFromSample, noteFromSample')
-import WAGSI.Plumbing.Samples (Note(..))
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types (NoteInTime(..))
+import WAGSI.Plumbing.Types (NoteInTime(..), Note(..))
 import WAGSI.Plumbing.Tidal (Cycle(..), cycleP, c2s, unrest)
 
 main :: Effect Unit

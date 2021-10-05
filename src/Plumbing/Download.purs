@@ -24,9 +24,8 @@ import Type.Proxy (Proxy(..))
 import Unsafe.Coerce (unsafeCoerce)
 import WAGS.Interpret (decodeAudioDataFromUri)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
-import WAGSI.Plumbing.Samples (Samples, urls)
-
-type ForwardBackwards = { forward :: BrowserAudioBuffer, backwards :: BrowserAudioBuffer }
+import WAGSI.Plumbing.Samples (urls)
+import WAGSI.Plumbing.Types (ForwardBackwards, Samples)
 
 backoff :: Aff ~> Aff
 backoff aff = go 0

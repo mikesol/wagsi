@@ -36,19 +36,18 @@ import WAGS.Lib.Learn (FullSceneBuilder(..))
 import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserPeriodicWave)
 import WAGSI.Plumbing.Cycle (cycleLength, cycleToString)
-import WAGSI.Plumbing.Download (HasOrLacks, ForwardBackwards)
+import WAGSI.Plumbing.Download (HasOrLacks)
 import WAGSI.Plumbing.Engine (engine)
 import WAGSI.Plumbing.Example as Example
-import WAGSI.Plumbing.Samples (Samples)
 import WAGSI.Plumbing.Tidal (djQuickCheck, openFuture, src)
-import WAGSI.Plumbing.Types (TheFuture)
+import WAGSI.Plumbing.Types (TheFuture, ForwardBackwards, Samples)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
 
-main :: Effect Unit
-main =
+main :: String -> Effect Unit
+main exmpl =
   runHalogenAff do
     body <- awaitBody
-    runUI component unit body
+    runUI (component exmpl) unit body
 
 type StashInfo
   = { buffers :: Array String, periodicWaves :: Array String, floatArrays :: Array String }
@@ -61,6 +60,7 @@ type State
   , audioStarted :: Boolean
   , canStopAudio :: Boolean
   , srcCode :: Maybe String
+  , exampleCode :: String
   , triggerWorld ::
       Maybe
         ( Event { theFuture :: TheFuture } /\ Behavior
@@ -84,22 +84,23 @@ data Action
   | DJQC String
   | StopAudio
 
-component :: forall query input output m. MonadEffect m => MonadAff m => H.Component query input output m
-component =
+component :: forall query input output m. MonadEffect m => MonadAff m => String -> H.Component query input output m
+component exmpl =
   H.mkComponent
-    { initialState
+    { initialState: initialState exmpl
     , render
     , eval: H.mkEval $ H.defaultEval { initialize = Just Initialize, handleAction = handleAction }
     }
 
-initialState :: forall input. input -> State
-initialState _ =
+initialState :: forall input. String -> input -> State
+initialState exmpl _ =
   { unsubscribe: pure unit
   , audioCtx: Nothing
   , audioStarted: false
   , canStopAudio: false
   , loadingHack: Loading
   , triggerWorld: Nothing
+  , exampleCode: exmpl
   , tick: Nothing
   , djqc: Nothing
   , srcCode: Nothing
@@ -116,7 +117,7 @@ classes :: forall r p. Array String -> HP.IProp (class :: String | r) p
 classes = HP.classes <<< map H.ClassName
 
 render :: forall m. State -> H.ComponentHTML Action () m
-render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRendering, srcCode } =
+render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRendering, srcCode, exampleCode } =
   HH.div [ classes [ "w-screen", "h-screen" ] ]
     [ HH.div [ classes [ "flex", "flex-col", "w-full", "h-full" ] ]
         [ HH.div [ classes [ "flex-grow" ] ] [ HH.div_ [] ]
@@ -180,8 +181,8 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRenderin
                               [ HH.text "Stop audio" ]
                         ]
                       <>
-                        ( case wagsiMode of
-                            LiveCoding -> maybe []
+                        ( let
+                            skd = maybe []
                               ( \scd ->
                                   [ HH.pre_
                                       [ HH.code
@@ -190,8 +191,12 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRenderin
                                       ]
                                   ]
                               )
-                              srcCode
-                            _ -> []
+                              
+                          in
+                            case wagsiMode of
+                              LiveCoding -> skd srcCode
+                              Example -> skd (Just exampleCode)
+                              _ -> []
                         )
             , HH.div [ classes [ "flex-grow" ] ] []
             ]
@@ -276,7 +281,6 @@ handleAction = case _ of
               (-1) -> do
                 HS.notify listener GraphRenderingDone
                 HS.notify listener (Tick $ Just 1)
-                theFuture.push $ openFuture
               0 -> HS.notify listener (Tick $ Nothing) *> theFuture.push Example.example
               _ -> pure unit
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
@@ -308,7 +312,7 @@ handleAction = case _ of
               ( run
                   ( case wagsiMode of
                       LiveCoding -> trigger <|> pure { theFuture: primePump }
-                      _ -> trigger <|> pure { theFuture: openFuture }
+                      _ -> trigger
                   )
                   world
                   { easingAlgorithm }

@@ -5,7 +5,9 @@ import main from "../output/WAGSI.Main/index.js";
 import gopher from "../output/WAGSI.LiveCodeHere.Wagged/index.js";
 import hack from "../output/WAGSI.Plumbing.Tidal/foreign.js";
 import cde from './LiveCodeHere/Wagged.purs';
-main.main();
+import exmpl from './Plumbing/Example.purs';
+
+main.main(exmpl)();
 
 if (gopher.wag) {
   console.log("Found an initial wag 🐶");

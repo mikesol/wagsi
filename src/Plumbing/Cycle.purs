@@ -13,7 +13,7 @@ import Data.Newtype (unwrap)
 import Data.NonEmpty ((:|))
 import Data.Show.Generic (genericShow)
 import Data.Traversable (class Traversable, sequenceDefault, traverse)
-import WAGSI.Plumbing.Samples (DroneNote, Note(..), Sample, note2drone)
+import WAGSI.Plumbing.Types (DroneNote, Note(..), Sample)
 import WAGSI.Plumbing.Samples as S
 
 data Cycle a
@@ -81,7 +81,7 @@ lastCycle = go
     SingleNote { val } -> val
 
 c2d :: Cycle (Maybe Note) -> Maybe DroneNote
-c2d = firstCycle >>> map note2drone
+c2d = firstCycle >>> map S.note2drone
 
 reverse :: Cycle ~> Cycle
 reverse l = go l
