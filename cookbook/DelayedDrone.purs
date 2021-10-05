@@ -1,11 +1,11 @@
-module WAGSI.Plumbing.Example where
+module WAGSI.LiveCodeHere.DelayedDrone where
 
 import Prelude
 
 import Data.Lens (_Just, set)
 import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
-import WAGS.Create.Optionals (gain, highpass, delay, ref)
+import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGSI.Plumbing.Cycle (c2d, lowdark)
 import WAGSI.Plumbing.Download (HasOrLacks(..))
 import WAGSI.Plumbing.FX (fx, goodbye, hello)
@@ -14,11 +14,11 @@ import WAGSI.Plumbing.Tidal (ldt, make, s)
 import WAGSI.Plumbing.Types (TheFuture)
 import Wags.Learn.Oscillator (lfo)
 
-title = "Drone with delay" :: String
+title = "High-pass filter" :: String
 hasOrLacks = (Just $ Has [ "tabla_0", "chin_0", "tabla_4", "tabla_6", "lowdark_0" ]) :: Maybe HasOrLacks
 
-example :: TheFuture
-example = make 1.0
+wag :: TheFuture
+wag = make 1.0
   { earth: s "tabla chin*4 tabla:4 tabla:6"
   , heart:
       set (_Just <<< ldt)
