@@ -2,7 +2,6 @@ module WAGSI.Plumbing.Samples
   ( sampleToBuffers
   , urls
   , note2drone
-  , drone2note
   --
   , class ClockTime
   , clockTime
@@ -2068,10 +2067,9 @@ import Data.String as String
 import Data.Tuple.Nested ((/\), type (/\))
 import Foreign.Object (Object)
 import Foreign.Object as Object
-import WAGSI.Plumbing.Types (DroneNote(..), Note(..), Sample(..), Samples(..), TimeIs, TimeIsAndWas(..))
 import WAGS.WebAPI (BrowserAudioBuffer)
 import WAGSI.Plumbing.FX (calm)
-
+import WAGSI.Plumbing.Types (ClockTimeIs, DroneNote(..), Note(..), Sample(..), Samples(..), TimeIs, TimeIsAndWas)
 
 urls :: Samples String
 urls = Samples
@@ -4104,7 +4102,6 @@ urls = Samples
   , digeridoo_0: "https://freesound.org/data/previews/197/197998_3684181-hq.mp3"
   }
 
-
 ---
 class ClockTime a where
   clockTime :: a -> Number
@@ -4112,7 +4109,13 @@ class ClockTime a where
 instance clockTimeTimeIs :: ClockTime TimeIs where
   clockTime = unwrap >>> _.clockTime
 
-instance clockTimeTimeIsAndWas :: ClockTime TimeIsAndWas where
+instance clockTimeTimeIsAndWas :: ClockTime (TimeIsAndWas TimeIs) where
+  clockTime = unwrap >>> _.timeIs >>> unwrap >>> _.clockTime
+
+instance clockTimeClockTimeIs :: ClockTime ClockTimeIs where
+  clockTime = unwrap >>> _.clockTime
+
+instance clockTimeClockTimeIsAndWas :: ClockTime (TimeIsAndWas ClockTimeIs) where
   clockTime = unwrap >>> _.timeIs >>> unwrap >>> _.clockTime
 
 class SampleTime a where
@@ -4121,7 +4124,7 @@ class SampleTime a where
 instance sampleTimeTimeIs :: SampleTime TimeIs where
   sampleTime = unwrap >>> _.sampleTime
 
-instance sampleTimeTimeIsAndWas :: SampleTime TimeIsAndWas where
+instance sampleTimeTimeIsAndWas :: SampleTime (TimeIsAndWas TimeIs) where
   sampleTime = unwrap >>> _.timeIs >>> unwrap >>> _.sampleTime
 
 class BigCycleTime a where
@@ -4130,7 +4133,7 @@ class BigCycleTime a where
 instance bigCycleTimeTimeIs :: BigCycleTime TimeIs where
   bigCycleTime = unwrap >>> _.bigCycleTime
 
-instance bigCycleTimeTimeIsAndWas :: BigCycleTime TimeIsAndWas where
+instance bigCycleTimeTimeIsAndWas :: BigCycleTime (TimeIsAndWas TimeIs) where
   bigCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.bigCycleTime
 
 class LittleCycleTime a where
@@ -4139,7 +4142,7 @@ class LittleCycleTime a where
 instance littleCycleTimeTimeIs :: LittleCycleTime TimeIs where
   littleCycleTime = unwrap >>> _.littleCycleTime
 
-instance littleCycleTimeTimeIsAndWas :: LittleCycleTime TimeIsAndWas where
+instance littleCycleTimeTimeIsAndWas :: LittleCycleTime (TimeIsAndWas TimeIs) where
   littleCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.littleCycleTime
 
 class NormalizedClockTime a where
@@ -4148,7 +4151,7 @@ class NormalizedClockTime a where
 instance normalizedClockTimeTimeIs :: NormalizedClockTime TimeIs where
   normalizedClockTime = unwrap >>> _.normalizedClockTime
 
-instance normalizedClockTimeTimeIsAndWas :: NormalizedClockTime TimeIsAndWas where
+instance normalizedClockTimeTimeIsAndWas :: NormalizedClockTime (TimeIsAndWas TimeIs) where
   normalizedClockTime = unwrap >>> _.timeIs >>> unwrap >>> _.normalizedClockTime
 
 class NormalizedSampleTime a where
@@ -4157,7 +4160,7 @@ class NormalizedSampleTime a where
 instance normalizedSampleTimeTimeIs :: NormalizedSampleTime TimeIs where
   normalizedSampleTime = unwrap >>> _.normalizedSampleTime
 
-instance normalizedSampleTimeTimeIsAndWas :: NormalizedSampleTime TimeIsAndWas where
+instance normalizedSampleTimeTimeIsAndWas :: NormalizedSampleTime (TimeIsAndWas TimeIs) where
   normalizedSampleTime = unwrap >>> _.timeIs >>> unwrap >>> _.normalizedSampleTime
 
 class NormalizedBigCycleTime a where
@@ -4166,7 +4169,7 @@ class NormalizedBigCycleTime a where
 instance normalizedBigCycleTimeTimeIs :: NormalizedBigCycleTime TimeIs where
   normalizedBigCycleTime = unwrap >>> _.normalizedBigCycleTime
 
-instance normalizedBigCycleTimeTimeIsAndWas :: NormalizedBigCycleTime TimeIsAndWas where
+instance normalizedBigCycleTimeTimeIsAndWas :: NormalizedBigCycleTime (TimeIsAndWas TimeIs) where
   normalizedBigCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.normalizedBigCycleTime
 
 class NormalizedLittleCycleTime a where
@@ -4175,7 +4178,7 @@ class NormalizedLittleCycleTime a where
 instance normalizedLittleCycleTimeTimeIs :: NormalizedLittleCycleTime TimeIs where
   normalizedLittleCycleTime = unwrap >>> _.normalizedLittleCycleTime
 
-instance normalizedLittleCycleTimeTimeIsAndWas :: NormalizedLittleCycleTime TimeIsAndWas where
+instance normalizedLittleCycleTimeTimeIsAndWas :: NormalizedLittleCycleTime (TimeIsAndWas TimeIs) where
   normalizedLittleCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.normalizedLittleCycleTime
 
 class LittleCycleDuration a where
@@ -4184,7 +4187,7 @@ class LittleCycleDuration a where
 instance littleCycleDurationTimeIs :: LittleCycleDuration TimeIs where
   littleCycleDuration = unwrap >>> _.littleCycleDuration
 
-instance littleCycleDurationTimeIsAndWas :: LittleCycleDuration TimeIsAndWas where
+instance littleCycleDurationTimeIsAndWas :: LittleCycleDuration (TimeIsAndWas TimeIs) where
   littleCycleDuration = unwrap >>> _.timeIs >>> unwrap >>> _.littleCycleDuration
 
 class BigCycleDuration a where
@@ -4193,7 +4196,7 @@ class BigCycleDuration a where
 instance bigCycleDurationTimeIs :: BigCycleDuration TimeIs where
   bigCycleDuration = unwrap >>> _.bigCycleDuration
 
-instance bigCycleDurationTimeIsAndWas :: BigCycleDuration TimeIsAndWas where
+instance bigCycleDurationTimeIsAndWas :: BigCycleDuration (TimeIsAndWas TimeIs) where
   bigCycleDuration = unwrap >>> _.timeIs >>> unwrap >>> _.bigCycleDuration
 
 class BufferDuration a where
@@ -4202,28 +4205,21 @@ class BufferDuration a where
 instance bufferDurationTimeIs :: BufferDuration TimeIs where
   bufferDuration = unwrap >>> _.bufferDuration
 
-instance bufferDurationTimeIsAndWas :: BufferDuration TimeIsAndWas where
+instance bufferDurationTimeIsAndWas :: BufferDuration (TimeIsAndWas TimeIs) where
   bufferDuration = unwrap >>> _.timeIs >>> unwrap >>> _.bufferDuration
+
 ---
 
 note2drone :: Note -> DroneNote
-note2drone (Note { sample, forward, rateFoT, volumeFoT, bufferOffsetFoT }) = DroneNote
+note2drone (Note { sample, forward }) = DroneNote
   { sample
   , forward
-  , rateFoT: \(TimeIsAndWas { timeIs }) -> rateFoT timeIs
-  , volumeFoT: \(TimeIsAndWas { timeIs }) -> volumeFoT timeIs
-  , loopStartFoT: \(TimeIsAndWas { timeIs }) -> bufferOffsetFoT timeIs
+  -- we wipe out all of the prior functions, keeping just the sample and forward
+  , rateFoT: const 1.0
+  , volumeFoT: const 1.0
+  , loopStartFoT: const 0.0
   , loopEndFoT: const 0.0
   , tumultFoT: const calm
-  }
-
-drone2note :: DroneNote -> Note
-drone2note (DroneNote { sample, forward, rateFoT, volumeFoT, loopStartFoT }) = Note
-  { sample
-  , forward
-  , rateFoT: \timeIs -> rateFoT $ TimeIsAndWas { timeWas: Nothing, valWas: Nothing, timeIs }
-  , volumeFoT: \timeIs -> volumeFoT $ TimeIsAndWas { timeWas: Nothing, valWas: Nothing, timeIs }
-  , bufferOffsetFoT: \timeIs -> loopStartFoT $ TimeIsAndWas { timeWas: Nothing, valWas: Nothing, timeIs }
   }
 
 sampleToString :: Sample -> String

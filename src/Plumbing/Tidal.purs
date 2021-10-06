@@ -134,30 +134,9 @@ import WAGS.Validation (class NodesCanBeTumultuous, class SubgraphIsRenderable)
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
 import WAGSI.Plumbing.FX (WAGSITumult)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
+import WAGSI.Plumbing.Samples (class ClockTime, clockTime)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types
-  ( AH
-  , AH'
-  , AfterMatter
-  , CycleDuration(..)
-  , DroneNote(..)
-  , EWF
-  , EWF'
-  , FoP
-  , FoT
-  , Globals(..)
-  , ICycle(..)
-  , NextCycle(..)
-  , Note(..)
-  , NoteInFlattenedTime(..)
-  , NoteInTime(..)
-  , Sample
-  , Tag
-  , TheFuture(..)
-  , TimeIs
-  , Voice(..)
-  , ZipProps(..)
-  )
+import WAGSI.Plumbing.Types (AH, AH', AfterMatter, ClockTimeIs, CycleDuration(..), DroneNote(..), EWF, EWF', FoT, Globals(..), ICycle(..), NextCycle(..), Note(..), NoteInFlattenedTime(..), NoteInTime(..), O'Past, Sample, Tag, TheFuture(..), TimeIsAndWas, Voice(..), ZipProps(..))
 
 -- | Only play the first cycle, and truncate/interrupt the playing cycle at the next sub-ending.
 impatient :: NextCycle -> NextCycle
@@ -208,7 +187,7 @@ plainly :: NextCycle -> Voice
 plainly = Voice <<< { globals: Globals { gain: const 1.0, fx: const calm }, next: _ }
 
 --- lenses
-lvg :: Lens' Voice ({ clockTime :: Number } -> Number)
+lvg :: Lens' Voice O'Past
 lvg = unto Voice <<< prop (Proxy :: _ "globals") <<< unto Globals <<< prop (Proxy :: _ "gain")
 
 lvt :: Lens' Voice ({ clockTime :: Number } -> Tumultuous D1 "output" (voice :: Unit))
@@ -262,22 +241,22 @@ lnv = unto Note <<< prop (Proxy :: _ "volumeFoT")
 lds :: Lens' DroneNote Sample
 lds = unto DroneNote <<< prop (Proxy :: _ "sample")
 
-ldr :: Lens' DroneNote FoP
+ldr :: Lens' DroneNote O'Past
 ldr = unto DroneNote <<< prop (Proxy :: _ "rateFoT")
 
-ldls :: Lens' DroneNote FoP
+ldls :: Lens' DroneNote O'Past
 ldls = unto DroneNote <<< prop (Proxy :: _ "loopStartFoT")
 
-ldle :: Lens' DroneNote FoP
+ldle :: Lens' DroneNote O'Past
 ldle = unto DroneNote <<< prop (Proxy :: _ "loopEndFoT")
 
 ldf :: Lens' DroneNote Boolean
 ldf = unto DroneNote <<< prop (Proxy :: _ "forward")
 
-ldv :: Lens' DroneNote FoP
+ldv :: Lens' DroneNote O'Past
 ldv = unto DroneNote <<< prop (Proxy :: _ "volumeFoT")
 
-ldt :: Lens' DroneNote (TimeIs -> WAGSITumult)
+ldt :: Lens' DroneNote (ClockTimeIs -> WAGSITumult)
 ldt = unto DroneNote <<< prop (Proxy :: _ "tumultFoT")
 
 lcw :: forall note. Lens' (Cycle note) Number
@@ -888,10 +867,10 @@ betwixt mn' mx' n = if n < mn then mn else if n > mx then mx else n
   mn = min mn' mx'
   mx = max mn' mx'
 
-derivative :: FoP -> Number -> FoP
+derivative :: forall a. ClockTime a => (TimeIsAndWas a -> Number) -> Number -> TimeIsAndWas a -> Number
 derivative f y v = fromMaybe' (\_ -> f v) do
   let v' = unwrap v
   let ti = v'.timeIs
   mti' <- v'.timeWas
   mn' <- v'.valWas
-  pure $ (y * ((unwrap ti).clockTime - (unwrap mti').clockTime)) + mn'
+  pure $ (y * (clockTime ti - clockTime mti')) + mn'

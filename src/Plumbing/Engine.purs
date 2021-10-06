@@ -17,7 +17,6 @@ import Effect.Aff (Aff)
 import FRP.Behavior (Behavior)
 import FRP.Event (Event)
 import Heterogeneous.Mapping (hmap, hmapWithIndex)
-import Math ((%))
 import Prim.Row (class Lacks)
 import Prim.RowList (class RowToList)
 import Record as Record
@@ -128,26 +127,44 @@ internal1 :: SubSceneSig "singleton" ()
   , silence :: BrowserAudioBuffer
   , time :: Number
   }
-internal1 = unit # SG.loopUsingScene \{ time, buffers, silence, fng: { future, globals } } _ ->
-  { control: unit
-  , scene:
-      { singleton: gain ((unwrap globals).gain { clockTime: time })
-          { tmlt: tumult ((unwrap globals).fx { clockTime: time })
-              { voice: subgraph
-                  (extract future)
-                  (const $ const $ internal0)
-                  ( const $
-                      { time
-                      , buffers
-                      , silence
-                      , buf: _
-                      }
-                  )
-                  {}
+internal1 = emptyLags # SG.loopUsingScene
+  \{ time, buffers, silence, fng: { future, globals } }
+   { timeLag
+   , volumeLag
+   } ->
+    let
+      prevTime = extract timeLag
+      prevVolume = extract volumeLag
+      volumeNow = (unwrap globals).gain $ wrap { timeWas: prevTime, timeIs: thisIsTime, valWas: prevVolume }
+      thisIsTime = wrap { clockTime: time }
+    in
+      { control:
+          { volumeLag: unwrapCofree volumeLag volumeNow
+          , timeLag: unwrapCofree timeLag thisIsTime
+          }
+      , scene:
+          { singleton: gain (ff globalFF $ pure $ volumeNow)
+              { tmlt: tumult ((unwrap globals).fx { clockTime: time })
+                  { voice: subgraph
+                      (extract future)
+                      (const $ const $ internal0)
+                      ( const $
+                          { time
+                          , buffers
+                          , silence
+                          , buf: _
+                          }
+                      )
+                      {}
+                  }
               }
           }
       }
-  }
+  where
+  emptyLags =
+    { timeLag: makeLag
+    , volumeLag: makeLag
+    }
 
 type CfLag a
   = Cofree ((->) a) (Maybe a)
@@ -175,14 +192,8 @@ droneSg = emptyLags
         )
         ( \(DroneNote { sample, forward, volumeFoT, loopStartFoT, loopEndFoT, rateFoT, tumultFoT }) ->
             let
-              bdur = bufferDuration buf
-              sampleTime = time' % bdur
-              bigCycleTime = time' % bdur -- time' - cycleStartsAt
-              littleCycleTime = time' % bdur -- time' - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
               sampleF = maybe silence (if forward then _.forward else _.backwards) <<< S.sampleToBuffers sample
               buf = sampleF buffers
-              littleCycleDuration = 1.0
-              bigCycleDuration = 1.0
               prevTime = extract timeLag
               prevVolume = extract volumeLag
               volumeNow = volumeFoT $ wrap { timeWas: prevTime, timeIs: thisIsTime, valWas: prevVolume }
@@ -192,19 +203,7 @@ droneSg = emptyLags
               loopEndNow = loopEndFoT $ wrap { timeWas: prevTime, timeIs: thisIsTime, valWas: prevLoopEnd }
               prevRate = extract rateLag
               rateNow = rateFoT $ wrap { timeWas: prevTime, timeIs: thisIsTime, valWas: prevRate }
-              thisIsTime = wrap
-                { sampleTime
-                , bigCycleTime
-                , littleCycleTime
-                , clockTime: time'
-                , normalizedClockTime: 0.0 -- cuz it's infinite :-P
-                , normalizedSampleTime: sampleTime / bdur
-                , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
-                , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
-                , littleCycleDuration
-                , bigCycleDuration
-                , bufferDuration: bufferDuration buf
-                }
+              thisIsTime = wrap { clockTime: time' }
               vol = ff globalFF $ pure $ volumeNow
             in
               { control:
@@ -302,7 +301,6 @@ engine hasOrLacks = usingc
       actualized = hmapWithIndex (ZipProps control.buffers) toActualize
       forTemplate' = hmapWithIndex (ZipProps (hmapWithIndex (ZipProps futureMaker) actualized)) myGlobals
       forTemplate = h2v forTemplate'
-
     in
       { control: { buffers: tails actualized, backToTheFuture: theFuture }
       , scene: speaker

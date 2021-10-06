@@ -54,7 +54,7 @@ newtype NextCycle = NextCycle
 derive instance newtypeNextCycle :: Newtype NextCycle _
 
 newtype Globals = Globals
-  { gain :: { clockTime :: Number } -> Number
+  { gain :: O'Past
   , fx :: { clockTime :: Number } -> Tumultuous D1 "output" (voice :: Unit)
   }
 
@@ -183,11 +183,11 @@ data ICycle a
 newtype DroneNote = DroneNote
   { sample :: Sample
   , forward :: Boolean
-  , rateFoT :: FoP
-  , loopStartFoT :: FoP
-  , loopEndFoT :: FoP
-  , volumeFoT :: FoP
-  , tumultFoT :: TimeIs -> Tumultuous D1 "output" (voice :: Unit)
+  , rateFoT :: O'Past
+  , loopStartFoT :: O'Past
+  , loopEndFoT :: O'Past
+  , volumeFoT :: O'Past
+  , tumultFoT :: ClockTimeIs -> Tumultuous D1 "output" (voice :: Unit)
   }
 
 derive instance newtypeDroneNote :: Newtype DroneNote _
@@ -222,7 +222,6 @@ instance ordNote :: Ord Note where
 instance showNote :: Show Note where
   show (Note { sample }) = "Note <" <> show sample <> ">"
 
-
 ----------------------------------
 
 newtype Sample = Sample String
@@ -231,6 +230,10 @@ derive instance sampleEq :: Eq Sample
 derive instance sampleOrd :: Ord Sample
 instance sampleShow :: Show Sample where
   show (Sample i) = "Sample <" <> show i <> ">"
+
+newtype ClockTimeIs = ClockTimeIs { clockTime :: Number }
+
+derive instance newtypeClockTimeIs :: Newtype ClockTimeIs _
 
 newtype TimeIs =
   TimeIs
@@ -249,17 +252,19 @@ newtype TimeIs =
 
 derive instance newtypeTimeIs :: Newtype TimeIs _
 
-newtype TimeIsAndWas = TimeIsAndWas
-  { timeIs :: TimeIs
+newtype TimeIsAndWas time = TimeIsAndWas
+  { timeIs :: time
   , valWas :: Maybe Number
-  , timeWas :: Maybe TimeIs
+  , timeWas :: Maybe time
   }
 
-derive instance newtypeTimeIsAndWas :: Newtype TimeIsAndWas _
+derive instance newtypeTimeIsAndWas :: Newtype (TimeIsAndWas time) _
 
+type O'Clock = ClockTimeIs -> Number
+type O'Past = TimeIsAndWas ClockTimeIs -> Number
 type FoT = TimeIs -> Number
+type FoP = TimeIsAndWas TimeIs -> Number
 
-type FoP = TimeIsAndWas -> Number
 ---------------------------------- samples
 newtype Samples a = Samples { | Samples' a }
 

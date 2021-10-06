@@ -2,37 +2,34 @@ module WAGSI.Plumbing.Example where
 
 import Prelude
 
-import Data.Lens (_Just, set)
+import Data.Foldable (foldl)
+import Data.Lens (set)
 import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
-import WAGS.Create.Optionals (gain, highpass, delay, ref)
-import WAGSI.Plumbing.Cycle (c2d, lowdark)
+import Math (pi)
+import WAGSI.Plumbing.Cycle (c2d, hollowair)
 import WAGSI.Plumbing.Download (HasOrLacks(..))
-import WAGSI.Plumbing.FX (fx, goodbye, hello)
 import WAGSI.Plumbing.Samples (clockTime)
-import WAGSI.Plumbing.Tidal (ldt, make, s)
+import WAGSI.Plumbing.Tidal (betwixt, derivative, ldr, ldv, lvg, make, s)
 import WAGSI.Plumbing.Types (TheFuture)
 import Wags.Learn.Oscillator (lfo)
 
 title = "Drone with delay" :: String
-hasOrLacks = (Just $ Has [ "tabla_0", "chin_0", "tabla_4", "tabla_6", "lowdark_0" ]) :: Maybe HasOrLacks
+hasOrLacks = (Just $ Has [ "tech_0", "chin_0", "tabla_2", "tech_12", "hollowair_0" ]) :: Maybe HasOrLacks
 
 example :: TheFuture
 example = make 1.0
-  { earth: s "tabla chin*4 tabla:4 tabla:6"
+  { earth: map (set lvg (map (betwixt 0.0 1.0) $ derivative (const 0.0) 0.05)) $ s "tech chin*4 tabla:2 tech:12*3"
   , heart:
-      set (_Just <<< ldt)
-        ( lcmap clockTime \t -> fx
-            ( goodbye $ gain 1.0
-                { mymix: highpass
-                    { freq: 3010.0 + lfo { phase: 0.0, freq: 0.1, amp: 3000.0 } t
-                    , q: 1.0
-                    }
-                    hello
-                , fback: gain 0.3
-                    { del: delay (0.5 + lfo { phase: 0.0, freq: 2.0, amp: 0.3 } t) { mymix: ref }
-                    }
-                }
-            )
-        ) $ c2d lowdark
+      map
+        ( set ldv (lcmap clockTime (add 1.5 <<< lfo { phase: pi, amp: 0.2, freq: 0.3 }))
+            <<< set ldr
+              ( lcmap clockTime
+                  ( foldl ((<*>) <<< (<$>) (+)) (const 1.0)
+                      [ lfo { phase: 0.0, amp: 0.03, freq: 7.0 }
+                      , lfo { phase: 0.0, amp: 0.15, freq: 0.3 }
+                      ]
+                  )
+              )
+        ) $ c2d hollowair
   }
