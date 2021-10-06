@@ -14,7 +14,7 @@ import WAGSI.Plumbing.Tidal (betwixt, derivative, ldr, ldv, lvg, make, s)
 import WAGSI.Plumbing.Types (TheFuture)
 import Wags.Learn.Oscillator (lfo)
 
-title = "Drone with delay" :: String
+title = "Folds and derivatives" :: String
 hasOrLacks = (Just $ Has [ "tech_0", "chin_0", "tabla_2", "tech_12", "hollowair_0" ]) :: Maybe HasOrLacks
 
 example :: TheFuture
