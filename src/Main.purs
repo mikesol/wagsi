@@ -275,13 +275,12 @@ handleAction = case _ of
                   pure unit
               }
           Example -> do
-            let ivl = E.fold (const $ add 1) (interval 1000) (-2)
+            let ivl = E.fold (const $ add 1) (interval 1000) (-1)
             theFuture :: EventIO TheFuture <- H.liftEffect create
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
-              (-1) -> do
+              0 -> do
                 HS.notify listener GraphRenderingDone
-                HS.notify listener (Tick $ Just 1)
-              0 -> HS.notify listener (Tick $ Nothing) *> theFuture.push Example.example
+                HS.notify listener (Tick $ Nothing) *> theFuture.push Example.example
               _ -> pure unit
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
           DJQuickCheck -> do
