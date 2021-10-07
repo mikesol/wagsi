@@ -7,12 +7,14 @@ import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Comonad.Cofree.Class (unwrapCofree)
 import Data.Int (toNumber)
 import Data.Lens (_1, over)
+import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Newtype (unwrap, wrap)
 import Data.Tuple.Nested (type (/\))
 import Data.Typelevel.Num (class Pos)
 import Data.Vec ((+>))
 import Data.Vec as V
+import Debug (spy)
 import Effect.Aff (Aff)
 import FRP.Behavior (Behavior)
 import FRP.Event (Event)
@@ -20,6 +22,7 @@ import Heterogeneous.Mapping (hmap, hmapWithIndex)
 import Prim.Row (class Lacks)
 import Prim.RowList (class RowToList)
 import Record as Record
+import Record.Builder as RB
 import Type.Proxy (Proxy(..))
 import WAGS.Control.Functions.Subgraph as SG
 import WAGS.Create.Optionals (gain, loopBuf, playBuf, speaker, subgraph, tumult)
@@ -33,11 +36,10 @@ import WAGS.Math (calcSlope)
 import WAGS.Run (SceneI(..))
 import WAGS.Subgraph (SubSceneSig)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
-import WAGSI.Plumbing.Download (HasOrLacks, downloadFiles', downloadSilence)
+import WAGSI.Plumbing.Download (downloadSilence, initialBuffers)
 import WAGSI.Plumbing.FX (calm)
-import WAGSI.Plumbing.Samples as S
 import WAGSI.Plumbing.Tidal (asScore, intentionalSilenceForInternalUseOnly, openFuture, wag)
-import WAGSI.Plumbing.Types (class HomogenousToVec, Acc, EWF, FutureAndGlobals, Globals, NBuf, Next, RBuf, TheFuture, Voice, ZipProps(..), h2v', Samples, ForwardBackwards, DroneNote(..), TimeIs(..))
+import WAGSI.Plumbing.Types (class HomogenousToVec, Acc, DroneNote(..), EWF, FutureAndGlobals, Globals, NBuf, Next, RBuf, TheFuture, TimeIs(..), Voice, ZipProps(..), SampleCache, h2v')
 
 globalFF = 0.03 :: Number
 
@@ -50,7 +52,7 @@ acc =
 internal0 :: SubSceneSig "singleton" ()
   { buf :: Maybe (Buffy RBuf)
   , silence :: BrowserAudioBuffer
-  , buffers :: Samples (Maybe ForwardBackwards)
+  , buffers :: SampleCache
   , time :: Number
   }
 internal0 = unit # SG.loopUsingScene \{ time, silence, buffers, buf: buf' } _ ->
@@ -123,7 +125,7 @@ internal0 = unit # SG.loopUsingScene \{ time, silence, buffers, buf: buf' } _ ->
 
 internal1 :: SubSceneSig "singleton" ()
   { fng :: FutureAndGlobals
-  , buffers :: Samples (Maybe ForwardBackwards)
+  , buffers :: SampleCache
   , silence :: BrowserAudioBuffer
   , time :: Number
   }
@@ -177,7 +179,7 @@ makeLag = Nothing :< go
 droneSg :: SubSceneSig "singleton" ()
   { buf :: Maybe DroneNote
   , silence :: BrowserAudioBuffer
-  , buffers :: Samples (Maybe ForwardBackwards)
+  , buffers :: SampleCache
   , time :: Number
   }
 droneSg = emptyLags
@@ -192,7 +194,7 @@ droneSg = emptyLags
         )
         ( \(DroneNote { sample, forward, volumeFoT, loopStartFoT, loopEndFoT, rateFoT, tumultFoT }) ->
             let
-              sampleF = maybe silence (if forward then _.forward else _.backwards) <<< S.sampleToBuffers sample
+              sampleF = maybe silence (if forward then _.buffer.forward else _.buffer.backwards) <<< Map.lookup sample
               buf = sampleF buffers
               prevTime = extract timeLag
               prevVolume = extract volumeLag
@@ -272,20 +274,41 @@ emptyPool = makeScoredBufferPool
         }
   }
 
+delInPlace
+  :: forall r a h s t
+   . Lacks "air" r
+  => Lacks "heart" r
+  => Lacks "sounds" r
+  => Lacks "title" r
+  => { air :: a
+     , heart :: h
+     , sounds :: s
+     , title :: t
+     | r
+     }
+  -> Record r
+delInPlace = RB.build
+  ( RB.delete (Proxy :: Proxy "air")
+      <<< RB.delete (Proxy :: Proxy "heart")
+      <<< RB.delete (Proxy :: Proxy "sounds")
+      <<< RB.delete (Proxy :: Proxy "title")
+  )
+
 engine
-  :: Maybe HasOrLacks
+  :: Behavior SampleCache
   -> FullSceneBuilder (theFuture :: TheFuture)
-       ( buffers :: Samples (Maybe ForwardBackwards)
+       ( buffers :: SampleCache
        , silence :: BrowserAudioBuffer
        )
        Unit
-engine hasOrLacks = usingc
-  (thePresent wag <<< downloadFiles' hasOrLacks <<< downloadSilence)
+engine bsc = usingc
+  (thePresent wag <<< initialBuffers bsc <<< downloadSilence)
   acc
   \(SceneI { time: time', headroomInSeconds, trigger, world: { buffers, silence } }) control ->
     let
+      _____________________ = spy "testing" true
       theFuture = maybe control.backToTheFuture _.theFuture trigger
-      ewf = Record.delete (Proxy :: _ "air") $ Record.delete (Proxy :: _ "heart") (unwrap theFuture)
+      ewf = delInPlace (unwrap theFuture)
       toActualize = hmap
         ( \(v :: Voice) ->
             { time: time'
@@ -295,8 +318,7 @@ engine hasOrLacks = usingc
         )
         ewf
       myGlobals = hmap
-        ( \(v :: Voice) -> _.globals $ unwrap v
-        )
+        (\(v :: Voice) -> _.globals $ unwrap v)
         ewf
       actualized = hmapWithIndex (ZipProps control.buffers) toActualize
       forTemplate' = hmapWithIndex (ZipProps (hmapWithIndex (ZipProps futureMaker) actualized)) myGlobals
