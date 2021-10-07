@@ -5,6 +5,7 @@ module WAGSI.Plumbing.Samples
   , note2drone
   , nameToSampleO
   , unsafeSamples
+  , nameToSample
   --
   , class ClockTime
   , clockTime

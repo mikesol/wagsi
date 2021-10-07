@@ -12,6 +12,7 @@ module WAGSI.Plumbing.Tidal
   , wag
   , src
   , openFuture
+  , massiveFuture
   ---
   , djQuickCheck
   ---
@@ -88,7 +89,7 @@ import Data.Filterable (compact, filter, filterMap, maybeBool)
 import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Int (fromString, toNumber)
-import Data.Lens (Lens', Prism', _Just, lens, over, prism')
+import Data.Lens (Lens', Prism', _Just, lens, over, prism', set)
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.List (List(..), fold, foldMap, foldl, (:))
@@ -135,7 +136,7 @@ import WAGS.Validation (class NodesCanBeTumultuous, class SubgraphIsRenderable)
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
 import WAGSI.Plumbing.FX (WAGSITumult)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
-import WAGSI.Plumbing.Samples (class ClockTime, clockTime)
+import WAGSI.Plumbing.Samples (class ClockTime, clockTime, nameToSample)
 import WAGSI.Plumbing.Samples as S
 import WAGSI.Plumbing.Types (AH, AH', AfterMatter, BufferUrl, ClockTimeIs, CycleDuration(..), DroneNote(..), EWF, EWF', FoT, Globals(..), ICycle(..), NextCycle(..), Note(..), NoteInFlattenedTime(..), NoteInTime(..), O'Past, Sample(..), Tag, TheFuture(..), TimeIsAndWas, Voice(..), ZipProps(..))
 
@@ -645,13 +646,13 @@ openDrones = hmap (\(_ :: Unit) -> Nothing) (mempty :: { | AH Unit })
 
 openFuture :: TheFuture
 openFuture = TheFuture
-  $ Record.union
-      ( hmap (\(_ :: Unit) -> openVoice)
-          (mempty :: { | EWF Unit })
-      )
+  $ Record.union (hmap (\(_ :: Unit) -> openVoice) (mempty :: { | EWF Unit }))
   $ Record.union
       (hmap (\(_ :: Unit) -> Nothing) (mempty :: { | AH Unit }))
       { title: "wagsi @ tidal", sounds: (Map.empty :: Map.Map Sample BufferUrl) }
+
+massiveFuture :: TheFuture
+massiveFuture = set (unto TheFuture <<< prop (Proxy :: _ "earth") <<< unto Voice <<< prop (Proxy :: _ "next") <<< unto NextCycle <<< prop (Proxy :: _ "samples")) (Set.fromFoldable $ map (Sample <<< fst) nameToSample) openFuture
 
 foreign import wagHandlers :: Effect (Object (TheFuture -> Effect Unit))
 

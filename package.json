@@ -24,7 +24,7 @@
   "scripts": {
     "postinstall": "spago install && spago build",
     "start": "spago install && spago build && webpack serve --mode=development",
-    "start:ngrok": "spago install && spago build && webpack serve --mode=development --public https://wagsi.eu.ngrok.io",
+    "start:ngrok": "spago install && spago build && webpack serve --mode=development --public https://ffeb8ff3ae94.ngrok.io",
     "start:example": "spago install && spago build && WAGSI_MODE=example webpack serve --mode=development",
     "start:djqc": "spago install && spago build && WAGSI_MODE=djqc webpack serve --mode=development",
     "start:gitpod": "webpack serve --mode=development --public \"$(gp url 8080 | sed 's+https://++'):443\"",

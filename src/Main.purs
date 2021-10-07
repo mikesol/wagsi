@@ -47,7 +47,16 @@ import WAGSI.Plumbing.Engine (engine)
 import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Samples (nameToSampleO, sampleToUrls, urls)
 import WAGSI.Plumbing.Tidal (djQuickCheck, openFuture, src)
-import WAGSI.Plumbing.Types (BufferUrl(..), DroneNote(..), ForwardBackwards, NextCycle(..), Sample(..), SampleCache, TheFuture(..), Voice(..))
+import WAGSI.Plumbing.Types
+  ( BufferUrl(..)
+  , DroneNote(..)
+  , ForwardBackwards
+  , NextCycle(..)
+  , Sample(..)
+  , SampleCache
+  , TheFuture(..)
+  , Voice(..)
+  )
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
 
 r2b :: Ref.Ref ~> Behavior

@@ -55,6 +55,7 @@ getBuffersUsingCache nameToUrl audioCtx alreadyDownloaded = do
   res <- Map.union <$> newBuffers <*> pure alreadyDownloaded
   pure res
   where
+  toDownload :: Map Sample BufferUrl 
   toDownload = nameToUrl # Map.mapMaybeWithKey \k v -> case Map.lookup k alreadyDownloaded of
     Nothing -> Just v
     Just { url } -> if url == v then Nothing else Just v
