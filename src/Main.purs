@@ -9,7 +9,7 @@ import Data.Either (either)
 import Data.Foldable (fold, for_)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
 import Data.Newtype (unwrap)
 import Data.Set as Set
 import Data.Tuple (fst, snd)
@@ -46,18 +46,12 @@ import WAGSI.Plumbing.Download (getBuffersUsingCache)
 import WAGSI.Plumbing.Engine (engine)
 import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Samples (nameToSampleO, sampleToUrls, urls)
-import WAGSI.Plumbing.Tidal (djQuickCheck, openFuture, src)
-import WAGSI.Plumbing.Types
-  ( BufferUrl(..)
-  , DroneNote(..)
-  , ForwardBackwards
-  , NextCycle(..)
-  , Sample(..)
-  , SampleCache
-  , TheFuture(..)
-  , Voice(..)
-  )
+import WAGSI.Plumbing.Tidal (djQuickCheck, massiveFuture, openFuture, src)
+import WAGSI.Plumbing.Types (BufferUrl(..), DroneNote(..), ForwardBackwards, NextCycle(..), Sample(..), SampleCache, TheFuture(..), Voice(..))
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
+import Web.HTML (window)
+import Web.HTML.Location (search)
+import Web.HTML.Window (location)
 
 r2b :: Ref.Ref ~> Behavior
 r2b r = behavior \e -> makeEvent \f -> subscribe e \v -> do
@@ -255,6 +249,8 @@ doDownloads audioContext cacheRef push future@(TheFuture { earth, wind, fire, ai
     Ref.write newMap cacheRef
     push future
 
+foreign import parseParams_ :: Maybe String -> (String -> Maybe String) -> String -> String -> Effect (Maybe String)
+
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Tick tick -> do
@@ -272,6 +268,12 @@ handleAction = case _ of
       Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) Example.wag
       LiveCoding -> H.liftAff $ try do
         primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
+        massive <- H.liftEffect do
+          w <- window
+          loc <- location w
+          sc <- search loc
+          parseParams_ Nothing Just sc "massive"
+        when (isJust massive) (doDownloads ctx bufCache (const $ pure unit) massiveFuture)
         doDownloads ctx bufCache (const $ pure unit) primePump
       DJQuickCheck -> H.liftAff $ try $ pure unit
     either (\_ -> H.modify_ _ { loadingHack = Failed }) (\_ -> H.modify_ _ { loadingHack = Loaded }) res

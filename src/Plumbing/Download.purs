@@ -3,6 +3,7 @@ module WAGSI.Plumbing.Download where
 import Prelude
 
 import Control.Promise (toAffE)
+import Data.Array as A
 import Data.Either (Either(..))
 import Data.Int (toNumber)
 import Data.Map (Map)
@@ -13,7 +14,7 @@ import Data.Symbol (class IsSymbol, reflectSymbol)
 import Data.Traversable (traverse)
 import Data.Tuple.Nested ((/\), type (/\))
 import Effect (Effect)
-import Effect.Aff (Aff, Milliseconds(..), delay, error, parallel, sequential, throwError, try)
+import Effect.Aff (Aff, Milliseconds(..), ParAff, delay, error, parallel, sequential, throwError, try)
 import Effect.Class (liftEffect)
 import Effect.Class.Console as Log
 import FRP.Behavior (Behavior)
@@ -37,6 +38,10 @@ instance soundsNil :: Sounds RL.Nil r where
 instance soundsCons :: (Row.Cons k String r' r, Sounds c r, Row.Lacks k r', IsSymbol k) => Sounds (RL.Cons k String c) r where
   sounds' _ r = Map.insert (wrap (reflectSymbol (Proxy :: _ k))) (wrap (Record.get (Proxy :: _ k) r)) (sounds' (Proxy :: _ c) r)
 
+chunks :: forall a. Int -> Array a -> Array (Array a)
+chunks _ [] = []
+chunks n xs = pure (A.take n xs) <> (chunks n $ A.drop n xs)
+
 sounds :: forall r rl. RowToList r rl => Sounds rl r => { | r } -> Map Sample BufferUrl 
 sounds = sounds' (Proxy :: _ rl)
 
@@ -59,12 +64,11 @@ getBuffersUsingCache nameToUrl audioCtx alreadyDownloaded = do
   toDownload = nameToUrl # Map.mapMaybeWithKey \k v -> case Map.lookup k alreadyDownloaded of
     Nothing -> Just v
     Just { url } -> if url == v then Nothing else Just v
-  traversed = toDownload # traverse \v -> parallel do
-    res <- try $ mapped audioCtx v
-    case res of
-      Left err -> Log.error (show err) *> pure Nothing
-      Right r -> pure $ Just r
-  newBuffers = map Map.catMaybes $ sequential $ traversed
+  toDownloadArr :: Array (Sample /\ BufferUrl)
+  toDownloadArr = Map.toUnfoldable toDownload
+  traversed :: Array (Sample /\ BufferUrl) -> ParAff (Array (Sample /\ { url :: BufferUrl, buffer :: ForwardBackwards }))
+  traversed = traverse \(k /\ v) -> parallel $ backoff $ ((/\) k <$> mapped audioCtx v)
+  newBuffers = map (Map.fromFoldable <<< join) $ sequential $ (traverse traversed (chunks 100 toDownloadArr))
 
 backoff :: Aff ~> Aff
 backoff aff = go 0
