@@ -3,19 +3,14 @@ module WAGSI.LiveCodeHere.DelayedDrone where
 import Prelude
 
 import Data.Lens (_Just, set)
-import Data.Maybe (Maybe(..))
 import Data.Profunctor (lcmap)
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGSI.Plumbing.Cycle (c2d, lowdark)
-import WAGSI.Plumbing.Download (HasOrLacks(..))
 import WAGSI.Plumbing.FX (fx, goodbye, hello)
 import WAGSI.Plumbing.Samples (clockTime)
 import WAGSI.Plumbing.Tidal (ldt, make, s)
 import WAGSI.Plumbing.Types (TheFuture)
 import Wags.Learn.Oscillator (lfo)
-
-title = "High-pass filter" :: String
-hasOrLacks = (Just $ Has [ "tabla_0", "chin_0", "tabla_4", "tabla_6", "lowdark_0" ]) :: Maybe HasOrLacks
 
 wag :: TheFuture
 wag = make 1.0
