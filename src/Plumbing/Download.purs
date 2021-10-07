@@ -53,7 +53,6 @@ getBuffersUsingCache
   -> Aff (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards })
 getBuffersUsingCache nameToUrl audioCtx alreadyDownloaded = do
   res <- Map.union <$> newBuffers <*> pure alreadyDownloaded
-  Log.info (show res)
   pure res
   where
   toDownload = nameToUrl # Map.mapMaybeWithKey \k v -> case Map.lookup k alreadyDownloaded of

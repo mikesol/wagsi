@@ -5,6 +5,7 @@ import Prelude
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Data.Compactable (compact)
+import Data.Either (either)
 import Data.Foldable (fold, for_)
 import Data.Map (Map)
 import Data.Map as Map
@@ -16,10 +17,9 @@ import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Pos)
 import Data.Vec as V
 import Effect (Effect)
-import Effect.Aff (Aff, launchAff_)
+import Effect.Aff (Aff, launchAff_, try)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import Effect.Class.Console as Log
 import Effect.Ref as Ref
 import FRP.Behavior (Behavior, behavior)
 import FRP.Event (EventIO, create, makeEvent, subscribe)
@@ -51,7 +51,10 @@ import WAGSI.Plumbing.Types (BufferUrl(..), DroneNote(..), ForwardBackwards, Nex
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
 
 r2b :: Ref.Ref ~> Behavior
-r2b r = behavior \e -> makeEvent \f -> subscribe e \v -> map (f <<< v) (Ref.read r)
+r2b r = behavior \e -> makeEvent \f -> subscribe e \v -> do
+  rr <- Ref.read r
+  f (v rr)
+  pure unit
 
 main :: String -> Effect Unit
 main exmpl =
@@ -102,7 +105,7 @@ initialState exmpl bufCache _ =
   , audioCtx: Nothing
   , audioStarted: false
   , canStopAudio: false
-  , loadingHack: Loaded
+  , loadingHack: Loading
   , exampleCode: exmpl
   , tick: Nothing
   , djqc: Nothing
@@ -230,23 +233,19 @@ d2s :: DroneNote -> Sample
 d2s (DroneNote { sample }) = sample
 
 doDownloads :: AudioContext -> Ref.Ref SampleCache -> (TheFuture -> Effect Unit) -> TheFuture -> Aff Unit
-doDownloads audioContext cacheRef push future@(TheFuture { earth, wind, fire, air, heart }) =  do
-  Log.info "CALLING doDownloads"
+doDownloads audioContext cacheRef push future@(TheFuture { earth, wind, fire, air, heart, sounds }) = do
   cache <- H.liftEffect $ Ref.read cacheRef
   let
     sets = fold (map v2s [ earth, wind, fire ]) <> (Set.fromFoldable $ compact ((map <<< map) d2s [ air, heart ]))
-    samplesToUrl = Set.toMap sets # Map.mapMaybeWithKey \(Sample k) _ -> do
+    samplesToUrl = Set.toMap sets # Map.mapMaybeWithKey \samp@(Sample k) _ -> Map.lookup samp sounds <|> do
       nm <- O.lookup k nameToSampleO
       urlF <- Map.lookup nm sampleToUrls
       pure $ BufferUrl (urlF urls)
-  Log.info (show cache)
-  Log.info (show samplesToUrl)
   newMap <- getBuffersUsingCache samplesToUrl audioContext cache
   H.liftEffect do
     Ref.write newMap cacheRef
-    Log.info "pushing future"
     push future
-    
+
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Tick tick -> do
@@ -258,7 +257,15 @@ handleAction = case _ of
   GraphRenderingDone -> do
     H.modify_ _ { doingGraphRendering = false }
   Initialize -> do
-    H.modify_ _ { loadingHack = Loaded }
+    ctx <- H.liftEffect context
+    { bufCache } <- H.get
+    res <- case wagsiMode of
+      Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) Example.wag
+      LiveCoding -> H.liftAff $ try do
+        primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
+        doDownloads ctx bufCache (const $ pure unit) primePump
+      DJQuickCheck -> H.liftAff $ try $ pure unit
+    either (\_ -> H.modify_ _ { loadingHack = Failed }) (\_ -> H.modify_ _ { loadingHack = Loaded }) res
   StartAudio -> do
     handleAction StopAudio
     { bufCache } <- H.get
@@ -280,7 +287,9 @@ handleAction = case _ of
             -- we prime the pump by pushing an empty future
             theFuture :: EventIO TheFuture <- create
             cachedSrc Nothing Just >>= flip for_ (HS.notify listener <<< Src <<< Just)
-            unsub0 <- subscribe trigger' (launchAff_ <<< doDownloads ctx bufCache theFuture.push <<< _.theFuture)
+            unsub0 <- subscribe trigger' \v -> do
+              launchAff_ $ doDownloads ctx bufCache theFuture.push $ v.theFuture
+              theFuture.push v.theFuture
             unsub1 <- subscribe src (HS.notify listener <<< Src <<< Just)
             HS.notify listener GraphRenderingDone
             pure
@@ -293,6 +302,7 @@ handleAction = case _ of
           Example -> do
             let ivl = E.fold (const $ add 1) (interval 1000) (-1)
             theFuture :: EventIO TheFuture <- H.liftEffect create
+            doDownloads ctx bufCache (const $ pure unit) Example.wag
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
               0 -> do
                 HS.notify listener GraphRenderingDone

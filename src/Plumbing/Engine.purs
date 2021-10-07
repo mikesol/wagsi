@@ -14,7 +14,6 @@ import Data.Tuple.Nested (type (/\))
 import Data.Typelevel.Num (class Pos)
 import Data.Vec ((+>))
 import Data.Vec as V
-import Debug (spy)
 import Effect.Aff (Aff)
 import FRP.Behavior (Behavior)
 import FRP.Event (Event)
@@ -306,7 +305,6 @@ engine bsc = usingc
   acc
   \(SceneI { time: time', headroomInSeconds, trigger, world: { buffers, silence } }) control ->
     let
-      _____________________ = spy "testing" true
       theFuture = maybe control.backToTheFuture _.theFuture trigger
       ewf = delInPlace (unwrap theFuture)
       toActualize = hmap
