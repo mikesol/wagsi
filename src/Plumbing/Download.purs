@@ -68,7 +68,7 @@ getBuffersUsingCache nameToUrl audioCtx alreadyDownloaded = do
   toDownloadArr = Map.toUnfoldable toDownload
   traversed :: Array (Sample /\ BufferUrl) -> ParAff (Array (Sample /\ { url :: BufferUrl, buffer :: ForwardBackwards }))
   traversed = traverse \(k /\ v) -> parallel $ backoff $ ((/\) k <$> mapped audioCtx v)
-  newBuffers = map (Map.fromFoldable <<< join) $ sequential $ (traverse traversed (chunks 100 toDownloadArr))
+  newBuffers = map (Map.fromFoldable <<< join) $ (traverse (sequential <<< traversed) (chunks 100 toDownloadArr))
 
 backoff :: Aff ~> Aff
 backoff aff = go 0

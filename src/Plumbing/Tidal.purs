@@ -13,6 +13,8 @@ module WAGSI.Plumbing.Tidal
   , src
   , openFuture
   , massiveFuture
+  , droneyFuture
+  , reFuture
   ---
   , djQuickCheck
   ---
@@ -105,7 +107,7 @@ import Data.Profunctor.Choice (class Choice)
 import Data.Profunctor.Strong (class Strong)
 import Data.Set as Set
 import Data.String.CodeUnits (fromCharArray, singleton)
-import Data.Traversable (sequence, traverse)
+import Data.Traversable (class Foldable, sequence, traverse)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (D1)
@@ -136,7 +138,7 @@ import WAGS.Validation (class NodesCanBeTumultuous, class SubgraphIsRenderable)
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
 import WAGSI.Plumbing.FX (WAGSITumult)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
-import WAGSI.Plumbing.Samples (class ClockTime, clockTime, nameToSample)
+import WAGSI.Plumbing.Samples (class ClockTime, clockTime, dronesToSample, nameToSample)
 import WAGSI.Plumbing.Samples as S
 import WAGSI.Plumbing.Types (AH, AH', AfterMatter, BufferUrl, ClockTimeIs, CycleDuration(..), DroneNote(..), EWF, EWF', FoT, Globals(..), ICycle(..), NextCycle(..), Note(..), NoteInFlattenedTime(..), NoteInTime(..), O'Past, Sample(..), Tag, TheFuture(..), TimeIsAndWas, Voice(..), ZipProps(..))
 
@@ -651,8 +653,24 @@ openFuture = TheFuture
       (hmap (\(_ :: Unit) -> Nothing) (mempty :: { | AH Unit }))
       { title: "wagsi @ tidal", sounds: (Map.empty :: Map.Map Sample BufferUrl) }
 
+reFuture :: forall f. Foldable f => f Sample -> TheFuture
+reFuture fdbl = set
+  ( unto TheFuture
+      <<< prop
+        (Proxy :: _ "earth")
+      <<< unto Voice
+      <<< prop (Proxy :: _ "next")
+      <<< unto NextCycle
+      <<< prop (Proxy :: _ "samples")
+  )
+  (Set.fromFoldable fdbl)
+  openFuture
+
 massiveFuture :: TheFuture
-massiveFuture = set (unto TheFuture <<< prop (Proxy :: _ "earth") <<< unto Voice <<< prop (Proxy :: _ "next") <<< unto NextCycle <<< prop (Proxy :: _ "samples")) (Set.fromFoldable $ map (Sample <<< fst) nameToSample) openFuture
+massiveFuture = reFuture $ map snd nameToSample
+
+droneyFuture :: TheFuture
+droneyFuture = reFuture $ map snd dronesToSample
 
 foreign import wagHandlers :: Effect (Object (TheFuture -> Effect Unit))
 

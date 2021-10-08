@@ -45,9 +45,9 @@ import WAGSI.Plumbing.Cycle (cycleLength, cycleToString)
 import WAGSI.Plumbing.Download (getBuffersUsingCache)
 import WAGSI.Plumbing.Engine (engine)
 import WAGSI.Plumbing.Example as Example
-import WAGSI.Plumbing.Samples (nameToSampleO, sampleToUrls, urls)
-import WAGSI.Plumbing.Tidal (djQuickCheck, massiveFuture, openFuture, src)
-import WAGSI.Plumbing.Types (BufferUrl(..), DroneNote(..), ForwardBackwards, NextCycle(..), Sample(..), SampleCache, TheFuture(..), Voice(..))
+import WAGSI.Plumbing.Samples (nameToSampleO, sampleToUrls)
+import WAGSI.Plumbing.Tidal (djQuickCheck, droneyFuture, massiveFuture, openFuture, src)
+import WAGSI.Plumbing.Types (BufferUrl, DroneNote(..), ForwardBackwards, NextCycle(..), Sample(..), SampleCache, TheFuture(..), Voice(..))
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
 import Web.HTML (window)
 import Web.HTML.Location (search)
@@ -242,8 +242,8 @@ doDownloads audioContext cacheRef push future@(TheFuture { earth, wind, fire, ai
     sets = fold (map v2s [ earth, wind, fire ]) <> (Set.fromFoldable $ compact ((map <<< map) d2s [ air, heart ]))
     samplesToUrl = Set.toMap sets # Map.mapMaybeWithKey \samp@(Sample k) _ -> Map.lookup samp sounds <|> do
       nm <- O.lookup k nameToSampleO
-      urlF <- Map.lookup nm sampleToUrls
-      pure $ BufferUrl (urlF urls)
+      url <- Map.lookup nm sampleToUrls
+      pure url
   newMap <- getBuffersUsingCache samplesToUrl audioContext cache
   H.liftEffect do
     Ref.write newMap cacheRef
@@ -274,6 +274,7 @@ handleAction = case _ of
           sc <- search loc
           parseParams_ Nothing Just sc "massive"
         when (isJust massive) (doDownloads ctx bufCache (const $ pure unit) massiveFuture)
+        doDownloads ctx bufCache (const $ pure unit) droneyFuture
         doDownloads ctx bufCache (const $ pure unit) primePump
       DJQuickCheck -> H.liftAff $ try $ pure unit
     either (\_ -> H.modify_ _ { loadingHack = Failed }) (\_ -> H.modify_ _ { loadingHack = Loaded }) res
