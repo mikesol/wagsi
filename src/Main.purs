@@ -4,23 +4,29 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
-import Control.Monad.Error.Class (try)
-import Data.Either (hush)
-import Data.Foldable (for_)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Compactable (compact)
+import Data.Either (either)
+import Data.Foldable (fold, for_)
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
+import Data.Newtype (unwrap)
+import Data.Set as Set
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Pos)
 import Data.Vec as V
 import Effect (Effect)
+import Effect.Aff (Aff, launchAff_, try)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Ref as Ref
-import FRP.Behavior (Behavior)
-import FRP.Event (Event, EventIO, create, subscribe)
+import FRP.Behavior (Behavior, behavior)
+import FRP.Event (EventIO, create, makeEvent, subscribe)
 import FRP.Event as E
 import FRP.Event.Time (interval)
 import Foreign (Foreign)
+import Foreign.Object as O
 import Halogen (SubscriptionId)
 import Halogen as H
 import Halogen.Aff (awaitBody, runHalogenAff)
@@ -34,20 +40,31 @@ import Test.QuickCheck.Gen (evalGen)
 import WAGS.Interpret (close, context, defaultFFIAudio, makePeriodicWave, makeUnitCache)
 import WAGS.Lib.Learn (FullSceneBuilder(..))
 import WAGS.Run (Run, run)
-import WAGS.WebAPI (AudioContext, BrowserAudioBuffer, BrowserPeriodicWave)
+import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
 import WAGSI.Plumbing.Cycle (cycleLength, cycleToString)
-import WAGSI.Plumbing.Download (HasOrLacks)
+import WAGSI.Plumbing.Download (getBuffersUsingCache)
 import WAGSI.Plumbing.Engine (engine)
 import WAGSI.Plumbing.Example as Example
-import WAGSI.Plumbing.Tidal (djQuickCheck, openFuture, src)
-import WAGSI.Plumbing.Types (TheFuture, ForwardBackwards, Samples)
+import WAGSI.Plumbing.Samples (nameToSampleO, sampleToUrls)
+import WAGSI.Plumbing.Tidal (djQuickCheck, droneyFuture, massiveFuture, openFuture, src)
+import WAGSI.Plumbing.Types (BufferUrl, DroneNote(..), ForwardBackwards, NextCycle(..), Sample(..), SampleCache, TheFuture(..), Voice(..))
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
+import Web.HTML (window)
+import Web.HTML.Location (search)
+import Web.HTML.Window (location)
+
+r2b :: Ref.Ref ~> Behavior
+r2b r = behavior \e -> makeEvent \f -> subscribe e \v -> do
+  rr <- Ref.read r
+  f (v rr)
+  pure unit
 
 main :: String -> Effect Unit
 main exmpl =
   runHalogenAff do
     body <- awaitBody
-    runUI (component exmpl) unit body
+    bufCache <- H.liftEffect $ Ref.new Map.empty
+    runUI (component exmpl bufCache) unit body
 
 type StashInfo
   = { buffers :: Array String, periodicWaves :: Array String, floatArrays :: Array String }
@@ -61,18 +78,11 @@ type State
   , canStopAudio :: Boolean
   , srcCode :: Maybe String
   , exampleCode :: String
-  , triggerWorld ::
-      Maybe
-        ( Event { theFuture :: TheFuture } /\ Behavior
-            { buffers :: Samples (Maybe ForwardBackwards)
-            , silence :: BrowserAudioBuffer
-            }
-        )
-  , hasOrLacks :: Maybe (HasOrLacks)
   , loadingHack :: LoadingHack
   , djqc :: Maybe String
   , tick :: Maybe Int
   , doingGraphRendering :: Boolean
+  , bufCache :: Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards })
   }
 
 data Action
@@ -84,31 +94,28 @@ data Action
   | DJQC String
   | StopAudio
 
-component :: forall query input output m. MonadEffect m => MonadAff m => String -> H.Component query input output m
-component exmpl =
+component :: forall query input output m. MonadEffect m => MonadAff m => String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> H.Component query input output m
+component exmpl bufCache =
   H.mkComponent
-    { initialState: initialState exmpl
+    { initialState: initialState exmpl bufCache
     , render
     , eval: H.mkEval $ H.defaultEval { initialize = Just Initialize, handleAction = handleAction }
     }
 
-initialState :: forall input. String -> input -> State
-initialState exmpl _ =
+initialState :: forall input. String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> input -> State
+initialState exmpl bufCache _ =
   { unsubscribe: pure unit
   , audioCtx: Nothing
   , audioStarted: false
   , canStopAudio: false
   , loadingHack: Loading
-  , triggerWorld: Nothing
   , exampleCode: exmpl
   , tick: Nothing
   , djqc: Nothing
   , srcCode: Nothing
-  , hasOrLacks: case wagsiMode of
-      Example -> Example.hasOrLacks
-      _ -> Nothing
   , unsubscribeFromHalogen: Nothing
   , doingGraphRendering: false
+  , bufCache
   }
 
 data LoadingHack = Loading | Failed | Loaded
@@ -141,7 +148,7 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRenderin
                         [ HH.text $ case wagsiMode of
                             LiveCoding -> "wagsi - The Tidal Cycles jam"
                             DJQuickCheck -> "d j q u i c k c h e c k"
-                            Example -> Example.title
+                            Example -> (unwrap Example.wag).title
                         ]
                     ]
                       <>
@@ -191,7 +198,7 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRenderin
                                       ]
                                   ]
                               )
-                              
+
                           in
                             case wagsiMode of
                               LiveCoding -> skd srcCode
@@ -222,6 +229,28 @@ easingAlgorithm =
   in
     fOf 15
 
+v2s :: Voice -> Set.Set Sample
+v2s (Voice { next: NextCycle { samples } }) = samples
+
+d2s :: DroneNote -> Sample
+d2s (DroneNote { sample }) = sample
+
+doDownloads :: AudioContext -> Ref.Ref SampleCache -> (TheFuture -> Effect Unit) -> TheFuture -> Aff Unit
+doDownloads audioContext cacheRef push future@(TheFuture { earth, wind, fire, air, heart, sounds }) = do
+  cache <- H.liftEffect $ Ref.read cacheRef
+  let
+    sets = fold (map v2s [ earth, wind, fire ]) <> (Set.fromFoldable $ compact ((map <<< map) d2s [ air, heart ]))
+    samplesToUrl = Set.toMap sets # Map.mapMaybeWithKey \samp@(Sample k) _ -> Map.lookup samp sounds <|> do
+      nm <- O.lookup k nameToSampleO
+      url <- Map.lookup nm sampleToUrls
+      pure url
+  newMap <- getBuffersUsingCache samplesToUrl audioContext cache
+  H.liftEffect do
+    Ref.write newMap cacheRef
+    push future
+
+foreign import parseParams_ :: Maybe String -> (String -> Maybe String) -> String -> String -> Effect (Maybe String)
+
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Tick tick -> do
@@ -234,37 +263,45 @@ handleAction = case _ of
     H.modify_ _ { doingGraphRendering = false }
   Initialize -> do
     ctx <- H.liftEffect context
-    state <- H.get
-    let FullSceneBuilder { triggerWorld } = engine state.hasOrLacks
-    tw <- H.liftAff $ try (snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {})))
-    maybe (H.modify_ _ { loadingHack = Failed })
-      (\triggerWorld -> H.modify_ _ { triggerWorld = Just triggerWorld, loadingHack = Loaded })
-      (hush tw)
+    { bufCache } <- H.get
+    res <- case wagsiMode of
+      Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) Example.wag
+      LiveCoding -> H.liftAff $ try do
+        primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
+        massive <- H.liftEffect do
+          w <- window
+          loc <- location w
+          sc <- search loc
+          parseParams_ Nothing Just sc "massive"
+        when (isJust massive) (doDownloads ctx bufCache (const $ pure unit) massiveFuture)
+        doDownloads ctx bufCache (const $ pure unit) droneyFuture
+        doDownloads ctx bufCache (const $ pure unit) primePump
+      DJQuickCheck -> H.liftAff $ try $ pure unit
+    either (\_ -> H.modify_ _ { loadingHack = Failed }) (\_ -> H.modify_ _ { loadingHack = Loaded }) res
   StartAudio -> do
     handleAction StopAudio
+    { bufCache } <- H.get
+    let ohBehave = r2b bufCache
     nextCycleEnds <- H.liftEffect $ Ref.new 0
     H.modify_ _ { audioStarted = true, canStopAudio = false, doingGraphRendering = true }
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
-    tw <- H.gets _.triggerWorld
-    state <- H.get
     { ctx, unsubscribeFromWags } <-
       H.liftAff do
         ctx <- H.liftEffect context
         unitCache <- H.liftEffect makeUnitCache
         let
           ffiAudio = defaultFFIAudio ctx unitCache
-        let FullSceneBuilder { triggerWorld, piece } = engine state.hasOrLacks
-        trigger' /\ world <- case tw of
-          Nothing -> do
-            snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
-          Just ttww -> pure ttww
+        let FullSceneBuilder { triggerWorld, piece } = engine ohBehave
+        trigger' /\ world <- snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
         { trigger, unsub } <- case wagsiMode of
           LiveCoding -> H.liftEffect $ do
             -- we prime the pump by pushing an empty future
             theFuture :: EventIO TheFuture <- create
             cachedSrc Nothing Just >>= flip for_ (HS.notify listener <<< Src <<< Just)
-            unsub0 <- subscribe trigger' (theFuture.push <<< _.theFuture)
+            unsub0 <- subscribe trigger' \v -> do
+              launchAff_ $ doDownloads ctx bufCache theFuture.push $ v.theFuture
+              theFuture.push v.theFuture
             unsub1 <- subscribe src (HS.notify listener <<< Src <<< Just)
             HS.notify listener GraphRenderingDone
             pure
@@ -277,10 +314,11 @@ handleAction = case _ of
           Example -> do
             let ivl = E.fold (const $ add 1) (interval 1000) (-1)
             theFuture :: EventIO TheFuture <- H.liftEffect create
+            doDownloads ctx bufCache (const $ pure unit) Example.wag
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
               0 -> do
                 HS.notify listener GraphRenderingDone
-                HS.notify listener (Tick $ Nothing) *> theFuture.push Example.example
+                HS.notify listener (Tick $ Nothing) *> launchAff_ (doDownloads ctx bufCache theFuture.push Example.wag)
               _ -> pure unit
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
           DJQuickCheck -> do
@@ -299,12 +337,13 @@ handleAction = case _ of
                   seed <- randomSeed
                   let goDJ = evalGen djQuickCheck { newSeed: seed, size: 10 }
                   HS.notify listener (DJQC $ cycleToString goDJ.cycle)
-                  theFuture.push goDJ.future
+                  launchAff_ $ doDownloads ctx bufCache theFuture.push goDJ.future
                   Ref.write (if cycleLength goDJ.cycle < 6 then ck + 6 else ck + 20) nextCycleEnds
                 nce2 <- Ref.read nextCycleEnds
                 HS.notify listener (Tick $ Just (nce2 - ck))
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
         primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
+        doDownloads ctx bufCache (const $ pure unit) primePump
         unsubscribeFromWags <-
           H.liftEffect do
             usu <- subscribe

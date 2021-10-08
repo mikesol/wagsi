@@ -12,6 +12,9 @@ module WAGSI.Plumbing.Tidal
   , wag
   , src
   , openFuture
+  , massiveFuture
+  , droneyFuture
+  , reFuture
   ---
   , djQuickCheck
   ---
@@ -88,7 +91,7 @@ import Data.Filterable (compact, filter, filterMap, maybeBool)
 import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Int (fromString, toNumber)
-import Data.Lens (Lens', Prism', _Just, lens, over, prism')
+import Data.Lens (Lens', Prism', _Just, lens, over, prism', set)
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.List (List(..), fold, foldMap, foldl, (:))
@@ -96,6 +99,7 @@ import Data.List as L
 import Data.List.NonEmpty (sortBy)
 import Data.List.NonEmpty as NEL
 import Data.List.Types (NonEmptyList(..))
+import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, fromMaybe', maybe)
 import Data.Newtype (unwrap, wrap)
 import Data.NonEmpty ((:|))
@@ -103,7 +107,7 @@ import Data.Profunctor.Choice (class Choice)
 import Data.Profunctor.Strong (class Strong)
 import Data.Set as Set
 import Data.String.CodeUnits (fromCharArray, singleton)
-import Data.Traversable (sequence, traverse)
+import Data.Traversable (class Foldable, sequence, traverse)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (D1)
@@ -114,7 +118,7 @@ import Effect (Effect)
 import Effect.Random (randomInt)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
-import Foreign.Object as Object
+import Foreign.Object as O
 import Heterogeneous.Mapping (hmap, hmapWithIndex)
 import Prim.Row (class Nub, class Union)
 import Prim.RowList (class RowToList)
@@ -134,9 +138,9 @@ import WAGS.Validation (class NodesCanBeTumultuous, class SubgraphIsRenderable)
 import WAGSI.Plumbing.Cycle (Cycle(..), flattenCycle, intentionalSilenceForInternalUseOnly_, reverse)
 import WAGSI.Plumbing.FX (WAGSITumult)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
-import WAGSI.Plumbing.Samples (class ClockTime, clockTime)
+import WAGSI.Plumbing.Samples (class ClockTime, clockTime, dronesToSample, nameToSample)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types (AH, AH', AfterMatter, ClockTimeIs, CycleDuration(..), DroneNote(..), EWF, EWF', FoT, Globals(..), ICycle(..), NextCycle(..), Note(..), NoteInFlattenedTime(..), NoteInTime(..), O'Past, Sample, Tag, TheFuture(..), TimeIsAndWas, Voice(..), ZipProps(..))
+import WAGSI.Plumbing.Types (AH, AH', AfterMatter, BufferUrl, ClockTimeIs, CycleDuration(..), DroneNote(..), EWF, EWF', FoT, Globals(..), ICycle(..), NextCycle(..), Note(..), NoteInFlattenedTime(..), NoteInTime(..), O'Past, Sample(..), Tag, TheFuture(..), TimeIsAndWas, Voice(..), ZipProps(..))
 
 -- | Only play the first cycle, and truncate/interrupt the playing cycle at the next sub-ending.
 impatient :: NextCycle -> NextCycle
@@ -144,8 +148,19 @@ impatient = over (unto NextCycle <<< prop (Proxy :: _ "force")) (const true)
 
 make
   :: forall inRec overfull rest
-   . Union inRec (EWF' (CycleDuration -> Voice) (AH (Maybe DroneNote))) overfull
-  => Nub overfull (EWF' (CycleDuration -> Voice) (AH' (Maybe DroneNote) rest))
+   . Union inRec
+       ( EWF' (CycleDuration -> Voice)
+           ( AH' (Maybe DroneNote)
+               (title :: String, sounds :: Map.Map Sample BufferUrl)
+           )
+       )
+       overfull
+  => Nub overfull
+       ( EWF' (CycleDuration -> Voice)
+           ( AH' (Maybe DroneNote)
+               (title :: String, sounds :: Map.Map Sample BufferUrl | rest)
+           )
+       )
   => Number
   -> { | inRec }
   -> TheFuture
@@ -158,11 +173,14 @@ make cl rr = TheFuture $ Record.union
           }
       )
   )
-  { air: z.air, heart: z.heart }
+  { air: z.air, heart: z.heart, title: z.title, sounds: z.sounds }
   where
   z =
-    Record.merge rr (Record.union openVoices openDrones)
-      :: { | EWF' (CycleDuration -> Voice) (AH' (Maybe DroneNote) rest) }
+    Record.merge rr
+      ( Record.union openVoices
+          $ Record.union openDrones { title: "wagsi @ tidal", sounds: Map.empty :: Map.Map Sample BufferUrl }
+      )
+      :: { | EWF' (CycleDuration -> Voice) (AH' (Maybe DroneNote) (title :: String, sounds :: Map.Map Sample BufferUrl | rest)) }
 
 fx
   :: forall scene graph graphRL
@@ -337,8 +355,17 @@ weightP = do
 sampleP :: Parser (Maybe Note)
 sampleP = do
   possiblySample <- sampleName
-  case Object.lookup possiblySample S.nameToSampleMNO of
-    Nothing -> fail "Not a sample name"
+  -- if it is in our original stock, there may be a level
+  -- of indirection. for example, chin and chin:0 are the same sample
+  -- otherwise, if it is not in the original stock, we use the name as-is
+  case O.lookup possiblySample S.nameToSampleMNO of
+    Nothing -> pure $ Just $ Note
+      { sample: Sample possiblySample
+      , bufferOffsetFoT: const 0.0
+      , rateFoT: const 1.0
+      , forward: true
+      , volumeFoT: const 1.0
+      }
     Just foundSample -> pure foundSample
 
 internalcyclePInternal :: Parser (ICycle (Maybe Note))
@@ -536,7 +563,11 @@ unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
       ) <<< NEL.toList
 
 asScore :: Boolean -> NonEmptyList (NoteInFlattenedTime Note) -> NextCycle
-asScore force flattened = NextCycle { force, func: scoreInput }
+asScore force flattened = NextCycle
+  { force
+  , samples: Set.fromFoldable $ map (unwrap >>> _.note >>> unwrap >>> _.sample) flattened
+  , func: scoreInput
+  }
   where
   scoreInput ccPce = go ccPce.currentCount ccPce.prevCycleEnded flattened
   go currentCount prevCycleEnded (NonEmptyList (NoteInFlattenedTime aa :| bb)) =
@@ -550,7 +581,7 @@ asScore force flattened = NextCycle { force, func: scoreInput }
                 unw = unwrap aa.note
               in
                 maybe silence
-                  (if unw.forward then _.forward else _.backwards) <<< S.sampleToBuffers unw.sample
+                  (if unw.forward then _.buffer.forward else _.buffer.backwards) <<< Map.lookup unw.sample
           , cycleStartsAt: prevCycleEnded
           , rateFoT: (unwrap aa.note).rateFoT
           , bufferOffsetFoT: (unwrap aa.note).bufferOffsetFoT
@@ -616,11 +647,30 @@ openDrones :: { | AH (Maybe DroneNote) }
 openDrones = hmap (\(_ :: Unit) -> Nothing) (mempty :: { | AH Unit })
 
 openFuture :: TheFuture
-openFuture = TheFuture $ Record.union
-  ( hmap (\(_ :: Unit) -> openVoice)
-      (mempty :: { | EWF Unit })
+openFuture = TheFuture
+  $ Record.union (hmap (\(_ :: Unit) -> openVoice) (mempty :: { | EWF Unit }))
+  $ Record.union
+      (hmap (\(_ :: Unit) -> Nothing) (mempty :: { | AH Unit }))
+      { title: "wagsi @ tidal", sounds: (Map.empty :: Map.Map Sample BufferUrl) }
+
+reFuture :: forall f. Foldable f => f Sample -> TheFuture
+reFuture fdbl = set
+  ( unto TheFuture
+      <<< prop
+        (Proxy :: _ "earth")
+      <<< unto Voice
+      <<< prop (Proxy :: _ "next")
+      <<< unto NextCycle
+      <<< prop (Proxy :: _ "samples")
   )
-  (hmap (\(_ :: Unit) -> Nothing) (mempty :: { | AH Unit }))
+  (Set.fromFoldable fdbl)
+  openFuture
+
+massiveFuture :: TheFuture
+massiveFuture = reFuture $ map snd nameToSample
+
+droneyFuture :: TheFuture
+droneyFuture = reFuture $ map snd dronesToSample
 
 foreign import wagHandlers :: Effect (Object (TheFuture -> Effect Unit))
 
@@ -826,7 +876,18 @@ djQuickCheck = do
   { cycle, voice: earth } <- genVoice 1.0
   wind <- pure openVoice
   fire <- pure openVoice
-  pure $ { cycle, future: TheFuture { earth, wind, fire, air: Nothing, heart: Nothing } }
+  pure $
+    { cycle
+    , future: TheFuture
+        { earth
+        , wind
+        , fire
+        , air: Nothing
+        , heart: Nothing
+        , title: "d j q u i c k c h e c k"
+        , sounds: Map.empty
+        }
+    }
 
 class S s where
   s :: s -> CycleDuration -> Voice
