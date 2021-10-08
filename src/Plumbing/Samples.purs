@@ -2,6 +2,7 @@ module WAGSI.Plumbing.Samples
   ( sampleToUrls
   , urls
   , note2drone
+  , sample2drone
   , dronesToSample
   , nameToSampleO
   , unsafeSamples
@@ -4217,6 +4218,17 @@ instance bufferDurationTimeIsAndWas :: BufferDuration (TimeIsAndWas TimeIs) wher
   bufferDuration = unwrap >>> _.timeIs >>> unwrap >>> _.bufferDuration
 
 ---
+sample2drone :: Sample -> DroneNote
+sample2drone sample = DroneNote
+  { sample
+  , forward: true
+  , rateFoT: const 1.0
+  , volumeFoT: const 1.0
+  , loopStartFoT: const 0.0
+  , loopEndFoT: const 0.0
+  , tumultFoT: const calm
+  }
+
 
 note2drone :: Note -> DroneNote
 note2drone (Note { sample, forward }) = DroneNote
