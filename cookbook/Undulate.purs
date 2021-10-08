@@ -27,4 +27,5 @@ wag = make 1.0
                   )
               )
         ) $ c2d hollowair
+  , title: "Undulating drone"
   }

@@ -64,7 +64,7 @@ main exmpl =
   runHalogenAff do
     body <- awaitBody
     bufCache <- H.liftEffect $ Ref.new Map.empty
-    runUI (component exmpl bufCache) unit body
+    runUI (component exmpl bufCache Example.wag) unit body
 
 type StashInfo
   = { buffers :: Array String, periodicWaves :: Array String, floatArrays :: Array String }
@@ -79,6 +79,7 @@ type State
   , srcCode :: Maybe String
   , exampleCode :: String
   , loadingHack :: LoadingHack
+  , exampleWag :: TheFuture
   , djqc :: Maybe String
   , tick :: Maybe Int
   , doingGraphRendering :: Boolean
@@ -87,6 +88,7 @@ type State
 
 data Action
   = Initialize
+  | Finalize
   | StartAudio
   | GraphRenderingDone
   | Tick (Maybe Int)
@@ -94,22 +96,27 @@ data Action
   | DJQC String
   | StopAudio
 
-component :: forall query input output m. MonadEffect m => MonadAff m => String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> H.Component query input output m
-component exmpl bufCache =
+component :: forall query input output m. MonadEffect m => MonadAff m => String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> TheFuture -> H.Component query input output m
+component exmpl bufCache ewag =
   H.mkComponent
-    { initialState: initialState exmpl bufCache
+    { initialState: initialState exmpl bufCache ewag
     , render
-    , eval: H.mkEval $ H.defaultEval { initialize = Just Initialize, handleAction = handleAction }
+    , eval: H.mkEval $ H.defaultEval
+        { initialize = Just Initialize
+        , finalize = Just Finalize
+        , handleAction = handleAction
+        }
     }
 
-initialState :: forall input. String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> input -> State
-initialState exmpl bufCache _ =
+initialState :: forall input. String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> TheFuture -> input -> State
+initialState exmpl bufCache ewag _ =
   { unsubscribe: pure unit
   , audioCtx: Nothing
   , audioStarted: false
   , canStopAudio: false
   , loadingHack: Loading
   , exampleCode: exmpl
+  , exampleWag: ewag
   , tick: Nothing
   , djqc: Nothing
   , srcCode: Nothing
@@ -124,7 +131,17 @@ classes :: forall r p. Array String -> HP.IProp (class :: String | r) p
 classes = HP.classes <<< map H.ClassName
 
 render :: forall m. State -> H.ComponentHTML Action () m
-render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRendering, srcCode, exampleCode } =
+render
+  { audioStarted
+  , canStopAudio
+  , loadingHack
+  , tick
+  , djqc
+  , doingGraphRendering
+  , srcCode
+  , exampleCode
+  , exampleWag
+  } =
   HH.div [ classes [ "w-screen", "h-screen" ] ]
     [ HH.div [ classes [ "flex", "flex-col", "w-full", "h-full" ] ]
         [ HH.div [ classes [ "flex-grow" ] ] [ HH.div_ [] ]
@@ -148,7 +165,7 @@ render { audioStarted, canStopAudio, loadingHack, tick, djqc, doingGraphRenderin
                         [ HH.text $ case wagsiMode of
                             LiveCoding -> "wagsi - The Tidal Cycles jam"
                             DJQuickCheck -> "d j q u i c k c h e c k"
-                            Example -> (unwrap Example.wag).title
+                            Example -> (unwrap exampleWag).title
                         ]
                     ]
                       <>
@@ -263,9 +280,9 @@ handleAction = case _ of
     H.modify_ _ { doingGraphRendering = false }
   Initialize -> do
     ctx <- H.liftEffect context
-    { bufCache } <- H.get
+    { bufCache, exampleWag } <- H.get
     res <- case wagsiMode of
-      Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) Example.wag
+      Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) exampleWag
       LiveCoding -> H.liftAff $ try do
         primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
         massive <- H.liftEffect do
@@ -278,9 +295,10 @@ handleAction = case _ of
         doDownloads ctx bufCache (const $ pure unit) primePump
       DJQuickCheck -> H.liftAff $ try $ pure unit
     either (\_ -> H.modify_ _ { loadingHack = Failed }) (\_ -> H.modify_ _ { loadingHack = Loaded }) res
+  Finalize -> handleAction StopAudio
   StartAudio -> do
     handleAction StopAudio
-    { bufCache } <- H.get
+    { bufCache, exampleWag } <- H.get
     let ohBehave = r2b bufCache
     nextCycleEnds <- H.liftEffect $ Ref.new 0
     H.modify_ _ { audioStarted = true, canStopAudio = false, doingGraphRendering = true }
@@ -314,11 +332,11 @@ handleAction = case _ of
           Example -> do
             let ivl = E.fold (const $ add 1) (interval 1000) (-1)
             theFuture :: EventIO TheFuture <- H.liftEffect create
-            doDownloads ctx bufCache (const $ pure unit) Example.wag
+            doDownloads ctx bufCache (const $ pure unit) exampleWag
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
               0 -> do
                 HS.notify listener GraphRenderingDone
-                HS.notify listener (Tick $ Nothing) *> launchAff_ (doDownloads ctx bufCache theFuture.push Example.wag)
+                HS.notify listener (Tick $ Nothing) *> launchAff_ (doDownloads ctx bufCache theFuture.push exampleWag)
               _ -> pure unit
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
           DJQuickCheck -> do

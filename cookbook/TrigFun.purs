@@ -27,4 +27,5 @@ wag = make 2.0
   , wind: s $ onTag "x" (set (_Just <<< lnv) (const 0.3))
       $ onTag "x" (set (_Just <<< lnr) (lcmap normalizedBigCycleTime \t ->  0.7 + (t * 0.84)))
       $ parse "~ blip*4;x"
+  , title: "Rising blips"
   }

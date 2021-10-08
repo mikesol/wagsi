@@ -14,4 +14,5 @@ wag = make 1.0
       $ onTag "hime" (set (_Just <<< lnr) (const 1.8))
       $ parse "<tabla;lowme bassdm> tech gretsch:0 tabla:6;hime , ~ ~ psr ~ , chin:2 chin:2*4 <chin:22 [~ bd:2]> chin:2 "
   , heart: c2d hollowair
+  , title: "Beat with @yaxu"
   }

@@ -30,4 +30,5 @@ wag = make 1.0
                 }
             )
         ) $ c2d lowdark
+  , title: "Drone with delay"
   }

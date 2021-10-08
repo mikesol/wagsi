@@ -15,4 +15,5 @@ wag = make 4.0
       $ onTag "g0" (set (_Just <<< lnr) (lcmap sampleTime \t -> 1.0 - t))
       $ onTag "g1" (set (_Just <<< lnv) (lcmap sampleTime \t -> lfo { amp: 0.4, freq: 20.0, phase: 0.0} t + 0.7))
       $ parse " gab lighter gab;g0 lighter gab lighter gab;g1 lighter  , ~ industrial ~ ~ ~ tink ~ ~ "
+  , title: "industrial tink"
   }

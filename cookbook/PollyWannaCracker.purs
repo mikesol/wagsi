@@ -15,4 +15,5 @@ wag = make 1.0
   -- comment `wind` in and out
   , wind: s $ map (set (_Just <<< lnv) (const 0.1) <<< set (_Just <<< lnr) (lcmap normalizedSampleTime \t -> 2.0 {- -t -} )) $ parse "newnotes newnotes:1 newnotes:2 newnotes:3 newnotes:6"
   , heart: c2d lowdark
+  , title: "polyrhythm of notes"
   }

@@ -3,7 +3,7 @@ var webpack = require('webpack');
 
 module.exports = {
   mode: "production",
-  entry: "./src/index.js",
+  entry: process.env.WEBPACK_ENTRY ? process.env.WEBPACK_ENTRY : "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",

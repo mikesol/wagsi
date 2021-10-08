@@ -14,4 +14,5 @@ wag = make 1.0
       $ onTag "psr" (set (_Just <<< lnv) (const 0.1))
       $ onTag "vd" (set (_Just <<< lnr) (lcmap littleCycleTime (add 0.5)))
       $ parse "voodoo*6;vd ~ , ~ voodoo:3 , ~ speakspell:4;psr ~ ~"
+  , title: "Arpeggio up"
   }

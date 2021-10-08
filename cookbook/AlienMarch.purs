@@ -14,4 +14,5 @@ wag = make 2.0
       $ onTag "k1" (set (_Just <<< lnr) (const 0.5))
       $ onTag "pd" (set (_Just <<< lnv) (lcmap normalizedSampleTime $ mul 2.0))
       $ parse " kurt*2;k1 kurt*3 kurt*2 kurt*5 , hit , bass , ~ ~ pad;pd _ _"
+  , title: "Alien march, time rising"
   }
