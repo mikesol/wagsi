@@ -53,3 +53,6 @@ with open('src/LiveCodeHere/Wagged.purs','r') as rf:
   f = f.replace('WAGSI.LiveCodeHere.Wagged', 'WAGSI.Cookbook.'+mod)
   with open('cookbook/'+fn,'w') as wf:
     wf.write(f)
+
+import subprocess
+subprocess.call('python makeStorybook.py && npx spago -x storybook.dhall install && npx spago -x storybook.dhall build', shell=True)

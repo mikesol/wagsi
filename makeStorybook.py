@@ -27,23 +27,28 @@ mangled = [mangle(x) for x in ipt]
 modules = '\n'.join(['import %s as %s' % (x[0], x[1]) for x in mangled])
 tuples =  '\n'.join(['  , Tuple (unwrap %s.wag).title $ proxy (component %s rf %s.wag)' % (x[1], json.dumps(x[2]), x[1]) for x in mangled])
 
-mainIs = f'''module WAGSI.Storybook where
+mainIs = f'''
+module WAGSI.Storybook where
 
 import Prelude
 
+import Control.Monad.State (evalState, get, put)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Newtype (unwrap)
+import Data.Set as Set
+import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\), type (/\))
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Effect.Ref as Ref
-import Data.Newtype (unwrap)
 import Foreign.Object as Object
 import Halogen as H
 import Halogen.Aff as HA
 import Halogen.HTML as HH
-import Halogen.Storybook (Stories, runStorybook, proxy)
+import Halogen.Storybook (Stories, StoryQuery, proxy, runStorybook)
 {modules}
 import WAGSI.Main (component)
 import WAGSI.Plumbing.Types (BufferUrl, Sample, ForwardBackwards)
@@ -63,22 +68,36 @@ baseComponent =
   render _ =
     HH.div_ []
 
+stories' :: forall m
+   . MonadEffect m
+  => MonadAff m
+  => Ref.Ref (Map.Map Sample {{ url :: BufferUrl, buffer :: ForwardBackwards }})
+  ->  Array (String /\ H.Component StoryQuery Unit Void m)
+stories' rf =   [ Tuple "" $ proxy baseComponent
+{tuples}
+  ]
+
 stories
   :: forall m
    . MonadEffect m
   => MonadAff m
   => Ref.Ref (Map.Map Sample {{ url :: BufferUrl, buffer :: ForwardBackwards }})
   -> Stories m
-stories rf = Object.fromFoldable
-  [ Tuple "" $ proxy baseComponent
-{tuples}
-  ]
+stories rf = Object.fromFoldable (evalState traversed {{ tags: Set.empty, n: 0 }})
+  where
+  traversed = stories' rf # traverse \(a /\ b) -> do
+    {{ tags, n }} <- get
+    let newTag = if Set.member a tags then a <> " " <> show n else a
+    put {{ tags: tags <> Set.singleton newTag , n: n + 1 }}
+    pure (newTag /\ b)
+
 
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
   bufCache <- H.liftEffect $ Ref.new Map.empty
-  runStorybook {{ stories: stories bufCache, logo: Nothing }} body'''
+  runStorybook {{ stories: stories bufCache, logo: Nothing }} body
+'''
 
 with open('storybook/Main.purs', 'w') as sb:
   sb.write(mainIs)
