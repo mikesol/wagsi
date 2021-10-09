@@ -1,10 +1,10 @@
 # WagsI
 
-Collaborative interactive coding with [`purescript-wags`](https://github.com/mikesol/purescript-wags).
+Collaborative interactive music-making using [`purescript-wags`](https://github.com/mikesol/purescript-wags).
 
 ## Practicing before the jam
 
-Practice makes perfect! To try WagsI tidal out:
+Practice makes perfect! To try this repo out:
 
 1. Clone this repo.
 2. Open this repo with VSCode. Make sure the PureScript IDE extension is installed.
