@@ -8,11 +8,10 @@ Practice makes perfect! To try this repo out:
 
 1. Clone this repo.
 2. Open this repo with VSCode. Make sure the PureScript IDE extension is installed.
-3. Checkout the `tidal` branch: `git checkout tidal`.
 3. Run `npm install && npm start`.
-4. Navigate to `localhost:8080` in Chrome or Firefox and click on **Start Audio**.
+4. Navigate to `localhost:8080` in _Chrome or Firefox_ and click on **Start Audio**.
 5. In VSCode, open `src/LiveCodeHere/Wagged.purs`. Start editing & save the file to render (ie change the empty `""` to `"bassdm"`). You should hear some beats! If not, file an issue on this repo.
-6. Keep editing, keep saving, and listen to your creation!
+6. Keep editing, keep saving, and listen to your creation! For ideas on how to get started, check out the [`cookbook/`](./cookbook/). All examples from the cookbook can be pasted into `src/LiveCodeHere/Wagged.purs` - just make sure to keep the module's name as `WAGSI.LiveCodeHere.Wagged` when pasting.
 
 ## API
 
