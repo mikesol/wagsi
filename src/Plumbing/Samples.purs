@@ -12,6 +12,8 @@ module WAGSI.Plumbing.Samples
   , clockTime
   , class Entropy
   , entropy
+  , class InitialEntropy
+  , initialEntropy
   , class SampleTime
   , sampleTime
   , class BigCycleTime
@@ -4143,6 +4145,15 @@ instance clockTimeClockTimeIs :: ClockTime ClockTimeIs where
 
 instance clockTimeClockTimeIsAndWas :: ClockTime (TimeIsAndWas ClockTimeIs) where
   clockTime = unwrap >>> _.timeIs >>> unwrap >>> _.clockTime
+
+class InitialEntropy a where
+  initialEntropy :: a -> Number
+
+instance initialEntropyTimeIs :: InitialEntropy TimeIs where
+  initialEntropy = unwrap >>> _.entropy
+
+instance initialEntropyTimeIsAndWas :: InitialEntropy (TimeIsAndWas TimeIs) where
+  initialEntropy = unwrap >>> _.timeIs >>> unwrap >>> _.entropy
 
 class SampleTime a where
   sampleTime :: a -> Number

@@ -271,6 +271,7 @@ newtype TimeIs =
     , bigCycleDuration :: Number
     , bufferDuration :: Number
     , entropy :: Number
+    , initialEntropy :: Number
     }
 
 derive instance newtypeTimeIs :: Newtype TimeIs _

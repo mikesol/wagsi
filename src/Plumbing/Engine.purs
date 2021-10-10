@@ -62,53 +62,67 @@ internal0 :: SubSceneSig "singleton" ()
   , buffers :: SampleCache
   , time :: Number
   }
-internal0 = unit # SG.loopUsingScene \{ time, silence, buffers, seed, buf: buf' } _ ->
-  { control: unit
-  , scene: { newSeed: mkSeed seed, size: globalSize } # evalGen do
+internal0 = { initialEntropies: { volume: 0.5, rate: 0.5, bufferOffset: 0.5 } } # SG.loopUsingScene
+  \{ time
+   , silence
+   , buffers
+   , seed
+   , buf: buf'
+   }
+   { initialEntropies: initialEntropiesOld } -> case buf' of
+    Nothing -> { control: { initialEntropies: initialEntropiesOld }, scene: { singleton: gain 0.0 (playBuf { onOff: Off } silence) } }
+    Just
+      ( Buffy
+          { starting
+          , startTime
+          , rest:
+              { sampleF
+              , rateFoT
+              , bufferOffsetFoT
+              , volumeFoT
+              , duration
+              , cycleStartsAt
+              , currentCycle
+              , littleCycleDuration
+              , bigCycleDuration
+              }
+          }
+      ) -> { newSeed: mkSeed seed, size: globalSize } # evalGen do
       volumeEntropy <- arbitrary
       rateEntropy <- arbitrary
       offsetEntropy <- arbitrary
+      initialEntropies <-
+        if starting then { volume: _, rate: _, bufferOffset: _ }
+          <$> arbitrary
+          <*> arbitrary
+          <*> arbitrary
+        else pure initialEntropiesOld
+      let
+        sampleTime = time - startTime
+        bigCycleTime = time - cycleStartsAt
+        littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
+        buf = sampleF silence buffers
+        thisIsTime initialEntropy' entropy' =
+          TimeIs
+            { sampleTime
+            , bigCycleTime
+            , littleCycleTime
+            , clockTime: time
+            , normalizedClockTime: 0.0 -- cuz it's infinite :-P
+            , normalizedSampleTime: sampleTime / duration
+            , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
+            , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
+            , littleCycleDuration
+            , bigCycleDuration
+            , bufferDuration: bufferDuration buf
+            , initialEntropy: initialEntropy'
+            , entropy: entropy'
+            }
+        vol = ff globalFF $ pure $ volumeFoT (thisIsTime initialEntropies.volume volumeEntropy)
       pure
-        { singleton: case buf' of
-            Just
-              ( Buffy
-                  { starting
-                  , startTime
-                  , rest:
-                      { sampleF
-                      , rateFoT
-                      , bufferOffsetFoT
-                      , volumeFoT
-                      , duration
-                      , cycleStartsAt
-                      , currentCycle
-                      , littleCycleDuration
-                      , bigCycleDuration
-                      }
-                  }
-              ) ->
-              let
-                sampleTime = time - startTime
-                bigCycleTime = time - cycleStartsAt
-                littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
-                buf = sampleF silence buffers
-                thisIsTime entropy' =
-                  TimeIs
-                    { sampleTime
-                    , bigCycleTime
-                    , littleCycleTime
-                    , clockTime: time
-                    , normalizedClockTime: 0.0 -- cuz it's infinite :-P
-                    , normalizedSampleTime: sampleTime / duration
-                    , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
-                    , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
-                    , littleCycleDuration
-                    , bigCycleDuration
-                    , bufferDuration: bufferDuration buf
-                    , entropy: entropy'
-                    }
-                vol = ff globalFF $ pure $ volumeFoT (thisIsTime volumeEntropy)
-              in
+        { control: { initialEntropies }
+        , scene:
+            { singleton:
                 gain
                   ( if time > startTime + duration then
                       let
@@ -125,15 +139,13 @@ internal0 = unit # SG.loopUsingScene \{ time, silence, buffers, seed, buf: buf' 
                                 ff (max 0.0 (startTime - time)) (pure OffOn)
                               else
                                 pure On
-                      , bufferOffset: bufferOffsetFoT (thisIsTime offsetEntropy)
-                      , playbackRate: ff globalFF $ pure $ rateFoT (thisIsTime rateEntropy)
+                      , bufferOffset: bufferOffsetFoT (thisIsTime initialEntropies.bufferOffset offsetEntropy)
+                      , playbackRate: ff globalFF $ pure $ rateFoT (thisIsTime initialEntropies.rate rateEntropy)
                       }
                       buf
                   )
-            Nothing -> gain 0.0 (playBuf { onOff: Off } silence)
-
+            }
         }
-  }
 
 internal1 :: SubSceneSig "singleton" ()
   { fng :: { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals, seed :: Int }
