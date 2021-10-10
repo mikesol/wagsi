@@ -208,7 +208,7 @@ plainly = Voice <<< { globals: Globals { gain: const 1.0, fx: const calm }, next
 lvg :: Lens' Voice O'Past
 lvg = unto Voice <<< prop (Proxy :: _ "globals") <<< unto Globals <<< prop (Proxy :: _ "gain")
 
-lvt :: Lens' Voice ({ clockTime :: Number } -> Tumultuous D1 "output" (voice :: Unit))
+lvt :: Lens' Voice (ClockTimeIs -> Tumultuous D1 "output" (voice :: Unit))
 lvt = unto Voice <<< prop (Proxy :: _ "globals") <<< unto Globals <<< prop (Proxy :: _ "fx")
 
 lfn :: forall note. Lens' (NoteInFlattenedTime note) note

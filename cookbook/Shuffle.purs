@@ -51,7 +51,7 @@ wag = make 4.0
   { earth:
       map
         ( set lvt
-            ( \{ clockTime } -> fx
+            (lcmap unwrap \{ clockTime } -> fx
                 ( goodbye $ pan (1.0) { myhp: lowpass (lfo { phase: 0.0, amp: 2000.0, freq: 0.4 } clockTime + 2000.0) hello }
                 )
             )
@@ -59,7 +59,7 @@ wag = make 4.0
   , wind:
       map
         ( set lvt
-            ( \{ clockTime } -> fx
+            (lcmap unwrap \{ clockTime } -> fx
                 ( goodbye $ pan (-1.0) { myhp: highpass (lfo { phase: 0.0, amp: 2000.0, freq: 0.4 } clockTime + 3000.0) hello }
                 )
             )
