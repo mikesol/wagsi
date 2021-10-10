@@ -18,7 +18,7 @@ import Prim.Row as Row
 import Prim.RowList as RL
 import Record as Record
 import Type.Proxy (Proxy(..))
-import WAGS.Lib.BufferPool (AScoredBufferPool, CfScoredBufferPool)
+import WAGS.Lib.BufferPool (AScoredBufferPool)
 import WAGS.Lib.Score (CfNoteStream')
 import WAGS.Tumult (Tumultuous)
 import WAGS.WebAPI (BrowserAudioBuffer)
@@ -70,7 +70,7 @@ derive instance newtypeNextCycle :: Newtype NextCycle _
 
 newtype Globals = Globals
   { gain :: O'Past
-  , fx :: { clockTime :: Number } -> Tumultuous D1 "output" (voice :: Unit)
+  , fx :: ClockTimeIs -> Tumultuous D1 "output" (voice :: Unit)
   }
 
 derive instance newtypeGlobals :: Newtype Globals _
@@ -162,8 +162,6 @@ type Acc
 
 ----------------
 
-type FutureAndGlobals = { future :: CfScoredBufferPool Next NBuf RBuf, globals :: Globals }
-
 newtype ZipProps fns = ZipProps { | fns }
 
 instance zipProps ::
@@ -252,7 +250,10 @@ derive instance sampleOrd :: Ord Sample
 instance sampleShow :: Show Sample where
   show (Sample i) = "Sample <" <> show i <> ">"
 
-newtype ClockTimeIs = ClockTimeIs { clockTime :: Number }
+newtype ClockTimeIs = ClockTimeIs
+  { clockTime :: Number
+  , entropy :: Number
+  }
 
 derive instance newtypeClockTimeIs :: Newtype ClockTimeIs _
 
@@ -269,6 +270,8 @@ newtype TimeIs =
     , littleCycleDuration :: Number
     , bigCycleDuration :: Number
     , bufferDuration :: Number
+    , entropy :: Number
+    , initialEntropy :: Number
     }
 
 derive instance newtypeTimeIs :: Newtype TimeIs _
@@ -292,7 +295,7 @@ newtype Samples a = Samples { | Samples' a }
 derive instance newtypeSamples :: Newtype (Samples a) _
 
 type Samples' (a :: Type) =
-    ( intentionalSilenceForInternalUseOnly :: a
+  ( intentionalSilenceForInternalUseOnly :: a
   , "kicklinn:0" :: a
   , "msg:0" :: a
   , "msg:1" :: a
