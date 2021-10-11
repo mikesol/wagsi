@@ -54,10 +54,7 @@ import Web.HTML.Location (search)
 import Web.HTML.Window (location)
 
 r2b :: Ref.Ref ~> Behavior
-r2b r = behavior \e -> makeEvent \f -> subscribe e \v -> do
-  rr <- Ref.read r
-  f (v rr)
-  pure unit
+r2b r = behavior \e -> makeEvent \f -> subscribe e \v -> Ref.read r >>= f <<< v
 
 main :: String -> Effect Unit
 main exmpl =
