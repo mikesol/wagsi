@@ -1,4 +1,4 @@
-module WAGSI.Plumbing.Example where
+module WAGSI.Cookbook.IowaPiano where
 
 import Prelude
 
