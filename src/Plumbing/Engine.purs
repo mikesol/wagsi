@@ -382,15 +382,17 @@ emptyPool = makeScoredBufferPool
   }
 
 delInPlace
-  :: forall r a h s t
+  :: forall r a h s t p
    . Lacks "air" r
   => Lacks "heart" r
   => Lacks "sounds" r
   => Lacks "title" r
+  => Lacks "preload" r
   => { air :: a
      , heart :: h
      , sounds :: s
      , title :: t
+     , preload :: p
      | r
      }
   -> Record r
@@ -398,6 +400,7 @@ delInPlace = RB.build
   ( RB.delete (Proxy :: Proxy "air")
       <<< RB.delete (Proxy :: Proxy "heart")
       <<< RB.delete (Proxy :: Proxy "sounds")
+      <<< RB.delete (Proxy :: Proxy "preload")
       <<< RB.delete (Proxy :: Proxy "title")
   )
 
