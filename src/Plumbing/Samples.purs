@@ -2079,7 +2079,7 @@ import Safe.Coerce (coerce)
 import Unsafe.Coerce (unsafeCoerce)
 import WAGS.WebAPI (BrowserAudioBuffer)
 import WAGSI.Plumbing.FX (calm)
-import WAGSI.Plumbing.Types (BufferUrl(..), ClockTimeIs, DroneNote(..), Note(..), Sample(..), Samples(..), TimeIs, TimeIsAndWas, UnsampledTimeIs, sampleKludge)
+import WAGSI.Plumbing.Types (BufferUrl(..), ClockTimeIs, DroneNote(..), Note(..), Sample(..), Samples(..), TimeIs, TimeIsAndWas, UnsampledTimeIs, unlockSample)
 
 unsafeSamples :: Samples ~> Object
 unsafeSamples = unsafeCoerce
@@ -4289,7 +4289,7 @@ sample2drone sample = DroneNote
 
 note2drone :: Note -> DroneNote
 note2drone (Note { sampleFoT, forward }) = DroneNote
-  { sample: sampleFoT sampleKludge
+  { sample: sampleFoT unlockSample
   , forward
   -- we wipe out all of the prior functions, keeping just the sample and forward
   , rateFoT: const 1.0

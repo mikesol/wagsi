@@ -161,14 +161,14 @@ import Prelude
 
 import Data.Lens (_Just, set, traversed, view)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types (TheFuture)
+import WAGSI.Plumbing.Types (TheFuture, unlockSample)
 import WAGSI.Plumbing.Tidal (focus, lnr, lns, make, parse, s)
 
 wag :: TheFuture
 wag = make 2.0
   { earth: s
       $ set
-          (traversed <<< _Just <<< focus (eq S.gab_0__Sample <<< view lns) <<< lnr)
+          (traversed <<< _Just <<< focus (eq S.gab_0__Sample <<< (#) unlockSample <<< view lns) <<< lnr)
           (const 1.5)
       $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }

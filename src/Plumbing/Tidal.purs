@@ -140,7 +140,7 @@ import WAGSI.Plumbing.FX (WAGSITumult)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
 import WAGSI.Plumbing.Samples (class ClockTime, clockTime, dronesToSample, nameToSample)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types (AH, AH', AfterMatter, BufferUrl, ClockTimeIs, CycleDuration(..), DroneNote(..), EWF, EWF', FoT, Globals(..), ICycle(..), NextCycle(..), Note(..), NoteInFlattenedTime(..), NoteInTime(..), O'Past, Sample(..), Tag, TheFuture(..), TimeIsAndWas, UnsampledTimeIs, Voice(..), ZipProps(..), sampleKludge)
+import WAGSI.Plumbing.Types (AH, AH', AfterMatter, BufferUrl, ClockTimeIs, CycleDuration(..), DroneNote(..), EWF, EWF', FoT, Globals(..), ICycle(..), NextCycle(..), Note(..), NoteInFlattenedTime(..), NoteInTime(..), O'Past, Sample(..), Tag, TheFuture(..), TimeIsAndWas, UnsampledTimeIs, Voice(..), ZipProps(..), unlockSample)
 
 -- | Only play the first cycle, and truncate/interrupt the playing cycle at the next sub-ending.
 impatient :: NextCycle -> NextCycle
@@ -578,7 +578,7 @@ unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
 asScore :: Boolean -> NonEmptyList (NoteInFlattenedTime Note) -> NextCycle
 asScore force flattened = NextCycle
   { force
-  , samples: Set.fromFoldable $ map (unwrap >>> _.note >>> unwrap >>> _.sampleFoT >>> (#) sampleKludge) flattened
+  , samples: Set.fromFoldable $ map (unwrap >>> _.note >>> unwrap >>> _.sampleFoT >>> (#) unlockSample) flattened
   , func: scoreInput
   }
   where

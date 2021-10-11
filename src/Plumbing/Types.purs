@@ -230,8 +230,8 @@ newtype Note = Note
   , volumeFoT :: FoT
   }
 
-sampleKludge :: UnsampledTimeIs
-sampleKludge = UnsampledTimeIs
+unlockSample :: UnsampledTimeIs
+unlockSample = UnsampledTimeIs
   { clockTime: 0.0
   , bigCycleTime: 0.0
   , littleCycleTime: 0.0
@@ -247,13 +247,13 @@ sampleKludge = UnsampledTimeIs
 derive instance newtypeNote :: Newtype Note _
 derive instance genericNote :: Generic Note _
 instance eqNote :: Eq Note where
-  eq = eq `on` (unwrap >>> _.sampleFoT >>> (#) sampleKludge)
+  eq = eq `on` (unwrap >>> _.sampleFoT >>> (#) unlockSample)
 
 instance ordNote :: Ord Note where
-  compare = compare `on` (unwrap >>> _.sampleFoT >>> (#) sampleKludge)
+  compare = compare `on` (unwrap >>> _.sampleFoT >>> (#) unlockSample)
 
 instance showNote :: Show Note where
-  show (Note { sampleFoT }) = "Note <" <> show (sampleFoT sampleKludge) <> ">"
+  show (Note { sampleFoT }) = "Note <" <> show (sampleFoT unlockSample) <> ">"
 
 ----------------------------------
 

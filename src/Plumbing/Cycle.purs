@@ -14,7 +14,7 @@ import Data.NonEmpty ((:|))
 import Data.Show.Generic (genericShow)
 import Data.Traversable (class Traversable, sequenceDefault, traverse)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types (DroneNote, Note(..), Sample, sampleKludge)
+import WAGSI.Plumbing.Types (DroneNote, Note(..), Sample, unlockSample)
 
 data Cycle a
   = Branching { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
@@ -110,7 +110,7 @@ cycleToString = go
   go (SingleNote { env, val }) =
     ( maybe "~"
         ( S.sampleToString
-            <<< (#) sampleKludge
+            <<< (#) unlockSample
             <<< _.sampleFoT
             <<< unwrap
         )
