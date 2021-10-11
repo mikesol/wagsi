@@ -44,7 +44,7 @@ import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
 import WAGSI.Plumbing.Download (downloadSilence, initialBuffers)
 import WAGSI.Plumbing.FX (calm)
 import WAGSI.Plumbing.Tidal (asScore, intentionalSilenceForInternalUseOnly, openFuture, wag)
-import WAGSI.Plumbing.Types (class HomogenousToVec, Acc, DroneNote(..), EWF, Globals, NBuf, Next, RBuf, TheFuture, TimeIs(..), Voice, ZipProps(..), SampleCache, h2v')
+import WAGSI.Plumbing.Types (class HomogenousToVec, Acc, BufferUrl, DroneNote(..), EWF, Globals, NBuf, Next, RBuf, Sample, SampleCache, TheFuture, TimeIs(..), UnsampledTimeIs(..), Voice, ZipProps(..), h2v')
 
 globalFF = 0.03 :: Number
 globalSize = 5 :: Int
@@ -55,6 +55,22 @@ acc =
   , backToTheFuture: openFuture
   }
 
+sampleF
+  :: Sample
+  -> Boolean
+  -> BrowserAudioBuffer
+  -> Map.Map Sample
+       { buffer ::
+           { backwards :: BrowserAudioBuffer
+           , forward :: BrowserAudioBuffer
+           }
+       , url :: BufferUrl
+       }
+  -> BrowserAudioBuffer
+sampleF sample forward silence =
+  maybe silence
+    (if forward then _.buffer.forward else _.buffer.backwards) <<< Map.lookup sample
+
 internal0 :: SubSceneSig "singleton" ()
   { buf :: Maybe (Buffy RBuf)
   , seed :: Int
@@ -62,7 +78,7 @@ internal0 :: SubSceneSig "singleton" ()
   , buffers :: SampleCache
   , time :: Number
   }
-internal0 = { initialEntropies: { volume: 0.5, rate: 0.5, bufferOffset: 0.5 } } # SG.loopUsingScene
+internal0 = { initialEntropies: { volume: 0.5, rate: 0.5, bufferOffset: 0.5, sample: 0.5 } } # SG.loopUsingScene
   \{ time
    , silence
    , buffers
@@ -70,13 +86,17 @@ internal0 = { initialEntropies: { volume: 0.5, rate: 0.5, bufferOffset: 0.5 } } 
    , buf: buf'
    }
    { initialEntropies: initialEntropiesOld } -> case buf' of
-    Nothing -> { control: { initialEntropies: initialEntropiesOld }, scene: { singleton: gain 0.0 (playBuf { onOff: Off } silence) } }
+    Nothing ->
+      { control: { initialEntropies: initialEntropiesOld }
+      , scene: { singleton: gain 0.0 (playBuf { onOff: Off } silence) }
+      }
     Just
       ( Buffy
           { starting
           , startTime
           , rest:
-              { sampleF
+              { sampleFoT
+              , forward
               , rateFoT
               , bufferOffsetFoT
               , volumeFoT
@@ -91,9 +111,11 @@ internal0 = { initialEntropies: { volume: 0.5, rate: 0.5, bufferOffset: 0.5 } } 
       volumeEntropy <- arbitrary
       rateEntropy <- arbitrary
       offsetEntropy <- arbitrary
+      sampleEntropy <- arbitrary
       initialEntropies <-
-        if starting then { volume: _, rate: _, bufferOffset: _ }
+        if starting then { volume: _, rate: _, sample: _, bufferOffset: _ }
           <$> arbitrary
+          <*> arbitrary
           <*> arbitrary
           <*> arbitrary
         else pure initialEntropiesOld
@@ -101,17 +123,37 @@ internal0 = { initialEntropies: { volume: 0.5, rate: 0.5, bufferOffset: 0.5 } } 
         sampleTime = time - startTime
         bigCycleTime = time - cycleStartsAt
         littleCycleTime = time - (cycleStartsAt + (toNumber currentCycle * littleCycleDuration))
-        buf = sampleF silence buffers
+        normalizedBigCycleTime = bigCycleTime / bigCycleDuration
+        normalizedLittleCycleTime = littleCycleTime / littleCycleDuration
+        normalizedClockTime = 0.0 -- cuz it's infinite :-P
+        thisIsUnsampledTime initialEntropy' entropy' =
+          UnsampledTimeIs
+            { bigCycleTime
+            , littleCycleTime
+            , clockTime: time
+            , normalizedClockTime
+            , normalizedBigCycleTime
+            , normalizedLittleCycleTime
+            , littleCycleDuration
+            , bigCycleDuration
+            , initialEntropy: initialEntropy'
+            , entropy: entropy'
+            }
+        buf = sampleF (sampleFoT (thisIsUnsampledTime initialEntropies.sample sampleEntropy))
+          forward
+          silence
+          buffers
+        normalizedSampleTime = sampleTime / duration
         thisIsTime initialEntropy' entropy' =
           TimeIs
             { sampleTime
             , bigCycleTime
             , littleCycleTime
             , clockTime: time
-            , normalizedClockTime: 0.0 -- cuz it's infinite :-P
-            , normalizedSampleTime: sampleTime / duration
-            , normalizedBigCycleTime: bigCycleTime / bigCycleDuration
-            , normalizedLittleCycleTime: littleCycleTime / littleCycleDuration
+            , normalizedClockTime
+            , normalizedSampleTime
+            , normalizedBigCycleTime
+            , normalizedLittleCycleTime
             , littleCycleDuration
             , bigCycleDuration
             , bufferDuration: bufferDuration buf
@@ -236,8 +278,7 @@ droneSg = emptyLags
               tumultEntropy <- arbitrary
               let
                 thisIsTime entropy' = wrap { clockTime: time', entropy: entropy' }
-                sampleF = maybe silence (if forward then _.buffer.forward else _.buffer.backwards) <<< Map.lookup sample
-                buf = sampleF buffers
+                buf = sampleF sample forward silence buffers
                 prevTime = extract timeLag
                 prevVolume = extract volumeLag
                 volumeNow = volumeFoT $ wrap

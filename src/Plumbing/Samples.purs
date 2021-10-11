@@ -2079,7 +2079,7 @@ import Safe.Coerce (coerce)
 import Unsafe.Coerce (unsafeCoerce)
 import WAGS.WebAPI (BrowserAudioBuffer)
 import WAGSI.Plumbing.FX (calm)
-import WAGSI.Plumbing.Types (BufferUrl(..), ClockTimeIs, DroneNote(..), Note(..), Sample(..), Samples(..), TimeIs, TimeIsAndWas)
+import WAGSI.Plumbing.Types (BufferUrl(..), ClockTimeIs, DroneNote(..), Note(..), Sample(..), Samples(..), TimeIs, TimeIsAndWas, UnsampledTimeIs, sampleKludge)
 
 unsafeSamples :: Samples ~> Object
 unsafeSamples = unsafeCoerce
@@ -4119,6 +4119,9 @@ urls = Samples
 class Entropy a where
   entropy :: a -> Number
 
+instance entropyUnsampledTimeIs :: Entropy UnsampledTimeIs where
+  entropy = unwrap >>> _.entropy
+
 instance entropyTimeIs :: Entropy TimeIs where
   entropy = unwrap >>> _.entropy
 
@@ -4137,6 +4140,9 @@ class ClockTime a where
 instance clockTimeTimeIs :: ClockTime TimeIs where
   clockTime = unwrap >>> _.clockTime
 
+instance unsampledTimeTimeIs :: ClockTime UnsampledTimeIs where
+  clockTime = unwrap >>> _.clockTime
+
 instance clockTimeTimeIsAndWas :: ClockTime (TimeIsAndWas TimeIs) where
   clockTime = unwrap >>> _.timeIs >>> unwrap >>> _.clockTime
 
@@ -4150,10 +4156,13 @@ class InitialEntropy a where
   initialEntropy :: a -> Number
 
 instance initialEntropyTimeIs :: InitialEntropy TimeIs where
-  initialEntropy = unwrap >>> _.entropy
+  initialEntropy = unwrap >>> _.initialEntropy
+
+instance initialEntropyUnsampledTimeIs :: InitialEntropy UnsampledTimeIs where
+  initialEntropy = unwrap >>> _.initialEntropy
 
 instance initialEntropyTimeIsAndWas :: InitialEntropy (TimeIsAndWas TimeIs) where
-  initialEntropy = unwrap >>> _.timeIs >>> unwrap >>> _.entropy
+  initialEntropy = unwrap >>> _.timeIs >>> unwrap >>> _.initialEntropy
 
 class SampleTime a where
   sampleTime :: a -> Number
@@ -4170,6 +4179,9 @@ class BigCycleTime a where
 instance bigCycleTimeTimeIs :: BigCycleTime TimeIs where
   bigCycleTime = unwrap >>> _.bigCycleTime
 
+instance bigCycleTimeUnsampledTimeIs :: BigCycleTime UnsampledTimeIs where
+  bigCycleTime = unwrap >>> _.bigCycleTime
+
 instance bigCycleTimeTimeIsAndWas :: BigCycleTime (TimeIsAndWas TimeIs) where
   bigCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.bigCycleTime
 
@@ -4179,6 +4191,9 @@ class LittleCycleTime a where
 instance littleCycleTimeTimeIs :: LittleCycleTime TimeIs where
   littleCycleTime = unwrap >>> _.littleCycleTime
 
+instance littleCycleTimeUnsampledTimeIs :: LittleCycleTime UnsampledTimeIs where
+  littleCycleTime = unwrap >>> _.littleCycleTime
+
 instance littleCycleTimeTimeIsAndWas :: LittleCycleTime (TimeIsAndWas TimeIs) where
   littleCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.littleCycleTime
 
@@ -4186,6 +4201,9 @@ class NormalizedClockTime a where
   normalizedClockTime :: a -> Number
 
 instance normalizedClockTimeTimeIs :: NormalizedClockTime TimeIs where
+  normalizedClockTime = unwrap >>> _.normalizedClockTime
+
+instance normalizedClockTimeUnsampledTimeIs :: NormalizedClockTime UnsampledTimeIs where
   normalizedClockTime = unwrap >>> _.normalizedClockTime
 
 instance normalizedClockTimeTimeIsAndWas :: NormalizedClockTime (TimeIsAndWas TimeIs) where
@@ -4206,6 +4224,9 @@ class NormalizedBigCycleTime a where
 instance normalizedBigCycleTimeTimeIs :: NormalizedBigCycleTime TimeIs where
   normalizedBigCycleTime = unwrap >>> _.normalizedBigCycleTime
 
+instance normalizedBigCycleTimeUnsampledTimeIs :: NormalizedBigCycleTime UnsampledTimeIs where
+  normalizedBigCycleTime = unwrap >>> _.normalizedBigCycleTime
+
 instance normalizedBigCycleTimeTimeIsAndWas :: NormalizedBigCycleTime (TimeIsAndWas TimeIs) where
   normalizedBigCycleTime = unwrap >>> _.timeIs >>> unwrap >>> _.normalizedBigCycleTime
 
@@ -4213,6 +4234,9 @@ class NormalizedLittleCycleTime a where
   normalizedLittleCycleTime :: a -> Number
 
 instance normalizedLittleCycleTimeTimeIs :: NormalizedLittleCycleTime TimeIs where
+  normalizedLittleCycleTime = unwrap >>> _.normalizedLittleCycleTime
+
+instance normalizedLittleCycleTimeUnsampledTimeIs :: NormalizedLittleCycleTime UnsampledTimeIs where
   normalizedLittleCycleTime = unwrap >>> _.normalizedLittleCycleTime
 
 instance normalizedLittleCycleTimeTimeIsAndWas :: NormalizedLittleCycleTime (TimeIsAndWas TimeIs) where
@@ -4224,6 +4248,9 @@ class LittleCycleDuration a where
 instance littleCycleDurationTimeIs :: LittleCycleDuration TimeIs where
   littleCycleDuration = unwrap >>> _.littleCycleDuration
 
+instance littleCycleDurationUnsampledTimeIs :: LittleCycleDuration UnsampledTimeIs where
+  littleCycleDuration = unwrap >>> _.littleCycleDuration
+
 instance littleCycleDurationTimeIsAndWas :: LittleCycleDuration (TimeIsAndWas TimeIs) where
   littleCycleDuration = unwrap >>> _.timeIs >>> unwrap >>> _.littleCycleDuration
 
@@ -4231,6 +4258,9 @@ class BigCycleDuration a where
   bigCycleDuration :: a -> Number
 
 instance bigCycleDurationTimeIs :: BigCycleDuration TimeIs where
+  bigCycleDuration = unwrap >>> _.bigCycleDuration
+
+instance bigCycleDurationUnsampledTimeIs :: BigCycleDuration UnsampledTimeIs where
   bigCycleDuration = unwrap >>> _.bigCycleDuration
 
 instance bigCycleDurationTimeIsAndWas :: BigCycleDuration (TimeIsAndWas TimeIs) where
@@ -4257,10 +4287,9 @@ sample2drone sample = DroneNote
   , tumultFoT: const calm
   }
 
-
 note2drone :: Note -> DroneNote
-note2drone (Note { sample, forward }) = DroneNote
-  { sample
+note2drone (Note { sampleFoT, forward }) = DroneNote
+  { sample: sampleFoT sampleKludge
   , forward
   -- we wipe out all of the prior functions, keeping just the sample and forward
   , rateFoT: const 1.0
@@ -6309,13 +6338,15 @@ nameToSampleMO = Object.union (map Just nameToSampleO) (Object.singleton "~" Not
 
 nameToSampleMNO :: Object (Maybe Note)
 nameToSampleMNO = (map <<< map)
-  ( Note <<<
-      { sample: _
-      , bufferOffsetFoT: const 0.0
-      , rateFoT: const 1.0
-      , forward: true
-      , volumeFoT: const 1.0
-      }
+  ( Note
+      <<<
+        { sampleFoT: _
+        , bufferOffsetFoT: const 0.0
+        , rateFoT: const 1.0
+        , forward: true
+        , volumeFoT: const 1.0
+        }
+      <<< const
   )
   nameToSampleMO
 

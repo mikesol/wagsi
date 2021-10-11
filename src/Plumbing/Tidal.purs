@@ -140,7 +140,7 @@ import WAGSI.Plumbing.FX (WAGSITumult)
 import WAGSI.Plumbing.SampleDurs (sampleToDur, sampleToDur')
 import WAGSI.Plumbing.Samples (class ClockTime, clockTime, dronesToSample, nameToSample)
 import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types (AH, AH', AfterMatter, BufferUrl, ClockTimeIs, CycleDuration(..), DroneNote(..), EWF, EWF', FoT, Globals(..), ICycle(..), NextCycle(..), Note(..), NoteInFlattenedTime(..), NoteInTime(..), O'Past, Sample(..), Tag, TheFuture(..), TimeIsAndWas, Voice(..), ZipProps(..))
+import WAGSI.Plumbing.Types (AH, AH', AfterMatter, BufferUrl, ClockTimeIs, CycleDuration(..), DroneNote(..), EWF, EWF', FoT, Globals(..), ICycle(..), NextCycle(..), Note(..), NoteInFlattenedTime(..), NoteInTime(..), O'Past, Sample(..), Tag, TheFuture(..), TimeIsAndWas, UnsampledTimeIs, Voice(..), ZipProps(..), sampleKludge)
 
 -- | Only play the first cycle, and truncate/interrupt the playing cycle at the next sub-ending.
 impatient :: NextCycle -> NextCycle
@@ -151,14 +151,14 @@ make
    . Union inRec
        ( EWF' (CycleDuration -> Voice)
            ( AH' (Maybe DroneNote)
-               (title :: String, sounds :: Map.Map Sample BufferUrl)
+               (title :: String, sounds :: Map.Map Sample BufferUrl, preload :: Array Sample)
            )
        )
        overfull
   => Nub overfull
        ( EWF' (CycleDuration -> Voice)
            ( AH' (Maybe DroneNote)
-               (title :: String, sounds :: Map.Map Sample BufferUrl | rest)
+               (title :: String, sounds :: Map.Map Sample BufferUrl, preload :: Array Sample | rest)
            )
        )
   => Number
@@ -173,14 +173,27 @@ make cl rr = TheFuture $ Record.union
           }
       )
   )
-  { air: z.air, heart: z.heart, title: z.title, sounds: z.sounds }
+  { air: z.air, heart: z.heart, title: z.title, sounds: z.sounds, preload: z.preload }
   where
   z =
     Record.merge rr
       ( Record.union openVoices
-          $ Record.union openDrones { title: "wagsi @ tidal", sounds: Map.empty :: Map.Map Sample BufferUrl }
+          $ Record.union openDrones
+              { title: "wagsi @ tidal"
+              , preload: [] :: Array Sample
+              , sounds: Map.empty :: Map.Map Sample BufferUrl
+              }
       )
-      :: { | EWF' (CycleDuration -> Voice) (AH' (Maybe DroneNote) (title :: String, sounds :: Map.Map Sample BufferUrl | rest)) }
+      ::
+           { | EWF' (CycleDuration -> Voice)
+               ( AH' (Maybe DroneNote)
+                   ( title :: String
+                   , sounds :: Map.Map Sample BufferUrl
+                   , preload :: Array Sample
+                   | rest
+                   )
+               )
+           }
 
 fx
   :: forall scene graph graphRL
@@ -241,8 +254,8 @@ ltd = unto NoteInTime <<< prop (Proxy :: _ "duration")
 ltt :: forall p note. Choice p => Strong p => p String String -> p (NoteInTime note) (NoteInTime note)
 ltt = unto NoteInTime <<< prop (Proxy :: _ "tag") <<< _Just
 
-lns :: Lens' Note Sample
-lns = unto Note <<< prop (Proxy :: _ "sample")
+lns :: Lens' Note (UnsampledTimeIs -> Sample)
+lns = unto Note <<< prop (Proxy :: _ "sampleFoT")
 
 lnr :: Lens' Note FoT
 lnr = unto Note <<< prop (Proxy :: _ "rateFoT")
@@ -360,7 +373,7 @@ sampleP = do
   -- otherwise, if it is not in the original stock, we use the name as-is
   case O.lookup possiblySample S.nameToSampleMNO of
     Nothing -> pure $ Just $ Note
-      { sample: Sample possiblySample
+      { sampleFoT: const $ Sample possiblySample
       , bufferOffsetFoT: const 0.0
       , rateFoT: const 1.0
       , forward: true
@@ -565,7 +578,7 @@ unrest = filter (not <<< eq Nil) <<< NEL.toList <<< map go
 asScore :: Boolean -> NonEmptyList (NoteInFlattenedTime Note) -> NextCycle
 asScore force flattened = NextCycle
   { force
-  , samples: Set.fromFoldable $ map (unwrap >>> _.note >>> unwrap >>> _.sample) flattened
+  , samples: Set.fromFoldable $ map (unwrap >>> _.note >>> unwrap >>> _.sampleFoT >>> (#) sampleKludge) flattened
   , func: scoreInput
   }
   where
@@ -576,12 +589,8 @@ asScore force flattened = NextCycle
     in
       { startsAfter: st - currentCount
       , rest:
-          { sampleF: \silence ->
-              let
-                unw = unwrap aa.note
-              in
-                maybe silence
-                  (if unw.forward then _.buffer.forward else _.buffer.backwards) <<< Map.lookup unw.sample
+          { sampleFoT: (unwrap aa.note).sampleFoT
+          , forward: (unwrap aa.note).forward
           , cycleStartsAt: prevCycleEnded
           , rateFoT: (unwrap aa.note).rateFoT
           , bufferOffsetFoT: (unwrap aa.note).bufferOffsetFoT
@@ -651,7 +660,7 @@ openFuture = TheFuture
   $ Record.union (hmap (\(_ :: Unit) -> openVoice) (mempty :: { | EWF Unit }))
   $ Record.union
       (hmap (\(_ :: Unit) -> Nothing) (mempty :: { | AH Unit }))
-      { title: "wagsi @ tidal", sounds: (Map.empty :: Map.Map Sample BufferUrl) }
+      { title: "wagsi @ tidal", sounds: (Map.empty :: Map.Map Sample BufferUrl), preload: [] }
 
 reFuture :: forall f. Foldable f => f Sample -> TheFuture
 reFuture fdbl = set
@@ -701,7 +710,7 @@ src =
 intentionalSilenceForInternalUseOnly :: (NoteInFlattenedTime Note)
 intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
   { note: Note
-      { sample: S.intentionalSilenceForInternalUseOnly__Sample
+      { sampleFoT: const $ S.intentionalSilenceForInternalUseOnly__Sample
       , rateFoT: const 1.0
       , forward: true
       , volumeFoT: const 1.0
@@ -769,13 +778,15 @@ genSingleSample = elements qcSamples
 
 genSingleNote :: Gen (Cycle (Maybe Note))
 genSingleNote =
-  SingleNote <<< { env: { weight: 1.0, tag: Nothing }, val: _ } <<< Just <<< Note <<<
-    { rateFoT: const 1.0
-    , volumeFoT: const 1.0
-    , forward: true
-    , bufferOffsetFoT: const 0.0
-    , sample: _
-    } <$> genSingleSample
+  SingleNote <<< { env: { weight: 1.0, tag: Nothing }, val: _ } <<< Just <<< Note
+    <<<
+      { rateFoT: const 1.0
+      , volumeFoT: const 1.0
+      , forward: true
+      , bufferOffsetFoT: const 0.0
+      , sampleFoT: _
+      }
+    <<< const <$> genSingleSample
 
 genRest :: Gen (Cycle (Maybe Note))
 genRest = pure $ SingleNote { env: { weight: 1.0, tag: Nothing }, val: Nothing }
@@ -886,6 +897,7 @@ djQuickCheck = do
         , heart: Nothing
         , title: "d j q u i c k c h e c k"
         , sounds: Map.empty
+        , preload: []
         }
     }
 

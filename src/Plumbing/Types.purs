@@ -41,7 +41,8 @@ type SampleCache = Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }
 
 type RBuf
   =
-  { sampleF :: BrowserAudioBuffer -> SampleCache -> BrowserAudioBuffer
+  { sampleFoT :: UnsampledTimeIs -> Sample
+  , forward :: Boolean
   , rateFoT :: FoT
   , bufferOffsetFoT :: FoT
   , volumeFoT :: FoT
@@ -88,7 +89,7 @@ type AH (v :: Type) = AH' v ()
 newtype TheFuture = TheFuture
   { | EWF' Voice
       ( AH' (Maybe DroneNote)
-          (sounds :: Map Sample BufferUrl, title :: String)
+          (sounds :: Map Sample BufferUrl, title :: String, preload :: Array Sample)
       )
   }
 
@@ -222,23 +223,37 @@ instance showDroneNote :: Show DroneNote where
 ----
 
 newtype Note = Note
-  { sample :: Sample
+  { sampleFoT :: UnsampledTimeIs -> Sample
   , forward :: Boolean
   , rateFoT :: FoT
   , bufferOffsetFoT :: FoT
   , volumeFoT :: FoT
   }
 
+sampleKludge :: UnsampledTimeIs
+sampleKludge = UnsampledTimeIs
+  { clockTime: 0.0
+  , bigCycleTime: 0.0
+  , littleCycleTime: 0.0
+  , normalizedClockTime: 0.0
+  , normalizedBigCycleTime: 0.0
+  , normalizedLittleCycleTime: 0.0
+  , littleCycleDuration: 0.0
+  , bigCycleDuration: 0.0
+  , entropy: 0.0
+  , initialEntropy: 0.0
+  }
+
 derive instance newtypeNote :: Newtype Note _
 derive instance genericNote :: Generic Note _
 instance eqNote :: Eq Note where
-  eq = eq `on` (unwrap >>> _.sample)
+  eq = eq `on` (unwrap >>> _.sampleFoT >>> (#) sampleKludge)
 
 instance ordNote :: Ord Note where
-  compare = compare `on` (unwrap >>> _.sample)
+  compare = compare `on` (unwrap >>> _.sampleFoT >>> (#) sampleKludge)
 
 instance showNote :: Show Note where
-  show (Note { sample }) = "Note <" <> show sample <> ">"
+  show (Note { sampleFoT }) = "Note <" <> show (sampleFoT sampleKludge) <> ">"
 
 ----------------------------------
 
@@ -256,6 +271,22 @@ newtype ClockTimeIs = ClockTimeIs
   }
 
 derive instance newtypeClockTimeIs :: Newtype ClockTimeIs _
+
+newtype UnsampledTimeIs =
+  UnsampledTimeIs
+    { clockTime :: Number
+    , bigCycleTime :: Number
+    , littleCycleTime :: Number
+    , normalizedClockTime :: Number
+    , normalizedBigCycleTime :: Number
+    , normalizedLittleCycleTime :: Number
+    , littleCycleDuration :: Number
+    , bigCycleDuration :: Number
+    , entropy :: Number
+    , initialEntropy :: Number
+    }
+
+derive instance newtypeUnsampledTimeIs :: Newtype UnsampledTimeIs _
 
 newtype TimeIs =
   TimeIs

@@ -253,10 +253,12 @@ d2s :: DroneNote -> Sample
 d2s (DroneNote { sample }) = sample
 
 doDownloads :: AudioContext -> Ref.Ref SampleCache -> (TheFuture -> Effect Unit) -> TheFuture -> Aff Unit
-doDownloads audioContext cacheRef push future@(TheFuture { earth, wind, fire, air, heart, sounds }) = do
+doDownloads audioContext cacheRef push future@(TheFuture { earth, wind, fire, air, heart, sounds, preload }) = do
   cache <- H.liftEffect $ Ref.read cacheRef
   let
-    sets = fold (map v2s [ earth, wind, fire ]) <> (Set.fromFoldable $ compact ((map <<< map) d2s [ air, heart ]))
+    sets = Set.fromFoldable preload
+      <> fold (map v2s [ earth, wind, fire ])
+      <> (Set.fromFoldable $ compact ((map <<< map) d2s [ air, heart ]))
     samplesToUrl = Set.toMap sets # Map.mapMaybeWithKey \samp@(Sample k) _ -> Map.lookup samp sounds <|> do
       nm <- O.lookup k nameToSampleO
       url <- Map.lookup nm sampleToUrls

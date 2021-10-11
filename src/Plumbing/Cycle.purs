@@ -13,8 +13,8 @@ import Data.Newtype (unwrap)
 import Data.NonEmpty ((:|))
 import Data.Show.Generic (genericShow)
 import Data.Traversable (class Traversable, sequenceDefault, traverse)
-import WAGSI.Plumbing.Types (DroneNote, Note(..), Sample)
 import WAGSI.Plumbing.Samples as S
+import WAGSI.Plumbing.Types (DroneNote, Note(..), Sample, sampleKludge)
 
 data Cycle a
   = Branching { nel :: NonEmptyList (Cycle a), env :: { weight :: Number, tag :: Maybe String } }
@@ -64,7 +64,7 @@ firstCycle :: forall a. Cycle a -> a
 firstCycle = go
   where
   go' (NonEmptyList (aa :| _)) = go aa
-  go = case _ of 
+  go = case _ of
     Branching { nel } -> go' nel
     Simultaneous { nel } -> go' nel
     Internal { nel } -> go' nel
@@ -74,7 +74,7 @@ lastCycle :: forall a. Cycle a -> a
 lastCycle = go
   where
   go' aa = go (NEL.last aa)
-  go = case _ of 
+  go = case _ of
     Branching { nel } -> go' nel
     Simultaneous { nel } -> go' nel
     Internal { nel } -> go' nel
@@ -107,14 +107,22 @@ cycleToString = go
   go (Branching { env, nel }) = "<" <> intercalate " " (map go nel) <> ">" <> ws env <> tg env
   go (Simultaneous { env, nel }) = (intercalate " , " (map go nel)) <> ws env <> tg env
   go (Internal { env, nel }) = "[" <> intercalate " " (map go nel) <> "]" <> ws env <> tg env
-  go (SingleNote { env, val }) = (maybe "~" (S.sampleToString <<< _.sample <<< unwrap) val) <> ws env <> tg env
+  go (SingleNote { env, val }) =
+    ( maybe "~"
+        ( S.sampleToString
+            <<< (#) sampleKludge
+            <<< _.sampleFoT
+            <<< unwrap
+        )
+        val
+    ) <> ws env <> tg env
 
 noteFromSample' :: Number -> Sample -> Cycle (Maybe Note)
 noteFromSample' weight sample = SingleNote
   { env: { weight, tag: Nothing }
   , val: Just
       ( Note
-          { sample
+          { sampleFoT: const sample
           , rateFoT: const 1.0
           , volumeFoT: const 1.0
           , bufferOffsetFoT: const 0.0
