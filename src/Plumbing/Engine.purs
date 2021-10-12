@@ -376,7 +376,7 @@ emptyPool = makeScoredBufferPool
         { startsAfter
         , rest:
             { rest: const rest
-            , duration: const $ const $ const Just rest.duration
+            , duration: const $ const $ const $ Just rest.duration
             }
         }
   }

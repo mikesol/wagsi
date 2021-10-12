@@ -62,6 +62,7 @@ module WAGSI.Plumbing.Tidal
   , ldf
   , ldv
   , lcw
+  , lct
   , ldt
   ---
   , when_
@@ -299,6 +300,15 @@ lcw = lens getWeight
       SingleNote ii -> \weight -> SingleNote $ ii { env = ii.env { weight = weight } }
   )
 
+lct :: forall note. Lens' (Cycle note) (Maybe String)
+lct = lens getTag
+  ( case _ of
+      Branching ii -> \tag -> Branching $ ii { env = ii.env { tag = tag } }
+      Simultaneous ii -> \tag -> Simultaneous $ ii { env = ii.env { tag = tag } }
+      Internal ii -> \tag -> Internal $ ii { env = ii.env { tag = tag } }
+      SingleNote ii -> \tag -> SingleNote $ ii { env = ii.env { tag = tag } }
+  )
+
 ---
 
 when_ :: forall a. (a -> Boolean) -> (a -> a) -> a -> a
@@ -475,6 +485,12 @@ getWeight (Branching { env: { weight } }) = weight
 getWeight (Simultaneous { env: { weight } }) = weight
 getWeight (Internal { env: { weight } }) = weight
 getWeight (SingleNote { env: { weight } }) = weight
+
+getTag :: forall a. Cycle a -> Maybe String
+getTag (Branching { env: { tag } }) = tag
+getTag (Simultaneous { env: { tag } }) = tag
+getTag (Internal { env: { tag } }) = tag
+getTag (SingleNote { env: { tag } }) = tag
 
 onTagsCWithIndex :: forall a. (Set.Set String -> Boolean) -> (Int -> Cycle a -> Cycle a) -> Cycle a -> Cycle a
 onTagsCWithIndex pf fff vvv = (go Set.empty 0 vvv).val
@@ -718,13 +734,13 @@ intentionalSilenceForInternalUseOnly = NoteInFlattenedTime
       }
   , bigStartsAt: 0.0
   , littleStartsAt: 0.0
-  , duration: 0.25
+  , duration: 0.259253
   , elementsInCycle: 1
   , nCycles: 1
   , positionInCycle: 0
   , currentCycle: 0
-  , bigCycleDuration: 0.25
-  , littleCycleDuration: 0.25
+  , bigCycleDuration: 0.259253
+  , littleCycleDuration: 0.259253
   , tag: Nothing
   }
 
