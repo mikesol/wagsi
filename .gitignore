@@ -18,3 +18,4 @@ language-purescript-*.vsix
 /readme/
 readme.dhall
 /storybook/
+/.vscode/settings.json
