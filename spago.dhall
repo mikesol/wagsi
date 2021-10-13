@@ -14,6 +14,7 @@ You can edit this file as you like.
   , "console"
   , "control"
   , "convertable-options"
+  , "debug"
   , "effect"
   , "either"
   , "event"
