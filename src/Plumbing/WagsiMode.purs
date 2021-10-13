@@ -1,4 +1,4 @@
-module WAGSI.Plumbing.WagsiMode(WagsiMode(..), wagsiMode) where
+module WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode) where
 
 data WagsiMode = LiveCoding | DJQuickCheck | Example
 

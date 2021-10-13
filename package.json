@@ -18,7 +18,6 @@
     "webpack-dev-server": "^3.11.2"
   },
   "scripts": {
-    "install:ps": "npm install purescript spago purs-tidy",
     "start": "spago install && spago build && webpack serve --mode=development --open",
     "start:storybook": "python makeStorybook.py && spago -x storybook.dhall install && spago -x storybook.dhall build && WAGSI_MODE=example WEBPACK_ENTRY=./src/storybook.js webpack serve --port 8081 --mode=development --open",
     "start:ngrok": "spago install && spago build && webpack serve --mode=development --public https://a8441e769a96.ngrok.io",
@@ -30,5 +29,10 @@
     "build:djqc": "WAGSI_MODE=djqc webpack",
     "build:example": "WAGSI_MODE=example webpack",
     "test": "spago -x test.dhall test && python readme.py && spago -x cookbook.dhall build"
+  },
+  "optionalDependencies": {
+    "purescript": "^0.14.4",
+    "purs-tidy": "^0.5.4",
+    "spago": "^0.20.3"
   }
 }

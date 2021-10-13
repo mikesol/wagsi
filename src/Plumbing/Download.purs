@@ -42,7 +42,7 @@ chunks :: forall a. Int -> Array a -> Array (Array a)
 chunks _ [] = []
 chunks n xs = pure (A.take n xs) <> (chunks n $ A.drop n xs)
 
-sounds :: forall r rl. RowToList r rl => Sounds rl r => { | r } -> Map Sample BufferUrl 
+sounds :: forall r rl. RowToList r rl => Sounds rl r => { | r } -> Map Sample BufferUrl
 sounds = sounds' (Proxy :: _ rl)
 
 mapped :: AudioContext -> BufferUrl -> Aff { url :: BufferUrl, buffer :: ForwardBackwards }
@@ -60,12 +60,14 @@ getBuffersUsingCache nameToUrl audioCtx alreadyDownloaded = do
   res <- Map.union <$> newBuffers <*> pure alreadyDownloaded
   pure res
   where
-  toDownload :: Map Sample BufferUrl 
+  toDownload :: Map Sample BufferUrl
   toDownload = nameToUrl # Map.mapMaybeWithKey \k v -> case Map.lookup k alreadyDownloaded of
     Nothing -> Just v
     Just { url } -> if url == v then Nothing else Just v
+
   toDownloadArr :: Array (Sample /\ BufferUrl)
   toDownloadArr = Map.toUnfoldable toDownload
+
   traversed :: Array (Sample /\ BufferUrl) -> ParAff (Array (Sample /\ { url :: BufferUrl, buffer :: ForwardBackwards }))
   traversed = traverse \(k /\ v) -> parallel $ backoff $ ((/\) k <$> mapped audioCtx v)
   newBuffers = map (Map.fromFoldable <<< join) $ (traverse (sequential <<< traversed) (chunks 100 toDownloadArr))
@@ -93,7 +95,8 @@ downloadSilence (ac /\ aff) = ac /\ do
   where
   b = backoff $ toAffE $ decodeAudioDataFromUri ac "https://freesound.org/data/previews/459/459659_4766646-lq.mp3"
 
-initialBuffers :: forall trigger world
+initialBuffers
+  :: forall trigger world
    . Lacks "buffers" world
   => Behavior SampleCache
   -> AudioContext /\ Aff (Event { | trigger } /\ Behavior { | world })
