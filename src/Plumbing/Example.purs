@@ -112,13 +112,13 @@ tbl = join $ mapWithIndex
             NoteInFlattenedTime
               { note: Note
                   { sampleFoT: lcmap initialEntropy \ie -> case j' of
-                      0 -> withIE ie (NonEmptyList (S.tabla_24__Sample :| S.tabla_22__Sample : Nil)) -- S.tabla_1__Sample (cors?)
-                      1 -> withIE ie (NonEmptyList (S.tabla_0__Sample :| S.tabla_16__Sample : Nil))
+                      0 -> S.tabla_24__Sample -- S.tabla_1__Sample (cors?)
+                      1 -> S.tabla_0__Sample
                       2 -> S.tabla_6__Sample
                       3 -> S.tabla_14__Sample
                       4 -> S.tabla_23__Sample
                       5 -> S.tabla_8__Sample
-                      6 -> withIE ie (NonEmptyList (S.tabla_24__Sample :| S.tabla_17__Sample : Nil))
+                      6 -> S.tabla_24__Sample
                       7 -> S.tabla_16__Sample
                       _ -> S.intentionalSilenceForInternalUseOnly__Sample
                   , forward: true
@@ -177,17 +177,6 @@ wag =
           (lcmap clockTime (mul <$> startFade <*> (add 0.7 <<< lfo { phase: pi, freq: 0.1, amp: 0.15 }))) $ set (_Just <<< ldr) (const $ 0.75) $ c2d digeridoo
     , title: "kiss"
     , sounds: Map.fromFoldable [ Sample "kissv" /\ BufferUrl "https://klank-share.s3.amazonaws.com/prince/kiss/kissv.ogg" ]
-    , preload:
-        [ S.tabla_24__Sample
-        , S.tabla_22__Sample
-        , S.tabla_0__Sample
-        , S.tabla_6__Sample
-        , S.tabla_14__Sample
-        , S.tabla_23__Sample
-        , S.tabla_8__Sample
-        , S.tabla_24__Sample
-        , S.tabla_16__Sample
-        ]
     }
 
 {-
