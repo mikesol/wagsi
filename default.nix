@@ -17,7 +17,7 @@ let
 in pkgs.stdenv.mkDerivation {
   name = "ci";
   buildInputs = with pursPkgs; [
-    purs spago psa purs-tidy
+    purs spago psa purs-tidy purescript-language-server
 
     pkgs.nodejs-14_x
 

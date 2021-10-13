@@ -9,7 +9,7 @@ Practice makes perfect! To try this repo out:
 1. Clone this repo.
 2. Open this repo with your favorite editor that can communicate with `purs ide`. This includes, but is probably not limited to, [VSCode](https://github.com/nwolverson/vscode-ide-purescript), [emacs](https://github.com/purescript-emacs/psc-ide-emacs) and [IntelliJ](https://github.com/intellij-purescript/intellij-purescript).
 3. Either:
-  - Use `nix-shell` by running `nix-shell` in the root directory of this project. Then, run `npm install --omit optional && npm start`. Make sure to open your editor from the command line (ie if you're using code by invoking `code .`) in order to pick up on the `nix` environment.
+  - Use `nix-shell` by running `nix-shell` in the root directory of this project. Then, run `npm install --no-optional && npm start`. Make sure to open your editor from the command line (ie if you're using code by invoking `code .`) in order to pick up on the `nix` environment.
   - Don't use `nix-shell` and run `npm install && npm start`.
 4. Navigate to `localhost:8080` in _Chrome or Firefox_ and click on **Start Audio**.
 5. In your editor, open `src/LiveCodeHere/Wagged.purs`. Start editing & save the file to render (ie change the empty `""` to `"bassdm"`). You should hear some beats! If not, file an issue on this repo.
