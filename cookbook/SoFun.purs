@@ -29,7 +29,7 @@ wag =
       $ onTag "comp" (set (_Just <<< lnv) (lcmap unwrap \{ normalizedLittleCycleTime: t } -> if t < 0.9 then 1.0 else 0.0))
       $ onTag "comp" (set (_Just <<< lnr) (lcmap unwrap \{ initialEntropy: e} -> 0.95 + 0.1 * e))
       -- $ onTag "comp" (set (_Just <<< lnbo) (lcmap initialEntropy \e -> e * 2.0))
-      $ parse "wdm1;comp"
-    , sounds: Map.fromFoldable $ map (\(a /\ b) -> Sample a /\ BufferUrl b) ["wdm0" /\ "https://freesound.org/data/previews/332/332741_34095-lq.mp3", "wdm1" /\ "https://freesound.org/data/previews/332/332740_34095-hq.mp3" ]
+      $ parse "wdm:1;comp"
+    , sounds: Map.fromFoldable $ map (\(a /\ b) -> Sample a /\ BufferUrl b) ["wdm:0" /\ "https://freesound.org/data/previews/332/332741_34095-lq.mp3", "wdm:1" /\ "https://freesound.org/data/previews/332/332740_34095-hq.mp3" ]
     , title: "$0 FUN"
     }
