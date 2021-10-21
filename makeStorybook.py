@@ -66,7 +66,7 @@ baseComponent =
   initialState _ = 0
 
   render _ =
-    HH.div_ []
+    HH.div_ [ HH.text "Click on a link in the left column to get started!" ]
 
 stories' :: forall m
    . MonadEffect m
