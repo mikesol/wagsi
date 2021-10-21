@@ -169,6 +169,7 @@ let additions =
           , "profunctor-lenses"
           , "psci-support"
           , "record"
+          ,  "simple-json"
           , "sized-vectors"
           , "transformers"
           , "tuples"
@@ -177,7 +178,7 @@ let additions =
           , "typelevel-prelude"
           ]
         , repo = "https://github.com/mikesol/purescript-wags.git"
-        , version = "v0.5.3"
+        , version = "v0.5.5"
         }
       , free =
         { dependencies =

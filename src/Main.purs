@@ -35,9 +35,10 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
+import Control.Promise (toAffE)
 import Random.LCG (randomSeed)
 import Test.QuickCheck.Gen (evalGen)
-import WAGS.Interpret (close, context, defaultFFIAudio, makePeriodicWave, makeUnitCache)
+import WAGS.Interpret (close, context, contextState, contextResume, defaultFFIAudio, makePeriodicWave, makeUnitCache)
 import WAGS.Lib.Learn (FullSceneBuilder(..))
 import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
@@ -306,6 +307,8 @@ handleAction = case _ of
     { ctx, unsubscribeFromWags } <-
       H.liftAff do
         ctx <- H.liftEffect context
+        waStatus <- H.liftEffect $ contextState ctx
+        when (waStatus /= "running") (H.liftAff $ toAffE $ contextResume ctx)
         unitCache <- H.liftEffect makeUnitCache
         let
           ffiAudio = defaultFFIAudio ctx unitCache
