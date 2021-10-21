@@ -15,7 +15,7 @@ import Test.QuickCheck (arbitrary, mkSeed)
 import Test.QuickCheck.Gen (Gen, evalGen)
 import WAGS.Create.Optionals (highpass, lowpass, pan)
 import WAGS.Math (calcSlope)
-import WAGSI.Plumbing.Cycle (pad)
+import WAGSI.Plumbing.Cycle (pad_1)
 import WAGSI.Plumbing.FX (fx, goodbye, hello)
 import WAGSI.Plumbing.Samples (bufferDuration)
 import WAGSI.Plumbing.Tidal (i, lnbo, lnf, lnv, lvt, x, make, s)
@@ -55,7 +55,7 @@ wag = make 4.0
                 ( goodbye $ pan (1.0) { myhp: lowpass (lfo { phase: 0.0, amp: 2000.0, freq: 0.4 } clockTime + 2000.0) hello }
                 )
             )
-        ) $ s $ x (hocket true 8 pad) []
+        ) $ s $ x (hocket true 8 pad_1) []
   , wind:
       map
         ( set lvt
@@ -63,6 +63,6 @@ wag = make 4.0
                 ( goodbye $ pan (-1.0) { myhp: highpass (lfo { phase: 0.0, amp: 2000.0, freq: 0.4 } clockTime + 3000.0) hello }
                 )
             )
-        ) $ s $ x (hocket false 8 pad) []
+        ) $ s $ x (hocket false 8 pad_1) []
   , title: "trippy pad + backwards + filt + shuffle"
   }
