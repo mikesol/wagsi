@@ -17,5 +17,5 @@ language-purescript-*.vsix
 .purs-repl
 /readme/
 readme.dhall
-/storybook/
+/storybook/*.purs
 /.vscode/settings.json

@@ -11,5 +11,5 @@ wag :: TheFuture
 wag =
   make (m2 * 2.0)
     { earth: s "bd:3 _ hh _ bd:6 bd hh ~ "
-    , title: "i m a k e n o i s e"
+    , title: "smpl grv"
     }

@@ -34,5 +34,5 @@ $ parse """~ [chin*4 lighter] ~ ~
       sitar:4;str  ~ ~
       ~ ~ ~ ~ , ~ tink ~ ~   ~ tink ~ ~   ~ tink ~ ~    ~ tink ~ ~ 
     """
-    , title: "i m a k e n o i s e"
+    , title: "tablas and lighters"
     }

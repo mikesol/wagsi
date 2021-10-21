@@ -35,6 +35,6 @@ wag =
                 )
             )
         ) $ s "~ ~ ~ ~ ~ ~ speechless:2 ~"
-    , title: "i m a k e n o i s e"
+    , title: "lo fi"
     }
 
