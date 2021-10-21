@@ -99,5 +99,8 @@ main = HA.runHalogenAff do
   runStorybook {{ stories: stories bufCache, logo: Nothing }} body
 '''
 
+if not os.path.isdir('storybook'):
+  os.mkdir('storybook')
+
 with open('storybook/Main.purs', 'w') as sb:
   sb.write(mainIs)
