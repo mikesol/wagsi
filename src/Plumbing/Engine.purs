@@ -37,7 +37,7 @@ import WAGS.Interpret (bufferDuration)
 import WAGS.Lib.BufferPool (AScoredBufferPool, Buffy(..), CfScoredBufferPool, makeScoredBufferPool)
 import WAGS.Lib.Cofree (tails)
 import WAGS.Lib.Learn (FullSceneBuilder, usingc)
-import WAGS.Math (calcSlope)
+--import WAGS.Math (calcSlope)
 import WAGS.Run (SceneI(..))
 import WAGS.Subgraph (SubSceneSig)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
@@ -166,12 +166,12 @@ internal0 = { initialEntropies: { volume: 0.5, rate: 0.5, bufferOffset: 0.5, sam
         , scene:
             { singleton:
                 gain
-                  ( if time > startTime + duration then
+                  ( {--if time > startTime + duration then
                       let
                         cs2 x0 x1 y1 t y0 = calcSlope x0 y0 x1 y1 t
                       in
                         cs2 (startTime + duration) (startTime + duration + 0.25) 0.0 time <$> vol
-                    else vol
+                    else--} vol
                   )
                   ( playBuf
                       { onOff:
