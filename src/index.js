@@ -3,7 +3,7 @@ import './prism.css';
 import "./prism.js";
 import main from "../output/WAGSI.Main/index.js";
 import gopher from "../output/WAGSI.LiveCodeHere.Wagged/index.js";
-import hack from "../output/WAGSI.Plumbing.Tidal/foreign.js";
+import hack from "../output/WAGSI.Plumbing.Repl/foreign.js";
 import cde from './LiveCodeHere/Wagged.purs';
 import exmpl from './Plumbing/Example.purs';
 

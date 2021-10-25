@@ -43,7 +43,8 @@ import WAGS.Subgraph (SubSceneSig)
 import WAGS.WebAPI (AudioContext, BrowserAudioBuffer)
 import WAGSI.Plumbing.Download (downloadSilence, initialBuffers)
 import WAGSI.Plumbing.FX (calm)
-import WAGSI.Plumbing.Tidal (asScore, intentionalSilenceForInternalUseOnly, openFuture, wag)
+import WAGSI.Plumbing.Repl (wag)
+import WAGSI.Plumbing.Tidal (asScore, intentionalSilenceForInternalUseOnly, openFuture)
 import WAGSI.Plumbing.Types (class HomogenousToVec, Acc, BufferUrl, DroneNote(..), EWF, Globals, NBuf, Next, RBuf, Sample, SampleCache, TheFuture, TimeIs(..), UnsampledTimeIs(..), Voice, ZipProps(..), h2v')
 
 globalFF = 0.03 :: Number
