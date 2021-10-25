@@ -34,6 +34,7 @@ You can edit this file as you like.
   , "random"
   , "refs"
   , "sized-vectors"
+  , "string"
   , "tuples"
   , "typelevel"
   , "wags"
