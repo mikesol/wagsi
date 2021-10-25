@@ -15,11 +15,11 @@ import Test.QuickCheck (arbitrary, mkSeed)
 import Test.QuickCheck.Gen (Gen, evalGen)
 import WAGS.Create.Optionals (highpass, lowpass, pan)
 import WAGS.Math (calcSlope)
-import WAGSI.Plumbing.Cycle (pad_1)
-import WAGSI.Plumbing.FX (fx, goodbye, hello)
-import WAGSI.Plumbing.Samples (bufferDuration)
-import WAGSI.Plumbing.Tidal (i, lnbo, lnf, lnv, lvt, x, make, s)
-import WAGSI.Plumbing.Types (TheFuture)
+import WAGS.Lib.Tidal.Cycle (pad_1)
+import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
+import WAGS.Lib.Tidal.Samples (bufferDuration)
+import WAGS.Lib.Tidal.Tidal (i, lnbo, lnf, lnv, lvt, x, u, make, s)
+import WAGSI.Plumbing.Types (WhatsNext)
 import Wags.Learn.Oscillator (lfo)
 
 shuffle xs = { newSeed: mkSeed 42, size: 10 } # evalGen do
@@ -46,7 +46,7 @@ short dv = set (traversed <<< _Just <<< lnv) $ lcmap unwrap \{ sampleTime, littl
 
 offsets l i = set (traversed <<< _Just <<< lnbo) $ lcmap bufferDuration \d -> d * (toNumber i) / toNumber l
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 4.0
   { earth:
       map
@@ -55,7 +55,7 @@ wag = make 4.0
                 ( goodbye $ pan (1.0) { myhp: lowpass (lfo { phase: 0.0, amp: 2000.0, freq: 0.4 } clockTime + 2000.0) hello }
                 )
             )
-        ) $ s $ x (hocket true 8 pad_1) []
+        ) $ s $ u $ x (hocket true 8 pad_1) []
   , wind:
       map
         ( set lvt
@@ -63,6 +63,6 @@ wag = make 4.0
                 ( goodbye $ pan (-1.0) { myhp: highpass (lfo { phase: 0.0, amp: 2000.0, freq: 0.4 } clockTime + 3000.0) hello }
                 )
             )
-        ) $ s $ x (hocket false 8 pad_1) []
+        ) $ s $ u $ x (hocket false 8 pad_1) []
   , title: "trippy pad + backwards + filt + shuffle"
   }

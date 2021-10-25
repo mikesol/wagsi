@@ -6,13 +6,13 @@ import Data.Foldable (foldl)
 import Data.Lens (over, set)
 import Data.Profunctor (lcmap)
 import Math (pi)
-import WAGSI.Plumbing.Cycle (c2d, hollowair)
-import WAGSI.Plumbing.Samples (clockTime)
-import WAGSI.Plumbing.Tidal (betwixt, derivative, ldr, ldv, lvg, make, s)
-import WAGSI.Plumbing.Types (TheFuture)
+import WAGS.Lib.Tidal.Cycle (c2d, hollowair)
+import WAGS.Lib.Tidal.Samples (clockTime)
+import WAGS.Lib.Tidal.Tidal (betwixt, derivative, ldr, ldv, lvg, make, s)
 import Wags.Learn.Oscillator (lfo)
+import WAGSI.Plumbing.Types (WhatsNext)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 1.0
   { earth: map (over lvg (map (betwixt 0.0 1.0) <<< flip derivative (0.1))) $ s "tech chin*4 tabla:2 tech:12*3"
   , heart:

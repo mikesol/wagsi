@@ -26,10 +26,10 @@ When you start, the top-level file has the following code:
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
 
-import WAGSI.Plumbing.Tidal (make, s)
-import WAGSI.Plumbing.Types (TheFuture)
+import WAGS.Lib.Tidal.Tidal (make, s)
+import WAGSI.Plumbing.Types (WhatsNext)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 1.0
   { earth: s ""
   , title: "i m a k e n o i s e"
@@ -43,10 +43,10 @@ Here's an example that uses mini-notation.
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
 
-import WAGSI.Plumbing.Types (TheFuture)
-import WAGSI.Plumbing.Tidal (make, s)
+import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal.Tidal (make, s)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 2.0
   { earth: s "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
@@ -75,14 +75,14 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Types (TheFuture)
-import WAGSI.Plumbing.Cycle (r, bassdm, bassdm_2, hh27, gab)
-import WAGSI.Plumbing.Tidal (make, s, i, b, x)
+import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal.Cycle (r, bassdm, bassdm_2, hh27, gab)
+import WAGS.Lib.Tidal.Tidal (make, u, s, i, b, x)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 2.0
   -- "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
-  { earth: s $ x (i bassdm [ hh27, i bassdm_2 [ bassdm_2 ], hh27 ]) [ b (i r [ gab, r, gab ]) [ r ] ]
+  { earth: s $ u $ x (i bassdm [ hh27, i bassdm_2 [ bassdm_2 ], hh27 ]) [ b (i r [ gab, r, gab ]) [ r ] ]
   }
 ```
 
@@ -101,12 +101,12 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Types (TheFuture)
-import WAGSI.Plumbing.Tidal (make, parse, plainly, rend)
+import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal.Tidal (make, parse_, plainly, rend)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 2.0
-  { earth: map plainly $ rend $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
+  { earth: map plainly $ rend $ parse_ "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
 
@@ -119,15 +119,15 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Types (TheFuture)
+import WAGSI.Plumbing.Types (WhatsNext)
 import Data.Lens (_Just, set, traversed)
-import WAGSI.Plumbing.Tidal (lnr, make, parse, s)
+import WAGS.Lib.Tidal.Tidal (lnr, make, parse_, s)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 2.0
   { earth: s
       $ (set (traversed <<< _Just <<< lnr) (const 1.5))
-      $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
+      $ parse_ "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
 
@@ -138,14 +138,14 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Types (TheFuture)
+import WAGSI.Plumbing.Types (WhatsNext)
 import Data.Lens (_Just, set, traversed)
-import WAGSI.Plumbing.Cycle (hh27, bassdm, r, gab)
-import WAGSI.Plumbing.Tidal (i, b, lnr, make, s, x)
+import WAGS.Lib.Tidal.Cycle (hh27, bassdm, r, gab)
+import WAGS.Lib.Tidal.Tidal (i, b, lnr, make, s, u, x)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 2.0
-  { earth: s
+  { earth: s $ u
       $ x
           ( i (set (traversed <<< _Just <<< lnr) (const 0.5) bassdm)
               [ hh27, i bassdm [ bassdm ], hh27 ]
@@ -162,20 +162,20 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import Data.Lens (_Just, set, traversed, view)
-import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Types (TheFuture, unlockSample)
-import WAGSI.Plumbing.Tidal (focus, lnr, lns, make, parse, s)
+import Data.Either (hush)
+import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal.Samples as S
+import WAGS.Lib.Tidal.Tidal (focus, lnr, lns, make, parse_, s)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 2.0
   { earth: s
       $ set
-          (traversed <<< _Just <<< focus (eq S.gab_0__Sample <<< (#) unlockSample <<< view lns) <<< lnr)
+          (traversed <<< _Just <<< focus (eq (pure S.gab_0__Sample) <<< hush <<< view lns) <<< lnr)
           (const 1.5)
-      $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
+      $ parse_ "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
-
 
 ## Jam sessions!
 

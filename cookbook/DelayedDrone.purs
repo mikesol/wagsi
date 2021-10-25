@@ -5,14 +5,14 @@ import Prelude
 import Data.Lens (_Just, set)
 import Data.Profunctor (lcmap)
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
-import WAGSI.Plumbing.Cycle (c2d, lowdark)
-import WAGSI.Plumbing.FX (fx, goodbye, hello)
-import WAGSI.Plumbing.Samples (clockTime)
-import WAGSI.Plumbing.Tidal (ldt, make, s)
-import WAGSI.Plumbing.Types (TheFuture)
+import WAGS.Lib.Tidal.Cycle (c2d, lowdark)
+import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
+import WAGS.Lib.Tidal.Samples (clockTime)
+import WAGS.Lib.Tidal.Tidal (ldt, make, s)
+import WAGSI.Plumbing.Types (WhatsNext)
 import Wags.Learn.Oscillator (lfo)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 1.0
   { earth: s "tabla chin*4 tabla:4 tabla:6"
   , heart:

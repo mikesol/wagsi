@@ -30,7 +30,7 @@
     "build:djqc": "cross-env WAGSI_MODE=djqc webpack",
     "build:example": "cross-env WAGSI_MODE=example webpack",
     "build:storybook": "python makeStorybook.py && spago -x storybook.dhall install && spago -x storybook.dhall build && cross-env WEBPACK_ENTRY=./src/storybook.js WAGSI_MODE=example webpack",
-    "test": "spago -x test.dhall test && python readme.py && spago -x cookbook.dhall build"
+    "test": "python readme.py && spago -x cookbook.dhall build"
   },
   "optionalDependencies": {
     "purescript": "^0.14.4",

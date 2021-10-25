@@ -2,12 +2,13 @@ module WAGSI.Plumbing.Example where
 
 import Prelude
 
+import Data.Either (Either(..))
 import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
-import Data.Int (round, toNumber)
+import Data.Int (toNumber)
 import Data.Lens (_Just, over, set, traversed)
 import Data.Lens.Iso.Newtype (unto)
-import Data.List (List(..), foldl, (..), (:))
+import Data.List (List(..), foldl, (:))
 import Data.List as List
 import Data.List.NonEmpty (NonEmptyList(..))
 import Data.List.NonEmpty as NEL
@@ -19,19 +20,19 @@ import Data.Profunctor (lcmap)
 import Data.Set as Set
 import Data.Set.NonEmpty (NonEmptySet)
 import Data.Set.NonEmpty as NES
-import Data.Traversable (traverse)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
-import Debug (spy)
 import Math (pi)
-import WAGS.Lib.Piecewise (makePiecewise)
+import WAGS.Lib.Tidal.Cycle (c2d, digeridoo, harmonium, noteFromSample_)
+import WAGS.Lib.Tidal.Samples (bigCycleTime, clockTime, initialEntropy)
+import WAGS.Lib.Tidal.Samples as S
+import WAGS.Lib.Tidal.Tidal (betwixt, ldr, ldv, lnv, make, s)
+import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..))
 import WAGS.Math (calcSlope)
-import WAGSI.Plumbing.Cycle (Cycle(..), c2d, digeridoo, harmonium, hh, noteFromSample, tabla2_0, tabla_0)
-import WAGSI.Plumbing.Samples (bigCycleTime, clockTime, initialEntropy)
-import WAGSI.Plumbing.Samples as S
-import WAGSI.Plumbing.Tidal (betwixt, c2s, lct, ldr, ldv, lnv, make, s, s2f, x)
-import WAGSI.Plumbing.Types (BufferUrl(..), CycleDuration, Note(..), NoteInFlattenedTime(..), Sample(..), TheFuture)
+import WAGSI.Plumbing.Types (WhatsNext)
 import Wags.Learn.Oscillator (lfo)
+
+type NU = Note Unit
 
 globalOffset = 0.0 :: Number
 
@@ -62,7 +63,7 @@ beat2time n = maybe' (\_ -> (NES.min sdownbeats + (n * 2.14 / 4.0)))
   (\{ key, value } -> calcSlope key (fst value) (key + 4.0) (snd value) n)
   (Map.lookupLE n mdownbeats)
 
-sitars :: NonEmptyList (NoteInFlattenedTime Note)
+sitars :: NonEmptyList (NoteInFlattenedTime NU)
 sitars = map
   ( \i ->
       let
@@ -71,7 +72,7 @@ sitars = map
       in
         NoteInFlattenedTime
           { note: Note
-              { sampleFoT: const S.sitar_3__Sample
+              { sampleFoT: Right S.sitar_3__Sample
               , forward: true
               , rateFoT: const 1.0
               , bufferOffsetFoT: const 0.0
@@ -100,7 +101,7 @@ withIE n nel = go 0 (NEL.toList nel)
     | toNumber (n' + 1) / lenny > n = a
     | otherwise = go (n' + 1) b
 
-tbl :: NonEmptyList (NoteInFlattenedTime Note)
+tbl :: NonEmptyList (NoteInFlattenedTime NU)
 tbl = join $ mapWithIndex
   ( \i _ -> map
       ( \j' ->
@@ -111,7 +112,7 @@ tbl = join $ mapWithIndex
           in
             NoteInFlattenedTime
               { note: Note
-                  { sampleFoT: lcmap initialEntropy \ie -> case j' of
+                  { sampleFoT: Left $ lcmap initialEntropy \_ -> case j' of
                       0 -> S.tabla_24__Sample -- S.tabla_1__Sample (cors?)
                       1 -> S.tabla_0__Sample
                       2 -> S.tabla_6__Sample
@@ -142,7 +143,7 @@ tbl = join $ mapWithIndex
   )
   downbeats
 
-finalize :: NonEmptyList (NoteInFlattenedTime Note) -> NonEmptyList (NoteInFlattenedTime Note)
+finalize :: NonEmptyList (NoteInFlattenedTime NU) -> NonEmptyList (NoteInFlattenedTime NU)
 finalize nel = NEL.mapWithIndex
   ( \i -> over (unto NoteInFlattenedTime)
       ( \x -> x
@@ -161,11 +162,11 @@ voxFade = betwixt 0.0 1.0 <<< calcSlope 3.0 0.0 4.0 1.0
 startFade :: Number -> Number
 startFade = betwixt 0.0 1.0 <<< calcSlope 0.0 0.0 10.0 1.0
 
-wag :: TheFuture
+wag :: WhatsNext
 wag =
   make end
     { earth: s $ finalize (tbl <> sitars)
-    , wind: s $ (set (traversed <<< _Just <<< lnv) (lcmap bigCycleTime voxFade)) $ noteFromSample (Sample "kissv")
+    , wind: s $ (set (traversed <<< _Just <<< lnv) (lcmap bigCycleTime voxFade)) $ noteFromSample_ (Sample "kissv")
     , heart:
         set
           (_Just <<< ldv)
@@ -178,11 +179,6 @@ wag =
     , title: "kiss"
     , sounds: Map.fromFoldable [ Sample "kissv" /\ BufferUrl "https://klank-share.s3.amazonaws.com/prince/kiss/kissv.ogg" ]
     }
-
-{-
-i' :: NonEmptyList (Cycle (Maybe Note)) -> Cycle (Maybe Note)
-i' nel = Internal { env: { weight: 1.0, tag: Nothing }, nel }
--}
 
 downbeats :: NonEmptyList Number
 downbeats = map (_ - globalOffset) $ NonEmptyList $ 0.444 :| List.fromFoldable
