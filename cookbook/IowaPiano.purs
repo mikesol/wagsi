@@ -3,15 +3,17 @@ module WAGSI.Cookbook.IowaPiano where
 import Prelude
 
 import Data.Array ((..))
+import Data.Either (Either(..))
 import Data.Lens (_Just, set, traversed)
 import Data.Map as Map
 import Data.Profunctor (lcmap)
 import Data.String as String
 import Data.Tuple.Nested ((/\))
+import WAGS.Lib.Tidal.Samples (initialEntropy, sampleTime)
+import WAGS.Lib.Tidal.Tidal (betwixt, lns, lnv, make, onTag, parse_, s)
+import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
 import WAGS.Math (calcSlope)
-import WAGSI.Plumbing.Samples (initialEntropy, sampleTime)
-import WAGSI.Plumbing.Tidal (betwixt, lns, lnv, make, onTag, parse, s)
-import WAGSI.Plumbing.Types (BufferUrl(..), Sample(..), TheFuture)
+import WAGSI.Plumbing.Types (WhatsNext)
 
 arenv :: Number -> Number
 arenv t
@@ -26,15 +28,15 @@ e2s e
   | otherwise = "ip:Bb5"
 
 -- many thanks to http://theremin.music.uiowa.edu/MIS.html
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 1.0
   { earth: s
       $ onTag "fun"
-          ( map (set lns $ lcmap initialEntropy (Sample <<< e2s))
+          ( map (set lns $ Left $ lcmap initialEntropy (Sample <<< e2s))
           )
       $ set (traversed <<< _Just <<< lnv)
           (lcmap sampleTime (betwixt 0.0 1.0 <<< arenv))
-      $ parse "ip:C4 ip:G4 ip:Bb4 ip:D4 ip:D5 ip:F4, ~ ip:F5;fun ~"
+      $ parse_ "ip:C4 ip:G4 ip:Bb4 ip:D4 ip:D5 ip:F4, ~ ip:F5;fun ~"
   , sounds: pno
   , preload: map Sample [ "ip:C5", "ip:D5", "ip:E5", "ip:F5", "ip:G5", "ip:A5", "ip:Bb5" ]
   , title: "m i n i m a l"

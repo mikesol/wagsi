@@ -51,7 +51,7 @@ import Halogen.HTML as HH
 import Halogen.Storybook (Stories, StoryQuery, proxy, runStorybook)
 {modules}
 import WAGSI.Main (component)
-import WAGSI.Plumbing.Types (BufferUrl, Sample, ForwardBackwards)
+import WAGS.Lib.Tidal.Types (BufferUrl, Sample, ForwardBackwards)
 
 --
 

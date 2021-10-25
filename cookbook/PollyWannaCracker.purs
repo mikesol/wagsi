@@ -4,16 +4,16 @@ import Prelude
 
 import Data.Lens (_Just, set)
 import Data.Profunctor (lcmap)
-import WAGSI.Plumbing.Cycle (c2d, lowdark)
-import WAGSI.Plumbing.Samples (normalizedSampleTime)
-import WAGSI.Plumbing.Tidal (lnr, lnv, make, parse, s)
-import WAGSI.Plumbing.Types (TheFuture)
+import WAGS.Lib.Tidal.Cycle (c2d, lowdark)
+import WAGS.Lib.Tidal.Samples (normalizedSampleTime)
+import WAGS.Lib.Tidal.Tidal (lnr, lnv, make, parse_, s)
+import WAGSI.Plumbing.Types (WhatsNext)
 
-wag :: TheFuture
+wag :: WhatsNext
 wag = make 1.0
-  { earth: s $ map (set (_Just <<< lnr) (lcmap normalizedSampleTime \t -> 1.0)) $ parse "newnotes newnotes:1 newnotes:2 newnotes:3"
+  { earth: s $ map (set (_Just <<< lnr) (lcmap normalizedSampleTime \_ -> 1.0)) $ parse_ "newnotes newnotes:1 newnotes:2 newnotes:3"
   -- comment `wind` in and out
-  , wind: s $ map (set (_Just <<< lnv) (const 0.1) <<< set (_Just <<< lnr) (lcmap normalizedSampleTime \t -> 2.0 {- -t -} )) $ parse "newnotes newnotes:1 newnotes:2 newnotes:3 newnotes:6"
+  , wind: s $ map (set (_Just <<< lnv) (const 0.1) <<< set (_Just <<< lnr) (lcmap normalizedSampleTime \_ -> 2.0 {- -t -} )) $ parse_ "newnotes newnotes:1 newnotes:2 newnotes:3 newnotes:6"
   , heart: c2d lowdark
   , title: "polyrhythm of notes"
   }
