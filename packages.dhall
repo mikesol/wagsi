@@ -105,10 +105,30 @@ in  upstream
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.14.1-20210419/packages.dhall sha256:d9a082ffb5c0fabf689574f0680e901ca6f924e01acdbece5eeedd951731375a
+      https://github.com/purescript/package-sets/releases/download/psc-0.14.4-20210919/packages.dhall sha256:03516fdd4f6d1bd6c9eb5e63cf3af3037bc079459117ab93eb85b6eb46e258a7
 
-let overrides = {=}
 
+let overrides =
+      { arraybuffer =
+        { dependencies =
+          [ "arraybuffer-types"
+          , "arrays"
+          , "effect"
+          , "float32"
+          , "functions"
+          , "gen"
+          , "maybe"
+          , "nullable"
+          , "prelude"
+          , "tailrec"
+          , "uint"
+          , "unfoldable"
+          ]
+        , repo =
+            "https://github.com/purescript-contrib/purescript-arraybuffer.git"
+        , version = "v12.0.0"
+        }
+      }
 let additions =
       { typelevel-peano =
         { dependencies =
