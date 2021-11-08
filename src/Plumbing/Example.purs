@@ -23,6 +23,7 @@ import Data.Set.NonEmpty as NES
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Math (pi)
+import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal.Cycle (c2d, digeridoo, harmonium, noteFromSample_)
 import WAGS.Lib.Tidal.Samples (bigCycleTime, clockTime, initialEntropy)
 import WAGS.Lib.Tidal.Samples as S
@@ -30,7 +31,6 @@ import WAGS.Lib.Tidal.Tidal (betwixt, ldr, ldv, lnv, make, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..))
 import WAGS.Math (calcSlope)
 import WAGSI.Plumbing.Types (WhatsNext)
-import Wags.Learn.Oscillator (lfo)
 
 type NU = Note Unit
 

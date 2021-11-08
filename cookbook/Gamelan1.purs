@@ -7,7 +7,7 @@ import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
 import WAGS.Lib.Tidal.Tidal (lnr, make, parse_, s)
 import WAGSI.Plumbing.Types (WhatsNext)
-import WAGSI.Sounds.Gamelan as Gamelan
+import WAGS.Lib.Sounds.Gamelan as Gamelan
 
 wag :: WhatsNext
 wag = make 2.0
