@@ -10,7 +10,7 @@ import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (clockTime)
 import WAGS.Lib.Tidal.Tidal (ldt, make, s)
 import WAGSI.Plumbing.Types (WhatsNext)
-import Wags.Learn.Oscillator (lfo)
+import WAGS.Lib.Learn.Oscillator (lfo)
 
 wag :: WhatsNext
 wag = make 1.0

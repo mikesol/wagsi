@@ -6,7 +6,7 @@ import Data.Lens (_Just, set)
 import Data.Profunctor (lcmap)
 import WAGS.Lib.Tidal.Samples (sampleTime)
 import WAGS.Lib.Tidal.Tidal (lnr, lnv, make, onTag, parse_, s)
-import Wags.Learn.Oscillator (lfo)
+import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGSI.Plumbing.Types (WhatsNext)
 
 wag :: WhatsNext

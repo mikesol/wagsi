@@ -9,7 +9,7 @@ import Math (pi)
 import WAGS.Lib.Tidal.Cycle (c2d, hollowair)
 import WAGS.Lib.Tidal.Samples (clockTime)
 import WAGS.Lib.Tidal.Tidal (betwixt, derivative, ldr, ldv, lvg, make, s)
-import Wags.Learn.Oscillator (lfo)
+import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGSI.Plumbing.Types (WhatsNext)
 
 wag :: WhatsNext

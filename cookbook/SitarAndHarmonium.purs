@@ -10,7 +10,7 @@ import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (clockTime, normalizedBigCycleTime)
 import WAGS.Lib.Tidal.Tidal (ldt, ldv, lnr, lnv, make, onTag, parse_, s)
 import WAGSI.Plumbing.Types (WhatsNext)
-import Wags.Learn.Oscillator (lfo)
+import WAGS.Lib.Learn.Oscillator (lfo)
 
 bells :: Number -> Number
 bells t

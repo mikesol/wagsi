@@ -20,7 +20,7 @@ import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (bufferDuration)
 import WAGS.Lib.Tidal.Tidal (i, lnbo, lnf, lnv, lvt, x, u, make, s)
 import WAGSI.Plumbing.Types (WhatsNext)
-import Wags.Learn.Oscillator (lfo)
+import WAGS.Lib.Learn.Oscillator (lfo)
 
 shuffle xs = { newSeed: mkSeed 42, size: 10 } # evalGen do
   ns <- traverse (flip map (arbitrary :: Gen Int) <<< Tuple) xs
