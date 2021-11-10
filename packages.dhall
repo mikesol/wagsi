@@ -107,7 +107,6 @@ in  upstream
 let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.14.4-20210919/packages.dhall sha256:03516fdd4f6d1bd6c9eb5e63cf3af3037bc079459117ab93eb85b6eb46e258a7
 
-
 let overrides =
       { arraybuffer =
         { dependencies =
@@ -129,6 +128,7 @@ let overrides =
         , version = "v12.0.0"
         }
       }
+
 let additions =
       { typelevel-peano =
         { dependencies =
@@ -189,7 +189,7 @@ let additions =
           , "profunctor-lenses"
           , "psci-support"
           , "record"
-          ,  "simple-json"
+          , "simple-json"
           , "sized-vectors"
           , "transformers"
           , "tuples"
@@ -221,7 +221,15 @@ let additions =
         , version = "master"
         }
       , wags-lib =
-        { dependencies = ["css", "halogen-css", "wags", "run", "string-parsers", "strings" ]
+        { dependencies =
+          [ "css"
+          , "homogeneous"
+          , "halogen-css"
+          , "wags"
+          , "run"
+          , "string-parsers"
+          , "strings"
+          ]
         , repo = "https://github.com/mikesol/purescript-wags-lib.git"
         , version = "v0.0.45"
         }
