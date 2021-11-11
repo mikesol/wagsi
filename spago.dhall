@@ -8,6 +8,7 @@ You can edit this file as you like.
   , "aff-promise"
   , "arrays"
   , "behaviors"
+  , "bifunctors"
   , "control"
   , "effect"
   , "either"
