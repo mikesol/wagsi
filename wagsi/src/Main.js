@@ -1,1 +1,0 @@
-exports.log_ = (o) => (s) => () => o.appendLine(s);

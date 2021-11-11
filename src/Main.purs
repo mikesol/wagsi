@@ -6,6 +6,7 @@ import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Promise (toAffE)
 import Data.Either (Either(..), either)
+import Data.Profunctor (lcmap)
 import Data.Foldable (for_)
 import Data.Map (Map)
 import Data.Map as Map
@@ -75,7 +76,7 @@ type State
   , srcCode :: Maybe String
   , exampleCode :: String
   , loadingHack :: LoadingHack
-  , exampleWag :: WhatsNext
+  , exampleWag :: FCT
   , djqc :: Maybe String
   , tick :: Maybe Int
   , doingGraphRendering :: Boolean
@@ -92,7 +93,7 @@ data Action
   | DJQC String
   | StopAudio
 
-component :: forall query input output m. MonadEffect m => MonadAff m => String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> WhatsNext -> H.Component query input output m
+component :: forall query input output m. MonadEffect m => MonadAff m => String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> FCT -> H.Component query input output m
 component exmpl bufCache ewag =
   H.mkComponent
     { initialState: initialState exmpl bufCache ewag
@@ -104,7 +105,7 @@ component exmpl bufCache ewag =
         }
     }
 
-initialState :: forall input. String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> WhatsNext -> input -> State
+initialState :: forall input. String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> FCT -> input -> State
 initialState exmpl bufCache ewag _ =
   { unsubscribe: pure unit
   , audioCtx: Nothing
@@ -161,7 +162,7 @@ render
                         [ HH.text $ case wagsiMode of
                             LiveCoding -> "wagsi - The Tidal Cycles jam"
                             DJQuickCheck -> "d j q u i c k c h e c k"
-                            Example -> (unwrap exampleWag).title
+                            Example -> (unwrap (exampleWag { clockTime: 0.0 })).title
                         ]
                     ]
                       <>
@@ -244,6 +245,8 @@ easingAlgorithm =
 
 foreign import parseParams_ :: Maybe String -> (String -> Maybe String) -> String -> String -> Effect (Maybe String)
 
+type FCT = { clockTime :: Number } -> WhatsNext
+
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Tick tick -> do
@@ -258,7 +261,7 @@ handleAction = case _ of
     ctx <- H.liftEffect context
     { bufCache, exampleWag } <- H.get
     res <- case wagsiMode of
-      Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) exampleWag
+      Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) (exampleWag { clockTime: 0.0 })
       LiveCoding -> H.liftAff $ try do
         primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
         massive <- H.liftEffect do
@@ -288,19 +291,19 @@ handleAction = case _ of
         unitCache <- H.liftEffect makeUnitCache
         let
           ffiAudio = defaultFFIAudio ctx unitCache
-        let FullSceneBuilder { triggerWorld, piece } = engine (pure unit) (map const wag) (Left ohBehave)
+        let FullSceneBuilder { triggerWorld, piece } = engine (pure unit) (map (const <<< const) wag) (Left ohBehave)
         trigger' /\ world <- snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
         { trigger, unsub } <- case wagsiMode of
           LiveCoding -> H.liftEffect $ do
             -- we prime the pump by pushing an empty future
-            theFuture :: EventIO WhatsNext <- create
+            theFuture :: EventIO FCT <- create
             cachedSrc Nothing Just >>= flip for_ (HS.notify listener <<< Src <<< Just)
             unsub0 <- subscribe trigger' \v ->
               let
                 whatsNext = v.theFuture { isFresh: false, value: unit }
               in
                 do
-                  launchAff_ $ doDownloads ctx bufCache theFuture.push whatsNext
+                  launchAff_ $ doDownloads ctx bufCache (lcmap const theFuture.push) (whatsNext { clockTime: 0.0 })
                   theFuture.push whatsNext
             unsub1 <- subscribe src (HS.notify listener <<< Src <<< Just)
             HS.notify listener GraphRenderingDone
@@ -313,22 +316,22 @@ handleAction = case _ of
               }
           Example -> do
             let ivl = E.fold (const $ add 1) (interval 1000) (-1)
-            theFuture :: EventIO WhatsNext <- H.liftEffect create
-            doDownloads ctx bufCache (const $ pure unit) exampleWag
+            theFuture :: EventIO FCT <- H.liftEffect create
+            doDownloads ctx bufCache (const $ pure unit) (exampleWag { clockTime: 0.0 })
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
               0 -> do
                 HS.notify listener GraphRenderingDone
-                HS.notify listener (Tick $ Nothing) *> launchAff_ (doDownloads ctx bufCache theFuture.push exampleWag)
+                HS.notify listener (Tick $ Nothing) *> launchAff_ (doDownloads ctx bufCache (lcmap const theFuture.push) (exampleWag { clockTime: 0.0 }))
               _ -> pure unit
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
           DJQuickCheck -> do
             let ivl = E.fold (const $ add 1) (interval 1000) (-4)
-            theFuture :: EventIO WhatsNext <- H.liftEffect create
+            theFuture :: EventIO FCT <- H.liftEffect create
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
               (-3) -> do
                 HS.notify listener GraphRenderingDone
                 HS.notify listener (Tick $ Just 3)
-                theFuture.push $ openFuture
+                theFuture.push $ (const openFuture)
               (-2) -> HS.notify listener (Tick $ Just 2)
               (-1) -> HS.notify listener (Tick $ Just 1)
               ck -> do
@@ -337,7 +340,7 @@ handleAction = case _ of
                   seed <- randomSeed
                   let goDJ = evalGen djQuickCheck { newSeed: seed, size: 10 }
                   HS.notify listener (DJQC $ cycleToString unit goDJ.cycle)
-                  launchAff_ $ doDownloads ctx bufCache theFuture.push goDJ.future
+                  launchAff_ $ doDownloads ctx bufCache (lcmap const theFuture.push) goDJ.future
                   Ref.write (if cycleLength goDJ.cycle < 6 then ck + 6 else ck + 20) nextCycleEnds
                 nce2 <- Ref.read nextCycleEnds
                 HS.notify listener (Tick $ Just (nce2 - ck))
@@ -350,8 +353,8 @@ handleAction = case _ of
               ( run
                   ( map (\{ theFuture } -> { interactivity: unit, theFuture: const theFuture })
                       ( case wagsiMode of
-                          LiveCoding -> trigger <|> pure { theFuture: primePump }
-                          _ -> trigger <|> pure { theFuture: openFuture }
+                          LiveCoding -> trigger <|> pure { theFuture: const primePump }
+                          _ -> trigger <|> pure { theFuture: const openFuture }
                       )
                   )
                   world
