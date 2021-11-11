@@ -1,5 +1,6 @@
 module WAGSI.Cookbook.Gamelan2 where
 -- t'was fun!
+
 import Prelude
 
 import Data.Bifunctor (bimap)
@@ -12,9 +13,8 @@ import Data.Tuple (Tuple(..))
 import Prelude as Prelude
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGS.Lib.Learn.Oscillator (lfo)
-
 import WAGS.Lib.Sounds.Gamelan as Gamelan
-
+import WAGS.Lib.Tidal.Cycle (c2d, noteFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (lnr, lvt, make, onTag, parse_, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
@@ -34,18 +34,18 @@ wag = make 6.0
     (lcmap unwrap \{ normalizedBigCycleTime } ->
       1.0
           - 0.05 * fallFromTo (0.0 / 16.0) (2.0 / 16.0) normalizedBigCycleTime
-          - 0.05 * fallFromTo (2.0 / 16.0) (4.0 / 16.0) normalizedBigCycleTime
-          - 0.05 * fallFromTo (4.0 / 16.0) (6.0 / 16.0) normalizedBigCycleTime
-          - 0.02 * fallFromTo (0.0 / 16.0) (6.0 / 16.0) normalizedBigCycleTime
-          - 0.05 * fallFromTo (6.0 / 16.0) (8.0 / 16.0) normalizedBigCycleTime
-          - 0.03 * fallFromTo (6.0 / 16.0) (14.0 / 16.0) normalizedBigCycleTime
-          + 0.05 * fallFromTo (14.0 / 16.0) (16.0 / 16.0) normalizedBigCycleTime
+        --  - 0.05 * fallFromTo (2.0 / 16.0) (4.0 / 16.0) normalizedBigCycleTime
+        --  - 0.05 * fallFromTo (4.0 / 16.0) (6.0 / 16.0) normalizedBigCycleTime
+        --  - 0.02 * fallFromTo (0.0 / 16.0) (6.0 / 16.0) normalizedBigCycleTime
+        --  - 0.05 * fallFromTo (6.0 / 16.0) (8.0 / 16.0) normalizedBigCycleTime
+        --  - 0.03 * fallFromTo (6.0 / 16.0) (14.0 / 16.0) normalizedBigCycleTime
+        --  + 0.05 * fallFromTo (14.0 / 16.0) (16.0 / 16.0) normalizedBigCycleTime
     )
      $ parse_ seq4
   , fire:  s
     $ onTag "dlang" (set (_Just <<< lnr) (const 0.5))
     $ onTag "kt" (set (_Just <<< lnr) (const 4.0))
-    $  parse_ "" -- "GAp LUNG*2 ~ TONG*2 KtPL6*2 ~ KtPL6*3;kt GKSL3f ~ KPL1h DLANG*2;dlang ~ KPL1h*3 TAK ~ ~ , DHA*2;dlang ~ ~ ~ DHA ~ TAK TAK"
+    $  parse_ "GAp LUNG*2 ~ TONG*2 KtPL6*2 ~ KtPL6*3;kt GKSL3f ~ KPL1h DLANG*2;dlang ~ KPL1h*3 TAK ~ ~ , DHA*2;dlang ~ ~ ~ DHA ~ TAK TAK"
   , wind: map
         ( set lvt
             (lcmap unwrap \{ clockTime } -> let t = clockTime in fx
@@ -62,7 +62,7 @@ wag = make 6.0
             )
             )
         ) (s "KPL1")
-  -- , heart: c2d $ noteFromSample $ Sample "lowdark:0"
+  , heart: c2d $ noteFromSample $ Sample "singing"
   , title: "gamelan 1"
   , sounds: foldl Map.union Map.empty [moreSounds, Gamelan.sounds]
   }
