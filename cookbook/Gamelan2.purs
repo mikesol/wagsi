@@ -1,6 +1,5 @@
-module WAGSI.LiveCodeHere.Wagged where
-
-import Math
+module WAGSI.Cookbook.Gamelan2 where
+-- t'was fun!
 import Prelude
 
 import Data.Bifunctor (bimap)
@@ -11,11 +10,11 @@ import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
 import Data.Tuple (Tuple(..))
 import Prelude as Prelude
-import WAGS.Create.Optionals (delay, gain, highpass, lowpass, ref)
+import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Sounds.Drones as Drones
+
 import WAGS.Lib.Sounds.Gamelan as Gamelan
-import WAGS.Lib.Tidal.Cycle (c2d, noteFromSample)
+
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (lnr, lvt, make, onTag, parse_, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
@@ -32,7 +31,7 @@ fallFromTo x y t = clip (1.0 - (t - x)/(y - x))
 wag :: WhatsNext
 wag = make 6.0
   { earth: s $ set (traversed <<< _Just <<< lnr)
-    (lcmap unwrap \{ clockTime, normalizedClockTime, normalizedBigCycleTime } ->
+    (lcmap unwrap \{ normalizedBigCycleTime } ->
       1.0
           - 0.05 * fallFromTo (0.0 / 16.0) (2.0 / 16.0) normalizedBigCycleTime
           - 0.05 * fallFromTo (2.0 / 16.0) (4.0 / 16.0) normalizedBigCycleTime
@@ -68,6 +67,7 @@ wag = make 6.0
   , sounds: foldl Map.union Map.empty [moreSounds, Gamelan.sounds]
   }
 -- c2d $ noteFromSample "singing"
+moreSounds :: Map.Map Sample BufferUrl
 moreSounds = Map.fromFoldable $ map (bimap Sample BufferUrl) $ [Tuple "singing" "https://freesound.org/data/previews/253/253960_2409224-lq.mp3", Tuple "lowdark:0" "https://freesound.org/data/previews/579/579260_10522382-hq.mp3"]
 
 -- Hi Ted - AFC
