@@ -1,11 +1,14 @@
 module WAGSI.LiveCodeHere.Wagged where
 
-import WAGS.Lib.Tidal.Tidal (make, s)
+import Prelude
+
+import WAGS.Lib.Tidal.Tidal (make, parse_, s)
+
 import WAGSI.Plumbing.Types (WhatsNext)
 
 wag :: WhatsNext
-wag =
-  make 1.0
-    { earth: s ""
-    , title: "i m a k e n o i s e"
-    }
+wag = make 4.0
+  { earth: s
+      $ parse_ " gab lighter gab;g0 lighter gab lighter gab;g1 lighter  , ~ industrial ~ ~ ~ tink ~ ~ "
+  , title: "industrial tink"
+  }
