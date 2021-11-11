@@ -6,7 +6,6 @@ import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Promise (toAffE)
 import Data.Either (Either(..), either)
-import Data.Profunctor (lcmap)
 import Data.Foldable (for_)
 import Data.Map (Map)
 import Data.Map as Map
@@ -261,7 +260,7 @@ handleAction = case _ of
     ctx <- H.liftEffect context
     { bufCache, exampleWag } <- H.get
     res <- case wagsiMode of
-      Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) (exampleWag { clockTime: 0.0 })
+      Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) ((#) { clockTime: 0.0 }) (exampleWag)
       LiveCoding -> H.liftAff $ try do
         primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
         massive <- H.liftEffect do
@@ -269,9 +268,9 @@ handleAction = case _ of
           loc <- location w
           sc <- search loc
           parseParams_ Nothing Just sc "massive"
-        when (isJust massive) (doDownloads ctx bufCache (const $ pure unit) massiveFuture)
-        doDownloads ctx bufCache (const $ pure unit) droneyFuture
-        doDownloads ctx bufCache (const $ pure unit) primePump
+        when (isJust massive) (doDownloads ctx bufCache (const $ pure unit) identity massiveFuture)
+        doDownloads ctx bufCache (const $ pure unit) identity droneyFuture
+        doDownloads ctx bufCache (const $ pure unit) identity primePump
       DJQuickCheck -> H.liftAff $ try $ pure unit
     either (\_ -> H.modify_ _ { loadingHack = Failed }) (\_ -> H.modify_ _ { loadingHack = Loaded }) res
   Finalize -> handleAction StopAudio
@@ -303,7 +302,7 @@ handleAction = case _ of
                 whatsNext = v.theFuture { isFresh: false, value: unit }
               in
                 do
-                  launchAff_ $ doDownloads ctx bufCache (lcmap const theFuture.push) (whatsNext { clockTime: 0.0 })
+                  launchAff_ $ doDownloads ctx bufCache theFuture.push ((#) { clockTime: 0.0 }) whatsNext
                   theFuture.push whatsNext
             unsub1 <- subscribe src (HS.notify listener <<< Src <<< Just)
             HS.notify listener GraphRenderingDone
@@ -317,11 +316,11 @@ handleAction = case _ of
           Example -> do
             let ivl = E.fold (const $ add 1) (interval 1000) (-1)
             theFuture :: EventIO FCT <- H.liftEffect create
-            doDownloads ctx bufCache (const $ pure unit) (exampleWag { clockTime: 0.0 })
+            doDownloads ctx bufCache (const $ pure unit) identity (exampleWag { clockTime: 0.0 })
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
               0 -> do
                 HS.notify listener GraphRenderingDone
-                HS.notify listener (Tick $ Nothing) *> launchAff_ (doDownloads ctx bufCache (lcmap const theFuture.push) (exampleWag { clockTime: 0.0 }))
+                HS.notify listener (Tick $ Nothing) *> launchAff_ (doDownloads ctx bufCache theFuture.push ((#) { clockTime: 0.0 }) exampleWag)
               _ -> pure unit
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
           DJQuickCheck -> do
@@ -340,13 +339,13 @@ handleAction = case _ of
                   seed <- randomSeed
                   let goDJ = evalGen djQuickCheck { newSeed: seed, size: 10 }
                   HS.notify listener (DJQC $ cycleToString unit goDJ.cycle)
-                  launchAff_ $ doDownloads ctx bufCache (lcmap const theFuture.push) goDJ.future
+                  launchAff_ $ doDownloads ctx bufCache theFuture.push ((#) { clockTime: 0.0 }) (const goDJ.future)
                   Ref.write (if cycleLength goDJ.cycle < 6 then ck + 6 else ck + 20) nextCycleEnds
                 nce2 <- Ref.read nextCycleEnds
                 HS.notify listener (Tick $ Just (nce2 - ck))
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
         primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
-        doDownloads ctx bufCache (const $ pure unit) primePump
+        doDownloads ctx bufCache (const $ pure unit) identity primePump
         unsubscribeFromWags <-
           H.liftEffect do
             usu <- subscribe
