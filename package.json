@@ -22,7 +22,7 @@
     "start": "spago install && spago build && webpack serve --mode=development --open",
     "start:ngrok": "spago install && spago build && webpack serve --mode=development --public=https://wagsi.eu.ngrok.io --open",
     "start:storybook": "python makeStorybook.py && spago -x storybook.dhall install && spago -x storybook.dhall build && cross-env WEBPACK_ENTRY=./src/storybook.js WAGSI_MODE=example webpack serve --port 8081 --mode=development --open",
-    "start:example": "spago install && spago build && cross-env WAGSI_MODE=example webpack serve --port 8081 --mode=development",
+    "start:example": "spago install && spago build && cross-env WAGSI_MODE=example webpack serve --port 8081 --mode=development --open",
     "start:djqc": "spago install && spago build && cross-env WAGSI_MODE=djqc webpack serve --mode=development",
     "start:gitpod": "webpack serve --mode=development --public \"$(gp url 8080 | sed 's+https://++'):443\"",
     "start:codespaces": "webpack serve --mode=development --public \"$npm_package_codespacesPublicUrl\"",
