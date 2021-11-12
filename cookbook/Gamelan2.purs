@@ -71,7 +71,7 @@ moreSounds :: Map.Map Sample BufferUrl
 moreSounds = Map.fromFoldable $ map (bimap Sample BufferUrl) $ [Tuple "singing" "https://freesound.org/data/previews/253/253960_2409224-lq.mp3", Tuple "lowdark:0" "https://freesound.org/data/previews/579/579260_10522382-hq.mp3"]
 
 -- Hi Ted - AFC
--- hi! coming to you live and direct from glasgow by the power of the interweb – tedthetrumpet
+-- hi! coming to you live and direct from glasgow by the power of the interweb - tedthetrumpet
 -- $ set (traversed <<< _Just <<< lnr) (lcmap unwrap \{ normalizedBigCycleTime  } -> 1.0 + normalizedBigCycleTime * 0.0)
 
 seq1 :: String

@@ -24,8 +24,10 @@ import json
 
 mangled = [mangle(x) for x in ipt]
 
-modules = '\n'.join(['import %s as %s' % (x[0], x[1]) for x in mangled])
-tuples =  '\n'.join(['  , Tuple (unwrap %s.wag).title $ proxy (component %s rf %s.wag)' % (x[1], json.dumps(x[2]), x[1]) for x in mangled])
+NEWLINE = '\n'
+
+modules = NEWLINE.join(['import %s as %s' % (x[0], x[1]) for x in mangled])
+tuples =  NEWLINE.join(['  , Tuple (unwrap %s.wag).title $ proxy (component %s rf (const %s.wag))' % (x[1], json.dumps(x[2]), x[1]) for x in mangled])
 
 mainIs = f'''
 module WAGSI.Storybook where
