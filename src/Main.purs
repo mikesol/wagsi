@@ -9,7 +9,7 @@ import Data.Either (Either(..), either)
 import Data.Foldable (for_)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (unwrap)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
@@ -39,8 +39,8 @@ import WAGS.Interpret (close, context, contextState, contextResume, defaultFFIAu
 import WAGS.Lib.Learn (FullSceneBuilder(..))
 import WAGS.Lib.Tidal.Cycle (cycleLength, cycleToString)
 import WAGS.Lib.Tidal.Engine (engine)
-import WAGS.Lib.Tidal.Tidal (djQuickCheck, droneyFuture, massiveFuture, openFuture)
-import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, Sample)
+import WAGS.Lib.Tidal.Tidal (djQuickCheck, openFuture)
+import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, CycleDuration(..), Sample)
 import WAGS.Lib.Tidal.Util (doDownloads)
 import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
@@ -48,9 +48,6 @@ import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Repl (src, wag)
 import WAGSI.Plumbing.Types (WhatsNext)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
-import Web.HTML (window)
-import Web.HTML.Location (search)
-import Web.HTML.Window (location)
 
 r2b :: Ref.Ref ~> Behavior
 r2b r = behavior \e -> makeEvent \f -> subscribe e \v -> Ref.read r >>= f <<< v
@@ -262,14 +259,7 @@ handleAction = case _ of
     res <- case wagsiMode of
       Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) ((#) { clockTime: 0.0 }) (exampleWag)
       LiveCoding -> H.liftAff $ try do
-        primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
-        massive <- H.liftEffect do
-          w <- window
-          loc <- location w
-          sc <- search loc
-          parseParams_ Nothing Just sc "massive"
-        when (isJust massive) (doDownloads ctx bufCache (const $ pure unit) identity massiveFuture)
-        doDownloads ctx bufCache (const $ pure unit) identity droneyFuture
+        primePump <- fromMaybe (openFuture (CycleDuration 1.0)) <$> (H.liftEffect $ cachedWag Nothing Just)
         doDownloads ctx bufCache (const $ pure unit) identity primePump
       DJQuickCheck -> H.liftAff $ try $ pure unit
     either (\_ -> H.modify_ _ { loadingHack = Failed }) (\_ -> H.modify_ _ { loadingHack = Loaded }) res
@@ -316,7 +306,12 @@ handleAction = case _ of
           Example -> do
             let ivl = E.fold (const $ add 1) (interval 1000) (-1)
             theFuture :: EventIO FCT <- H.liftEffect create
-            doDownloads ctx bufCache (const $ pure unit) identity (exampleWag { clockTime: 0.0 })
+            doDownloads
+              ctx
+              bufCache
+              (const $ pure unit)
+              ((#) { clockTime: 0.0 })
+              exampleWag
             unsub <- H.liftEffect $ subscribe ivl \ck' -> case ck' of
               0 -> do
                 HS.notify listener GraphRenderingDone
@@ -330,7 +325,7 @@ handleAction = case _ of
               (-3) -> do
                 HS.notify listener GraphRenderingDone
                 HS.notify listener (Tick $ Just 3)
-                theFuture.push $ (const openFuture)
+                theFuture.push $ const $ openFuture $ CycleDuration 1.0
               (-2) -> HS.notify listener (Tick $ Just 2)
               (-1) -> HS.notify listener (Tick $ Just 1)
               ck -> do
@@ -344,7 +339,7 @@ handleAction = case _ of
                 nce2 <- Ref.read nextCycleEnds
                 HS.notify listener (Tick $ Just (nce2 - ck))
             pure { trigger: { theFuture: _ } <$> theFuture.event, unsub }
-        primePump <- fromMaybe openFuture <$> (H.liftEffect $ cachedWag Nothing Just)
+        primePump <- fromMaybe (openFuture $ CycleDuration 1.0) <$> (H.liftEffect $ cachedWag Nothing Just)
         doDownloads ctx bufCache (const $ pure unit) identity primePump
         unsubscribeFromWags <-
           H.liftEffect do
@@ -353,7 +348,7 @@ handleAction = case _ of
                   ( map (\{ theFuture } -> { interactivity: unit, theFuture: const theFuture })
                       ( case wagsiMode of
                           LiveCoding -> trigger <|> pure { theFuture: const primePump }
-                          _ -> trigger <|> pure { theFuture: const openFuture }
+                          _ -> trigger <|> pure { theFuture: const (openFuture (CycleDuration 1.0)) }
                       )
                   )
                   world

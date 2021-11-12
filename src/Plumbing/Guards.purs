@@ -2,24 +2,35 @@ module WAGSI.Plumbing.Guards where
 
 import Prelude
 
+import Control.Monad.State (evalState, modify)
 import Data.Array as Array
-import Data.Foldable (foldl, fold)
 import Data.Compactable (compact)
+import Data.Foldable (foldl, fold)
 import Data.Function (on)
+import Data.Int (toNumber)
 import Data.Lens (over, traversed)
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Lens.Tuple (_2)
-import Data.Map as Map
 import Data.List (List(..), sortBy)
+import Data.Map as Map
+import Data.Newtype (unwrap)
 import Data.Set as Set
-import Data.Tuple (fst, snd)
+import Data.Traversable (traverse)
+import Data.Tuple (fst, snd, swap)
 import Data.Tuple.Nested (type (/\), (/\))
-
 import WAGS.Lib.Tidal.Types (TheFuture(..))
 import WAGS.Lib.Tidal.Util (d2s, v2s)
 import WAGSI.Plumbing.Types (WhatsNext)
 
 epsilon = 0.2 :: Number
+
+asFofCycles :: List (Int /\ WhatsNext) -> WhatsNext -> { clockTime :: Number } -> WhatsNext
+asFofCycles = asFofTime
+  <<< map swap
+  <<< flip evalState 0.0
+  <<< traverse (traverse (modify <<< (+)))
+  <<< map swap
+  <<< map \(a /\ b) -> toNumber a * (unwrap (unwrap b).cycleDuration) /\ b
 
 asFofTime :: List (Number /\ WhatsNext) -> WhatsNext -> { clockTime :: Number } -> WhatsNext
 asFofTime a wn = go withPreloads
@@ -42,3 +53,4 @@ asFofTime a wn = go withPreloads
     sorted
   go Nil _ = wn
   go (Cons (x /\ y) z) { clockTime } = if clockTime < (x - epsilon) then y else go z { clockTime }
+
