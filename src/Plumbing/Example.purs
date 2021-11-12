@@ -11,7 +11,8 @@ import WAGSI.Plumbing.Types (WhatsNext)
 wag :: { clockTime :: Number } -> WhatsNext
 wag =
   asFofCycles
-    ( (4 /\ make 1.0 { earth: s $ "bd:0" })
+    ( (4 /\ make 1.0 { earth: s $ "" })
+        : (4 /\ make 1.0 { earth: s $ "bd:0" })
         : (4 /\ make 1.0 { earth: s $ "bd:0 bd:0" })
         : (4 /\ make 1.0 { earth: s $ "bd:0 bd:0 hh:0 ~" })
         : (4 /\ make 1.0 { earth: s $ "bd:0 bd:0 hh:0 chin:0*4" })
