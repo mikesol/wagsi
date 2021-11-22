@@ -35,12 +35,12 @@ import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
 import Random.LCG (randomSeed)
 import Test.QuickCheck.Gen (evalGen)
-import WAGS.Interpret (close, context, contextState, contextResume, defaultFFIAudio, makePeriodicWave, makeUnitCache)
-import WAGS.Lib.Learn (FullSceneBuilder(..))
+import WAGS.Interpret (close, context, contextResume, contextState, makeFFIAudioSnapshot, makePeriodicWave)
+import WAGS.Lib.Learn (Analysers, FullSceneBuilder(..))
 import WAGS.Lib.Tidal.Cycle (cycleLength, cycleToString)
 import WAGS.Lib.Tidal.Engine (engine)
 import WAGS.Lib.Tidal.Tidal (djQuickCheck, openFuture)
-import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, CycleDuration(..), Sample)
+import WAGS.Lib.Tidal.Types (BufferUrl, CycleDuration(..), ForwardBackwards, Sample, TidalRes)
 import WAGS.Lib.Tidal.Util (doDownloads)
 import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
@@ -277,9 +277,7 @@ handleAction = case _ of
         ctx <- H.liftEffect context
         waStatus <- H.liftEffect $ contextState ctx
         when (waStatus /= "running") (H.liftAff $ toAffE $ contextResume ctx)
-        unitCache <- H.liftEffect makeUnitCache
-        let
-          ffiAudio = defaultFFIAudio ctx unitCache
+        ffiAudio <- H.liftEffect $ makeFFIAudioSnapshot ctx
         let FullSceneBuilder { triggerWorld, piece } = engine (pure unit) (map (const <<< const) wag) (Left ohBehave)
         trigger' /\ world <- snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
         { trigger, unsub } <- case wagsiMode of
@@ -356,7 +354,7 @@ handleAction = case _ of
                   ffiAudio
                   piece
               )
-              (\(_ :: Run Unit ()) -> pure unit) -- (Log.info <<< show)
+              (\(_ :: Run TidalRes Analysers) -> pure unit) -- (Log.info <<< show)
             pure $ do
               _ <- usu
               _ <- unsub
