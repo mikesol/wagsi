@@ -3,13 +3,13 @@ module WAGSI.Cookbook.Gamelan2 where
 
 import Prelude
 
-import Data.Bifunctor (bimap)
 import Data.Foldable (foldl)
 import Data.Lens (_Just, set, traversed)
-import Data.Map as Map
 import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
 import Data.Tuple (Tuple(..))
+import Foreign.Object (Object)
+import Foreign.Object as Object
 import Prelude as Prelude
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGS.Lib.Learn.Oscillator (lfo)
@@ -64,11 +64,11 @@ wag = make 6.0
         ) (s "KPL1")
   , heart: c2d $ noteFromSample $ Sample "singing"
   , title: "gamelan 1"
-  , sounds: foldl Map.union Map.empty [moreSounds, Gamelan.sounds]
+  , sounds: foldl Object.union Object.empty [moreSounds, Gamelan.sounds]
   }
 -- c2d $ noteFromSample "singing"
-moreSounds :: Map.Map Sample BufferUrl
-moreSounds = Map.fromFoldable $ map (bimap Sample BufferUrl) $ [Tuple "singing" "https://freesound.org/data/previews/253/253960_2409224-lq.mp3", Tuple "lowdark:0" "https://freesound.org/data/previews/579/579260_10522382-hq.mp3"]
+moreSounds :: Object BufferUrl
+moreSounds = map BufferUrl $ Object.fromFoldable $ [Tuple "singing" "https://freesound.org/data/previews/253/253960_2409224-lq.mp3", Tuple "lowdark:0" "https://freesound.org/data/previews/579/579260_10522382-hq.mp3"]
 
 -- Hi Ted - AFC
 -- hi! coming to you live and direct from glasgow by the power of the interweb - tedthetrumpet
@@ -81,14 +81,14 @@ seq1 = """
 
 seq2 :: String
 seq2 = """
-      BBPL1*3 ~ BBPL2h ~ ~ BBPL2h ~ BBPL2h*2 ~ BBPL4 ~ BBPL6 ~ BBPL2h*4 ~ BBPL2h, 
-      SDPL5*2 ~ SDPL4 ~ SDPL2 ~ SBSL6l ~ SDPL5 ~ SDPL3 ~ SDPL2 ~ SBSL6l ~ 
+      BBPL1*3 ~ BBPL2h ~ ~ BBPL2h ~ BBPL2h*2 ~ BBPL4 ~ BBPL6 ~ BBPL2h*4 ~ BBPL2h,
+      SDPL5*2 ~ SDPL4 ~ SDPL2 ~ SBSL6l ~ SDPL5 ~ SDPL3 ~ SDPL2 ~ SBSL6l ~
       """
 
 seq4 :: String
-seq4 = """ 
+seq4 = """
       GAp
-      """     
+      """
 
 seq3 :: String
 seq3 = """

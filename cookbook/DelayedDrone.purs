@@ -2,21 +2,21 @@ module WAGSI.LiveCodeHere.DelayedDrone where
 
 import Prelude
 
-import Data.Lens (_Just, set)
+import Data.Lens (set, traversed)
 import Data.Profunctor (lcmap)
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
+import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal.Cycle (c2d, lowdark)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (clockTime)
 import WAGS.Lib.Tidal.Tidal (ldt, make, s)
 import WAGSI.Plumbing.Types (WhatsNext)
-import WAGS.Lib.Learn.Oscillator (lfo)
 
 wag :: WhatsNext
 wag = make 1.0
   { earth: s "tabla chin*4 tabla:4 tabla:6"
   , heart:
-      set (_Just <<< ldt)
+      set (traversed <<< ldt)
         ( lcmap clockTime \t -> fx
             ( goodbye $ gain 1.0
                 { mymix: highpass

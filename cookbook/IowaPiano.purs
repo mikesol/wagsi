@@ -3,15 +3,15 @@ module WAGSI.Cookbook.IowaPiano where
 import Prelude
 
 import Data.Array ((..))
-import Data.Either (Either(..))
 import Data.Lens (_Just, set, traversed)
-import Data.Map as Map
 import Data.Profunctor (lcmap)
 import Data.String as String
 import Data.Tuple.Nested ((/\))
+import Foreign.Object (Object)
+import Foreign.Object as Object
 import WAGS.Lib.Tidal.Samples (initialEntropy, sampleTime)
 import WAGS.Lib.Tidal.Tidal (betwixt, lns, lnv, make, onTag, parse_, s)
-import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
+import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..), _left)
 import WAGS.Math (calcSlope)
 import WAGSI.Plumbing.Types (WhatsNext)
 
@@ -32,7 +32,7 @@ wag :: WhatsNext
 wag = make 1.0
   { earth: s
       $ onTag "fun"
-          ( map (set lns $ Left $ lcmap initialEntropy (Sample <<< e2s))
+          ( map (set lns $ _left $ lcmap initialEntropy (Sample <<< e2s))
           )
       $ set (traversed <<< _Just <<< lnv)
           (lcmap sampleTime (betwixt 0.0 1.0 <<< arenv))
@@ -44,10 +44,10 @@ wag = make 1.0
 
 keys = "C Db D Eb E F Gb G Ab A Bb B" :: String
 pno =
-  Map.fromFoldable $ join $ map
+  Object.fromFoldable $ join $ map
     ( \key ->
         map
-          ( \n -> Sample ("ip:" <> key <> show n)
+          ( \n ->  ("ip:" <> key <> show n)
               /\ BufferUrl
                 ( "https://klank-share.s3.amazonaws.com/iowa/piano/Piano.mf." <> key
                     <> show n
@@ -56,4 +56,4 @@ pno =
           )
           (2 .. 5)
     )
-    (String.split (String.Pattern " ") keys) :: Map.Map Sample BufferUrl
+    (String.split (String.Pattern " ") keys) :: Object BufferUrl
