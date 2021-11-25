@@ -1,41 +1,42 @@
 {
-  "name": "wagsi",
-  "codespacesPublicUrl": "https://mikesol-wagsi-wr55r4429r6v-8080.githubpreview.dev/",
-  "devDependencies": {
-    "@babel/core": "^7.13.10",
-    "@babel/preset-env": "^7.13.10",
-    "babel-loader": "^8.2.2",
-    "cross-env": "^7.0.3",
-    "css-loader": "^5.1.3",
-    "event-hooks-webpack-plugin": "^2.2.0",
-    "postcss": "^8.2.8",
-    "postcss-loader": "^5.2.0",
-    "postcss-preset-env": "^6.7.0",
-    "style-loader": "^2.0.0",
-    "tailwind": "^4.0.0",
-    "tailwindcss": "^2.0.4",
-    "webpack": "^5.27.0",
-    "webpack-cli": "^4.5.0",
-    "webpack-dev-server": "^3.11.2"
-  },
-  "scripts": {
-    "start": "spago install && spago build && webpack serve --mode=development --open",
-    "start:ngrok": "spago install && spago build && webpack serve --mode=development --public=https://wagsi.eu.ngrok.io --open",
-    "start:storybook": "python makeStorybook.py && spago -x storybook.dhall install && spago -x storybook.dhall build && cross-env WEBPACK_ENTRY=./src/storybook.js WAGSI_MODE=example webpack serve --port 8081 --mode=development --open",
-    "start:example": "spago install && spago build && cross-env WAGSI_MODE=example webpack serve --port 8081 --mode=development --open",
-    "start:djqc": "spago install && spago build && cross-env WAGSI_MODE=djqc webpack serve --mode=development",
-    "start:gitpod": "webpack serve --mode=development --public \"$(gp url 8080 | sed 's+https://++'):443\"",
-    "start:codespaces": "webpack serve --mode=development --public \"$npm_package_codespacesPublicUrl\"",
-    "build": "webpack",
-    "format": "purs-tidy format-in-place src/**/*.purs",
-    "build:djqc": "cross-env WAGSI_MODE=djqc webpack",
-    "build:example": "cross-env WAGSI_MODE=example webpack",
-    "build:storybook": "python makeStorybook.py && spago -x storybook.dhall install && spago -x storybook.dhall build && cross-env WEBPACK_ENTRY=./src/storybook.js WAGSI_MODE=example webpack",
-    "test": "python readme.py && spago -x cookbook.dhall build"
-  },
-  "optionalDependencies": {
-    "purescript": "^0.14.4",
-    "purs-tidy": "^0.5.4",
-    "spago": "^0.20.3"
-  }
+	"name": "wagsi",
+	"codespacesPublicUrl": "https://mikesol-wagsi-wr55r4429r6v-8080.githubpreview.dev/",
+	"devDependencies": {
+		"@babel/core": "^7.13.10",
+		"@babel/preset-env": "^7.13.10",
+		"babel-loader": "^8.2.2",
+		"cross-env": "^7.0.3",
+		"css-loader": "^5.1.3",
+		"event-hooks-webpack-plugin": "^2.2.0",
+		"postcss": "^8.2.8",
+		"postcss-loader": "^5.2.0",
+		"postcss-preset-env": "^6.7.0",
+		"style-loader": "^2.0.0",
+		"tailwind": "^4.0.0",
+		"tailwindcss": "^2.0.4",
+		"webpack": "^5.27.0",
+		"webpack-cli": "^4.5.0",
+		"webpack-dev-server": "^3.11.2"
+	},
+	"scripts": {
+		"start": "spago install && spago build && webpack serve --mode=development --open",
+		"start:8086": "spago install && spago build && webpack serve --mode=development --port=8086 --open",
+		"start:ngrok": "spago install && spago build && webpack serve --mode=development --public=https://wagsi.eu.ngrok.io --open",
+		"start:storybook": "python makeStorybook.py && spago -x storybook.dhall install && spago -x storybook.dhall build && cross-env WEBPACK_ENTRY=./src/storybook.js WAGSI_MODE=example webpack serve --port 8081 --mode=development --open",
+		"start:example": "spago install && spago build && cross-env WAGSI_MODE=example webpack serve --port 8081 --mode=development --open",
+		"start:djqc": "spago install && spago build && cross-env WAGSI_MODE=djqc webpack serve --mode=development",
+		"start:gitpod": "webpack serve --mode=development --public \"$(gp url 8080 | sed 's+https://++'):443\"",
+		"start:codespaces": "webpack serve --mode=development --public \"$npm_package_codespacesPublicUrl\"",
+		"build": "webpack",
+		"format": "purs-tidy format-in-place src/**/*.purs",
+		"build:djqc": "cross-env WAGSI_MODE=djqc webpack",
+		"build:example": "cross-env WAGSI_MODE=example webpack",
+		"build:storybook": "python makeStorybook.py && spago -x storybook.dhall install && spago -x storybook.dhall build && cross-env WEBPACK_ENTRY=./src/storybook.js WAGSI_MODE=example webpack",
+		"test": "python readme.py && spago -x cookbook.dhall build"
+	},
+	"optionalDependencies": {
+		"purescript": "^0.14.4",
+		"purs-tidy": "^0.5.4",
+		"spago": "^0.20.3"
+	}
 }
