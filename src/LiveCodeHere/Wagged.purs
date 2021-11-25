@@ -6,6 +6,6 @@ import WAGSI.Plumbing.Types (WhatsNext)
 wag :: WhatsNext
 wag =
   make 1.0
-    { earth: s ""
+    { earth: s "[[hh hh]]"
     , title: "i m a k e n o i s e"
     }
