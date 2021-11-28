@@ -19,7 +19,7 @@ import WAGS.Lib.Tidal.Cycle (pad_1)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (bufferDuration)
 import WAGS.Lib.Tidal.Tidal (i, lnbo, lnf, lnv, lvt, x, u, make, s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Learn.Oscillator (lfo)
 
 shuffle xs = { newSeed: mkSeed 42, size: 10 } # evalGen do
@@ -46,7 +46,7 @@ short dv = set (traversed <<< _Just <<< lnv) $ lcmap unwrap \{ sampleTime, littl
 
 offsets l i = set (traversed <<< _Just <<< lnbo) $ lcmap bufferDuration \d -> d * (toNumber i) / toNumber l
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 4.0
   { earth:
       map

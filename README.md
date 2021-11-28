@@ -27,9 +27,9 @@ When you start, the top-level file has the following code:
 module WAGSI.LiveCodeHere.Wagged where
 
 import WAGS.Lib.Tidal.Tidal (make, s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 1.0
   { earth: s ""
   , title: "i m a k e n o i s e"
@@ -43,10 +43,10 @@ Here's an example that uses mini-notation.
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
 
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, s)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 2.0
   { earth: s "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
@@ -75,11 +75,11 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Cycle (r, bassdm, bassdm_2, hh27, gab)
 import WAGS.Lib.Tidal.Tidal (make, u, s, i, b, x)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 2.0
   -- "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   { earth: s $ u $ x (i bassdm [ hh27, i bassdm_2 [ bassdm_2 ], hh27 ]) [ b (i r [ gab, r, gab ]) [ r ] ]
@@ -101,10 +101,10 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, parse_, plainly, rend)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 2.0
   { earth: map plainly $ rend $ parse_ "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
@@ -119,11 +119,11 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 import Data.Lens (_Just, set, traversed)
 import WAGS.Lib.Tidal.Tidal (lnr, make, parse_, s)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 2.0
   { earth: s
       $ (set (traversed <<< _Just <<< lnr) (const 1.5))
@@ -138,12 +138,12 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 import Data.Lens (_Just, set, traversed)
 import WAGS.Lib.Tidal.Cycle (hh27, bassdm, r, gab)
 import WAGS.Lib.Tidal.Tidal (i, b, lnr, make, s, u, x)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 2.0
   { earth: s $ u
       $ x
@@ -163,11 +163,11 @@ import Prelude
 
 import Data.Lens (_Just, set, traversed, view)
 import WAGS.Lib.Tidal.Types (_hush)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Samples as S
 import WAGS.Lib.Tidal.Tidal (focus, lnr, lns, make, parse_, s)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 2.0
   { earth: s
       $ set

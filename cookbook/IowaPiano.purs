@@ -13,7 +13,7 @@ import WAGS.Lib.Tidal.Samples (initialEntropy, sampleTime)
 import WAGS.Lib.Tidal.Tidal (betwixt, lns, lnv, make, onTag, parse_, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..), _left)
 import WAGS.Math (calcSlope)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
 arenv :: Number -> Number
 arenv t
@@ -28,7 +28,7 @@ e2s e
   | otherwise = "ip:Bb5"
 
 -- many thanks to http://theremin.music.uiowa.edu/MIS.html
-wag :: WhatsNext
+wag :: AFuture
 wag = make 1.0
   { earth: s
       $ onTag "fun"

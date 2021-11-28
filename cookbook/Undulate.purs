@@ -10,9 +10,9 @@ import WAGS.Lib.Tidal.Cycle (c2d, hollowair)
 import WAGS.Lib.Tidal.Samples (clockTime)
 import WAGS.Lib.Tidal.Tidal (betwixt, derivative, ldr, ldv, lvg, make, s)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 1.0
   { earth: map (over lvg (map (betwixt 0.0 1.0) <<< flip derivative (0.1))) $ s "tech chin*4 tabla:2 tech:12*3"
   , heart:

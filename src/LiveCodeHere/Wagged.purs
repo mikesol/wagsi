@@ -1,9 +1,9 @@
 module WAGSI.LiveCodeHere.Wagged where
 
+import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, s)
-import WAGSI.Plumbing.Types (WhatsNext)
 
-wag :: WhatsNext
+wag :: AFuture
 wag =
   make 1.0
     { earth: s ""

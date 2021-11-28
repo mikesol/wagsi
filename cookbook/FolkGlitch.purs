@@ -8,9 +8,9 @@ import WAGS.Lib.Tidal.Samples (initialEntropy)
 import WAGS.Lib.Tidal.Samples as S
 import WAGS.Lib.Tidal.Tidal (lns, lnv, make, onTag, parse_, s)
 import WAGS.Lib.Tidal.Types (_left)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 1.0
   { earth: s
       $ onTag "tb"

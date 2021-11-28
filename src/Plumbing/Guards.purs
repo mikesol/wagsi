@@ -22,11 +22,11 @@ import Foreign.Object as Object
 import WAGS.Graph.Parameter (_maybe)
 import WAGS.Lib.Tidal.Types (TheFuture(..))
 import WAGS.Lib.Tidal.Util (d2s, v2s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
 epsilon = 0.2 :: Number
 
-asFofCycles :: List (Int /\ WhatsNext) -> WhatsNext -> { clockTime :: Number } -> WhatsNext
+asFofCycles :: List (Int /\ AFuture) -> AFuture -> { clockTime :: Number } -> AFuture
 asFofCycles = asFofTime
   <<< map swap
   <<< flip evalState 0.0
@@ -34,7 +34,7 @@ asFofCycles = asFofTime
   <<< map swap
   <<< map \(a /\ b) -> toNumber a * (unwrap (unwrap b).cycleDuration) /\ b
 
-asFofTime :: List (Number /\ WhatsNext) -> WhatsNext -> { clockTime :: Number } -> WhatsNext
+asFofTime :: List (Number /\ AFuture) -> AFuture -> { clockTime :: Number } -> AFuture
 asFofTime a wn = go withPreloads
   where
   sorted = sortBy (compare `on` fst) a

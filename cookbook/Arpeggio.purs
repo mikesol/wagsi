@@ -6,9 +6,9 @@ import Data.Lens (_Just, set)
 import Data.Profunctor (lcmap)
 import WAGS.Lib.Tidal.Samples (littleCycleTime)
 import WAGS.Lib.Tidal.Tidal (lnr, lnv, make, onTag, parse_, s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 1.0
   { earth: s
       $ onTag "psr" (set (_Just <<< lnv) (const 0.1))

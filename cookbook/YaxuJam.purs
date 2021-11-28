@@ -5,9 +5,9 @@ import Prelude
 import Data.Lens (_Just, set)
 import WAGS.Lib.Tidal.Cycle (c2d, hollowair)
 import WAGS.Lib.Tidal.Tidal (lnr, make, onTag, parse_, s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 1.0
   { earth: s
       $ onTag "lowme" (set (_Just <<< lnr) (const 0.3))

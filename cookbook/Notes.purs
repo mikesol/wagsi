@@ -10,9 +10,9 @@ import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (littleCycleTime)
 import WAGS.Lib.Tidal.Tidal (lnr, lvt, make, parse_, s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: WhatsNext
+wag :: AFuture
 wag =
   make 1.0
     { earth: s $

@@ -14,11 +14,11 @@ import Prelude as Prelude
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Sounds.Gamelan as Gamelan
-import WAGS.Lib.Tidal.Cycle (c2d, noteFromSample)
+import WAGS.Lib.Tidal.Cycle (c2d, cycleFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (lnr, lvt, make, onTag, parse_, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
 clip :: Number -> Number
 clip n = Prelude.max 0.0 (Prelude.min 1.0 n)
@@ -28,7 +28,7 @@ fallFromTo x y t = clip (1.0 - (t - x)/(y - x))
 
 -- 0.1 * fallFromTo (14.0 / 16.0) (15.0 / 16.0) normalizedBigCycleTime
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 6.0
   { earth: s $ set (traversed <<< _Just <<< lnr)
     (lcmap unwrap \{ normalizedBigCycleTime } ->
@@ -62,11 +62,11 @@ wag = make 6.0
             )
             )
         ) (s "KPL1")
-  , heart: c2d $ noteFromSample $ Sample "singing"
+  , heart: c2d $ cycleFromSample $ Sample "singing"
   , title: "gamelan 1"
   , sounds: foldl Object.union Object.empty [moreSounds, Gamelan.sounds]
   }
--- c2d $ noteFromSample "singing"
+-- c2d $ cycleFromSample "singing"
 moreSounds :: Object BufferUrl
 moreSounds = map BufferUrl $ Object.fromFoldable $ [Tuple "singing" "https://freesound.org/data/previews/253/253960_2409224-lq.mp3", Tuple "lowdark:0" "https://freesound.org/data/previews/579/579260_10522382-hq.mp3"]
 

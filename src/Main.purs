@@ -46,7 +46,7 @@ import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
 import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Repl (src, wag)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
 
 r2b :: Ref.Ref ~> Behavior
@@ -241,7 +241,7 @@ easingAlgorithm =
 
 foreign import parseParams_ :: Maybe String -> (String -> Maybe String) -> String -> String -> Effect (Maybe String)
 
-type FCT = { clockTime :: Number } -> WhatsNext
+type FCT = { clockTime :: Number } -> AFuture
 
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
@@ -374,7 +374,7 @@ handleAction = case _ of
     for_ audioCtx (H.liftEffect <<< close)
     H.modify_ _ { unsubscribe = pure unit, audioCtx = Nothing, audioStarted = false, canStopAudio = false, tick = Nothing, djqc = Nothing, srcCode = Nothing }
 
-foreign import cachedWag :: Maybe WhatsNext -> (WhatsNext -> Maybe WhatsNext) -> Effect (Maybe WhatsNext)
+foreign import cachedWag :: Maybe AFuture -> (AFuture -> Maybe AFuture) -> Effect (Maybe AFuture)
 foreign import storeWag :: Foreign
 foreign import cachedSrc :: Maybe String -> (String -> Maybe String) -> Effect (Maybe String)
 foreign import storeSrc :: Foreign

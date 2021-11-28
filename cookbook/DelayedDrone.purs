@@ -10,9 +10,9 @@ import WAGS.Lib.Tidal.Cycle (c2d, lowdark)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (clockTime)
 import WAGS.Lib.Tidal.Tidal (ldt, make, s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 1.0
   { earth: s "tabla chin*4 tabla:4 tabla:6"
   , heart:

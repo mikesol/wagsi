@@ -7,14 +7,14 @@ import Data.Profunctor (lcmap)
 import WAGS.Math (calcSlope)
 import WAGS.Lib.Tidal.Samples (class SampleTime, sampleTime)
 import WAGS.Lib.Tidal.Tidal (betwixt, lnv, make, onTag, parse_, s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
 m2 = 4.0 * 1.0 * 60.0/111.0 :: Number
 
 fadeDown ::forall r. SampleTime r => r -> Number
 fadeDown = lcmap sampleTime (betwixt 0.0 1.0 <<< calcSlope 0.4 1.0 1.2 0.0)
 
-wag :: WhatsNext
+wag :: AFuture
 wag =
   make (m2 * 4.0)
     { -- lows

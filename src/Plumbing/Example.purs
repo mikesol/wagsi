@@ -6,9 +6,9 @@ import Data.List ((:), List(..))
 import Data.Tuple.Nested ((/\))
 import WAGS.Lib.Tidal.Tidal (make, s)
 import WAGSI.Plumbing.Guards (asFofCycles)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: { clockTime :: Number } -> WhatsNext
+wag :: { clockTime :: Number } -> AFuture
 wag =
   asFofCycles
     ( (2 /\ make 1.0 { earth: s $ "" })

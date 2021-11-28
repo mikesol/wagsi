@@ -9,14 +9,14 @@ import Math (pi, cos)
 import WAGS.Lib.Tidal.Samples (normalizedBigCycleTime)
 import WAGS.Lib.Tidal.Tidal (c2s, lnr, lnv, make, onTag, parse_, s, s2f)
 import WAGS.Lib.Tidal.Types (NoteInFlattenedTime(..))
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
 trigfun :: Number -> Number
 trigfun x
   | x < 0.5 = x
   | otherwise = cos (pi * 2.0 * (x - 0.5)) * 0.25 / (-1.0) + 0.75
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 2.0
   { earth: s
       $ map

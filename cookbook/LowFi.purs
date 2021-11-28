@@ -9,12 +9,12 @@ import Math ((%))
 import WAGS.Create.Optionals (highpass, pan)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (lnr, lnv, lvt, make, onTag, parse_, s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Learn.Oscillator (lfo)
 
 m2 = 4.0 * 1.0 * 60.0/111.0 :: Number
 
-wag :: WhatsNext
+wag :: AFuture
 wag =
   make (m2 * 2.0)
     { earth: s $ set (traversed <<< _Just <<< lnr) (lcmap unwrap \{ normalizedLittleCycleTime: t } -> 1.0 + t*0.1 ) $ parse_ "tink:1;t0 tink:2;t1 tink:3;t2 tink:0;t3 tink:4;t4 tink:2;t5 tink:3;t6 tink:1;t7 tink:2;t8 tink:0;t9 tink:3;t10 "

@@ -7,9 +7,9 @@ import Data.Profunctor (lcmap)
 import WAGS.Lib.Tidal.Cycle (c2d, lowdark)
 import WAGS.Lib.Tidal.Samples (normalizedSampleTime)
 import WAGS.Lib.Tidal.Tidal (lnr, lnv, make, parse_, s)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 1.0
   { earth: s $ map (set (_Just <<< lnr) (lcmap normalizedSampleTime \_ -> 1.0)) $ parse_ "newnotes newnotes:1 newnotes:2 newnotes:3"
   -- comment `wind` in and out

@@ -7,9 +7,9 @@ import Data.Profunctor (lcmap)
 import WAGS.Lib.Tidal.Samples (sampleTime)
 import WAGS.Lib.Tidal.Tidal (lnr, lnv, make, onTag, parse_, s)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGSI.Plumbing.Types (WhatsNext)
+import WAGS.Lib.Tidal (AFuture)
 
-wag :: WhatsNext
+wag :: AFuture
 wag = make 4.0
   { earth: s
       $ onTag "g0" (set (_Just <<< lnr) (lcmap sampleTime \t -> 1.0 - t))
