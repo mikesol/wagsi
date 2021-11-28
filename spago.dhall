@@ -20,6 +20,7 @@ You can edit this file as you like.
   , "free"
   , "halogen"
   , "halogen-subscriptions"
+  , "homogeneous"
   , "integers"
   , "lcg"
   , "lists"
