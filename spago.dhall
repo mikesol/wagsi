@@ -27,6 +27,7 @@ You can edit this file as you like.
   , "math"
   , "maybe"
   , "newtype"
+  , "nonempty"
   , "ordered-collections"
   , "prelude"
   , "profunctor"
