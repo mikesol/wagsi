@@ -198,7 +198,7 @@ let additions =
           , "typelevel-prelude"
           ]
         , repo = "https://github.com/mikesol/purescript-wags.git"
-        , version = "v0.6.1"
+        , version = "v0.6.2"
         }
       , free =
         { dependencies =
@@ -231,7 +231,7 @@ let additions =
           , "strings"
           ]
         , repo = "https://github.com/mikesol/purescript-wags-lib.git"
-        , version = "v0.0.62"
+        , version = "v0.0.63"
         }
       , painting =
         { dependencies =
