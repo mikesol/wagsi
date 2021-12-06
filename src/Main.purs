@@ -193,7 +193,6 @@ render
                             case wagsiMode of
                               LiveCoding -> skd srcCode
                               Example -> skd (Just exampleCode)
-                              _ -> []
                         )
             , HH.div [ classes [ "flex-grow" ] ] []
             ]
@@ -251,7 +250,6 @@ handleAction = case _ of
     handleAction StopAudio
     { bufCache, exampleWag } <- H.get
     let ohBehave = r2b bufCache
-    nextCycleEnds <- H.liftEffect $ Ref.new 0
     H.modify_ _ { audioStarted = true, canStopAudio = false, doingGraphRendering = true }
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
