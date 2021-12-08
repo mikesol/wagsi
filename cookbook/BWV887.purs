@@ -24,6 +24,7 @@ wag = make end
               <> ".mp3"
           )
       )
+    , title: "BWV 887"
   }
 
 type Nt = { n :: Int, t :: Int }
