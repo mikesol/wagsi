@@ -8,7 +8,7 @@ import Data.Either (Either(..), either)
 import Data.Foldable (for_)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
@@ -35,8 +35,7 @@ import WAGS.Interpret (close, context, contextResume, contextState, makeFFIAudio
 import WAGS.Lib.Learn (Analysers, FullSceneBuilder(..))
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Engine (engine)
-import WAGS.Lib.Tidal.Tidal (openFuture)
-import WAGS.Lib.Tidal.Types (BufferUrl, CycleDuration(..), ForwardBackwards, Sample, TidalRes)
+import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, Sample, TidalRes)
 import WAGS.Lib.Tidal.Util (doDownloads)
 import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
@@ -236,8 +235,9 @@ handleAction = case _ of
     res <- case wagsiMode of
       Example -> H.liftAff $ try $ doDownloads ctx bufCache (const $ pure unit) ((#) { clockTime: 0.0 }) (exampleWag)
       LiveCoding -> H.liftAff $ try do
-        primePump <- fromMaybe (openFuture (CycleDuration 1.0)) <$> (H.liftEffect $ cachedWag Nothing Just)
-        doDownloads ctx bufCache (const $ pure unit) identity primePump
+        cw' <- H.liftEffect $ cachedWag Nothing Just
+        for_ cw' \cw -> do
+          doDownloads ctx bufCache (const $ pure unit) identity cw
     either
       ( \e -> do
           Log.error (show e)
