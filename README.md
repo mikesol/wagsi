@@ -120,13 +120,13 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import WAGS.Lib.Tidal (AFuture)
-import Data.Lens (_Just, set, traversed)
+import Data.Lens (set, traversed)
 import WAGS.Lib.Tidal.Tidal (lnr, make, parse_, s)
 
 wag :: AFuture
 wag = make 2.0
   { earth: s
-      $ (set (traversed <<< _Just <<< lnr) (const 1.5))
+      $ (set (traversed <<< traversed <<< lnr) (const 1.5))
       $ parse_ "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }
 ```
@@ -139,15 +139,15 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import WAGS.Lib.Tidal (AFuture)
-import Data.Lens (_Just, set, traversed)
+import Data.Lens (set, traversed)
 import WAGS.Lib.Tidal.Cycle (hh27, bassdm, r, gab)
-import WAGS.Lib.Tidal.Tidal (i, b, lnr, make, s, u, x)
+import WAGS.Lib.Tidal.Tidal (i, b, changeRate, make, s, u, x)
 
 wag :: AFuture
 wag = make 2.0
   { earth: s $ u
       $ x
-          ( i (set (traversed <<< _Just <<< lnr) (const 0.5) bassdm)
+          ( i (map (changeRate (const 0.5)) bassdm)
               [ hh27, i bassdm [ bassdm ], hh27 ]
           )
           [ b (i r [ gab, r, gab ]) [ r ] ]
@@ -161,8 +161,8 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import Data.Lens (_Just, set, traversed, view)
-import WAGS.Lib.Tidal.Types (_hush)
+import Data.Lens (set, traversed, view)
+import Data.Variant.Either (hush)
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Samples as S
 import WAGS.Lib.Tidal.Tidal (focus, lnr, lns, make, parse_, s)
@@ -171,7 +171,7 @@ wag :: AFuture
 wag = make 2.0
   { earth: s
       $ set
-          (traversed <<< _Just <<< focus (eq (pure S.gab_0__Sample) <<< _hush <<< view lns) <<< lnr)
+          (traversed <<< traversed <<< focus (eq (pure S.gab_0__Sample) <<< hush <<< view lns) <<< lnr)
           (const 1.5)
       $ parse_ "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }

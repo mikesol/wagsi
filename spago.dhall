@@ -14,6 +14,7 @@ You can edit this file as you like.
   , "effect"
   , "either"
   , "event"
+  , "everythings-better-with-variants"
   , "filterable"
   , "foldable-traversable"
   , "foreign"

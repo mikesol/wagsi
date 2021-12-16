@@ -3,16 +3,16 @@ module WAGSI.Cookbook.BWV887 where
 import Prelude
 
 import Data.Array.NonEmpty as NEA
+import Data.Array.NonEmpty.Internal (NonEmptyArray)
 import Data.Int (toNumber)
-import Data.List as List
-import Data.List.Types (NonEmptyList(..))
-import Data.Maybe (Maybe(..))
 import Data.NonEmpty (NonEmpty, (:|))
 import Data.Tuple.Nested ((/\))
+import Data.Variant.Either (right)
+import Data.Variant.Maybe (nothing)
 import Foreign.Object as Object
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, s)
-import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..), _right)
+import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..))
 
 wag :: AFuture
 wag = make end
@@ -35,8 +35,8 @@ asNea = NEA.fromNonEmpty bwv887
 end = fac (NEA.last asNea).t + 2.5 :: Number
 len = NEA.length asNea :: Int
 
-notes :: NonEmptyList (NoteInFlattenedTime (Note Unit))
-notes = let h :| t = NEA.toNonEmpty $ NEA.mapWithIndex nt2nift asNea in NonEmptyList (h :| List.fromFoldable t)
+notes :: NonEmptyArray (NoteInFlattenedTime (Note Unit))
+notes = NEA.mapWithIndex nt2nift asNea
 
 nt2nift :: Int -> Nt -> NoteInFlattenedTime (Note Unit)
 nt2nift i { n, t } =
@@ -45,7 +45,7 @@ nt2nift i { n, t } =
   in
     NoteInFlattenedTime
       { note: Note
-          { sampleFoT: _right (Sample $ "hcd" <> show n)
+          { sampleFoT: right (Sample $ "hcd" <> show n)
           , forward: true
           , rateFoT: const 1.0
           , bufferOffsetFoT: const 0.0
@@ -60,7 +60,7 @@ nt2nift i { n, t } =
       , duration: 2.0
       , bigCycleDuration: end
       , littleCycleDuration: end
-      , tag: Nothing
+      , tag: nothing
       }
 
 bwv887 :: NonEmpty Array Nt

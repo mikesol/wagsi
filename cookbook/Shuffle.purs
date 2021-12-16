@@ -6,7 +6,7 @@ import Data.Array.NonEmpty (head, replicate, sortBy, tail)
 import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Int (toNumber)
-import Data.Lens (_Just, set, traversed)
+import Data.Lens (set, traversed)
 import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
 import Data.Traversable (traverse)
@@ -32,9 +32,9 @@ hocket fwd len cyc =
   in
     i (head arr $ cyc) (map ((#) cyc) (tail arr))
 
-bkwd fwd = set (traversed <<< _Just <<< lnf) fwd
+bkwd fwd = set (traversed <<< traversed <<< lnf) fwd
 
-short dv = set (traversed <<< _Just <<< lnv) $ lcmap unwrap \{ sampleTime, littleCycleDuration } ->
+short dv = set (traversed <<< traversed <<< lnv) $ lcmap unwrap \{ sampleTime, littleCycleDuration } ->
   let
     bar = littleCycleDuration / toNumber dv
     vl
@@ -44,7 +44,7 @@ short dv = set (traversed <<< _Just <<< lnv) $ lcmap unwrap \{ sampleTime, littl
   in
     vl
 
-offsets l i = set (traversed <<< _Just <<< lnbo) $ lcmap bufferDuration \d -> d * (toNumber i) / toNumber l
+offsets l i = set (traversed <<< traversed <<< lnbo) $ lcmap bufferDuration \d -> d * (toNumber i) / toNumber l
 
 wag :: AFuture
 wag = make 4.0

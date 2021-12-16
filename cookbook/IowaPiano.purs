@@ -3,17 +3,18 @@ module WAGSI.Cookbook.IowaPiano where
 import Prelude
 
 import Data.Array ((..))
-import Data.Lens (_Just, set, traversed)
+import Data.Lens (set)
 import Data.Profunctor (lcmap)
 import Data.String as String
 import Data.Tuple.Nested ((/\))
+import Data.Variant.Either (left)
 import Foreign.Object (Object)
 import Foreign.Object as Object
-import WAGS.Lib.Tidal.Samples (initialEntropy, sampleTime)
-import WAGS.Lib.Tidal.Tidal (betwixt, lns, lnv, make, onTag, parse_, s)
-import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..), _left)
-import WAGS.Math (calcSlope)
 import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Samples (initialEntropy)
+import WAGS.Lib.Tidal.Tidal (betwixt, changeVolume, lns, make, onTag, parse_, s)
+import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
+import WAGS.Math (calcSlope)
 
 arenv :: Number -> Number
 arenv t
@@ -32,10 +33,15 @@ wag :: AFuture
 wag = make 1.0
   { earth: s
       $ onTag "fun"
-          ( map (set lns $ _left $ lcmap initialEntropy (Sample <<< e2s))
+          ( map
+              ( set lns $ left
+                  $ lcmap initialEntropy (Sample <<< e2s)
+              )
           )
-      $ set (traversed <<< _Just <<< lnv)
-          (lcmap sampleTime (betwixt 0.0 1.0 <<< arenv))
+      $ map
+          ( changeVolume
+              (_.sampleTime >>> (betwixt 0.0 1.0 <<< arenv))
+          )
       $ parse_ "ip:C4 ip:G4 ip:Bb4 ip:D4 ip:D5 ip:F4, ~ ip:F5;fun ~"
   , sounds: pno
   , preload: map Sample [ "ip:C5", "ip:D5", "ip:E5", "ip:F5", "ip:G5", "ip:A5", "ip:Bb5" ]
@@ -47,7 +53,7 @@ pno =
   Object.fromFoldable $ join $ map
     ( \key ->
         map
-          ( \n ->  ("ip:" <> key <> show n)
+          ( \n -> ("ip:" <> key <> show n)
               /\ BufferUrl
                 ( "https://klank-share.s3.amazonaws.com/iowa/piano/Piano.mf." <> key
                     <> show n

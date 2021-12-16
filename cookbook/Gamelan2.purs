@@ -4,7 +4,7 @@ module WAGSI.Cookbook.Gamelan2 where
 import Prelude
 
 import Data.Foldable (foldl)
-import Data.Lens (_Just, set, traversed)
+import Data.Lens (set, traversed)
 import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
 import Data.Tuple (Tuple(..))
@@ -14,11 +14,11 @@ import Prelude as Prelude
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Sounds.Gamelan as Gamelan
+import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Cycle (c2d, cycleFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
-import WAGS.Lib.Tidal.Tidal (lnr, lvt, make, onTag, parse_, s)
+import WAGS.Lib.Tidal.Tidal (changeRate, lnr, lvt, make, onTag, parse_, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
-import WAGS.Lib.Tidal (AFuture)
 
 clip :: Number -> Number
 clip n = Prelude.max 0.0 (Prelude.min 1.0 n)
@@ -30,7 +30,7 @@ fallFromTo x y t = clip (1.0 - (t - x)/(y - x))
 
 wag :: AFuture
 wag = make 6.0
-  { earth: s $ set (traversed <<< _Just <<< lnr)
+  { earth: s $ set (traversed <<< traversed <<< lnr)
     (lcmap unwrap \{ normalizedBigCycleTime } ->
       1.0
           - 0.05 * fallFromTo (0.0 / 16.0) (2.0 / 16.0) normalizedBigCycleTime
@@ -43,8 +43,8 @@ wag = make 6.0
     )
      $ parse_ seq4
   , fire:  s
-    $ onTag "dlang" (set (_Just <<< lnr) (const 0.5))
-    $ onTag "kt" (set (_Just <<< lnr) (const 4.0))
+    $ onTag "dlang" (changeRate (const 0.5))
+    $ onTag "kt" (changeRate (const 4.0))
     $  parse_ "GAp LUNG*2 ~ TONG*2 KtPL6*2 ~ KtPL6*3;kt GKSL3f ~ KPL1h DLANG*2;dlang ~ KPL1h*3 TAK ~ ~ , DHA*2;dlang ~ ~ ~ DHA ~ TAK TAK"
   , wind: map
         ( set lvt

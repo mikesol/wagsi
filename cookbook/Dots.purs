@@ -5,7 +5,7 @@ import Prelude
 import Data.Homogeneous.Record (homogeneous, fromHomogeneous)
 import Data.Int (toNumber)
 import Data.Lens (set, traversed)
-import Data.Maybe (maybe)
+import Data.Variant.Maybe (maybe)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\))
 import Math (pow)

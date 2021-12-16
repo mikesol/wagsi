@@ -19,7 +19,7 @@ import Data.Traversable (traverse)
 import Data.Tuple (fst, snd, swap)
 import Data.Tuple.Nested (type (/\), (/\))
 import Foreign.Object as Object
-import WAGS.Graph.Parameter (_maybe)
+import Data.Variant.Maybe (maybe)
 import WAGS.Lib.Tidal.Types (TheFuture(..))
 import WAGS.Lib.Tidal.Util (d2s, v2s)
 import WAGS.Lib.Tidal (AFuture)
@@ -41,7 +41,7 @@ asFofTime a wn = go withPreloads
   makeSounds = \(TheFuture { sounds }) -> sounds
   makePreload = \(TheFuture { earth, wind, fire, air, heart, preload }) -> Set.toUnfoldable $ Set.fromFoldable (preload
       <> fold (map v2s [ earth, wind, fire ])
-      <> (compact $ (map (_maybe Nothing Just)) $ ((map <<< map) d2s [ air, heart ])))
+      <> (compact $ (map (maybe Nothing Just)) $ ((map <<< map) d2s [ air, heart ])))
   allPreloads =
     ( Array.fromFoldable
         $ join

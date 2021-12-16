@@ -6,10 +6,10 @@ import Data.Lens (_Just, over, set, traversed)
 import Data.Lens.Iso.Newtype (unto)
 import Data.Profunctor (lcmap)
 import Math (pi, cos)
-import WAGS.Lib.Tidal.Samples (normalizedBigCycleTime)
-import WAGS.Lib.Tidal.Tidal (c2s, lnr, lnv, make, onTag, parse_, s, s2f)
-import WAGS.Lib.Tidal.Types (NoteInFlattenedTime(..))
 import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Samples (normalizedBigCycleTime)
+import WAGS.Lib.Tidal.Tidal (c2s, changeRate, changeVolume, lnr, lnv, make, onTag, parse_, s, s2f)
+import WAGS.Lib.Tidal.Types (NoteInFlattenedTime(..))
 
 trigfun :: Number -> Number
 trigfun x
@@ -25,8 +25,11 @@ wag = make 2.0
           )
       $ c2s
       $ parse_ " bass:3 blip*4 "
-  , wind: s $ onTag "x" (set (_Just <<< lnv) (const 0.3))
-      $ onTag "x" (set (_Just <<< lnr) (lcmap normalizedBigCycleTime \t ->  0.7 + (t * 0.84)))
+  , wind: s $ onTag "x" (changeVolume (const 0.3))
+      $ onTag "x"
+          ( changeRate \{ normalizedBigCycleTime: t } ->
+              0.7 + (t * 0.84)
+          )
       $ parse_ "~ blip*4;x"
   , title: "Rising blips"
   }

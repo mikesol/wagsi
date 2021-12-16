@@ -2,21 +2,20 @@ module WAGSI.Cookbook.Notes where
 
 import Prelude
 
-import Data.Lens (set, traversed, _Just)
+import Data.Lens (set)
 import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
 import WAGS.Create.Optionals (highpass, pan)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
-import WAGS.Lib.Tidal.Samples (littleCycleTime)
-import WAGS.Lib.Tidal.Tidal (lnr, lvt, make, parse_, s)
 import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
+import WAGS.Lib.Tidal.Tidal (changeRate, lvt, make, parse_, s)
 
 wag :: AFuture
 wag =
   make 1.0
     { earth: s $
-        """newnotes:0 
+        """newnotes:0
       ~
       <newnotes:2 notes:13 newnotes:14>
       ~
@@ -37,7 +36,7 @@ wag =
                       }
 
           ) $ s $
-          """~ 
+          """~
       <newnotes:1 notes:8>
       ~
       notes:3
@@ -46,6 +45,6 @@ wag =
       ~
       newnotes:7
       ~"""
-    , wind: s $ set (traversed <<< _Just <<< lnr) (lcmap littleCycleTime (add 0.5 <<< mul 0.5)) $ parse_ $ "chin:0 ~ chin:1 ~ ~ chin:2 ~ chin:3"
+    , wind: s $ map (changeRate (_.littleCycleTime >>> (add 0.5 <<< mul 0.5))) $ parse_ $ "chin:0 ~ chin:1 ~ ~ chin:2 ~ chin:3"
     , title: "notes"
     }
