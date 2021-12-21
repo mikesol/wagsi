@@ -2,31 +2,79 @@ module WAGSI.Cookbook.LongestNight2021 where
 
 import Prelude
 
-import WAGS.Lib.Tidal.Samples as S
-import WAGS.Lib.Tidal.Tidal (make, parse_, s)
+import WAGS.Create.Optionals (highpass, gain, lowpass, bandpass)
+import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
+import WAGS.Lib.Tidal.Tidal (addEffect, changeRate, make, parse_, s)
+import Math ((%))
+import WAGS.Lib.Tidal.Cycle (bd, cycleLength, hh, r)
+import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
+import WAGS.Lib.Tidal.Tidal (addEffect, onTag, changeVolume, i_, make, s)
+import WAGS.Math (calcSlope)
+-- palindromes anyone?
+-- what is this backwards?
+-- ah that's nice!
+-- can we push it further?
+-- and now let's flip that?
+-- pitches are kinda boring, let's spice it up
+-- more internal cycles!
+-- [psr:3 psr:3]
+-- [psr:3 bd bd psr:3]
+-- [[notes:2,hh*2] [notes:3,chin*4] [chin*4, notes:3] [hh*2, notes:2]]
+-- [[chin*4, notes:3] [hh*2, notes:2] [notes:2,hh*2] [notes:3,chin*4]]
+-- [[chin*4, notes:3] [hh*2, notes:2] bd psr:3]
+--   [psr:3 bd [notes:2,hh*2] [notes:3,chin*4]]
+-- let's get some double time action going
+-- waah that was fast!
+-- yesss, flanggggeee (sort of)
 
+-- a bit faster?
+-- we can also mess with the durations using map
+
+-- grand finale :=P
+-- and that's a wrap!!
 wag :: AFuture
-wag = make 1.0
-  { earth: s
+wag = make 0.9
+  {  earth: map
+          ( addEffect
+              \{ clockTime } ->
+                fx $ goodbye $ gain 1.3 $ bandpass
+                  { freq: 2000.0 + lfo
+                      { amp:
+                          lfo
+                            { amp: 801.0
+                            , freq: 0.2
+                            , phase: 1.0
+                            }
+                            clockTime + 900.0
+                      , freq: lfo { amp: 4.0, freq: 0.2, phase: 1.0 } clockTime + 5.0
+                      , phase: 0.0
+                      }
+                      clockTime
+                  , q: 1.0
+                  }
+                  hello
+          ) $ s
+      $ map (changeRate (\{ clockTime } -> lfo { phase: 0.0, amp: 0.05, freq: 2.0} clockTime + 1.0))
+      $ onTag "nt" (changeVolume (const 0.5))
+      $ onTag "nt1" (changeVolume (const 0.2))
       $ parse_ """<
+  [psr:3]
+  [psr:3 psr:3]
+  [psr:3 [psr:3 bd]]
+  [psr:3 bd bd psr:3]
   [psr:3 bd [notes:2,hh*2] [notes:3,chin*4]]
-  [bd bd [notes:4,hh*2] [notes:5,chin*4]]
-  [psr:3 bd [notes:6,hh*2] [notes:7,chin*4]]
-  [bd bd [notes:8,hh*2] [notes:9,chin*4]]
-  [[psr:3 psr:3] bd [notes:2,hh*2] [notes:3,chin*4]]
-  [bd bd [notes:8,hh*2] [notes:9,chin*4]]
-  [psr:3 bd [notes:9,hh*2] [notes:8,chin*4]]
-  [bd bd [notes:10,hh*2] [notes:6,chin*4]]
-  [psr:3 bd [notes:9,hh*2] [notes:7,chin*4]]
-  [psr:3 bd [notes:10,hh*2] [notes:7,chin*4]]
-  [psr:3 bd [notes:12,hh*2] [notes:7,chin*4]]
-  [psr:3 bd [notes:14,hh*2] [notes:7,chin*4]]
-  [psr:3 bd psr:3 [notes:7,chin*4]]
-  [psr:3 bd psr:3 [notes:7,chin*4]]
-  [psr:3 [psr:3,bd] [psr:3,notes:7] [psr:3,bd]]
-  [[psr:3,notes:0] [psr:3,bd,notes:1] [psr:3,bd,[notes:6 notes:3]] [psr:3,bd,[notes:2 notes:0]]]
+  [[notes:2,hh*2] [notes:4,chin*4] [chin*4, notes:4] [hh*2, notes:2]]
+  [[chin*4, notes:4;nt] [hh*2, notes:2] [notes:2,hh*2] [notes:4;nt,chin*4]]
+  [[chin*4, notes:3;nt1] [hh*2, notes:2] bd psr:3]
+  [[psr:3 bd [notes:2;nt,hh*2] [notes:3]]
+       [[notes:2;nt] [notes:4,chin*4] [ notes:4] [hh*2, notes:2;nt]]]
+  [[notes:2;nt,hh*2] [notes:4;nt,chin*4] [chin*4, notes:4;nt] [hh*2, notes:2;nt]]
+  [[chin*4, notes:3;nt1] [hh*2, notes:2;nt] bd psr:3]
+  [[psr:3 bd [notes:2] [notes:3,chin*4]]
+       [[notes:2;nt] [notes:14;nt1,chin*4] [chin*4] [hh*2, notes:6;nt]]]
+  [[notes:3;nt] [hh*2, notes:7;nt1] bd psr:3]
 >"""
   , title: "oh hello l_o_g_n_e_s_t night"
-  , preload: [S.tabla_0__Sample, S.tabla2_0__Sample]
   }
