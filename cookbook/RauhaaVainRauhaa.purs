@@ -27,13 +27,22 @@ s0 =
     , title: "Rauhaa, vain rauhaa"
     }
 
+s0a' v t = { s: "v0s0", v: const v, t } :|
+  [ { s: "v1s0", v: const v, t }
+  , { s: "v2s0", v: const v, t }
+  , { s: "v3s0", v: const v, t }
+  ]
+
 s0a = mkNotes 0.4
   ( NEA.fromNonEmpty
-      ( { s: "v0s0", v: const 0.1, t: 0.2 } :|
-          [ { s: "v1s0", v: const 0.1, t: 0.2 }
-          , { s: "v2s0", v: const 0.1, t: 0.2 }
-          , { s: "v3s0", v: const 0.1, t: 0.2 }
-          ]
+      ( s0a' 0.02 0.08
+          <> s0a' 0.05 0.12
+          <> s0a' 0.1 0.2
+          <> s0a' 0.15 0.3
+          <> s0a' 0.15 0.4
+          <> s0a' 0.1 0.3
+          <> s0a' 0.05 0.2
+          <> s0a' 0.05 0.08
       )
   )
 
@@ -50,13 +59,8 @@ mkNotes :: Number -> NonEmptyArray P -> NonEmptyArray (NoteInFlattenedTime (Note
 mkNotes padding arr = map (\(NoteInFlattenedTime n) -> NoteInFlattenedTime (n { bigCycleDuration = dur, littleCycleDuration = dur })) wol
   where
   len = NEA.length arr
-  wol = evalState
-    ( arr # traverseWithIndex \i nt -> do
-        offset <- get
-        put (offset + nt.t)
-        pure $ mkNote nt.s nt.v offset i len 0.0
-    )
-    0.0
+  tfun i nt = get >>= \offset -> (put (offset + nt.t)) *> (pure $ mkNote nt.s nt.v offset i len 0.0)
+  wol = evalState (traverseWithIndex tfun arr) 0.0
   dur = (unwrap (NEA.last wol)).bigStartsAt + padding
 
 mkNote :: String -> (TimeIs' Unit -> Number) -> Number -> Int -> Int -> Number -> NoteInFlattenedTime (Note Unit)
