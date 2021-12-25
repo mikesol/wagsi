@@ -10,8 +10,8 @@ import WAGS.Lib.Tidal.Types (BufferUrl(..))
 
 wag :: AFuture
 wag =
-  make 2.0
-    { earth: s "tones:114 , v0s0"
+  make 3.0
+    { earth: s "tones:56 , v0s0"
     , sounds: Object.fromFoldable $ map (\{ handle, slug } -> slug /\ BufferUrl ("https://media.graphcms.com/" <> handle)) files
     , title: "Rauhaa, vain rauhaa"
     }

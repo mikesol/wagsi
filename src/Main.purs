@@ -276,6 +276,10 @@ handleAction = case _ of
             unsub2 <- H.liftEffect $ subscribe
               (run trigger world { easingAlgorithm } ffiAudio piece)
               (\(_ :: Run TidalRes Analysers) -> pure unit)
+            cw' <- H.liftEffect $ cachedWag Nothing Just
+            for_ cw' \cw -> H.liftAff do
+              doDownloads ctx bufCache (const $ pure unit) identity cw
+              H.liftEffect $ theFuture.push cw
             pure { ctx, unsubscribeFromWags: unsub0 *> unsub1 *> unsub2 }
           Example -> do
             doDownloads ctx bufCache (const $ pure unit) ((#) { clockTime: 0.0 }) exampleWag
