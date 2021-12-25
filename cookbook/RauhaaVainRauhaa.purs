@@ -15,6 +15,7 @@ import Foreign.Object as Object
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..), TimeIs')
+import WAGS.Math (calcSlope)
 
 wag :: AFuture
 wag = s0
@@ -27,11 +28,14 @@ s0 =
     , title: "Rauhaa, vain rauhaa"
     }
 
-s0a' v t = { s: "v0s0", v: const v, t } :|
-  [ { s: "v1s0", v: const v, t }
-  , { s: "v2s0", v: const v, t }
-  , { s: "v3s0", v: const v, t }
+s0a' v t = { s: "v0s0", v: f, t } :|
+  [ { s: "v1s0", v: f, t }
+  , { s: "v2s0", v: f, t }
+  , { s: "v3s0", v: f, t }
   ]
+  where
+  thresh = 0.3
+  f = \{ sampleTime } -> if sampleTime < thresh then v else calcSlope thresh v 1.0 0.0 sampleTime
 
 s0a = mkNotes 0.4
   ( NEA.fromNonEmpty
