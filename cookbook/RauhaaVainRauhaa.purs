@@ -2,21 +2,84 @@ module WAGSI.Cookbook.RauhaaVainRauhaa where
 
 import Prelude
 
+import Control.Monad.State (evalState, get, put)
+import Data.Array.NonEmpty as NEA
+import Data.Array.NonEmpty.Internal (NonEmptyArray)
+import Data.Newtype (unwrap)
+import Data.NonEmpty ((:|))
+import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Tuple.Nested ((/\))
+import Data.Variant.Either (right)
+import Data.Variant.Maybe (nothing)
 import Foreign.Object as Object
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, s)
-import WAGS.Lib.Tidal.Types (BufferUrl(..))
+import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..), TimeIs')
 
 wag :: AFuture
-wag =
-  make 3.0
-    { earth: s "tones:56 , v0s0"
-    , sounds: Object.fromFoldable $ map (\{ handle, slug } -> slug /\ BufferUrl ("https://media.graphcms.com/" <> handle)) files
+wag = s0
+
+s0 :: AFuture
+s0 =
+  make (end s0a)
+    { earth: s s0a
+    , sounds
     , title: "Rauhaa, vain rauhaa"
     }
 
+s0a = mkNotes 0.4
+  ( NEA.fromNonEmpty
+      ( { s: "v0s0", v: const 0.1, t: 0.2 } :|
+          [ { s: "v1s0", v: const 0.1, t: 0.2 }
+          , { s: "v2s0", v: const 0.1, t: 0.2 }
+          , { s: "v3s0", v: const 0.1, t: 0.2 }
+          ]
+      )
+  )
+
+type P = { s :: String, v :: TimeIs' Unit -> Number, t :: Number }
+
+sounds = Object.fromFoldable $ map (\{ handle, slug } -> slug /\ BufferUrl ("https://media.graphcms.com/" <> handle)) files
+
 type FileInfo = { handle :: String, slug :: String }
+
+end :: NonEmptyArray (NoteInFlattenedTime (Note Unit)) -> Number
+end nea = (unwrap (NEA.head nea)).bigCycleDuration
+
+mkNotes :: Number -> NonEmptyArray P -> NonEmptyArray (NoteInFlattenedTime (Note Unit))
+mkNotes padding arr = map (\(NoteInFlattenedTime n) -> NoteInFlattenedTime (n { bigCycleDuration = dur, littleCycleDuration = dur })) wol
+  where
+  len = NEA.length arr
+  wol = evalState
+    ( arr # traverseWithIndex \i nt -> do
+        offset <- get
+        put (offset + nt.t)
+        pure $ mkNote nt.s nt.v offset i len 0.0
+    )
+    0.0
+  dur = (unwrap (NEA.last wol)).bigStartsAt + padding
+
+mkNote :: String -> (TimeIs' Unit -> Number) -> Number -> Int -> Int -> Number -> NoteInFlattenedTime (Note Unit)
+mkNote sample volumeFoT startsAt i len dur =
+  NoteInFlattenedTime
+    { note: Note
+        { sampleFoT: right (Sample $ sample)
+        , forward: true
+        , rateFoT: const 1.0
+        , bufferOffsetFoT: const 0.0
+        , volumeFoT: unwrap >>> volumeFoT
+        }
+    , bigStartsAt: startsAt
+    , littleStartsAt: startsAt
+    , currentCycle: 0
+    , positionInCycle: i
+    , elementsInCycle: len
+    , nCycles: 1
+    , duration: 2.0
+    , bigCycleDuration: dur
+    , littleCycleDuration: dur
+    , tag: nothing
+    }
 
 files :: Array FileInfo
 files =
