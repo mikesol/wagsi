@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.DelayedDrone where
+module WAGSI.Cookbook.DelayedDrone where
 
 import Prelude
 

@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.Undulate where
+module WAGSI.Cookbook.Undulate where
 
 import Prelude
 

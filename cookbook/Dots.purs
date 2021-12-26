@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.Dots where
+module WAGSI.Cookbook.Dots where
 
 import Prelude
 

@@ -20,6 +20,7 @@ import WAGS.Math (calcSlope)
 wag :: AFuture
 wag = make end
   { earth: s notes
+  , title: "BWV 887"
   , sounds: Object.fromFoldable
       ( asNea <#> \{ n } -> ("hcd" <> show n) /\
           ( BufferUrl $ "https://sound.klank.dev/petit-italien-k2/jeu-1/"

@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.SitarAndHarmonium where
+module WAGSI.Cookbook.SitarAndHarmonium where
 
 import Prelude
 

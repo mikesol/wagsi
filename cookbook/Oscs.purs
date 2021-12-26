@@ -21,7 +21,7 @@ seq1 = C.alphabet_11 :| [ C.alphabet_16, C.alphabet_15, C.alphabet_3, C.alphabet
 
 seq2 = C.alphabet_9 :| [ C.alphabet_12, C.alphabet_14, C.alphabet_0, C.alphabet_25, C.alphabet_6, C.alphabet_22, C.alphabet_23, C.alphabet_24, C.alphabet_17, C.alphabet_18, C.alphabet_19 ]
 
-f n s = b_ (i_ <^> s) [i_ <^> (foldl (<>) s (replicate n s))]
+f n s = b_ (i_ <^> s) [ i_ <^> (foldl (<>) s (replicate n s)) ]
 seq00 = f 1 seq0
 seq11 = f 2 seq1
 seq22 = f 3 seq2
@@ -92,4 +92,5 @@ wag =
                       }
                   }
           ) $ s $ (set (traversed <<< traversed <<< lnf) false) seq22
+    , title: "oscs"
     }

@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.YaxuJam where
+module WAGSI.Cookbook.YaxuJam where
 
 import Prelude
 
