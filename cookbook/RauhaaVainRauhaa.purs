@@ -2,88 +2,182 @@ module WAGSI.Cookbook.RauhaaVainRauhaa where
 
 import Prelude
 
-import Control.Monad.State (evalState, get, put)
-import Data.Array.NonEmpty as NEA
-import Data.Array.NonEmpty.Internal (NonEmptyArray)
-import Data.Identity (Identity(..))
-import Data.Newtype (unwrap)
-import Data.NonEmpty ((:|))
-import Data.TraversableWithIndex (traverseWithIndex)
+import Data.Maybe (maybe)
+import Data.Newtype (wrap)
 import Data.Tuple.Nested ((/\))
-import Data.Variant.Maybe (nothing)
+import Foreign.Object (lookup, union)
 import Foreign.Object as Object
+import WAGS.Create.Optionals (bandpass, convolver, highpass)
 import WAGS.Lib.Tidal (AFuture)
-import WAGS.Lib.Tidal.Cycle (noteFromSample)
-import WAGS.Lib.Tidal.Tidal (changeVolume, make, s)
-import WAGS.Lib.Tidal.Types (BufferUrl(..), Note, NoteInFlattenedTime(..), Sample(..), TimeIs')
-import WAGS.Math (calcSlope)
+import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
+import WAGS.Lib.Tidal.Tidal (addEffect, changeVolume, make, parse_, s)
+import WAGS.Lib.Tidal.Types (BufferUrl(..))
+
+verbMe0 = addEffect
+  \{ buffers, silence } ->
+    fx $ goodbye $ convolver (maybe silence _.buffer.forward (lookup "reverb0" buffers)) $ highpass { freq: 1500.0, q: 5.0 } hello
+
+verbMe1 = addEffect
+  \{ buffers, silence } ->
+    fx $ goodbye $ convolver (maybe silence _.buffer.forward (lookup "reverb1" buffers)) $ bandpass { freq: 500.0, q: 5.0 } hello
+
+v0 :: String
+v0 =
+  """
+[
+  [v2s0 , v1s0]
+  [v3s1 v2s1 , v0s1]
+  [v3s2 v0s2]
+  [v6s3 v0s3]
+  ~
+  [v1s5]
+  [v2s6 , v0s6]
+  [v3s7 v2s7]
+  [v6s8 v5s8 , v4s8 v2s8 v1s8 v0s8]
+  [v3s9 v1s9]
+  [v2s10 , v0s10]
+  [v2s11]
+  [v3s12 , v1s12 , v0s12]
+  [v1s13 v0s13]
+  ~
+  [v2s15 , v1s15]
+  [v3s16 v0s16]
+  [v1s17]
+  [v2s18 , v1s18 v0s18]
+  [v4s19 , v1s19 , v0s19]
+  [v1s20]
+  [v4s21 , v3s21 , v2s21 v0s21]
+  [v5s22 v3s22 , v2s22]
+  [v4s23 , v3s23 , v2s23 v0s23]
+  [v4s24 , v3s24 , v2s24]
+  [v3s25 v1s25]
+  ~
+  [v5s27 v4s27 v3s27 v2s27 v0s27]
+  [v2s28 , v1s28]
+  [v1s29]
+  [v3s30 , v2s30 v0s30]
+  [v3s31 v2s31 , v1s31]
+  [v3s32 v1s32]
+  [v7s33 v6s33 v5s33 v4s33 v3s33 v1s33 v0s33]
+  [v0s34]
+  [v7s35 v6s35 v5s35 v4s35 v3s35 v2s35]
+  [v5s36 v3s36 v1s36]
+  [v3s37]
+  [v3s38]
+  [v0s39]
+  [v1s40]
+  [v2s41]
+  [v1s42]
+  [v2s43 , v1s43 , v0s43]
+  [v2s44 , v1s44 v0s44]
+  [v4s45 v3s45 , v0s45]
+  [v4s46 v3s46]
+  [v1s47 , v0s47]
+  [v5s48 , v1s48]
+  [v3s49 v0s49]
+  [v5s50 , v4s50 v1s50 , v0s50]
+  [v5s51]
+  [v5s52 , v4s52 , v2s52 , v1s52 , v0s52]
+  [v4s53 v3s53 v2s53 v1s53]
+  [v3s54 , v2s54 v1s54]
+  [v3s55 , v2s55]
+  [v6s56 , v4s56 , v3s56 v1s56]
+  [v2s57 , v1s57 , v0s57]
+  [v6s58 v5s58 v4s58 v1s58 v0s58]
+  [v3s59]
+  [v3s60 v2s60 , v1s60 v0s60]
+  [v5s61 v3s61 v1s61 v0s61]
+  [v4s62 v3s62 v2s62]
+]
+"""
+
+v1 :: String
+v1 =
+  """
+[
+  [v3s0 , v0s0]
+  [v4s1 , v1s1]
+  [v5s2 v4s2 v2s2 , v1s2]
+  [v5s3 v4s3 , v3s3 v2s3 , v1s3]
+  [v0s4]
+  [v0s5]
+  [v3s6 v1s6]
+  [v5s7 v4s7 v1s7 v0s7]
+  [v3s8]
+  [v2s9 v0s9]
+  [v3s10 , v1s10]
+  [v3s11 v1s11 v0s11]
+  [v4s12 v2s12]
+  [v3s13 , v2s13]
+  [v3s14 , v2s14 , v1s14 , v0s14]
+  [v3s15 v0s15]
+  [v4s16 , v2s16 , v1s16]
+  [v3s17 v2s17 v0s17]
+  [v5s18 v4s18 v3s18]
+  [v3s19 , v2s19]
+  [v4s20 v3s20 v2s20 v0s20]
+  [v1s21]
+  [v4s22 v1s22 , v0s22]
+  [v1s23]
+  [v1s24 v0s24]
+  [v2s25 v0s25]
+  [v3s26 v2s26 v1s26 v0s26]
+  [v1s27]
+  [v4s28 v3s28 v0s28]
+  [v0s29]
+  [v1s30]
+  [v5s31 v4s31 v0s31]
+  [v7s32 v6s32 , v5s32 v4s32 , v2s32 v0s32]
+  [v2s33]
+  [v1s34]
+  [v1s35 v0s35]
+  [v4s36 v2s36 v0s36]
+  [v5s37 v4s37 , v2s37 v1s37 , v0s37]
+  [v2s38 v1s38 v0s38]
+  ~
+  [v2s40 v0s40]
+  [v3s41 v1s41 v0s41]
+  [v4s42 v3s42 v2s42 v0s42]
+  [v3s43]
+  [v4s44 v3s44]
+  [v2s45 v1s45]
+  [v5s46 v2s46 , v1s46 v0s46]
+  [v5s47 v4s47 v3s47 v2s47]
+  [v4s48 , v3s48 , v2s48 v0s48]
+  [v5s49 , v4s49 , v2s49 , v1s49]
+  [v3s50 v2s50]
+  [v4s51 v3s51 v2s51 v1s51 v0s51]
+  [v3s52]
+  [v0s53]
+  [v5s54 , v4s54 , v0s54]
+  [v4s55 , v1s55 v0s55]
+  [v5s56 v2s56 v0s56]
+  ~
+  [v3s58 v2s58]
+  [v4s59 v2s59 v1s59 , v0s59]
+  [v5s60 , v4s60]
+  [v4s61 , v2s61]
+  [v5s62 v1s62 v0s62]
+]
+
+"""
 
 wag :: AFuture
-wag = s0
-
-s0 :: AFuture
-s0 =
-  make (end s0a)
-    { earth: s s0a
-    , sounds
+wag =
+  make (63.0 * 2.5)
+    { earth: map (verbMe0) $ s $ map (changeVolume (const 0.3)) $ parse_ v0
+    , wind: map (verbMe1) $ s $ map (changeVolume (const 0.3)) $ parse_ v1
+    , preload: map wrap [ "reverb0", "reverb1" ]
+    , sounds: union sounds $ map wrap $ Object.fromFoldable
+        [ "reverb0" /\ "http://reverbjs.org/Library/AbernyteGrainSilo.m4a"
+        , "reverb1" /\ "http://reverbjs.org/Library/StMarysAbbeyReconstructionPhase3.m4a"
+        ]
     , title: "Rauhaa, vain rauhaa"
     }
-
-s0a' v t = { s: "v0s0", v: f, t } :|
-  [ { s: "v1s0", v: f, t }
-  , { s: "v2s0", v: f, t }
-  , { s: "v3s0", v: f, t }
-  ]
-  where
-  thresh = 0.3
-  f = \{ sampleTime } -> if sampleTime < thresh then v else calcSlope thresh v 1.0 0.0 sampleTime
-
-s0a = mkNotes 0.4
-  ( NEA.fromNonEmpty
-      ( s0a' 0.02 0.08
-          <> s0a' 0.05 0.12
-          <> s0a' 0.1 0.2
-          <> s0a' 0.15 0.3
-          <> s0a' 0.15 0.4
-          <> s0a' 0.1 0.3
-          <> s0a' 0.05 0.2
-          <> s0a' 0.05 0.08
-      )
-  )
-
-type P = { s :: String, v :: TimeIs' Unit -> Number, t :: Number }
 
 sounds = Object.fromFoldable $ map (\{ handle, slug } -> slug /\ BufferUrl ("https://media.graphcms.com/" <> handle)) files
 
 type FileInfo = { handle :: String, slug :: String }
-
-end :: NonEmptyArray (NoteInFlattenedTime (Note Unit)) -> Number
-end nea = (unwrap (NEA.head nea)).bigCycleDuration
-
-mkNotes :: Number -> NonEmptyArray P -> NonEmptyArray (NoteInFlattenedTime (Note Unit))
-mkNotes padding arr = map (\(NoteInFlattenedTime n) -> NoteInFlattenedTime (n { bigCycleDuration = dur, littleCycleDuration = dur })) wol
-  where
-  len = NEA.length arr
-  tfun i nt = get >>= \offset -> (put (offset + nt.t)) *> (pure $ mkNote nt.s nt.v offset i len 0.0)
-  wol = evalState (traverseWithIndex tfun arr) 0.0
-  dur = (unwrap (NEA.last wol)).bigStartsAt + padding
-
-mkNote :: String -> (TimeIs' Unit -> Number) -> Number -> Int -> Int -> Number -> NoteInFlattenedTime (Note Unit)
-mkNote sample volumeFoT startsAt i len dur =
-  NoteInFlattenedTime
-    { note: unwrap $ (changeVolume volumeFoT)
-        (Identity (noteFromSample (Sample $ sample)))
-    , bigStartsAt: startsAt
-    , littleStartsAt: startsAt
-    , currentCycle: 0
-    , positionInCycle: i
-    , elementsInCycle: len
-    , nCycles: 1
-    , duration: 2.0
-    , bigCycleDuration: dur
-    , littleCycleDuration: dur
-    , tag: nothing
-    }
 
 files :: Array FileInfo
 files =
