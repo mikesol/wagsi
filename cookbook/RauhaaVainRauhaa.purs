@@ -5,16 +5,17 @@ import Prelude
 import Control.Monad.State (evalState, get, put)
 import Data.Array.NonEmpty as NEA
 import Data.Array.NonEmpty.Internal (NonEmptyArray)
+import Data.Identity (Identity(..))
 import Data.Newtype (unwrap)
 import Data.NonEmpty ((:|))
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Tuple.Nested ((/\))
-import Data.Variant.Either (right)
 import Data.Variant.Maybe (nothing)
 import Foreign.Object as Object
 import WAGS.Lib.Tidal (AFuture)
-import WAGS.Lib.Tidal.Tidal (make, s)
-import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..), TimeIs')
+import WAGS.Lib.Tidal.Cycle (noteFromSample)
+import WAGS.Lib.Tidal.Tidal (changeVolume, make, s)
+import WAGS.Lib.Tidal.Types (BufferUrl(..), Note, NoteInFlattenedTime(..), Sample(..), TimeIs')
 import WAGS.Math (calcSlope)
 
 wag :: AFuture
@@ -70,13 +71,8 @@ mkNotes padding arr = map (\(NoteInFlattenedTime n) -> NoteInFlattenedTime (n { 
 mkNote :: String -> (TimeIs' Unit -> Number) -> Number -> Int -> Int -> Number -> NoteInFlattenedTime (Note Unit)
 mkNote sample volumeFoT startsAt i len dur =
   NoteInFlattenedTime
-    { note: Note
-        { sampleFoT: right (Sample $ sample)
-        , forward: true
-        , rateFoT: const 1.0
-        , bufferOffsetFoT: const 0.0
-        , volumeFoT: unwrap >>> volumeFoT
-        }
+    { note: unwrap $ (changeVolume volumeFoT)
+        (Identity (noteFromSample (Sample $ sample)))
     , bigStartsAt: startsAt
     , littleStartsAt: startsAt
     , currentCycle: 0
