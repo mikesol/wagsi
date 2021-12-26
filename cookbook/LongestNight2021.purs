@@ -2,16 +2,12 @@ module WAGSI.Cookbook.LongestNight2021 where
 
 import Prelude
 
-import WAGS.Create.Optionals (highpass, gain, lowpass, bandpass)
+import WAGS.Create.Optionals (bandpass, gain)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (addEffect, changeRate, make, parse_, s)
-import Math ((%))
-import WAGS.Lib.Tidal.Cycle (bd, cycleLength, hh, r)
-import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
-import WAGS.Lib.Tidal.Tidal (addEffect, onTag, changeVolume, i_, make, s)
-import WAGS.Math (calcSlope)
+import WAGS.Lib.Tidal.Tidal (addEffect, changeRate, changeVolume, make, onTag, parse_, s)
 -- palindromes anyone?
 -- what is this backwards?
 -- ah that's nice!

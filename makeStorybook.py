@@ -35,7 +35,7 @@ module WAGSI.Storybook where
 import Prelude
 
 import Control.Monad.State (evalState, get, put)
-import Data.Map as Map
+import Foreign.Object as Object
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Data.Set as Set
@@ -73,7 +73,7 @@ baseComponent =
 stories' :: forall m
    . MonadEffect m
   => MonadAff m
-  => Ref.Ref (Map.Map Sample {{ url :: BufferUrl, buffer :: ForwardBackwards }})
+  => Ref.Ref (Object.Object {{ url :: BufferUrl, buffer :: ForwardBackwards }})
   ->  Array (String /\ H.Component StoryQuery Unit Void m)
 stories' rf =   [ Tuple "" $ proxy baseComponent
 {tuples}
@@ -83,7 +83,7 @@ stories
   :: forall m
    . MonadEffect m
   => MonadAff m
-  => Ref.Ref (Map.Map Sample {{ url :: BufferUrl, buffer :: ForwardBackwards }})
+  => Ref.Ref (Object.Object {{ url :: BufferUrl, buffer :: ForwardBackwards }})
   -> Stories m
 stories rf = Object.fromFoldable (evalState traversed {{ tags: Set.empty, n: 0 }})
   where
@@ -97,7 +97,7 @@ stories rf = Object.fromFoldable (evalState traversed {{ tags: Set.empty, n: 0 }
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  bufCache <- H.liftEffect $ Ref.new Map.empty
+  bufCache <- H.liftEffect $ Ref.new Object.empty
   runStorybook {{ stories: stories bufCache, logo: Nothing }} body
 '''
 

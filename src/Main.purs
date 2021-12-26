@@ -4,10 +4,9 @@ import Prelude
 
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Promise (toAffE)
+import Foreign.Object as Object
 import Data.Either (Either(..), either)
 import Data.Foldable (for_)
-import Data.Map (Map)
-import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Data.Tuple (fst, snd)
@@ -35,7 +34,7 @@ import WAGS.Interpret (close, context, contextResume, contextState, makeFFIAudio
 import WAGS.Lib.Learn (Analysers, FullSceneBuilder(..))
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Engine (engine)
-import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, Sample, TidalRes)
+import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, TidalRes)
 import WAGS.Lib.Tidal.Util (doDownloads)
 import WAGS.Run (Run, run)
 import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
@@ -50,7 +49,7 @@ main :: String -> Effect Unit
 main exmpl =
   runHalogenAff do
     body <- awaitBody
-    bufCache <- H.liftEffect $ Ref.new Map.empty
+    bufCache <- H.liftEffect $ Ref.new Object.empty
     runUI (component exmpl bufCache Example.wag) unit body
 
 type StashInfo
@@ -69,7 +68,7 @@ type State
   , exampleWag :: FCT
   , tick :: Maybe Int
   , doingGraphRendering :: Boolean
-  , bufCache :: Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards })
+  , bufCache :: Ref.Ref (Object.Object { url :: BufferUrl, buffer :: ForwardBackwards })
   }
 
 data Action
@@ -81,7 +80,7 @@ data Action
   | Src (Maybe String)
   | StopAudio
 
-component :: forall query input output m. MonadEffect m => MonadAff m => String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> FCT -> H.Component query input output m
+component :: forall query input output m. MonadEffect m => MonadAff m => String -> Ref.Ref (Object.Object { url :: BufferUrl, buffer :: ForwardBackwards }) -> FCT -> H.Component query input output m
 component exmpl bufCache ewag =
   H.mkComponent
     { initialState: initialState exmpl bufCache ewag
@@ -93,7 +92,7 @@ component exmpl bufCache ewag =
         }
     }
 
-initialState :: forall input. String -> Ref.Ref (Map Sample { url :: BufferUrl, buffer :: ForwardBackwards }) -> FCT -> input -> State
+initialState :: forall input. String -> Ref.Ref (Object.Object { url :: BufferUrl, buffer :: ForwardBackwards }) -> FCT -> input -> State
 initialState exmpl bufCache ewag _ =
   { unsubscribe: pure unit
   , audioCtx: Nothing
