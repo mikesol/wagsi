@@ -26,7 +26,7 @@ seq00 = f 1 seq0
 seq11 = f 2 seq1
 seq22 = f 3 seq2
 
-napply f (h :| t) = f h t
+napply fn (h :| t) = fn h t
 
 infixr 5 napply as <^>
 

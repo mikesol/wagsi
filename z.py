@@ -1161,7 +1161,7 @@ A =   [ { "handle": "pGWoNQ9XQMiJnIqITbJ1"
     }
   ]
 import random
-NV = 2
+NV = 1
 Os = [{} for i in range(NV)]
 for x in A:
   if x["slug"][0] == "v":
@@ -1178,10 +1178,7 @@ def getS(i):
 
 for x in Os:
   print('***')
-  print('"""')
-  print('[')
   for yy in sorted([(getS(z[0]),z[1]) for z in x.items()], key=lambda z: z[0]):
     y = yy[1]
-    print('  ~' if len(y) == 0 else "  [" + " ".join(y) + "]")
-  print(']')
-  print('"""')
+    print('  []' if len(y) == 0 else "  [" + " , ".join(['nt {smp: "%s"}' % z for z in y]) + "] +>")
+  print('V.empty')

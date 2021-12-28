@@ -1,278 +1,486 @@
 module WAGSI.Cookbook.RauhaaVainRauhaa where
 
+import Data.Typelevel.Num hiding ((*), (+), (-), mod, (<), max, min)
 import Prelude
 
-import Data.Maybe (maybe)
-import Data.Newtype (wrap)
-import Data.Tuple.Nested ((/\))
-import Foreign.Object (lookup, union)
+import Control.Monad.State (evalState, get, put)
+import Data.Array ((!!))
+import Data.Array as Array
+import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Array.NonEmpty (fromArray)
+import Data.Foldable (fold)
+import Data.Foldable (foldl)
+import Data.FunctorWithIndex (mapWithIndex)
+import Data.Int (fromString)
+import Data.Lens (over, set)
+import Data.Lens.Iso.Newtype (unto)
+import Data.Lens.Record (prop)
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, maybe)
+import Data.Newtype (unwrap)
+import Data.Profunctor (lcmap)
+import Data.String as String
+import Data.String.CodeUnits (slice)
+import Data.Traversable (traverse)
+import Data.Tuple.Nested ((/\), type (/\))
+import Data.Variant.Either (right)
+import Data.Variant.Maybe (nothing)
+import Data.Vec (Vec, (+>))
+import Data.Vec as V
+import Foreign.Object (Object)
 import Foreign.Object as Object
-import WAGS.Create.Optionals (bandpass, convolver, highpass)
+import Math ((%))
+import Math as Math
+import Partial.Unsafe (unsafePartial)
+import Prim.Row (class Nub, class Union)
+import Record as Record
+import Type.Proxy (Proxy(..))
+import WAGS.Create.Optionals (bandpass, delay, gain, ref)
 import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Cycle (noteFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (addEffect, changeVolume, make, parse_, s)
-import WAGS.Lib.Tidal.Types (BufferUrl(..))
+import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..), FoT)
+import WAGS.Math (calcSlope)
 
-verbMe0 = addEffect
-  \{ buffers, silence } ->
-    fx $ goodbye $ convolver (maybe silence _.buffer.forward (lookup "reverb0" buffers)) $ highpass { freq: 1500.0, q: 5.0 } hello
+type Sections a = Vec D63 a
+type SubSections a = Vec D9 a
 
-verbMe1 = addEffect
-  \{ buffers, silence } ->
-    fx $ goodbye $ convolver (maybe silence _.buffer.forward (lookup "reverb1" buffers)) $ bandpass { freq: 500.0, q: 5.0 } hello
+sectionsToSubSections :: Sections ~> SubSections
+sectionsToSubSections = V.slice d0 d9
 
-v0 :: String
-v0 =
-  """
-[
-  [v2s0 , v1s0]
-  [v3s1 v2s1 , v0s1]
-  [v3s2 v0s2]
-  [v6s3 v0s3]
-  ~
-  [v1s5]
-  [v2s6 , v0s6]
-  [v3s7 v2s7]
-  [v6s8 v5s8 , v4s8 v2s8 v1s8 v0s8]
-  [v3s9 v1s9]
-  [v2s10 , v0s10]
-  [v2s11]
-  [v3s12 , v1s12 , v0s12]
-  [v1s13 v0s13]
-  ~
-  [v2s15 , v1s15]
-  [v3s16 v0s16]
-  [v1s17]
-  [v2s18 , v1s18 v0s18]
-  [v4s19 , v1s19 , v0s19]
-  [v1s20]
-  [v4s21 , v3s21 , v2s21 v0s21]
-  [v5s22 v3s22 , v2s22]
-  [v4s23 , v3s23 , v2s23 v0s23]
-  [v4s24 , v3s24 , v2s24]
-  [v3s25 v1s25]
-  ~
-  [v5s27 v4s27 v3s27 v2s27 v0s27]
-  [v2s28 , v1s28]
-  [v1s29]
-  [v3s30 , v2s30 v0s30]
-  [v3s31 v2s31 , v1s31]
-  [v3s32 v1s32]
-  [v7s33 v6s33 v5s33 v4s33 v3s33 v1s33 v0s33]
-  [v0s34]
-  [v7s35 v6s35 v5s35 v4s35 v3s35 v2s35]
-  [v5s36 v3s36 v1s36]
-  [v3s37]
-  [v3s38]
-  [v0s39]
-  [v1s40]
-  [v2s41]
-  [v1s42]
-  [v2s43 , v1s43 , v0s43]
-  [v2s44 , v1s44 v0s44]
-  [v4s45 v3s45 , v0s45]
-  [v4s46 v3s46]
-  [v1s47 , v0s47]
-  [v5s48 , v1s48]
-  [v3s49 v0s49]
-  [v5s50 , v4s50 v1s50 , v0s50]
-  [v5s51]
-  [v5s52 , v4s52 , v2s52 , v1s52 , v0s52]
-  [v4s53 v3s53 v2s53 v1s53]
-  [v3s54 , v2s54 v1s54]
-  [v3s55 , v2s55]
-  [v6s56 , v4s56 , v3s56 v1s56]
-  [v2s57 , v1s57 , v0s57]
-  [v6s58 v5s58 v4s58 v1s58 v0s58]
-  [v3s59]
-  [v3s60 v2s60 , v1s60 v0s60]
-  [v5s61 v3s61 v1s61 v0s61]
-  [v4s62 v3s62 v2s62]
-]
-"""
+type Full = (smp :: String, vol :: FoT Unit, st :: DurF, vc :: String -> Int)
 
-v1 :: String
-v1 =
-  """
-[
-  [v3s0 , v0s0]
-  [v4s1 , v1s1]
-  [v5s2 v4s2 v2s2 , v1s2]
-  [v5s3 v4s3 , v3s3 v2s3 , v1s3]
-  [v0s4]
-  [v0s5]
-  [v3s6 v1s6]
-  [v5s7 v4s7 v1s7 v0s7]
-  [v3s8]
-  [v2s9 v0s9]
-  [v3s10 , v1s10]
-  [v3s11 v1s11 v0s11]
-  [v4s12 v2s12]
-  [v3s13 , v2s13]
-  [v3s14 , v2s14 , v1s14 , v0s14]
-  [v3s15 v0s15]
-  [v4s16 , v2s16 , v1s16]
-  [v3s17 v2s17 v0s17]
-  [v5s18 v4s18 v3s18]
-  [v3s19 , v2s19]
-  [v4s20 v3s20 v2s20 v0s20]
-  [v1s21]
-  [v4s22 v1s22 , v0s22]
-  [v1s23]
-  [v1s24 v0s24]
-  [v2s25 v0s25]
-  [v3s26 v2s26 v1s26 v0s26]
-  [v1s27]
-  [v4s28 v3s28 v0s28]
-  [v0s29]
-  [v1s30]
-  [v5s31 v4s31 v0s31]
-  [v7s32 v6s32 , v5s32 v4s32 , v2s32 v0s32]
-  [v2s33]
-  [v1s34]
-  [v1s35 v0s35]
-  [v4s36 v2s36 v0s36]
-  [v5s37 v4s37 , v2s37 v1s37 , v0s37]
-  [v2s38 v1s38 v0s38]
-  ~
-  [v2s40 v0s40]
-  [v3s41 v1s41 v0s41]
-  [v4s42 v3s42 v2s42 v0s42]
-  [v3s43]
-  [v4s44 v3s44]
-  [v2s45 v1s45]
-  [v5s46 v2s46 , v1s46 v0s46]
-  [v5s47 v4s47 v3s47 v2s47]
-  [v4s48 , v3s48 , v2s48 v0s48]
-  [v5s49 , v4s49 , v2s49 , v1s49]
-  [v3s50 v2s50]
-  [v4s51 v3s51 v2s51 v1s51 v0s51]
-  [v3s52]
-  [v0s53]
-  [v5s54 , v4s54 , v0s54]
-  [v4s55 , v1s55 v0s55]
-  [v5s56 v2s56 v0s56]
-  ~
-  [v3s58 v2s58]
-  [v4s59 v2s59 v1s59 , v0s59]
-  [v5s60 , v4s60]
-  [v4s61 , v2s61]
-  [v5s62 v1s62 v0s62]
-]
+defaultSt :: DurF
+defaultSt = const 0.0
 
-"""
+attrVoice :: String -> Int
+attrVoice s
+  | isJust $ String.indexOf (String.Pattern ("tone")) s = 3
+  | isJust $ String.indexOf (String.Pattern ("licks1")) s = 4
+  | isJust $ String.indexOf (String.Pattern ("licks2")) s = 5
+  | Just ixv <- String.indexOf (String.Pattern ("v")) s
+  , Just ixs <- String.indexOf (String.Pattern ("s")) s
+  , Just ss <- slice (ixv + 1) ixs s
+  , Just asI <- fromString ss = asI `mod` 3
+  | otherwise = 0
+
+defaultVol :: FoT Unit
+defaultVol = const 0.3
+
+nt
+  :: forall inRec overfull
+   . Union inRec
+       Full
+       overfull
+  => Nub overfull
+       Full
+  => { | inRec }
+  -> { | Full }
+nt r = Record.merge r
+  { smp: "a"
+  , st: defaultSt
+  , vc: attrVoice
+  , vol: defaultVol
+  }
 
 wag :: AFuture
 wag =
-  make (63.0 * 2.5)
-    { earth: map (verbMe0) $ s $ map (changeVolume (const 0.3)) $ parse_ v0
-    , wind: map (verbMe1) $ s $ map (changeVolume (const 0.3)) $ parse_ v1
-    , preload: map wrap [ "reverb0", "reverb1" ]
-    , sounds: union sounds $ map wrap $ Object.fromFoldable
-        [ "reverb0" /\ "http://reverbjs.org/Library/AbernyteGrainSilo.m4a"
-        , "reverb1" /\ "http://reverbjs.org/Library/StMarysAbbeyReconstructionPhase3.m4a"
-        ]
-    , title: "Rauhaa, vain rauhaa"
+  make end
+    {
+      -- voice
+      earth: map (vocalEffects 0) $ s $ justNotes 0
+    , wind: map (vocalEffects 1) $ s $ justNotes 1
+    , fire: map (vocalEffects 2) $ s $ justNotes 2
+    -- cello
+    , lambert: s $ justNotes 3
+    , hendricks: s ""
+    , ross: s ""
+    -- other stuff
+    , sounds: sounds
+    , title: "rauhaa, vain rauhaa"
     }
 
-sounds = Object.fromFoldable $ map (\{ handle, slug } -> slug /\ BufferUrl ("https://media.graphcms.com/" <> handle)) files
+vocalEffects voice = addEffect
+  ( \{ clockTime } ->
+      let
+        cycleTime = clockTime % end
+        sectionStartsAt /\ sectionIndex = durationToIndex cycleTime
+        df /\ dur = unsafePartial fromJust $ V.toArray (V.zipWithE (/\) delays durations) !! sectionIndex
+      in
+        fx
+          ( goodbye $ gain 1.1
+              { mymix: gain 1.0
+                  { ipt: gain 1.0
+                      { bp0: gain 0.0 $ bandpass 1000.0 hello
+                      , bp1: gain 0.0 $ bandpass 1000.0 hello
+                      , rawIpt: gain 1.0 $ hello
+                      }
+                  , fback: gain 0.35
+                      { del:
+                          delay
+                            ( df
+                                { time: (cycleTime - sectionStartsAt)
+                                , duration: dur
+                                , voice
+                                }
+                            )
+                            { mymix: ref }
+                      }
+                  }
+              }
+          )
+  )
 
 type FileInfo = { handle :: String, slug :: String }
+
+sounds :: Object BufferUrl
+sounds = Object.fromFoldable $ map ((/\) <$> _.slug <*> BufferUrl <<< append "https://media.graphcms.com/" <<< _.handle) files
+
+fac :: Int -> Number
+fac i = fromMaybe end ((V.toArray cumulativeDurations) !! i)
+
+getDuration :: Int -> Number
+getDuration i = fromMaybe 2.0 ((V.toArray durations) !! i)
+
+cumulativeDurationsToIndices :: Map Number Int
+cumulativeDurationsToIndices = Map.fromFoldable $ mapWithIndex (flip (/\)) cumulativeDurations
+
+durationToIndex :: Number -> (Number /\ Int)
+durationToIndex =
+  maybe (0.0 /\ 0) (\{ key, value } -> key /\ value) <<< (flip Map.lookupLE cumulativeDurationsToIndices)
+
+cumulativeDurations = evalState
+  ( traverse
+      ( \d -> do
+          x <- get
+          put (x + d)
+          pure x
+      )
+      durations
+  )
+  0.0
+
+end = foldl (+) 0.0 durations :: Number
+len = V.length pitches :: Int
+
+justNotes :: Int -> NonEmptyArray (NoteInFlattenedTime (Note Unit))
+justNotes voice = unsafePartial fromJust $ fromArray $ fold $ notes voice
+
+notes :: Int -> SubSections (Array (NoteInFlattenedTime (Note Unit)))
+notes voice = mapWithIndex (map Array.catMaybes <<< map <<< nt2nift voice) pitches
+
+nt2nift :: Int -> Int -> { | Full } -> Maybe (NoteInFlattenedTime (Note Unit))
+nt2nift voice _ { smp, vc } | vc smp /= voice = Nothing
+nt2nift voice i { smp, st, vol } = Just
+  let
+    duration = getDuration i
+    startsAt = fac i + st { duration, voice }
+  in
+    NoteInFlattenedTime
+      { note: set
+          (unto Note <<< prop (Proxy :: _ "volumeFoT"))
+          vol
+          (noteFromSample (Sample smp))
+      {-
+      , volumeFoT: lcmap unwrap \{ normalizedSampleTime: sampleTime } -> 0.1 *
+          Math.sin (0.5 * Math.pi * if sampleTime < 0.5 then calcSlope 0.0 0.85 1.0 1.0 sampleTime else calcSlope 0.0 1.0 1.0 0.5 sampleTime)
+      }-}
+      , bigStartsAt: startsAt
+      , littleStartsAt: startsAt
+      , currentCycle: 0
+      , positionInCycle: i
+      , elementsInCycle: len
+      , nCycles: 1
+      , duration: duration
+      , bigCycleDuration: end
+      , littleCycleDuration: end
+      , tag: nothing
+      }
+
+long = 1.6
+short = 0.8
+lss t = long +> short +> short +> t
+ll t = long +> long +> t
+ssss t = short +> short +> short +> short +> t
+
+defaultDelay = 0.3 :: Number
+
+type CtrlF =
+  { time :: Number
+  , duration :: Number
+  , voice :: Int
+  }
+  -> Number
+
+type DurF =
+  { duration :: Number
+  , voice :: Int
+  }
+  -> Number
+
+delays :: SubSections CtrlF
+delays = sectionsToSubSections delaysFull
+
+delaysFull :: Sections CtrlF
+delaysFull = V.fill (const $ const defaultDelay)
+
+durations :: SubSections Number
+durations = sectionsToSubSections durationsFull
+
+durationsFull :: Sections Number
+durationsFull = -- V.fill (const 1.6) # mapWithIndex (\i v -> if i `mod` 4 `Array.elem` [0,3] then 1.6 else 0.8)
+
+  long
+    +> short
+    +> short
+    +> long
+    +> long
+    +> long
+    +> short
+    +> short
+    +> long
+    * 2.0
+        --
+        +> long
+        +> short
+        +> short
+        +> long
+        +> long
+        +> short
+        +> long
+        +> short
+        +> long
+    * 2.0
+        --
+        +> long
+        +> short
+        +> short
+        +> long
+        +> long
+        +> short
+        +> short
+        +> short
+        +> short
+        +> long
+        +> long
+        --
+        +> short
+        +> short
+        +> short
+        +> short
+        +> short
+        +> short
+        +> short
+        +> short
+        +> long
+        +> short
+        +> short
+        +> long
+    * 2.0
+        --
+        +> long
+        +> short
+        +> short
+        +> long
+        +> long
+        +> short
+        +> short
+        +> short
+        +> short
+        +> long
+        +> long
+        --
+        +> short
+        +> short
+        +> short
+        +> short
+        +> short
+        +> short
+        +> short
+        +> short
+        +> long
+        +> long
+        +> long
+    * 2.0 +> V.empty
+
+type Pitches = (Array { | Full })
+
+pitches :: SubSections Pitches
+pitches = sectionsToSubSections pitchesFull
+
+frac val { duration } = duration * val
+
+fastDown :: FoT Unit
+fastDown = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.4 $ calcSlope 0.0 1.0 0.5 0.4 sampleTime
+
+pitchesFull :: Sections Pitches
+pitchesFull =
+  ( [ nt { smp: "v3s0", vol: fastDown }, nt { smp: "v2s0", vol: fastDown }, nt { smp: "v1s0", vol: fastDown }, nt { smp: "v0s0", vol: fastDown }, nt { smp: "tones:8" } ]
+      +> [ nt { smp: "v4s1", st: frac 0.5 }, nt { smp: "v3s1", st: frac 0.5 }, nt { smp: "v2s1", st: frac 0.5 }, nt { smp: "v1s1" }, nt { smp: "v0s1" } ]
+      +> [ nt { smp: "v5s2" }, nt { smp: "v4s2" }, nt { smp: "v3s2" }, nt { smp: "v2s2" }, nt { smp: "v1s2" }, nt { smp: "v0s2" } ]
+
+      +> [ nt { smp: "v6s3" }, nt { smp: "v5s3" }, nt { smp: "v4s3" }, nt { smp: "v3s3" }, nt { smp: "v2s3" }, nt { smp: "v1s3" }, nt { smp: "v0s3" }, nt { smp: "tones:36" } ]
+      +> [ nt { smp: "v0s4" } ]
+
+      +> [ nt { smp: "v1s5" }, nt { smp: "v0s5" }, nt { smp: "tones:110" } ]
+      +> [ nt { smp: "v3s6" }, nt { smp: "v2s6" }, nt { smp: "v1s6" }, nt { smp: "v0s6" } ]
+      +> [ nt { smp: "v5s7" }, nt { smp: "v4s7" }, nt { smp: "v3s7" }, nt { smp: "v2s7" }, nt { smp: "v1s7" }, nt { smp: "v0s7" } ]
+
+      +> [ nt { smp: "v6s8" }, nt { smp: "v5s8" }, nt { smp: "v4s8" }, nt { smp: "v3s8" }, nt { smp: "v2s8" }, nt { smp: "v1s8" }, nt { smp: "v0s8" }, nt { smp: "tones:62", st: const 1.5 } ]
+      ----
+      +> [ nt { smp: "v3s9" }, nt { smp: "v2s9" }, nt { smp: "v1s9" }, nt { smp: "v0s9" } ]
+      +> [ nt { smp: "v3s10" }, nt { smp: "v2s10" }, nt { smp: "v1s10" }, nt { smp: "v0s10" } ]
+      +> [ nt { smp: "v3s11" }, nt { smp: "v2s11" }, nt { smp: "v1s11" }, nt { smp: "v0s11" } ]
+      +> [ nt { smp: "v4s12" }, nt { smp: "v3s12" }, nt { smp: "v2s12" }, nt { smp: "v1s12" }, nt { smp: "v0s12" } ]
+      +> [ nt { smp: "v3s13" }, nt { smp: "v2s13" }, nt { smp: "v1s13" }, nt { smp: "v0s13" } ]
+      +> [ nt { smp: "v3s14" }, nt { smp: "v2s14" }, nt { smp: "v1s14" }, nt { smp: "v0s14" } ]
+      +> [ nt { smp: "v3s15" }, nt { smp: "v2s15" }, nt { smp: "v1s15" }, nt { smp: "v0s15" } ]
+      +> [ nt { smp: "v4s16" }, nt { smp: "v3s16" }, nt { smp: "v2s16" }, nt { smp: "v1s16" }, nt { smp: "v0s16" } ]
+      +> [ nt { smp: "v3s17" }, nt { smp: "v2s17" }, nt { smp: "v1s17" }, nt { smp: "v0s17" } ]
+      +> [ nt { smp: "v5s18" }, nt { smp: "v4s18" }, nt { smp: "v3s18" }, nt { smp: "v2s18" }, nt { smp: "v1s18" }, nt { smp: "v0s18" } ]
+      +> [ nt { smp: "v4s19" }, nt { smp: "v3s19" }, nt { smp: "v2s19" }, nt { smp: "v1s19" }, nt { smp: "v0s19" } ]
+      +> [ nt { smp: "v4s20" }, nt { smp: "v3s20" }, nt { smp: "v2s20" }, nt { smp: "v1s20" }, nt { smp: "v0s20" } ]
+      +> [ nt { smp: "v4s21" }, nt { smp: "v3s21" }, nt { smp: "v2s21" }, nt { smp: "v1s21" }, nt { smp: "v0s21" } ]
+      +> [ nt { smp: "v5s22" }, nt { smp: "v4s22" }, nt { smp: "v3s22" }, nt { smp: "v2s22" }, nt { smp: "v1s22" }, nt { smp: "v0s22" } ]
+      +> [ nt { smp: "v4s23" }, nt { smp: "v3s23" }, nt { smp: "v2s23" }, nt { smp: "v1s23" }, nt { smp: "v0s23" } ]
+      +> [ nt { smp: "v4s24" }, nt { smp: "v3s24" }, nt { smp: "v2s24" }, nt { smp: "v1s24" }, nt { smp: "v0s24" } ]
+      +> [ nt { smp: "v3s25" }, nt { smp: "v2s25" }, nt { smp: "v1s25" }, nt { smp: "v0s25" } ]
+      +> [ nt { smp: "v3s26" }, nt { smp: "v2s26" }, nt { smp: "v1s26" }, nt { smp: "v0s26" } ]
+      +> [ nt { smp: "v5s27" }, nt { smp: "v4s27" }, nt { smp: "v3s27" }, nt { smp: "v2s27" }, nt { smp: "v1s27" }, nt { smp: "v0s27" } ]
+      +> [ nt { smp: "v4s28" }, nt { smp: "v3s28" }, nt { smp: "v2s28" }, nt { smp: "v1s28" }, nt { smp: "v0s28" } ]
+      +> [ nt { smp: "v1s29" }, nt { smp: "v0s29" } ]
+      +> [ nt { smp: "v3s30" }, nt { smp: "v2s30" }, nt { smp: "v1s30" }, nt { smp: "v0s30" } ]
+      +> [ nt { smp: "v5s31" }, nt { smp: "v4s31" }, nt { smp: "v3s31" }, nt { smp: "v2s31" }, nt { smp: "v1s31" }, nt { smp: "v0s31" } ]
+      +> [ nt { smp: "v7s32" }, nt { smp: "v6s32" }, nt { smp: "v5s32" }, nt { smp: "v4s32" }, nt { smp: "v3s32" }, nt { smp: "v2s32" }, nt { smp: "v1s32" }, nt { smp: "v0s32" } ]
+      +> [ nt { smp: "v7s33" }, nt { smp: "v6s33" }, nt { smp: "v5s33" }, nt { smp: "v4s33" }, nt { smp: "v3s33" }, nt { smp: "v2s33" }, nt { smp: "v1s33" }, nt { smp: "v0s33" } ]
+      +> [ nt { smp: "v1s34" }, nt { smp: "v0s34" } ]
+      +> [ nt { smp: "v7s35" }, nt { smp: "v6s35" }, nt { smp: "v5s35" }, nt { smp: "v4s35" }, nt { smp: "v3s35" }, nt { smp: "v2s35" }, nt { smp: "v1s35" }, nt { smp: "v0s35" } ]
+      +> [ nt { smp: "v5s36" }, nt { smp: "v4s36" }, nt { smp: "v3s36" }, nt { smp: "v2s36" }, nt { smp: "v1s36" }, nt { smp: "v0s36" } ]
+      +> [ nt { smp: "v5s37" }, nt { smp: "v4s37" }, nt { smp: "v3s37" }, nt { smp: "v2s37" }, nt { smp: "v1s37" }, nt { smp: "v0s37" } ]
+      +> [ nt { smp: "v3s38" }, nt { smp: "v2s38" }, nt { smp: "v1s38" }, nt { smp: "v0s38" } ]
+      +> [ nt { smp: "v0s39" } ]
+      +> [ nt { smp: "v2s40" }, nt { smp: "v1s40" }, nt { smp: "v0s40" } ]
+      +> [ nt { smp: "v3s41" }, nt { smp: "v2s41" }, nt { smp: "v1s41" }, nt { smp: "v0s41" } ]
+      +> [ nt { smp: "v4s42" }, nt { smp: "v3s42" }, nt { smp: "v2s42" }, nt { smp: "v1s42" }, nt { smp: "v0s42" } ]
+      +> [ nt { smp: "v3s43" }, nt { smp: "v2s43" }, nt { smp: "v1s43" }, nt { smp: "v0s43" } ]
+      +> [ nt { smp: "v4s44" }, nt { smp: "v3s44" }, nt { smp: "v2s44" }, nt { smp: "v1s44" }, nt { smp: "v0s44" } ]
+      +> [ nt { smp: "v4s45" }, nt { smp: "v3s45" }, nt { smp: "v2s45" }, nt { smp: "v1s45" }, nt { smp: "v0s45" } ]
+      +> [ nt { smp: "v5s46" }, nt { smp: "v4s46" }, nt { smp: "v3s46" }, nt { smp: "v2s46" }, nt { smp: "v1s46" }, nt { smp: "v0s46" } ]
+      +> [ nt { smp: "v5s47" }, nt { smp: "v4s47" }, nt { smp: "v3s47" }, nt { smp: "v2s47" }, nt { smp: "v1s47" }, nt { smp: "v0s47" } ]
+      +> [ nt { smp: "v5s48" }, nt { smp: "v4s48" }, nt { smp: "v3s48" }, nt { smp: "v2s48" }, nt { smp: "v1s48" }, nt { smp: "v0s48" } ]
+      +> [ nt { smp: "v5s49" }, nt { smp: "v4s49" }, nt { smp: "v3s49" }, nt { smp: "v2s49" }, nt { smp: "v1s49" }, nt { smp: "v0s49" } ]
+      +> [ nt { smp: "v5s50" }, nt { smp: "v4s50" }, nt { smp: "v3s50" }, nt { smp: "v2s50" }, nt { smp: "v1s50" }, nt { smp: "v0s50" } ]
+      +> [ nt { smp: "v5s51" }, nt { smp: "v4s51" }, nt { smp: "v3s51" }, nt { smp: "v2s51" }, nt { smp: "v1s51" }, nt { smp: "v0s51" } ]
+      +> [ nt { smp: "v5s52" }, nt { smp: "v4s52" }, nt { smp: "v3s52" }, nt { smp: "v2s52" }, nt { smp: "v1s52" }, nt { smp: "v0s52" } ]
+      +> [ nt { smp: "v4s53" }, nt { smp: "v3s53" }, nt { smp: "v2s53" }, nt { smp: "v1s53" }, nt { smp: "v0s53" } ]
+      +> [ nt { smp: "v5s54" }, nt { smp: "v4s54" }, nt { smp: "v3s54" }, nt { smp: "v2s54" }, nt { smp: "v1s54" }, nt { smp: "v0s54" } ]
+      +> [ nt { smp: "v4s55" }, nt { smp: "v3s55" }, nt { smp: "v2s55" }, nt { smp: "v1s55" }, nt { smp: "v0s55" } ]
+      +> [ nt { smp: "v6s56" }, nt { smp: "v5s56" }, nt { smp: "v4s56" }, nt { smp: "v3s56" }, nt { smp: "v2s56" }, nt { smp: "v1s56" }, nt { smp: "v0s56" } ]
+      +> [ nt { smp: "v2s57" }, nt { smp: "v1s57" }, nt { smp: "v0s57" } ]
+      +> [ nt { smp: "v6s58" }, nt { smp: "v5s58" }, nt { smp: "v4s58" }, nt { smp: "v3s58" }, nt { smp: "v2s58" }, nt { smp: "v1s58" }, nt { smp: "v0s58" } ]
+      +> [ nt { smp: "v4s59" }, nt { smp: "v3s59" }, nt { smp: "v2s59" }, nt { smp: "v1s59" }, nt { smp: "v0s59" } ]
+      +> [ nt { smp: "v5s60" }, nt { smp: "v4s60" }, nt { smp: "v3s60" }, nt { smp: "v2s60" }, nt { smp: "v1s60" }, nt { smp: "v0s60" } ]
+      +> [ nt { smp: "v5s61" }, nt { smp: "v4s61" }, nt { smp: "v3s61" }, nt { smp: "v2s61" }, nt { smp: "v1s61" }, nt { smp: "v0s61" } ]
+      +> [ nt { smp: "v5s62" }, nt { smp: "v4s62" }, nt { smp: "v3s62" }, nt { smp: "v2s62" }, nt { smp: "v1s62" }, nt { smp: "v0s62" } ]
+      +> V.empty
+  )
 
 files :: Array FileInfo
 files =
   [ { handle: "pGWoNQ9XQMiJnIqITbJ1"
-    , slug: "tones:110"
+    , slug: "tones:110" -- C#5
     }
   , { handle: "e1hCS6rQGSpAYyccEbns"
-    , slug: "tones:114"
+    , slug: "tones:114" -- C#5
     }
   , { handle: "o8cDVgvmQ0mK7ArFIOms"
-    , slug: "tones:62"
+    , slug: "tones:62" -- C#4
     }
   , { handle: "lOkYOEeQxaeQ7OqUMPW1"
-    , slug: "tones:56"
+    , slug: "tones:56" -- C#4
     }
   , { handle: "YxTSDMIJQ2vPJx8C3bmf"
-    , slug: "tones:90"
+    , slug: "tones:90" -- G#4
     }
   , { handle: "9Fyj5aYTLSe2K06C09Z8"
-    , slug: "tones:72"
+    , slug: "tones:72" -- E4
     }
   , { handle: "cT9jlwR5S2OcWhGjLeVi"
-    , slug: "tones:118"
+    , slug: "tones:118" -- C#5
     }
   , { handle: "KkHYZDBeQKFKLLXYtyrl"
-    , slug: "tones:124"
+    , slug: "tones:124" -- F#5
     }
   , { handle: "pjg2F2GjSAyOZh6zYJNy"
-    , slug: "tones:132"
+    , slug: "tones:132" -- F#5
     }
   , { handle: "M5ydud6ORniM8hujEjXq"
-    , slug: "tones:106"
+    , slug: "tones:106" -- C#5
     }
   , { handle: "DJMgNB8ThSQz22ccLs99"
-    , slug: "tones:128"
+    , slug: "tones:128" -- F#5
     }
   , { handle: "U576RnDESWucO9ULiAM6"
-    , slug: "tones:36"
+    , slug: "tones:36" -- A3
     }
   , { handle: "bmbgNXO7RBaOp8e1OTsF"
-    , slug: "tones:98"
+    , slug: "tones:98" -- G#4
     }
   , { handle: "VK6DdamSWSlQ6v7h4u4K"
-    , slug: "tones:48"
+    , slug: "tones:48" -- B3
     }
   , { handle: "Rts4xwYRD2e2DkE99Jz8"
-    , slug: "tones:102"
+    , slug: "tones:102" -- C#5
     }
   , { handle: "dESoXHaZQOm0X0H5LM06"
-    , slug: "tones:16"
+    , slug: "tones:16" -- D3
     }
   , { handle: "JyhN1WEKRpWejWHC9H4Q"
-    , slug: "tones:20"
+    , slug: "tones:20" -- D3
     }
   , { handle: "N0va87XQHqs8UKUqhcpd"
-    , slug: "tones:68"
+    , slug: "tones:68" -- E4
     }
   , { handle: "ogSw7MeQFihi3bsMZfaV"
-    , slug: "tones:82"
+    , slug: "tones:82" -- G#4
     }
   , { handle: "LM9nmInRV2YWewqsXjSg"
-    , slug: "tones:44"
+    , slug: "tones:44" -- B3
     }
   , { handle: "v42KQBNkQ263nZdnSqKx"
-    , slug: "tones:8"
+    , slug: "tones:8" -- D2
     }
   , { handle: "1NoCqOpQJiecyU53HzFQ"
-    , slug: "tones:76"
+    , slug: "tones:76" -- E4
     }
   , { handle: "E3p9tOMTQ96BriLkaZ0U"
-    , slug: "tones:86"
+    , slug: "tones:86" -- G#4
     }
   , { handle: "2pIP3ARtS12USId6omC8"
-    , slug: "tones:24"
+    , slug: "tones:24" -- D3
     }
   , { handle: "lXIVzsatRci3RfV80iUy"
-    , slug: "tones:94"
+    , slug: "tones:94" -- G#4
     }
   , { handle: "NZv14uWcSUukpbTh9HKN"
-    , slug: "tones:52"
+    , slug: "tones:52" -- C#4
     }
   , { handle: "epvCTxeyQ42sAohMczBA"
-    , slug: "tones:40"
+    , slug: "tones:40" -- B3
     }
   , { handle: "j7FeN5ZARGGo0WVzQa5A"
-    , slug: "tones:12"
+    , slug: "tones:12" -- D2
     }
   , { handle: "gzpF8mRRQiGI4PPObiNf"
-    , slug: "tones:28"
+    , slug: "tones:28" -- A3
     }
   , { handle: "VVDCojBaRmabsqW6m7Yp"
-    , slug: "tones:32"
+    , slug: "tones:32" -- A3
     }
   , { handle: "0it4I8HRkuR27U9az53c"
-    , slug: "tones:4"
+    , slug: "tones:4" -- D2
     }
   , { handle: "QcsBV7b0S4eDXxBXdT24"
     , slug: "licks2:44"
