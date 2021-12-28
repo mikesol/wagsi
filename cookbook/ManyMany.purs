@@ -14,8 +14,5 @@ wag =
     , lambert: s $ map (changeVolume (const 0.3)) $ parse_ "notes:0 notes:1"
     , hendricks: s $ map (changeVolume (const 0.3)) $ parse_ "~ [notes:10 notes:11]"
     , ross: s $ map (changeVolume (const 0.3)) $ parse_ "~ psr:3 ~"
-    , peter: s $ map (changeVolume (const 0.3)) $ parse_ "~ [~ glitch:4]"
-    , paul: s $ map (changeVolume (const 0.3)) $ parse_ "hh ~ ~ hh"
-    , mary: s $ map (changeVolume (const 0.3)) $ parse_ "~ sn ~ ~"
     , title: "many many many"
     }
