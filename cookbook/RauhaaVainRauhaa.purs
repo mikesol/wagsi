@@ -11,9 +11,10 @@ import Data.Array.NonEmpty (fromArray)
 import Data.Array.NonEmpty as NEA
 import Data.Foldable (fold)
 import Data.Foldable (foldl)
+import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
-import Data.Int (fromString)
-import Data.Lens (over, set)
+import Data.Int (fromString, toNumber)
+import Data.Lens (over, set, view)
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.Map (Map)
@@ -32,7 +33,7 @@ import Data.Variant.Either (right)
 import Data.Variant.Maybe (nothing)
 import Data.Vec (Vec, (+>))
 import Data.Vec as V
-import Foreign.Object (Object)
+import Foreign.Object (Object, lookup)
 import Foreign.Object as Object
 import Math ((%))
 import Math as Math
@@ -40,7 +41,7 @@ import Partial.Unsafe (unsafePartial)
 import Prim.Row (class Nub, class Union)
 import Record as Record
 import Type.Proxy (Proxy(..))
-import WAGS.Create.Optionals (bandpass, delay, gain, pan, ref)
+import WAGS.Create.Optionals (bandpass, convolver, delay, gain, pan, ref)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal (AFuture)
@@ -48,14 +49,14 @@ import WAGS.Lib.Tidal.Cycle (noteFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (clockTime, intentionalSilenceForInternalUseOnly__Sample)
 import WAGS.Lib.Tidal.Tidal (addEffect, changeVolume, make, parse_, s)
-import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..), FoT)
+import WAGS.Lib.Tidal.Types (BufferUrl(..), FoT, Note(..), NoteInFlattenedTime(..), Sample(..))
 import WAGS.Math (calcSlope)
 
 type Sections a = Vec D63 a
-type SubSections a = Vec D9 a
+type SubSections a = Vec D63 a
 
 sectionsToSubSections :: Sections ~> SubSections
-sectionsToSubSections = V.slice d0 d9
+sectionsToSubSections = V.slice d0 d63
 
 type Full = (smp :: String, vol :: FoT Unit, st :: DurF, vc :: String -> Int)
 
@@ -75,6 +76,10 @@ attrVoice s
 
 defaultVol :: FoT Unit
 defaultVol = const 0.3
+
+verbMe0 = addEffect
+  \{ buffers, silence } ->
+    fx $ goodbye $ convolver (maybe silence _.buffer.forward (lookup "reverb0" buffers)) hello
 
 nt
   :: forall inRec overfull
@@ -102,8 +107,12 @@ wag =
     , fire: map (vocalEffects 2) $ s $ justNotes 2
     -- cello
     , lambert: s $ justNotes 3
-    , hendricks: s $ justNotes 4
-    , ross: s $ justNotes 5
+    , hendricks: map verbMe0 $ s $
+        ( NEA.sortBy
+            (compare `on` (view (unto NoteInFlattenedTime <<< prop (Proxy :: _ "littleStartsAt"))))
+            (justNotes 4 <> justNotes 5)
+        )
+    , ross: s $ ""
     -- other stuff
     , sounds: sounds
     , title: "rauhaa, vain rauhaa"
@@ -149,7 +158,7 @@ vocalEffects voice = addEffect
 type FileInfo = { handle :: String, slug :: String }
 
 sounds :: Object BufferUrl
-sounds = Object.fromFoldable $ map ((/\) <$> _.slug <*> BufferUrl <<< append "https://media.graphcms.com/" <<< _.handle) files
+sounds = Object.fromFoldable $ ((map ((/\) <$> _.slug <*> BufferUrl <<< append "https://media.graphcms.com/" <<< _.handle) files) <> ((map <<< map) BufferUrl ["reverb0" /\ "https://klank-share.s3-eu-west-1.amazonaws.com/in-a-sentimental-mood/Samples/Impulses/matrix-reverb3.wav"]))
 
 fac :: Int -> Number
 fac i = fromMaybe end ((V.toArray cumulativeDurations) !! i)
@@ -251,6 +260,9 @@ delay1VolF = prop (Proxy :: _ "delay1VolF")
 delay0VolF = prop (Proxy :: _ "delay0VolF")
 panF = prop (Proxy :: _ "panF")
 
+pmod :: forall r. Number -> Number -> { voice :: Int | r } -> Number
+pmod mm aa { voice } = (toNumber voice * mm + aa) % 2.0 - 1.0
+
 controlFsFull :: Sections ControlFs
 controlFsFull = V.modifyAt d0 (set delay0VolF (const 0.7))
   $ V.modifyAt d0 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
@@ -273,7 +285,7 @@ controlFsFull = V.modifyAt d0 (set delay0VolF (const 0.7))
   $ V.modifyAt d5 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
   -- lo
   $ V.modifyAt d6 (set delay1VolF (const 0.4))
-  $ V.modifyAt d5 (set delay0VolF (const 0.4))
+  $ V.modifyAt d6 (set delay0VolF (const 0.4))
   $ V.modifyAt d6 (set panF (\{ voice } -> if voice == 0 then (-0.2) else if voice == 1 then 0.6 else (-0.8)))
   $ V.modifyAt d6 (set delay0VolF (const 0.4))
   -- nyt
@@ -282,6 +294,160 @@ controlFsFull = V.modifyAt d0 (set delay0VolF (const 0.7))
   -- soi
   $ V.modifyAt d8 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
   $ V.modifyAt d8 (set delay0VolF (const 0.9))
+  -- lap
+  $ V.modifyAt d9 (set delay0VolF (const 0.7))
+  $ V.modifyAt d9 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
+  -- sel
+  $ V.modifyAt d10 (set panF (\{ voice } -> if voice == 0 then (-0.2) else if voice == 1 then 0.6 else (-0.8)))
+  $ V.modifyAt d10 (set delay0VolF (const 0.4))
+  -- le
+  $ V.modifyAt d11 (set delay1VolF (\{ voice } -> if voice == 0 then 0.6 else if voice == 1 then 0.55 else 0.4))
+  $ V.modifyAt d11 (set delay0VolF (const 0.9))
+  $ V.modifyAt d11 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- rau
+  $ V.modifyAt d12 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d12 (set delay0VolF (const 0.9))
+  -- haa
+  $ V.modifyAt d13 (set delay1VolF (const 0.8))
+  $ V.modifyAt d13 (set panF (\{ time, duration } -> calcSlope 0.0 (-1.0) duration 1.0 time))
+  -- ne 
+  $ V.modifyAt d14 (set delay1VolF (const 0.8))
+  $ V.modifyAt d14 (set delay0VolF (const 0.0))
+  $ V.modifyAt d14 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
+  -- rau
+  $ V.modifyAt d15 (set delay1VolF (const 0.4))
+  $ V.modifyAt d15 (set delay0VolF (const 0.4))
+  $ V.modifyAt d15 (set panF (\{ voice } -> if voice == 0 then (-0.2) else if voice == 1 then 0.6 else (-0.8)))
+  $ V.modifyAt d15 (set delay0VolF (const 0.4))
+  -- haa
+  $ V.modifyAt d16 (set delay0VolF (const 0.6))
+  $ V.modifyAt d16 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- soi
+  $ V.modifyAt d17 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d17 (set delay0VolF (const 0.9))
+  -- en
+  $ V.modifyAt d18 (set delay0VolF (const 0.7))
+  $ V.modifyAt d18 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
+  -- ke
+  $ V.modifyAt d19 (set panF (\{ voice } -> if voice == 0 then (-0.2) else if voice == 1 then 0.6 else (-0.8)))
+  $ V.modifyAt d19 (set delay0VolF (const 0.4))
+  -- lin
+  $ V.modifyAt d20 (set delay1VolF (\{ voice } -> if voice == 0 then 0.6 else if voice == 1 then 0.55 else 0.4))
+  $ V.modifyAt d20 (set delay0VolF (const 0.9))
+  $ V.modifyAt d20 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- lau
+  $ V.modifyAt d21 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d21 (set delay0VolF (const 0.9))
+  -- lu
+  $ V.modifyAt d22 (set delay1VolF (const 0.8))
+  $ V.modifyAt d22 (set panF (\{ time, duration } -> calcSlope 0.0 (-1.0) duration 1.0 time))
+  -- rau 
+  $ V.modifyAt d23 (set delay1VolF (const 0.8))
+  $ V.modifyAt d23 (set delay0VolF (const 0.0))
+  $ V.modifyAt d23 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
+  -- ha
+  $ V.modifyAt d24 (set delay1VolF (const 0.4))
+  $ V.modifyAt d24 (set delay0VolF (const 0.4))
+  $ V.modifyAt d24 (set panF (\{ voice } -> if voice == 0 then (-0.2) else if voice == 1 then 0.6 else (-0.8)))
+  $ V.modifyAt d24 (set delay0VolF (const 0.4))
+  -- rau
+  $ V.modifyAt d25 (set delay0VolF (const 0.6))
+  $ V.modifyAt d25 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- ha
+  $ V.modifyAt d26 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d26 (set delay0VolF (const 0.9))
+  -- tois
+  $ V.modifyAt d27 (set delay0VolF (const 0.6))
+  $ V.modifyAt d27 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- taa
+  $ V.modifyAt d28 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d28 (set delay0VolF (const 0.9))
+  -- Sei
+  $ V.modifyAt d29 (set panF (pmod 3.0 1.5))
+  -- men
+  $ V.modifyAt d30 (set panF (pmod 4.1 1.6))
+  -- yl
+  $ V.modifyAt d31 (set panF (pmod 5.2 1.7))
+  -- lä
+  $ V.modifyAt d32 (set panF (pmod 6.3 1.8))
+  -- jou
+  $ V.modifyAt d33 (set panF (pmod 7.4 2.1))
+  -- lun
+  $ V.modifyAt d34 (set panF (pmod 8.5 1.9))
+  -- täh
+  $ V.modifyAt d35 (set panF (pmod 9.0 2.1))
+  -- ti
+  $ V.modifyAt d36 (set panF (pmod 10.1 2.3))
+  -- val
+  $ V.modifyAt d37 (set panF (pmod 11.3 2.4))
+  -- ke
+  $ V.modifyAt d38 (set panF (pmod 12.5 2.6))
+  -- ut
+  $ V.modifyAt d39 (set panF (pmod 13.6 2.8))
+  -- taan
+  $ V.modifyAt d40 (set panF (pmod 14.7 1.8))
+  --
+  -- Kirk
+  $ V.modifyAt d41 (set delay0VolF (const 0.7))
+  $ V.modifyAt d41 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
+  -- kaa
+  $ V.modifyAt d42 (set panF (\{ voice } -> if voice == 0 then (-0.2) else if voice == 1 then 0.6 else (-0.8)))
+  $ V.modifyAt d42 (set delay0VolF (const 0.4))
+  -- na 
+  $ V.modifyAt d43 (set delay1VolF (\{ voice } -> if voice == 0 then 0.6 else if voice == 1 then 0.55 else 0.4))
+  $ V.modifyAt d43 (set delay0VolF (const 0.9))
+  $ V.modifyAt d43 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- sil
+  $ V.modifyAt d44 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d44 (set delay0VolF (const 0.9))
+  -- miin 
+  $ V.modifyAt d45 (set delay1VolF (const 0.8))
+  $ V.modifyAt d45 (set panF (\{ time, duration } -> calcSlope 0.0 (-1.0) duration 1.0 time))
+  -- lap 
+  $ V.modifyAt d46 (set delay1VolF (const 0.8))
+  $ V.modifyAt d46 (set delay0VolF (const 0.0))
+  $ V.modifyAt d46 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
+  -- so
+  $ V.modifyAt d47 (set delay1VolF (const 0.4))
+  $ V.modifyAt d47 (set delay0VolF (const 0.4))
+  $ V.modifyAt d47 (set panF (\{ voice } -> if voice == 0 then (-0.2) else if voice == 1 then 0.6 else (-0.8)))
+  $ V.modifyAt d47 (set delay0VolF (const 0.4))
+  -- sen 
+  $ V.modifyAt d48 (set delay0VolF (const 0.6))
+  $ V.modifyAt d48 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- nyt 
+  $ V.modifyAt d49 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d49 (set delay0VolF (const 0.9))
+  -- lois
+  $ V.modifyAt d50 (set delay0VolF (const 0.6))
+  $ V.modifyAt d50 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- taa
+  $ V.modifyAt d51 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d51 (set delay0VolF (const 0.9))
+  -- Maa
+  $ V.modifyAt d52 (set panF (pmod 3.0 1.5))
+  -- ri
+  $ V.modifyAt d53 (set panF (pmod 4.1 1.6))
+  -- ai
+  $ V.modifyAt d54 (set panF (pmod 5.2 1.7))
+  -- nen 
+  $ V.modifyAt d55 (set panF (pmod 6.3 1.8))
+  -- tuu
+  $ V.modifyAt d56 (set panF (pmod 7.4 2.1))
+  -- tii 
+  $ V.modifyAt d57 (set panF (pmod 8.5 1.9))
+  -- sei
+  $ V.modifyAt d58 (set panF (pmod 9.0 2.1))
+  -- men 
+  $ V.modifyAt d59 (set panF (pmod 10.1 2.3))
+  -- pie
+  $ V.modifyAt d60 (set panF (pmod 11.3 2.4))
+  -- nois
+  $ V.modifyAt d61 (set panF (pmod 12.5 2.6))
+  -- taan
+  $ V.modifyAt d62 (set panF (pmod 14.7 1.8))
+  --
+
   $ V.fill
       ( const
           { delay1VolF: const 0.0
@@ -315,67 +481,139 @@ durationsFull = -- V.fill (const 1.6) # mapWithIndex (\i v -> if i `mod` 4 `Arra
     -- soi
     +> 6.0
     --
+    -- lap
+    +> 2.3
+    -- sel
+    +> 0.9
+    -- le
+    +> 0.9
+    -- rau
+    +> 3.0
+    -- ha
+    +> 2.7
+    -- ne
+    +> 0.8
+    -- rau
+    +> 1.6
+    -- ha
+    +> 0.9
+    -- soi
+    +> 8.0
+    --
+    -- En
     +> long
+    -- kel
     +> short
+    -- in
     +> short
+    -- lau
     +> long
+    -- lu
     +> long
+    -- rau
     +> short
-    +> long
+    -- haa,
     +> short
-    +> long
-    * 2.0
-        --
+    -- rau
+    +> short
+    -- haa
+    +> short
+    + 0.3
+        -- tois
         +> long
-        +> short
-        +> short
+        -- taa
         +> long
+    + 1.0
+        -- Sei
+        +> short
+    + 0.5
+        -- men
+        +> short
+    + 0.4
+        -- yl
+        +> short
+    + 0.3
+        -- lä 
+        +> short
+    + 0.2
+        -- jou
+        +> short
+        -- lun 
+        +> short
+        -- täh
+        +> short
+        -- ti 
+        +> short
+    + 0.4
+        -- val
         +> long
-        +> short
-        +> short
-        +> short
-        +> short
+        -- ke
         +> long
+        -- ut
+        +> 0.3
+        -- taan
+        +> 6.2
+        -- Kirk
         +> long
-        --
+        -- kaa
         +> short
+    + 0.4
+        -- na
         +> short
-        +> short
-        +> short
-        +> short
-        +> short
-        +> short
-        +> short
+        -- sil
         +> long
-        +> short
-        +> short
+    - 0.3
+        -- miin
         +> long
-    * 2.0
-        --
+        -- lap
+        +> short
+    + 0.4
+        -- so
+        +> short
+    + 0.2
+        -- sen 
+        +> short
+        -- nyt 
+        +> short
+    - 0.2
+        -- lois
+        +> 3.2
+        -- taa
+        +> 5.0
+        -- Maa
+        +> short
+    + 2.0
+        -- ri
+        +> short
+    + 0.8
+        -- ai
+        +> short
+    + 0.3
+        -- nen
+        +> short
+    + 0.1
+        -- tuu
+        +> short
+    + 0.1
+        -- tii 
+        +> short
+    + 0.2
+        -- sei
+        +> short
+    + 0.4
+        -- men 
+        +> short
+    + 0.6
+        -- pie
         +> long
-        +> short
-        +> short
+    + 1.0
+        -- nois
         +> long
+    + 2.0
+        -- taan
         +> long
-        +> short
-        +> short
-        +> short
-        +> short
-        +> long
-        +> long
-        --
-        +> short
-        +> short
-        +> short
-        +> short
-        +> short
-        +> short
-        +> short
-        +> short
-        +> long
-        +> long
-        +> long
-    * 2.0 +> V.empty
+    + 7.0
+        +> V.empty
 
 type Pitches = (Array { | Full })
 
@@ -445,59 +683,138 @@ pitchesFull =
       +> [ nt { smp: "v5s7" }, nt { smp: "v4s7" }, nt { smp: "v3s7" }, nt { smp: "v2s7" }, nt { smp: "v1s7" }, nt { smp: "v0s7" }, nt { smp: "tones:62", st: const 1.5 } ]
       -- soi
       +> [ nt { smp: "v6s8" }, nt { smp: "v5s8" }, nt { smp: "v4s8" }, nt { smp: "v3s8" }, nt { smp: "v2s8" }, nt { smp: "v1s8" }, nt { smp: "v0s8" }, nt { smp: "licks1:108" } ]
-      +> [ nt { smp: "v3s9" }, nt { smp: "v2s9" }, nt { smp: "v1s9" }, nt { smp: "v0s9" } ]
+      --
+      -- Lap
+      +> [ nt { smp: "v3s9" }, nt { smp: "v2s9" }, nt { smp: "v1s9" }, nt { smp: "v0s9" }, nt { smp: "tones:128", st: const 0.5 } ]
+      -- sel
       +> [ nt { smp: "v3s10" }, nt { smp: "v2s10" }, nt { smp: "v1s10" }, nt { smp: "v0s10" } ]
-      +> [ nt { smp: "v3s11" }, nt { smp: "v2s11" }, nt { smp: "v1s11" }, nt { smp: "v0s11" } ]
-      +> [ nt { smp: "v4s12" }, nt { smp: "v3s12" }, nt { smp: "v2s12" }, nt { smp: "v1s12" }, nt { smp: "v0s12" } ]
+      -- le 
+      +> [ nt { smp: "v3s11" }, nt { smp: "v2s11" }, nt { smp: "v1s11" }, nt { smp: "v0s11" }, nt { smp: "tones:36" } ]
+      -- rau
+      +>
+        [ nt { smp: "v4s12" }
+        , nt { smp: "v3s12" }
+        , nt { smp: "v2s12" }
+        , nt { smp: "v1s12" }
+        , nt { smp: "v0s12" }
+        , nt { smp: "tones:106" }
+        ]
+      -- haa,
       +> [ nt { smp: "v3s13" }, nt { smp: "v2s13" }, nt { smp: "v1s13" }, nt { smp: "v0s13" } ]
+      -- ne
       +> [ nt { smp: "v3s14" }, nt { smp: "v2s14" }, nt { smp: "v1s14" }, nt { smp: "v0s14" } ]
-      +> [ nt { smp: "v3s15" }, nt { smp: "v2s15" }, nt { smp: "v1s15" }, nt { smp: "v0s15" } ]
+      --  rau
+      +>
+        [ nt { smp: "v3s15" }
+        , nt { smp: "v2s15" }
+        , nt { smp: "v1s15" }
+        , nt { smp: "v0s15" }
+        , nt { smp: "tones:72" }
+        , nt { smp: "tones:90", st: const 0.8 }
+        ]
+      -- haa 
       +> [ nt { smp: "v4s16" }, nt { smp: "v3s16" }, nt { smp: "v2s16" }, nt { smp: "v1s16" }, nt { smp: "v0s16" } ]
-      +> [ nt { smp: "v3s17" }, nt { smp: "v2s17" }, nt { smp: "v1s17" }, nt { smp: "v0s17" } ]
+      -- soi
+      +> [ nt { smp: "v3s17" }, nt { smp: "v2s17" }, nt { smp: "v1s17" }, nt { smp: "v0s17" }, nt { smp: "licks2:44"} ]
+      -- 
+      -- En
       +> [ nt { smp: "v5s18" }, nt { smp: "v4s18" }, nt { smp: "v3s18" }, nt { smp: "v2s18" }, nt { smp: "v1s18" }, nt { smp: "v0s18" } ]
+      -- ke
       +> [ nt { smp: "v4s19" }, nt { smp: "v3s19" }, nt { smp: "v2s19" }, nt { smp: "v1s19" }, nt { smp: "v0s19" } ]
+      -- lin
       +> [ nt { smp: "v4s20" }, nt { smp: "v3s20" }, nt { smp: "v2s20" }, nt { smp: "v1s20" }, nt { smp: "v0s20" } ]
+      -- lau
       +> [ nt { smp: "v4s21" }, nt { smp: "v3s21" }, nt { smp: "v2s21" }, nt { smp: "v1s21" }, nt { smp: "v0s21" } ]
+      -- lu
       +> [ nt { smp: "v5s22" }, nt { smp: "v4s22" }, nt { smp: "v3s22" }, nt { smp: "v2s22" }, nt { smp: "v1s22" }, nt { smp: "v0s22" } ]
-      +> [ nt { smp: "v4s23" }, nt { smp: "v3s23" }, nt { smp: "v2s23" }, nt { smp: "v1s23" }, nt { smp: "v0s23" } ]
+      -- rau
+      +>
+        [ nt { smp: "v4s23" }
+        , nt { smp: "v3s23" }
+        , nt { smp: "v2s23" }
+        , nt { smp: "v1s23" }
+        , nt { smp: "v0s23" }
+        ]
+      -- haa, 
       +> [ nt { smp: "v4s24" }, nt { smp: "v3s24" }, nt { smp: "v2s24" }, nt { smp: "v1s24" }, nt { smp: "v0s24" } ]
+      -- rau
       +> [ nt { smp: "v3s25" }, nt { smp: "v2s25" }, nt { smp: "v1s25" }, nt { smp: "v0s25" } ]
+      -- haa 
       +> [ nt { smp: "v3s26" }, nt { smp: "v2s26" }, nt { smp: "v1s26" }, nt { smp: "v0s26" } ]
+      -- tois
       +> [ nt { smp: "v5s27" }, nt { smp: "v4s27" }, nt { smp: "v3s27" }, nt { smp: "v2s27" }, nt { smp: "v1s27" }, nt { smp: "v0s27" } ]
+      -- taa
       +> [ nt { smp: "v4s28" }, nt { smp: "v3s28" }, nt { smp: "v2s28" }, nt { smp: "v1s28" }, nt { smp: "v0s28" } ]
+      -- 
+      -- Sei
       +> [ nt { smp: "v1s29" }, nt { smp: "v0s29" } ]
+      -- men 
       +> [ nt { smp: "v3s30" }, nt { smp: "v2s30" }, nt { smp: "v1s30" }, nt { smp: "v0s30" } ]
+      -- yl
       +> [ nt { smp: "v5s31" }, nt { smp: "v4s31" }, nt { smp: "v3s31" }, nt { smp: "v2s31" }, nt { smp: "v1s31" }, nt { smp: "v0s31" } ]
+      -- lä 
       +> [ nt { smp: "v7s32" }, nt { smp: "v6s32" }, nt { smp: "v5s32" }, nt { smp: "v4s32" }, nt { smp: "v3s32" }, nt { smp: "v2s32" }, nt { smp: "v1s32" }, nt { smp: "v0s32" } ]
+      -- jou
       +> [ nt { smp: "v7s33" }, nt { smp: "v6s33" }, nt { smp: "v5s33" }, nt { smp: "v4s33" }, nt { smp: "v3s33" }, nt { smp: "v2s33" }, nt { smp: "v1s33" }, nt { smp: "v0s33" } ]
+      -- lun 
       +> [ nt { smp: "v1s34" }, nt { smp: "v0s34" } ]
+      -- täh
       +> [ nt { smp: "v7s35" }, nt { smp: "v6s35" }, nt { smp: "v5s35" }, nt { smp: "v4s35" }, nt { smp: "v3s35" }, nt { smp: "v2s35" }, nt { smp: "v1s35" }, nt { smp: "v0s35" } ]
+      -- ti 
       +> [ nt { smp: "v5s36" }, nt { smp: "v4s36" }, nt { smp: "v3s36" }, nt { smp: "v2s36" }, nt { smp: "v1s36" }, nt { smp: "v0s36" } ]
+      -- val
       +> [ nt { smp: "v5s37" }, nt { smp: "v4s37" }, nt { smp: "v3s37" }, nt { smp: "v2s37" }, nt { smp: "v1s37" }, nt { smp: "v0s37" } ]
+      -- ke
       +> [ nt { smp: "v3s38" }, nt { smp: "v2s38" }, nt { smp: "v1s38" }, nt { smp: "v0s38" } ]
+      -- ut
       +> [ nt { smp: "v0s39" } ]
+      -- taan
       +> [ nt { smp: "v2s40" }, nt { smp: "v1s40" }, nt { smp: "v0s40" } ]
+      --
+      -- Kirk
       +> [ nt { smp: "v3s41" }, nt { smp: "v2s41" }, nt { smp: "v1s41" }, nt { smp: "v0s41" } ]
+      -- kaa
       +> [ nt { smp: "v4s42" }, nt { smp: "v3s42" }, nt { smp: "v2s42" }, nt { smp: "v1s42" }, nt { smp: "v0s42" } ]
+      -- na
       +> [ nt { smp: "v3s43" }, nt { smp: "v2s43" }, nt { smp: "v1s43" }, nt { smp: "v0s43" } ]
+      -- sil
       +> [ nt { smp: "v4s44" }, nt { smp: "v3s44" }, nt { smp: "v2s44" }, nt { smp: "v1s44" }, nt { smp: "v0s44" } ]
+      -- miin 
       +> [ nt { smp: "v4s45" }, nt { smp: "v3s45" }, nt { smp: "v2s45" }, nt { smp: "v1s45" }, nt { smp: "v0s45" } ]
+      -- lap
       +> [ nt { smp: "v5s46" }, nt { smp: "v4s46" }, nt { smp: "v3s46" }, nt { smp: "v2s46" }, nt { smp: "v1s46" }, nt { smp: "v0s46" } ]
+      -- so
       +> [ nt { smp: "v5s47" }, nt { smp: "v4s47" }, nt { smp: "v3s47" }, nt { smp: "v2s47" }, nt { smp: "v1s47" }, nt { smp: "v0s47" } ]
+      -- sen 
       +> [ nt { smp: "v5s48" }, nt { smp: "v4s48" }, nt { smp: "v3s48" }, nt { smp: "v2s48" }, nt { smp: "v1s48" }, nt { smp: "v0s48" } ]
+      -- nyt 
       +> [ nt { smp: "v5s49" }, nt { smp: "v4s49" }, nt { smp: "v3s49" }, nt { smp: "v2s49" }, nt { smp: "v1s49" }, nt { smp: "v0s49" } ]
+      -- lois
       +> [ nt { smp: "v5s50" }, nt { smp: "v4s50" }, nt { smp: "v3s50" }, nt { smp: "v2s50" }, nt { smp: "v1s50" }, nt { smp: "v0s50" } ]
+      -- taa
       +> [ nt { smp: "v5s51" }, nt { smp: "v4s51" }, nt { smp: "v3s51" }, nt { smp: "v2s51" }, nt { smp: "v1s51" }, nt { smp: "v0s51" } ]
+      --
+      -- Maa
       +> [ nt { smp: "v5s52" }, nt { smp: "v4s52" }, nt { smp: "v3s52" }, nt { smp: "v2s52" }, nt { smp: "v1s52" }, nt { smp: "v0s52" } ]
+      -- ri
       +> [ nt { smp: "v4s53" }, nt { smp: "v3s53" }, nt { smp: "v2s53" }, nt { smp: "v1s53" }, nt { smp: "v0s53" } ]
+      -- ai
       +> [ nt { smp: "v5s54" }, nt { smp: "v4s54" }, nt { smp: "v3s54" }, nt { smp: "v2s54" }, nt { smp: "v1s54" }, nt { smp: "v0s54" } ]
+      -- nen 
       +> [ nt { smp: "v4s55" }, nt { smp: "v3s55" }, nt { smp: "v2s55" }, nt { smp: "v1s55" }, nt { smp: "v0s55" } ]
+      -- tuu
       +> [ nt { smp: "v6s56" }, nt { smp: "v5s56" }, nt { smp: "v4s56" }, nt { smp: "v3s56" }, nt { smp: "v2s56" }, nt { smp: "v1s56" }, nt { smp: "v0s56" } ]
+      -- tii 
       +> [ nt { smp: "v2s57" }, nt { smp: "v1s57" }, nt { smp: "v0s57" } ]
+      -- sei
       +> [ nt { smp: "v6s58" }, nt { smp: "v5s58" }, nt { smp: "v4s58" }, nt { smp: "v3s58" }, nt { smp: "v2s58" }, nt { smp: "v1s58" }, nt { smp: "v0s58" } ]
+      -- men 
       +> [ nt { smp: "v4s59" }, nt { smp: "v3s59" }, nt { smp: "v2s59" }, nt { smp: "v1s59" }, nt { smp: "v0s59" } ]
+      -- pie
       +> [ nt { smp: "v5s60" }, nt { smp: "v4s60" }, nt { smp: "v3s60" }, nt { smp: "v2s60" }, nt { smp: "v1s60" }, nt { smp: "v0s60" } ]
+      -- nois
       +> [ nt { smp: "v5s61" }, nt { smp: "v4s61" }, nt { smp: "v3s61" }, nt { smp: "v2s61" }, nt { smp: "v1s61" }, nt { smp: "v0s61" } ]
+      -- taan
       +> [ nt { smp: "v5s62" }, nt { smp: "v4s62" }, nt { smp: "v3s62" }, nt { smp: "v2s62" }, nt { smp: "v1s62" }, nt { smp: "v0s62" } ]
       +> V.empty
   )
