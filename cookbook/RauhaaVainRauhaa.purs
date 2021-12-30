@@ -158,7 +158,7 @@ vocalEffects voice = addEffect
 type FileInfo = { handle :: String, slug :: String }
 
 sounds :: Object BufferUrl
-sounds = Object.fromFoldable $ ((map ((/\) <$> _.slug <*> BufferUrl <<< append "https://media.graphcms.com/" <<< _.handle) files) <> ((map <<< map) BufferUrl ["reverb0" /\ "https://klank-share.s3-eu-west-1.amazonaws.com/in-a-sentimental-mood/Samples/Impulses/matrix-reverb3.wav"]))
+sounds = Object.fromFoldable $ ((map ((/\) <$> _.slug <*> BufferUrl <<< append "https://media.graphcms.com/" <<< _.handle) files) <> ((map <<< map) BufferUrl [ "reverb0" /\ "https://klank-share.s3-eu-west-1.amazonaws.com/in-a-sentimental-mood/Samples/Impulses/matrix-reverb3.wav" ]))
 
 fac :: Int -> Number
 fac i = fromMaybe end ((V.toArray cumulativeDurations) !! i)
@@ -231,12 +231,6 @@ nt2nift voice i { smp, st, vol } = Just
       , littleCycleDuration: end
       , tag: nothing
       }
-
-long = 1.6
-short = 0.8
-lss t = long +> short +> short +> t
-ll t = long +> long +> t
-ssss t = short +> short +> short +> short +> t
 
 type CtrlF =
   { time :: Number
@@ -460,8 +454,7 @@ durations :: SubSections Number
 durations = sectionsToSubSections durationsFull
 
 durationsFull :: Sections Number
-durationsFull = -- V.fill (const 1.6) # mapWithIndex (\i v -> if i `mod` 4 `Array.elem` [0,3] then 1.6 else 0.8)
-
+durationsFull =
   -- rau
   4.2
     -- haa
@@ -486,134 +479,111 @@ durationsFull = -- V.fill (const 1.6) # mapWithIndex (\i v -> if i `mod` 4 `Arra
     -- sel
     +> 0.9
     -- le
-    +> 0.9
+    +> 2.0
     -- rau
-    +> 3.0
+    +> 3.9
     -- ha
-    +> 2.7
+    +> 1.2
     -- ne
-    +> 0.8
+    +> 2.0
     -- rau
-    +> 1.6
+    +> 2.3
     -- ha
     +> 0.9
     -- soi
     +> 8.0
     --
     -- En
-    +> long
+    +> 2.9
     -- kel
-    +> short
+    +> 1.8
     -- in
-    +> short
+    +> 1.4
     -- lau
-    +> long
+    +> 3.8
     -- lu
-    +> long
+    +> 2.8
     -- rau
-    +> short
+    +> 1.7
     -- haa,
-    +> short
+    +> 1.5
     -- rau
-    +> short
+    +> 1.3
     -- haa
-    +> short
-    + 0.3
-        -- tois
-        +> long
-        -- taa
-        +> long
-    + 1.0
-        -- Sei
-        +> short
-    + 0.5
-        -- men
-        +> short
-    + 0.4
-        -- yl
-        +> short
-    + 0.3
-        -- lä 
-        +> short
-    + 0.2
-        -- jou
-        +> short
-        -- lun 
-        +> short
-        -- täh
-        +> short
-        -- ti 
-        +> short
-    + 0.4
-        -- val
-        +> long
-        -- ke
-        +> long
-        -- ut
-        +> 0.3
-        -- taan
-        +> 6.2
-        -- Kirk
-        +> long
-        -- kaa
-        +> short
-    + 0.4
-        -- na
-        +> short
-        -- sil
-        +> long
-    - 0.3
-        -- miin
-        +> long
-        -- lap
-        +> short
-    + 0.4
-        -- so
-        +> short
-    + 0.2
-        -- sen 
-        +> short
-        -- nyt 
-        +> short
-    - 0.2
-        -- lois
-        +> 3.2
-        -- taa
-        +> 5.0
-        -- Maa
-        +> short
-    + 2.0
-        -- ri
-        +> short
-    + 0.8
-        -- ai
-        +> short
-    + 0.3
-        -- nen
-        +> short
-    + 0.1
-        -- tuu
-        +> short
-    + 0.1
-        -- tii 
-        +> short
-    + 0.2
-        -- sei
-        +> short
-    + 0.4
-        -- men 
-        +> short
-    + 0.6
-        -- pie
-        +> long
-    + 1.0
-        -- nois
-        +> long
-    + 2.0
-        -- taan
-        +> long
-    + 7.0
-        +> V.empty
+    +> 1.4
+    -- tois
+    +> 3.0
+    -- taa
+    +> 4.0
+    -- Sei
+    +> 1.7
+    -- men
+    +> 1.7
+    -- yl
+    +> 1.6
+    -- lä 
+    +> 1.6
+    -- jou
+    +> 1.5
+    -- lun 
+    +> 1.4
+    -- täh
+    +> 1.3
+    -- ti 
+    +> 2.0
+    -- val
+    +> 2.7
+    -- ke
+    +> 2.0
+    -- ut
+    +> 0.3
+    -- taan
+    +> 6.2
+    -- Kirk
+    +> 4.0
+    -- kaa
+    +> 1.9
+    -- na
+    +> 1.2
+    -- sil
+    +> 3.0
+    -- miin
+    +> 2.9
+    -- lap
+    +> 1.4
+    -- so
+    +> 1.2
+    -- sen 
+    +> 1.2
+    -- nyt 
+    +> 0.9
+    -- lois
+    +> 3.2
+    -- taa
+    +> 5.0
+    -- Maa
+    +> 3.0
+    -- ri
+    +> 1.8
+    -- ai
+    +> 1.8
+    -- nen
+    +> 1.8
+    -- tuu
+    +> 1.8
+    -- tii 
+    +> 1.7
+    -- sei
+    +> 1.6
+    -- men 
+    +> 1.8
+    -- pie
+    +> 3.0
+    -- nois
+    +> 2.0
+    -- taan
+    +> 11.0
+    +> V.empty
 
 type Pitches = (Array { | Full })
 
@@ -715,7 +685,7 @@ pitchesFull =
       -- haa 
       +> [ nt { smp: "v4s16" }, nt { smp: "v3s16" }, nt { smp: "v2s16" }, nt { smp: "v1s16" }, nt { smp: "v0s16" } ]
       -- soi
-      +> [ nt { smp: "v3s17" }, nt { smp: "v2s17" }, nt { smp: "v1s17" }, nt { smp: "v0s17" }, nt { smp: "licks2:44"} ]
+      +> [ nt { smp: "v3s17" }, nt { smp: "v2s17" }, nt { smp: "v1s17" }, nt { smp: "v0s17" }, nt { smp: "licks2:44" } ]
       -- 
       -- En
       +> [ nt { smp: "v5s18" }, nt { smp: "v4s18" }, nt { smp: "v3s18" }, nt { smp: "v2s18" }, nt { smp: "v1s18" }, nt { smp: "v0s18" } ]
