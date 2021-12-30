@@ -1,4 +1,38 @@
-module WAGSI.Cookbook.RauhaaVainRauhaa where
+module WAGSI.Cookbook.RauhaaVainRauhaa
+  ( DurF
+  , FileInfo
+  , Full
+  , Pitches
+  , Sections
+  , SubSections
+  , attrVoice
+  , cumulativeDurationsToIndices
+  , defaultSt
+  , defaultVol
+  , durationToIndex
+  , durations
+  , durationsFull
+  , fac
+  , files
+  , getDuration
+  , haVol
+  , justNotes
+  , makePw
+  , notes
+  , nt
+  , nt2nift
+  , pitches
+  , pitchesFull
+  , rauVol
+  , seCelVol
+  , sectionsToSubSections
+  , shhhh
+  , sounds
+  , vocalEffects
+  , volDelayA
+  , wag
+  )
+  where
 
 {-
   Rauhaa, vain rauhaa
@@ -71,9 +105,9 @@ voice2PanFrequency = 0.20 :: Number -- the frequency, in Hz, with which the seco
 voice3PanRate = 30.0 :: Number -- the number of sawtooth peaks in the voice 3 LFO over the course of the piece. For more radical, try up to 200.0, and for more tame, try 1.0
 -- NB. the two delay lines below should not be at high volume at the same time for too long, otherwise they will become unstable and
 -- enter into a feedback loop. getting their subtle interplay right can result in some magic moments!
-volDelayA ∷ Number -> Number -- a function of time setting the volume of the first delay line.
+volDelayA :: Number -> Number -- a function of time setting the volume of the first delay line.
 volDelayA = add 0.3 <<< lfo { amp: 0.25, freq: 0.1, phase: pi }
-volDelayB ∷ Number -> Number -- a function of time setting the volume of the first delay line.
+volDelayB :: Number -> Number -- a function of time setting the volume of the first delay line.
 volDelayB = add 0.4 <<< lfo { amp: 0.35, freq: 0.35, phase: pi * 0.25 }
 
 --------------
