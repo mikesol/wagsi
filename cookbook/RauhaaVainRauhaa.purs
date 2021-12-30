@@ -118,11 +118,7 @@ vocalEffects voice = addEffect
         , delay0VolF
         , panF
         } /\ dur = unsafePartial fromJust $ V.toArray (V.zipWithE (/\) controlFs durations) !! sectionIndex
-        ipt =
-          { time: (cycleTime - sectionStartsAt)
-          , duration: dur
-          , voice
-          }
+        ipt = { time: (cycleTime - sectionStartsAt), duration: dur, voice }
         evl f = ff 0.04 $ pure $ f ipt
       in
         fx
