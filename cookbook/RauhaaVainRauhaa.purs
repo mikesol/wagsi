@@ -436,7 +436,7 @@ durationsFull =
     +> 1.5
     -- lun 
     +> 1.4
-    -- täh
+    -- ta''h
     +> 1.3
     -- ti 
     +> 2.0
@@ -834,7 +834,7 @@ pitchesFull =
         ]
       -- lun 
       +> [ nt { smp: "v1s34" }, nt { smp: "v0s34" } ]
-      -- täh
+      -- ta''h
       +>
         [ nt { smp: "v7s35" }
         , nt { smp: "v6s35" }
