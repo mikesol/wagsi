@@ -1,6 +1,6 @@
 module WAGSI.Cookbook.RauhaaVainRauhaa where
 
-import Data.Typelevel.Num hiding ((*), (+), (-), mod, (<), max, min)
+import Data.Typelevel.Num hiding ((*), (+), (-), mod, (<), max, min, (==), (>), add, mul)
 import Prelude
 
 import Control.Monad.State (evalState, get, put)
@@ -8,6 +8,7 @@ import Data.Array ((!!))
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty (fromArray)
+import Data.Array.NonEmpty as NEA
 import Data.Foldable (fold)
 import Data.Foldable (foldl)
 import Data.FunctorWithIndex (mapWithIndex)
@@ -18,8 +19,11 @@ import Data.Lens.Record (prop)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, maybe)
+import Data.Maybe as DM
 import Data.Newtype (unwrap)
+import Data.NonEmpty ((:|))
 import Data.Profunctor (lcmap)
+import Data.Profunctor.Strong (class Strong)
 import Data.String as String
 import Data.String.CodeUnits (slice)
 import Data.Traversable (traverse)
@@ -36,10 +40,13 @@ import Partial.Unsafe (unsafePartial)
 import Prim.Row (class Nub, class Union)
 import Record as Record
 import Type.Proxy (Proxy(..))
-import WAGS.Create.Optionals (bandpass, delay, gain, ref)
+import WAGS.Create.Optionals (bandpass, delay, gain, pan, ref)
+import WAGS.Graph.Parameter (ff)
+import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Cycle (noteFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
+import WAGS.Lib.Tidal.Samples (clockTime, intentionalSilenceForInternalUseOnly__Sample)
 import WAGS.Lib.Tidal.Tidal (addEffect, changeVolume, make, parse_, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..), FoT)
 import WAGS.Math (calcSlope)
@@ -95,8 +102,8 @@ wag =
     , fire: map (vocalEffects 2) $ s $ justNotes 2
     -- cello
     , lambert: s $ justNotes 3
-    , hendricks: s ""
-    , ross: s ""
+    , hendricks: s $ justNotes 4
+    , ross: s $ justNotes 5
     -- other stuff
     , sounds: sounds
     , title: "rauhaa, vain rauhaa"
@@ -107,25 +114,31 @@ vocalEffects voice = addEffect
       let
         cycleTime = clockTime % end
         sectionStartsAt /\ sectionIndex = durationToIndex cycleTime
-        df /\ dur = unsafePartial fromJust $ V.toArray (V.zipWithE (/\) delays durations) !! sectionIndex
+        { delay1VolF
+        , delay0VolF
+        , panF
+        } /\ dur = unsafePartial fromJust $ V.toArray (V.zipWithE (/\) controlFs durations) !! sectionIndex
+        ipt = { time: (cycleTime - sectionStartsAt), duration: dur, voice }
+        evl f = ff 0.04 $ pure $ f ipt
       in
         fx
           ( goodbye $ gain 1.1
               { mymix: gain 1.0
-                  { ipt: gain 1.0
+                  { ipt: pan (evl panF) $ gain 1.0
                       { bp0: gain 0.0 $ bandpass 1000.0 hello
                       , bp1: gain 0.0 $ bandpass 1000.0 hello
                       , rawIpt: gain 1.0 $ hello
                       }
-                  , fback: gain 0.35
-                      { del:
+                  , fback0: gain (evl delay0VolF)
+                      { del0:
                           delay
-                            ( df
-                                { time: (cycleTime - sectionStartsAt)
-                                , duration: dur
-                                , voice
-                                }
-                            )
+                            (0.3)
+                            { mymix: ref }
+                      }
+                  , fback1: gain 0.1
+                      { del1:
+                          delay
+                            (0.5)
                             { mymix: ref }
                       }
                   }
@@ -166,10 +179,25 @@ end = foldl (+) 0.0 durations :: Number
 len = V.length pitches :: Int
 
 justNotes :: Int -> NonEmptyArray (NoteInFlattenedTime (Note Unit))
-justNotes voice = unsafePartial fromJust $ fromArray $ fold $ notes voice
+justNotes = DM.fromMaybe (NEA.fromNonEmpty (shhhh :| [])) <<< fromArray <<< fold <<< notes
 
 notes :: Int -> SubSections (Array (NoteInFlattenedTime (Note Unit)))
 notes voice = mapWithIndex (map Array.catMaybes <<< map <<< nt2nift voice) pitches
+
+shhhh :: NoteInFlattenedTime (Note Unit)
+shhhh = NoteInFlattenedTime
+  { note: noteFromSample intentionalSilenceForInternalUseOnly__Sample
+  , bigStartsAt: 0.0
+  , littleStartsAt: 0.0
+  , currentCycle: 0
+  , positionInCycle: 0
+  , elementsInCycle: 1
+  , nCycles: 1
+  , duration: 2.0
+  , bigCycleDuration: end
+  , littleCycleDuration: end
+  , tag: nothing
+  }
 
 nt2nift :: Int -> Int -> { | Full } -> Maybe (NoteInFlattenedTime (Note Unit))
 nt2nift voice _ { smp, vc } | vc smp /= voice = Nothing
@@ -183,10 +211,6 @@ nt2nift voice i { smp, st, vol } = Just
           (unto Note <<< prop (Proxy :: _ "volumeFoT"))
           vol
           (noteFromSample (Sample smp))
-      {-
-      , volumeFoT: lcmap unwrap \{ normalizedSampleTime: sampleTime } -> 0.1 *
-          Math.sin (0.5 * Math.pi * if sampleTime < 0.5 then calcSlope 0.0 0.85 1.0 1.0 sampleTime else calcSlope 0.0 1.0 1.0 0.5 sampleTime)
-      }-}
       , bigStartsAt: startsAt
       , littleStartsAt: startsAt
       , currentCycle: 0
@@ -205,8 +229,6 @@ lss t = long +> short +> short +> t
 ll t = long +> long +> t
 ssss t = short +> short +> short +> short +> t
 
-defaultDelay = 0.3 :: Number
-
 type CtrlF =
   { time :: Number
   , duration :: Number
@@ -220,11 +242,53 @@ type DurF =
   }
   -> Number
 
-delays :: SubSections CtrlF
-delays = sectionsToSubSections delaysFull
+type ControlFs = { delay1VolF :: CtrlF, delay0VolF :: CtrlF, panF :: CtrlF }
 
-delaysFull :: Sections CtrlF
-delaysFull = V.fill (const $ const defaultDelay)
+controlFs :: SubSections ControlFs
+controlFs = sectionsToSubSections controlFsFull
+
+delay1VolF = prop (Proxy :: _ "delay1VolF")
+delay0VolF = prop (Proxy :: _ "delay0VolF")
+panF = prop (Proxy :: _ "panF")
+
+controlFsFull :: Sections ControlFs
+controlFsFull = V.modifyAt d0 (set delay0VolF (const 0.7))
+  $ V.modifyAt d0 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
+  -- haa
+  $ V.modifyAt d1 (set panF (\{ voice } -> if voice == 0 then (-0.2) else if voice == 1 then 0.6 else (-0.8)))
+  $ V.modifyAt d1 (set delay0VolF (const 0.4))
+  -- vain
+  $ V.modifyAt d2 (set delay1VolF (\{ voice } -> if voice == 0 then 0.6 else if voice == 1 then 0.55 else 0.4))
+  $ V.modifyAt d2 (set delay0VolF (const 0.9))
+  $ V.modifyAt d2 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- rau
+  $ V.modifyAt d3 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d3 (set delay0VolF (const 0.9))
+  -- haa
+  $ V.modifyAt d4 (set delay1VolF (const 0.8))
+  $ V.modifyAt d4 (set panF (\{ time, duration } -> calcSlope 0.0 (-1.0) duration 1.0 time))
+  -- kel 
+  $ V.modifyAt d5 (set delay1VolF (const 0.8))
+  $ V.modifyAt d5 (set delay0VolF (const 0.0))
+  $ V.modifyAt d5 (set panF (\{ voice } -> if voice == 0 then 0.2 else if voice == 1 then (-0.6) else 0.8))
+  -- lo
+  $ V.modifyAt d6 (set delay1VolF (const 0.4))
+  $ V.modifyAt d5 (set delay0VolF (const 0.4))
+  $ V.modifyAt d6 (set panF (\{ voice } -> if voice == 0 then (-0.2) else if voice == 1 then 0.6 else (-0.8)))
+  $ V.modifyAt d6 (set delay0VolF (const 0.4))
+  -- nyt
+  $ V.modifyAt d7 (set delay0VolF (const 0.6))
+  $ V.modifyAt d7 (set panF (\{ voice, duration, time } -> if voice == 0 then calcSlope 0.0 0.8 duration (-0.8) time else if voice == 1 then calcSlope 0.0 (-0.8) duration 0.8 time else 0.6))
+  -- soi
+  $ V.modifyAt d8 (set delay1VolF (\{ voice } -> if voice == 0 then 0.4 else if voice == 1 then 0.28 else 0.15))
+  $ V.modifyAt d8 (set delay0VolF (const 0.9))
+  $ V.fill
+      ( const
+          { delay1VolF: const 0.0
+          , delay0VolF: const 0.35
+          , panF: const 0.0
+          }
+      )
 
 durations :: SubSections Number
 durations = sectionsToSubSections durationsFull
@@ -232,26 +296,34 @@ durations = sectionsToSubSections durationsFull
 durationsFull :: Sections Number
 durationsFull = -- V.fill (const 1.6) # mapWithIndex (\i v -> if i `mod` 4 `Array.elem` [0,3] then 1.6 else 0.8)
 
-  long
+  -- rau
+  4.2
+    -- haa
+    +> 3.0
+    -- vain
+    +> 4.0
+    -- rau
+    +> 5.0
+    -- haa
+    +> 1.6
+    -- kel
+    +> 1.8
+    -- lo
+    +> 1.2
+    -- ne
+    +> 1.3
+    -- soi
+    +> 6.0
+    --
+    +> long
     +> short
     +> short
     +> long
     +> long
-    +> long
-    +> short
     +> short
     +> long
-    * 2.0
-        --
-        +> long
-        +> short
-        +> short
-        +> long
-        +> long
-        +> short
-        +> long
-        +> short
-        +> long
+    +> short
+    +> long
     * 2.0
         --
         +> long
@@ -312,24 +384,67 @@ pitches = sectionsToSubSections pitchesFull
 
 frac val { duration } = duration * val
 
-fastDown :: FoT Unit
-fastDown = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.4 $ calcSlope 0.0 1.0 0.5 0.4 sampleTime
+rauVol :: FoT Unit
+rauVol = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.0 $ calcSlope 0.0 0.4 0.3 0.0 sampleTime
+
+makePw :: Array (Number /\ Number) -> Number -> Number
+makePw arr n = val
+  where
+  asMap = Map.fromFoldable arr
+  lb = Map.lookupLE n asMap
+  ub = Map.lookupGE n asMap
+  val = maybe (maybe 0.0 _.value ub) (\llb -> maybe llb.value (\uub -> calcSlope llb.key llb.value uub.key uub.value n) ub) lb
 
 pitchesFull :: Sections Pitches
 pitchesFull =
-  ( [ nt { smp: "v3s0", vol: fastDown }, nt { smp: "v2s0", vol: fastDown }, nt { smp: "v1s0", vol: fastDown }, nt { smp: "v0s0", vol: fastDown }, nt { smp: "tones:8" } ]
-      +> [ nt { smp: "v4s1", st: frac 0.5 }, nt { smp: "v3s1", st: frac 0.5 }, nt { smp: "v2s1", st: frac 0.5 }, nt { smp: "v1s1" }, nt { smp: "v0s1" } ]
-      +> [ nt { smp: "v5s2" }, nt { smp: "v4s2" }, nt { smp: "v3s2" }, nt { smp: "v2s2" }, nt { smp: "v1s2" }, nt { smp: "v0s2" } ]
-
-      +> [ nt { smp: "v6s3" }, nt { smp: "v5s3" }, nt { smp: "v4s3" }, nt { smp: "v3s3" }, nt { smp: "v2s3" }, nt { smp: "v1s3" }, nt { smp: "v0s3" }, nt { smp: "tones:36" } ]
-      +> [ nt { smp: "v0s4" } ]
-
+  (
+    -- rau
+    [ nt { smp: "v3s0", vol: rauVol }, nt { smp: "v2s0", vol: rauVol }, nt { smp: "v1s0", vol: rauVol }, nt { smp: "v0s0", vol: rauVol }, nt { smp: "v0s0", st: const 1.5, vol: const 0.2 }, nt { smp: "v2s0", st: const 1.5, vol: const 0.2 } ]
+      -- haa
+      +>
+        [ nt { smp: "v4s1", vol: const 0.2 }
+        , nt { smp: "v3s1", vol: const 0.1 }
+        , nt { smp: "v2s1", vol: const 0.2 }
+        , nt { smp: "v1s1", vol: const 0.1 }
+        , nt { smp: "v0s1", vol: const 0.2 }
+        , nt { smp: "v4s1", st: const 0.4, vol: const 0.2 }
+        , nt { smp: "v0s1", st: const 0.4, vol: const 0.3 }
+        , nt { smp: "v3s1", st: const 1.5, vol: const 0.05 }
+        , nt { smp: "v4s1", st: const 1.5, vol: const 0.05 }
+        ]
+      -- vain
+      +> [ nt { smp: "v5s2", vol: const 0.2 }, nt { smp: "v4s2", vol: const 0.2 }, nt { smp: "v3s2", vol: const 0.2 }, nt { smp: "v2s2", vol: const 0.2 }, nt { smp: "v1s2", vol: const 0.2 }, nt { smp: "v0s2", vol: const 0.2 } ]
+      -- rau
+      +>
+        ( let
+            vv = (let pf = makePw ([ 0.0 /\ 0.0, 3.0 /\ 1.0, 6.0 /\ 0.0 ]) in lcmap unwrap \{ sampleTime } -> pf sampleTime * (lfo { amp: 0.2, freq: 4.0, phase: 0.0 } sampleTime + 0.5))
+            lfox f = lcmap unwrap (add 0.4 <<< lfo { amp: 0.2, phase: 0.0, freq: f } <<< _.sampleTime)
+          in
+            [ nt { smp: "v6s3", vol: const 0.1 }
+            , nt { smp: "v5s3", vol: lfox 3.0 }
+            , nt { smp: "v4s3", vol: const 0.1 }
+            , nt { smp: "v3s3", vol: lfox 4.0 }
+            , nt { smp: "v2s3", vol: const 0.1 }
+            , nt { smp: "v1s3", vol: lfox 5.0 }
+            , nt { smp: "v0s3", vol: const 0.2 }
+            , nt { smp: "tones:44", vol: vv }
+            , nt { smp: "tones:40", vol: vv, st: const 0.4 }
+            , nt { smp: "tones:48", vol: vv, st: const 0.8 }
+            , nt { smp: "tones:44", vol: vv, st: const 1.2 }
+            , nt { smp: "tones:40", vol: vv, st: const 1.6 }
+            , nt { smp: "tones:48", vol: vv, st: const 2.0 }
+            ]
+        )
+      -- haa
+      +> [ nt { smp: "v0s4", vol: const 0.4 } ]
+      -- kel
       +> [ nt { smp: "v1s5" }, nt { smp: "v0s5" }, nt { smp: "tones:110" } ]
+      -- lo
       +> [ nt { smp: "v3s6" }, nt { smp: "v2s6" }, nt { smp: "v1s6" }, nt { smp: "v0s6" } ]
-      +> [ nt { smp: "v5s7" }, nt { smp: "v4s7" }, nt { smp: "v3s7" }, nt { smp: "v2s7" }, nt { smp: "v1s7" }, nt { smp: "v0s7" } ]
-
-      +> [ nt { smp: "v6s8" }, nt { smp: "v5s8" }, nt { smp: "v4s8" }, nt { smp: "v3s8" }, nt { smp: "v2s8" }, nt { smp: "v1s8" }, nt { smp: "v0s8" }, nt { smp: "tones:62", st: const 1.5 } ]
-      ----
+      -- ne
+      +> [ nt { smp: "v5s7" }, nt { smp: "v4s7" }, nt { smp: "v3s7" }, nt { smp: "v2s7" }, nt { smp: "v1s7" }, nt { smp: "v0s7" }, nt { smp: "tones:62", st: const 1.5 } ]
+      -- soi
+      +> [ nt { smp: "v6s8" }, nt { smp: "v5s8" }, nt { smp: "v4s8" }, nt { smp: "v3s8" }, nt { smp: "v2s8" }, nt { smp: "v1s8" }, nt { smp: "v0s8" }, nt { smp: "licks1:108" } ]
       +> [ nt { smp: "v3s9" }, nt { smp: "v2s9" }, nt { smp: "v1s9" }, nt { smp: "v0s9" } ]
       +> [ nt { smp: "v3s10" }, nt { smp: "v2s10" }, nt { smp: "v1s10" }, nt { smp: "v0s10" } ]
       +> [ nt { smp: "v3s11" }, nt { smp: "v2s11" }, nt { smp: "v1s11" }, nt { smp: "v0s11" } ]
