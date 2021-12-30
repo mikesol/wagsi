@@ -503,10 +503,10 @@ pitchesFull =
         , nt { smp: "v2s1", vol: const 0.1 }
         , nt { smp: "v1s1", vol: const 0.05 }
         , nt { smp: "v0s1", vol: const 0.2 }
-        , nt { smp: "v4s1", st: const 0.4, vol: const 0.2 }
-        , nt { smp: "v0s1", st: const 0.4, vol: const 0.3 }
-        , nt { smp: "v3s1", st: const 1.5, vol: const 0.05 }
-        , nt { smp: "v4s1", st: const 1.5, vol: const 0.05 }
+        , nt { smp: "v4s1", st: const 0.4, vol: const 0.1 }
+        , nt { smp: "v0s1", st: const 0.4, vol: const 0.05 }
+        , nt { smp: "v3s1", st: const 1.5, vol: const 0.1 }
+        , nt { smp: "v4s1", st: const 1.5, vol: const 0.02 }
         ]
       -- vain
       +>
@@ -1046,7 +1046,7 @@ pitchesFull =
       +> V.empty
   )
 
-lastPw = makePw [ 0.0 /\ 0.1, 1.0 /\ 4.0, 0.1 /\ 7.0 ]
+lastPw = makePw [ 0.0 /\ 0.1, 4.0 /\ 1.0, 7.0 /\ 0.1 ]
 bell0Pw = makePw [ 0.0 /\ 0.0, 4.0 /\ 1.0 ]
 
 files :: Array FileInfo
