@@ -430,7 +430,7 @@ durationsFull =
     +> 1.7
     -- yl
     +> 1.6
-    -- lä 
+    -- la'' 
     +> 1.6
     -- jou
     +> 1.5
@@ -809,7 +809,7 @@ pitchesFull =
         , nt { smp: "v1s31" }
         , nt { smp: "v0s31" }
         ]
-      -- lä 
+      -- la'' 
       +>
         [ nt { smp: "v7s32" }
         , nt { smp: "v6s32" }
