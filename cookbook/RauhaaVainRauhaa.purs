@@ -79,7 +79,7 @@ defaultVol = const 0.3
 
 verbMe0 = addEffect
   \{ buffers, silence } ->
-    fx $ goodbye $ convolver (maybe silence _.buffer.forward (lookup "reverb0" buffers)) hello
+    fx $ goodbye $ convolver (maybe silence _.buffer.forward (lookup "StPatricksChurchPatringtonPosition3" buffers)) hello
 
 nt
   :: forall inRec overfull
@@ -115,6 +115,7 @@ wag =
     , ross: s $ ""
     -- other stuff
     , sounds: sounds
+    , preload: map Sample [ "StPatricksChurchPatringtonPosition3" ]
     , title: "rauhaa, vain rauhaa"
     }
 
@@ -158,7 +159,7 @@ vocalEffects voice = addEffect
 type FileInfo = { handle :: String, slug :: String }
 
 sounds :: Object BufferUrl
-sounds = Object.fromFoldable $ ((map ((/\) <$> _.slug <*> BufferUrl <<< append "https://media.graphcms.com/" <<< _.handle) files) <> ((map <<< map) BufferUrl [ "reverb0" /\ "https://klank-share.s3-eu-west-1.amazonaws.com/in-a-sentimental-mood/Samples/Impulses/matrix-reverb3.wav" ]))
+sounds = Object.fromFoldable $ map ((/\) <$> _.slug <*> BufferUrl <<< append "https://media.graphcms.com/" <<< _.handle) files
 
 fac :: Int -> Number
 fac i = fromMaybe end ((V.toArray cumulativeDurations) !! i)
@@ -1951,5 +1952,116 @@ files =
     }
   , { handle: "PO6NYk9SDyiT9KDwvjdS"
     , slug: "v0s3"
+    }
+  , { handle: "xxwkpDhSuS70mOiOpyQA"
+    , slug: "R1NuclearReactorHall"
+    }
+  , { handle: "YKCTp6meSpKWucN90V0m"
+    , slug: "StAndrewsChurch"
+    }
+  , { handle: "7Q4tPuvSBSl2KPLkF9Sv"
+    , slug: "StMarysAbbeyReconstructionPhase2"
+    }
+  , { handle: "oEilDbMzSIKrr1GiRXjf"
+    , slug: "SportsCentreUniversityOfYork"
+    }
+  , { handle: "WWWqtfSZyC0QYRoiQkgS"
+    , slug: "StMarysAbbeyReconstructionPhase3"
+    }
+  , { handle: "lh4luUM1QcuUzabMmjEF"
+    , slug: "StMarysAbbeyReconstructionPhase1"
+    }
+  , { handle: "5qxdwBKmQWyvc4VRCxKg"
+    , slug: "LadyChapelStAlbansCathedral"
+    }
+  , { handle: "rgzCDkQTQ6GCCTpjQ8jK"
+    , slug: "PerthCityHallBalcony"
+    }
+  , { handle: "ACeaE48uRBy7iabNzn7X"
+    , slug: "StPatricksChurchPatringtonPosition1"
+    }
+  , { handle: "LlMRIAi9RPCIWjq5vfE4"
+    , slug: "PurnodesRailroadTunnel"
+    }
+  , { handle: "W8gl1NmIT9S6neqNiZUE"
+    , slug: "Basement"
+    }
+  , { handle: "ZMEy0FIYQ0eZFE8k1H3z"
+    , slug: "MidiverbMark2Preset29"
+    }
+  , { handle: "SuqM3xQKQpGZnfFc5hD0"
+    , slug: "SpokaneWomansClub"
+    }
+  , { handle: "PAcCsY80RPOsICGPmyLk"
+    , slug: "YorkMinster"
+    }
+  , { handle: "bnruSc9sSuKPPdWmRYwE"
+    , slug: "FalklandPalaceRoyalTennisCourt"
+    }
+  , { handle: "PgLl19LIQGqRGTpx56Kz"
+    , slug: "TerrysTypingRoom"
+    }
+  , { handle: "o1wvIpjcQGarLVR5ptrc"
+    , slug: "SampleBachCMinorPrelude"
+    }
+  , { handle: "AOUnc3DlRz6gW2wdf6G4"
+    , slug: "DomesticLivingRoom"
+    }
+  , { handle: "hxziyQGATtOl91PI8DJm"
+    , slug: "TyndallBruceMonument"
+    }
+  , { handle: "7QMKckbhSDmZPlAS2HOH"
+    , slug: "SaintLawrenceChurchMolenbeekWersbeekBelgium"
+    }
+  , { handle: "VPatIpOTIentPk3FJBGG"
+    , slug: "ElvedenHallLordsCloakroom"
+    }
+  , { handle: "H2RQImvQzWdljXb7odyA"
+    , slug: "MaesHowe"
+    }
+  , { handle: "OKr7wK83Syem8cf4xrpA"
+    , slug: "StPatricksChurchPatringtonPosition3"
+    }
+  , { handle: "iL9DR9KTlmnM0nKu2ALg"
+    , slug: "StPatricksChurchPatringtonPosition2"
+    }
+  , { handle: "Zq6CyyYTQ7Ov1yOmatXf"
+    , slug: "AbernyteGrainSilo"
+    }
+  , { handle: "FZM2SP4kQXm6PTARxg7j"
+    , slug: "TerrysFactoryWarehouse"
+    }
+  , { handle: "UXAHfhE5RLuIsH0xrQiw"
+    , slug: "InsidePiano"
+    }
+  , { handle: "EAammGvrTPGMxQoHISvw"
+    , slug: "ArbroathAbbeySacristy"
+    }
+  , { handle: "3THygSShQx9u2oI3IN5p"
+    , slug: "HamiltonMausoleum"
+    }
+  , { handle: "HwePBbGeQey48vMKcrpJ"
+    , slug: "StairwayUniversityOfYork"
+    }
+  , { handle: "uTKP4ngSbm32eJhigaTc"
+    , slug: "KinoullAisle"
+    }
+  , { handle: "zHkDSldXSzWUaHwUdVnN"
+    , slug: "EmptyApartmentBedroom"
+    }
+  , { handle: "q24dYjTR6e78BAaqiDig"
+    , slug: "ElvedenHallMarbleHall"
+    }
+  , { handle: "0nOy6k3XTYurgxSpiPKt"
+    , slug: "ElvedenHallSmokingRoom"
+    }
+  , { handle: "x7Af6UBRiYLlIKCZkj4A"
+    , slug: "ElvedenHallVisitorsCloakroom"
+    }
+  , { handle: "1B4buTQtRmpOgaWtDQlj"
+    , slug: "ErrolBrickworksKiln"
+    }
+  , { handle: "FwmDwkuaTIOQU9pAVBBd"
+    , slug: "UndergroundCarPark"
     }
   ]
