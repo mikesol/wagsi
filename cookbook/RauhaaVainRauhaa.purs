@@ -1,6 +1,20 @@
 module WAGSI.Cookbook.RauhaaVainRauhaa where
 
-import Data.Typelevel.Num hiding ((*), (+), (-), mod, (<), max, min, (==), (>), add, sub, mul)
+{-
+  Rauhaa, vain rauhaa
+  by Ahti Sonninen
+  Performed and arranged by
+  Mike Solomon and Verity Scheel
+
+  *API*
+  After the imports, there are various parameters
+  that you can tweak to your heart's content.
+  Each one is documented, and each one will result
+  in a subtly or perhaps radically different work.
+  We hope you have a wonderful New Year!
+-}
+
+import Data.Typelevel.Num hiding ((*), (+), (-), mod, (<), max, min, (==), (>), (<=), add, sub, mul)
 import Prelude
 
 import Control.Monad.State (evalState, get, put)
@@ -17,7 +31,7 @@ import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
+import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, maybe)
 import Data.Maybe as DM
 import Data.Newtype (unwrap)
 import Data.NonEmpty ((:|))
@@ -32,9 +46,11 @@ import Data.Vec as V
 import Foreign.Object (Object, lookup)
 import Foreign.Object as Object
 import Math ((%), pi)
+import Partial.Unsafe (unsafePartial)
 import Prim.Row (class Nub, class Union)
 import Record as Record
 import Type.Proxy (Proxy(..))
+import Unsafe.Coerce (unsafeCoerce)
 import WAGS.Create.Optionals (bandpass, convolver, delay, gain, highpass, pan, ref)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
@@ -46,11 +62,31 @@ import WAGS.Lib.Tidal.Tidal (addEffect, make, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), FoT, Note(..), NoteInFlattenedTime(..), Sample(..), Voice)
 import WAGS.Math (calcSlope)
 
+--------------
+--- API ------
+sectionStart = 0 :: Int -- must be between 0 and 63 inclusive
+sectionEnd = 64 :: Int -- must be between 0 and 63 inclusive and must be greater than section start
+voice1PanFrequency = 0.38 :: Number -- the frequency, in Hz, with which the first voice pans from left to right. 
+voice2PanFrequency = 0.20 :: Number -- the frequency, in Hz, with which the second voice pans from left to right.
+voice3PanRate = 30.0 :: Number -- the number of sawtooth peaks in the voice 3 LFO over the course of the piece. For more radical, try up to 200.0, and for more tame, try 1.0
+-- NB. the two delay lines below should not be at high volume at the same time for too long, otherwise they will become unstable and
+-- enter into a feedback loop. getting their subtle interplay right can result in some magic moments!
+volDelayA ∷ Number -> Number -- a function of time setting the volume of the first delay line.
+volDelayA = add 0.3 <<< lfo { amp: 0.25, freq: 0.1, phase: pi }
+volDelayB ∷ Number -> Number -- a function of time setting the volume of the first delay line.
+volDelayB = add 0.4 <<< lfo { amp: 0.35, freq: 0.35, phase: pi * 0.25 }
+
+--------------
+
 type Sections a = Vec D63 a
-type SubSections a = Vec D63 a
+type SubSections a = NonEmptyArray a
 
 sectionsToSubSections :: Sections ~> SubSections
-sectionsToSubSections = V.slice d0 d63
+sectionsToSubSections = unsafeCoerce <<< Array.slice st ed <<< V.toArray
+  where
+  st = min 63 $ max 0 sectionStart
+  ed' = min 64 $ max 1 sectionEnd
+  ed = if ed' <= st then st + 1 else ed'
 
 type Full = (smp :: String, vol :: FoT Unit, st :: DurF, vc :: String -> Int)
 
@@ -116,12 +152,6 @@ wag =
 
 ndg = 0.04 :: Number
 
------------------
-
-volA = add 0.3 <<< lfo { amp: 0.25, freq: 0.1, phase: pi }
-volB = add 0.4 <<< lfo { amp: 0.35, freq: 0.35, phase: pi * 0.25 }
-
------------------
 
 vocalEffects :: forall event. Int -> Voice event -> Voice event
 vocalEffects voice = addEffect
@@ -131,9 +161,9 @@ vocalEffects voice = addEffect
             { mymix: gain (ff ndg $ pure $ 1.0)
                 { ipt:
                     pan
-                      ( if voice == 0 then lfo { amp: 0.4, freq: 0.38, phase: 0.0 } clockTime
-                        else if voice == 1 then lfo { amp: 1.0, freq: 0.2, phase: pi } clockTime
-                        else ((calcSlope 0.0 0.0 end 30.0 clockTime) % 2.0) - 1.0
+                      ( if voice == 0 then lfo { amp: 0.4, freq: voice1PanFrequency, phase: 0.0 } clockTime
+                        else if voice == 1 then lfo { amp: 1.0, freq: voice2PanFrequency, phase: pi } clockTime
+                        else ((calcSlope 0.0 0.0 end voice3PanRate clockTime) % 2.0) - 1.0
                       ) $ gain 1.0
                       { hp0: gain (0.5 + lfo { amp: 0.3, freq: 0.4, phase: 0.0 } clockTime) $ highpass
                           { freq: ff ndg $ pure $
@@ -218,13 +248,13 @@ vocalEffects voice = addEffect
                           hello
                       , rawIpt: gain (0.3) $ hello
                       }
-                , fback0: gain (volB clockTime)
+                , fback0: gain (volDelayB clockTime)
                     { del0:
                         delay
                           (0.3)
                           { mymix: ref }
                     }
-                , fback1: gain (volA clockTime)
+                , fback1: gain (volDelayA clockTime)
                     { del1:
                         delay
                           (0.75)
@@ -246,10 +276,10 @@ sounds = Object.union (Object.fromFoldable $ map ((/\) <$> _.slug <*> BufferUrl 
   )
 
 fac :: Int -> Number
-fac i = fromMaybe end ((V.toArray cumulativeDurations) !! i)
+fac i = fromMaybe end ((NEA.toArray cumulativeDurations) !! i)
 
 getDuration :: Int -> Number
-getDuration i = fromMaybe 2.0 ((V.toArray durations) !! i)
+getDuration i = fromMaybe 2.0 ((NEA.toArray durations) !! i)
 
 cumulativeDurationsToIndices :: Map Number Int
 cumulativeDurationsToIndices = Map.fromFoldable $ mapWithIndex (flip (/\)) cumulativeDurations
@@ -270,7 +300,7 @@ cumulativeDurations = evalState
   0.0
 
 end = foldl (+) 0.0 durations :: Number
-len = V.length pitches :: Int
+len = NEA.length pitches :: Int
 
 justNotes :: Int -> NonEmptyArray (NoteInFlattenedTime (Note Unit))
 justNotes =
@@ -474,6 +504,9 @@ frac val { duration } = duration * val
 rauVol :: FoT Unit
 rauVol = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.0 $ calcSlope 0.0 0.1 0.3 0.0 sampleTime
 
+haVol :: Number -> FoT Unit
+haVol n = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.0 $ calcSlope 0.0 n 0.4 0.0 sampleTime
+
 seCelVol :: Number -> FoT Unit
 seCelVol d = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.0 $ calcSlope 0.0 0.3 d 0.0 sampleTime
 
@@ -498,15 +531,15 @@ pitchesFull =
     ]
       -- haa
       +>
-        [ nt { smp: "v4s1", vol: const 0.1 }
-        , nt { smp: "v3s1", vol: const 0.05 }
-        , nt { smp: "v2s1", vol: const 0.1 }
-        , nt { smp: "v1s1", vol: const 0.05 }
-        , nt { smp: "v0s1", vol: const 0.2 }
-        , nt { smp: "v4s1", st: const 0.4, vol: const 0.1 }
-        , nt { smp: "v0s1", st: const 0.4, vol: const 0.05 }
-        , nt { smp: "v3s1", st: const 1.5, vol: const 0.1 }
-        , nt { smp: "v4s1", st: const 1.5, vol: const 0.02 }
+        [ nt { smp: "v4s1", vol: haVol 0.1 }
+        , nt { smp: "v3s1", vol: haVol 0.05 }
+        , nt { smp: "v2s1", vol: haVol 0.1 }
+        , nt { smp: "v1s1", vol: haVol 0.05 }
+        , nt { smp: "v0s1", vol: haVol 0.2 }
+        , nt { smp: "v4s1", st: const 0.4, vol: haVol 0.1 }
+        , nt { smp: "v0s1", st: const 0.4, vol: haVol 0.3 }
+        , nt { smp: "v3s1", st: const 1.5, vol: haVol 0.05 }
+        , nt { smp: "v4s1", st: const 1.5, vol: haVol 0.05 }
         ]
       -- vain
       +>
