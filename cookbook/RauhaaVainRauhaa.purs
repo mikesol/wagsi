@@ -1,38 +1,4 @@
-module WAGSI.Cookbook.RauhaaVainRauhaa
-  ( DurF
-  , FileInfo
-  , Full
-  , Pitches
-  , Sections
-  , SubSections
-  , attrVoice
-  , cumulativeDurationsToIndices
-  , defaultSt
-  , defaultVol
-  , durationToIndex
-  , durations
-  , durationsFull
-  , fac
-  , files
-  , getDuration
-  , haVol
-  , justNotes
-  , makePw
-  , notes
-  , nt
-  , nt2nift
-  , pitches
-  , pitchesFull
-  , rauVol
-  , seCelVol
-  , sectionsToSubSections
-  , shhhh
-  , sounds
-  , vocalEffects
-  , volDelayA
-  , wag
-  )
-  where
+module WAGSI.Cookbook.RauhaaVainRauhaa where
 
 {-
   Rauhaa, vain rauhaa
