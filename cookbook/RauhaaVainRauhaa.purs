@@ -845,7 +845,7 @@ pitchesFull =
       -- lau
       +>
         ( let
-            pf infl = makePw ([ 0.0 /\ 0.2, infl /\ 1.0 ])
+            pf infl = makePw ([ 0.0 /\ 0.1, infl /\ 0.6 ])
           in
 
             [ nt { smp: "v4s21", vol: ost $ pf 1.0 }
@@ -898,7 +898,7 @@ pitchesFull =
             , nt { smp: "v2s25", vol: ost $ dwn 0.3 1.2 }
             , nt { smp: "v1s25", vol: ost $ dwn 0.3 1.2 }
             , nt { smp: "v0s25", vol: ost $ dwn 0.3 1.2 }
-            , nt { smp: "tones:28", st: const 0.6}
+            , nt { smp: "tones:28", rt: const 0.99, st: const 0.6}
             ]
         )
       -- haa
@@ -907,7 +907,7 @@ pitchesFull =
         , nt { smp: "v2s26", vol: ost $ vlfo 3.0 0.1 0.05 }
         , nt { smp: "v1s26", vol: ost $ vlfo 3.0 0.15 0.05 }
         , nt { smp: "v0s26", vol: ost $ vlfo 3.0 0.2 0.05 }
-        , nt { smp: "tones:28", st: const 0.6}
+        , nt { smp: "tones:28", rt: const 0.99, st: const 0.6}
         ]
       -- tois
       +>
