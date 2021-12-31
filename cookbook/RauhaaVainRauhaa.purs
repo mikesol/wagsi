@@ -89,18 +89,18 @@ import WAGS.Math (calcSlope)
 -- For linear playback of the work, you can do [0 /\ 63].
 -- To loop 0,1,2,3 twice and then 30,31,32,33 twice, you can
 -- do [0 /\ 3, 0 /\ 3, 30 /\ 33, 30 /\ 33].
-sectionMap' :: Array (Int /\ Int)
-sectionMap' = join $
-  rp 3 [ 0 /\ 4 ]
-    <> rp 2 [ 5 /\ 8 ]
-    <> rp 1 [ 0 /\ 8 ]
-    <> rp 3 [ 9 /\ 17 ]
-    <> rp 4 [ 18 /\ 22 ]
-    <> rp 2 [ 23 /\ 63 ]
 
 sectionMap :: Array (Int /\ Int)
 sectionMap = join $
-  rp 1 [ 23 /\ 28 ]
+  rp 5 [ 0 /\ 4 ]
+    <> rp 5 [ 5 /\ 8 ]
+    <> rp 5 [ 9 /\ 17 ]
+    <> rp 5 [ 18 /\ 22 ]
+    <> rp 5 [ 23 /\ 28 ]
+    <> rp 3 [ 29 /\ 40 ]
+    <> rp 1 [ 41 /\ 45 ]
+    <> rp 5 [ 46 /\ 51 ]
+    <> rp 5 [ 52 /\ 63 ]
 
 voice1PanFrequency = 0.38 :: Number
 -- the frequency, in Hz, with which the second voice pans from left to right.
@@ -139,7 +139,7 @@ sectionsToSubSections = unsafeCoerce
   <<< sectionToSubSections
   <<< V.toArray
 
-type Full = (smp :: String, vol :: FoT Unit, st :: DurF, vc :: String -> Int)
+type Full = (smp :: String, vol :: FoT Unit, rt :: FoT Unit, st :: DurF, vc :: String -> Int)
 
 defaultSt :: DurF
 defaultSt = const 0.0
@@ -161,6 +161,9 @@ rp = UF.replicate
 defaultVol :: FoT Unit
 defaultVol = const 0.3
 
+defaultRt :: FoT Unit
+defaultRt = const 1.0
+
 verbMe0 = addEffect
   \{ buffers, silence } ->
     fx $ goodbye $ convolver (maybe silence _.buffer.forward (lookup "StPatricksChurchPatringtonPosition3" buffers)) hello
@@ -179,6 +182,7 @@ nt r = Record.merge r
   , st: defaultSt
   , vc: attrVoice
   , vol: defaultVol
+  , rt: defaultRt
   }
 
 wag :: AFuture
@@ -356,15 +360,14 @@ len = NEA.length pitches :: Int
 
 justNotes :: Int -> NonEmptyArray (NoteInFlattenedTime (Note Unit))
 justNotes =
-  NEA.sortBy
-    (compare `on` (view (unto NoteInFlattenedTime <<< prop (Proxy :: _ "littleStartsAt"))))
-    <<< DM.fromMaybe (NEA.fromNonEmpty (shhhh :| []))
+  DM.fromMaybe (NEA.fromNonEmpty (shhhh :| []))
     <<< fromArray
-    <<< fold
     <<< notes
 
-notes :: Int -> SubSections (Array (NoteInFlattenedTime (Note Unit)))
-notes voice = mapWithIndex (map Array.catMaybes <<< map <<< nt2nift voice) pitches
+notes :: Int -> Array (NoteInFlattenedTime (Note Unit))
+notes voice = Array.sortBy
+    (compare `on` (view (unto NoteInFlattenedTime <<< prop (Proxy :: _ "littleStartsAt"))))
+    $ fold $ mapWithIndex (map Array.catMaybes <<< map <<< nt2nift voice) pitches
 
 shhhh :: NoteInFlattenedTime (Note Unit)
 shhhh = NoteInFlattenedTime
@@ -383,16 +386,19 @@ shhhh = NoteInFlattenedTime
 
 nt2nift :: Int -> Int -> { | Full } -> Maybe (NoteInFlattenedTime (Note Unit))
 nt2nift voice _ { smp, vc } | vc smp /= voice = Nothing
-nt2nift voice i { smp, st, vol } = Just
+nt2nift voice i { smp, st, vol, rt } = Just
   let
     duration = getDuration i
     startsAt = fac i + st { duration, voice }
   in
     NoteInFlattenedTime
-      { note: set
-          (unto Note <<< prop (Proxy :: _ "volumeFoT"))
-          vol
-          (noteFromSample (Sample smp))
+      { note:
+          set
+            (unto Note <<< prop (Proxy :: _ "volumeFoT"))
+            vol $ set
+            (unto Note <<< prop (Proxy :: _ "rateFoT"))
+            rt
+            (noteFromSample (Sample smp))
       , bigStartsAt: startsAt
       , littleStartsAt: startsAt
       , currentCycle: 0
@@ -429,9 +435,9 @@ durationsFull =
     -- kel
     +> 1.8
     -- lo
-    +> 1.2
+    +> 1.7
     -- ne
-    +> 1.3
+    +> 1.5
     -- soi
     +> 6.0
     --
@@ -463,7 +469,7 @@ durationsFull =
     -- lau
     +> 3.8
     -- lu
-    +> 2.8
+    +> 3.35
     -- rau
     +> 1.7
     -- haa,
@@ -473,9 +479,9 @@ durationsFull =
     -- haa
     +> 1.4
     -- tois
-    +> 3.0
+    +> 3.5
     -- taa
-    +> 4.0
+    +> 10.2
     -- Sei
     +> 1.7
     -- men
@@ -485,11 +491,11 @@ durationsFull =
     -- la''
     +> 1.6
     -- jou
-    +> 1.5
+    +> 2.3
     -- lun
-    +> 1.4
+    +> 2.0
     -- ta''h
-    +> 1.3
+    +> 1.8
     -- ti
     +> 2.0
     -- val
@@ -543,7 +549,7 @@ durationsFull =
     -- nois
     +> 2.0
     -- taan
-    +> 11.0
+    +> 10.0
     +> V.empty
 
 type Pitches = (Array { | Full })
@@ -578,6 +584,8 @@ vlfo' ph fq lg lw time = lfo { phase: pi * ph, freq: fq, amp: (lg - lw) * 2.0 } 
 
 ost :: forall event. (Number -> Number) -> FoT event
 ost f = lcmap unwrap $ _.sampleTime >>> f
+
+l86v = max 0.0 <<< calcSlope 0.0 1.0 6.0 0.0
 
 pitchesFull :: Sections Pitches
 pitchesFull =
@@ -734,11 +742,13 @@ pitchesFull =
       +>
         ( let
             pf = makePw ([ 0.0 /\ 0.0, 0.3 /\ 0.3, 0.6 /\ 0.0, 0.8 /\ 0.0, 1.2 /\ 0.8, 1.5 /\ 0.0 ])
+            pf2 = makePw [0.0 /\ 0.1, 0.4 /\ 0.4, 0.9 /\ 0.1 ]
           in
             [ nt { smp: "v3s14", vol: ost pf }
             , nt { smp: "v2s14", vol: ost pf }
             , nt { smp: "v1s14", vol: ost pf }
             , nt { smp: "v0s14", vol: ost pf }
+            , nt { smp: "tones:40", vol: ost pf2 }
             ]
         )
       --  rau
@@ -858,14 +868,18 @@ pitchesFull =
         ]
       -- rau
       +>
-        [ nt { smp: "v4s23" }
-        , nt { smp: "v3s23" }
-        , nt { smp: "v2s23" }
-        , nt { smp: "v1s23" }
-        , nt { smp: "v0s23" }
-        , nt { smp: "tones:28", vol: seCelVol 0.4 }
-        , nt { smp: "tones:28", vol: seCelVol 0.7, st: const 0.4 }
-        ]
+        ( let
+            dwn v t = max 0.0 <<< calcSlope 0.0 v t 0.0
+          in
+            [ nt { smp: "v4s23", vol: ost $ dwn 0.3 1.6 }
+            , nt { smp: "v3s23", vol: ost $ dwn 0.3 1.3 }
+            , nt { smp: "v2s23", vol: ost $ dwn 0.4 1.5 }
+            , nt { smp: "v1s23", vol: ost $ dwn 0.4 1.5 }
+            , nt { smp: "v0s23", vol: ost $ dwn 0.5 1.6 }
+            , nt { smp: "tones:28", vol: seCelVol 0.4 }
+            , nt { smp: "tones:28", vol: seCelVol 0.7, st: const 0.4 }
+            ]
+        )
       -- haa,
       +>
         [ nt { smp: "v4s24" }
@@ -876,110 +890,139 @@ pitchesFull =
         ]
       -- rau
       +>
-        [ nt { smp: "v3s25" }
-        , nt { smp: "v2s25" }
-        , nt { smp: "v1s25" }
-        , nt { smp: "v0s25" }
-        , nt { smp: "licks2:10" }
-        ]
+        ( let
+            dwn v t = max 0.0 <<< calcSlope 0.0 v t 0.0
+            pw = makePw [ 0.0 /\ 0.0, 0.6 /\ 1.0, 1.2 /\ 0.0 ]
+          in
+            [ nt { smp: "v3s25", vol: ost $ dwn 0.3 1.2 }
+            , nt { smp: "v2s25", vol: ost $ dwn 0.3 1.2 }
+            , nt { smp: "v1s25", vol: ost $ dwn 0.3 1.2 }
+            , nt { smp: "v0s25", vol: ost $ dwn 0.3 1.2 }
+            ]
+        )
       -- haa
       +>
-        [ nt { smp: "v3s26" }
-        , nt { smp: "v2s26" }
-        , nt { smp: "v1s26" }
-        , nt { smp: "v0s26" }
+        [ nt { smp: "v3s26", vol: ost $ vlfo 3.0 0.1 0.05 }
+        , nt { smp: "v2s26", vol: ost $ vlfo 3.0 0.1 0.05 }
+        , nt { smp: "v1s26", vol: ost $ vlfo 3.0 0.15 0.05 }
+        , nt { smp: "v0s26", vol: ost $ vlfo 3.0 0.2 0.05 }
         ]
       -- tois
       +>
-        [ nt { smp: "v5s27" }
-        , nt { smp: "v4s27" }
-        , nt { smp: "v3s27" }
-        , nt { smp: "v2s27" }
-        , nt { smp: "v1s27" }
-        , nt { smp: "v0s27" }
-        , nt { smp: "licks1:116" }
-        ]
+        ( let
+            dwn v t = max 0.0 <<< calcSlope 0.0 v t 0.0
+          in
+            [ nt { smp: "v5s27", vol: ost $ dwn 0.4 0.7 }
+            , nt { smp: "v4s27", vol: ost $ dwn 0.5 0.7 }
+            , nt { smp: "v3s27", vol: ost $ dwn 0.2 0.7 }
+            , nt { smp: "v2s27", vol: ost $ dwn 0.7 0.2 }
+            , nt { smp: "v1s27", vol: ost $ dwn 0.3 0.4 }
+            , nt { smp: "v0s28", vol: ost $ dwn 0.3 0.7 }
+            , nt { smp: "v5s27", st: const 0.6, vol: ost $ dwn 0.1 0.5 }
+            , nt { smp: "v4s27", st: const 0.6, vol: ost $ dwn 0.1 0.5 }
+            , nt { smp: "v3s27", st: const 0.6, vol: ost $ dwn 0.1 0.5 }
+            , nt { smp: "v2s27", st: const 0.6, vol: ost $ dwn 0.1 0.5 }
+            , nt { smp: "v1s27", st: const 0.6, vol: ost $ dwn 0.1 0.5 }
+            , nt { smp: "v0s27", st: const 0.6, vol: ost $ dwn 0.1 0.5 }
+            , nt { smp: "licks1:46" }
+            ]
+        )
+
       -- taa
       +>
-        [ nt { smp: "v4s28" }
-        , nt { smp: "v3s28" }
-        , nt { smp: "v2s28" }
-        , nt { smp: "v1s28" }
-        , nt { smp: "v0s28" }
-        ]
+        ( let
+            bse ott rte wd bs =   [ nt { smp: "v4s28", st: const ott, vol: ost $ vlfo' 0.1 (rte + 0.8) wd bs }  , nt { smp: "v3s28", st: const ott, vol: ost $ vlfo' 0.2 (rte + 0.4) wd bs } , nt { smp: "v2s28", st: const ott, vol: ost $ vlfo' 0.3 (rte + 0.4) wd bs } , nt { smp: "v1s28", st: const ott, vol: ost $ vlfo' 0.6 rte wd bs } , nt { smp: "v0s28", st: const ott, vol: ost $ vlfo rte wd bs }]
+          in
+            fold
+              [ bse 0.0 2.0 0.1 0.3
+              , bse 2.25 4.0 0.2 0.05
+              , bse 5.0 0.5 0.4 0.05
+              , bse 7.1 4.0 0.2 0.05
+              , bse 9.2 2.0 0.1 0.3
+              ]
+        )
       --
       -- Sei
-      +> [ nt { smp: "v1s29" }, nt { smp: "v0s29" } ]
+      +>
+        [ nt { smp: "v1s29", vol: ost $ vlfo 2.0 0.4 0.02 }
+        , nt { smp: "v0s29", vol: ost $ vlfo 2.0 0.4 0.02 }
+        , nt { smp: "licks2:50"}
+        ]
       -- men
       +>
-        [ nt { smp: "v3s30" }
-        , nt { smp: "v2s30" }
-        , nt { smp: "v1s30" }
-        , nt { smp: "v0s30" }
+        [ nt { smp: "v3s30", vol: ost $ vlfo 2.5 0.2 0.02 }
+        , nt { smp: "v2s30", vol: ost $ vlfo 2.2 0.3 0.02 }
+        , nt { smp: "v1s30", vol: ost $ vlfo 2.0 0.4 0.02 }
+        , nt { smp: "v0s30", vol: ost $ vlfo 2.0 0.4 0.02 }
         ]
       -- yl
       +>
-        [ nt { smp: "v5s31" }
-        , nt { smp: "v4s31" }
-        , nt { smp: "v3s31" }
-        , nt { smp: "v2s31" }
-        , nt { smp: "v1s31" }
-        , nt { smp: "v0s31" }
+        [ nt { smp: "v5s31", vol: ost $ vlfo 3.4 0.2 0.02 }
+        , nt { smp: "v4s31", vol: ost $ vlfo 3.4 0.2 0.02 }
+        , nt { smp: "v3s31", vol: ost $ vlfo 3.3 0.3 0.02 }
+        , nt { smp: "v2s31", vol: ost $ vlfo 3.3 0.3 0.02 }
+        , nt { smp: "v1s31", vol: ost $ vlfo 3.1 0.4 0.02 }
+        , nt { smp: "v0s31", vol: ost $ vlfo 3.0 0.4 0.02 }
         ]
       -- la''
       +>
-        [ nt { smp: "v7s32" }
-        , nt { smp: "v6s32" }
-        , nt { smp: "v5s32" }
-        , nt { smp: "v4s32" }
-        , nt { smp: "v3s32" }
-        , nt { smp: "v2s32" }
-        , nt { smp: "v1s32" }
-        , nt { smp: "v0s32" }
+        [ nt { smp: "v7s32", vol: ost $ vlfo 5.0 0.15 0.02 }
+        , nt { smp: "v6s32", vol: ost $ vlfo' 0.1 5.0 0.15 0.02 }
+        , nt { smp: "v5s32", vol: ost $ vlfo' 0.2 5.0 0.15 0.02 }
+        , nt { smp: "v4s32", vol: ost $ vlfo' 0.3 5.0 0.15 0.02 }
+        , nt { smp: "v3s32", vol: ost $ vlfo' 0.4 5.0 0.15 0.02 }
+        , nt { smp: "v2s32", vol: ost $ vlfo' 0.5 5.0 0.15 0.02 }
+        , nt { smp: "v1s32", vol: ost $ vlfo' 0.6 5.0 0.15 0.02 }
+        , nt { smp: "v0s32", vol: ost $ vlfo' 0.7 5.0 0.15 0.02 }
         ]
       -- jou
       +>
-        [ nt { smp: "v7s33" }
-        , nt { smp: "v6s33" }
-        , nt { smp: "v5s33" }
-        , nt { smp: "v4s33" }
-        , nt { smp: "v3s33" }
-        , nt { smp: "v2s33" }
-        , nt { smp: "v1s33" }
+        [ nt { smp: "v7s33", vol: ost $ vlfo 8.0 0.15 0.02 }
+        , nt { smp: "v6s33", vol: ost $ vlfo 6.0 0.15 0.02 }
+        , nt { smp: "v5s33", vol: ost $ vlfo 6.0 0.15 0.02 }
+        , nt { smp: "v4s33", vol: ost $ vlfo 3.0 0.15 0.02 }
+        , nt { smp: "v3s33", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v2s33", vol: ost $ vlfo 1.0 0.15 0.02 }
+        , nt { smp: "v1s33", vol: ost $ vlfo 1.0 0.15 0.02 }
         , nt { smp: "v0s33" }
         , nt { smp: "tones:8" }
         ]
       -- lun
-      +> [ nt { smp: "v1s34" }, nt { smp: "v0s34" } ]
+      +> [ nt { smp: "v1s34" }, nt { smp: "v0s34" }, nt { smp: "tones:124" } ]
       -- ta''h
       +>
-        [ nt { smp: "v7s35" }
-        , nt { smp: "v6s35" }
-        , nt { smp: "v5s35" }
-        , nt { smp: "v4s35" }
-        , nt { smp: "v3s35" }
-        , nt { smp: "v2s35" }
+        [ nt { smp: "v7s35", vol: ost $ vlfo 8.0 0.15 0.02 }
+        , nt { smp: "v6s35", vol: ost $ vlfo 6.0 0.15 0.02 }
+        --, nt { smp: "v5s35", vol: ost $ vlfo 6.0 0.15 0.02 }
+        --, nt { smp: "v4s35", vol: ost $ vlfo 3.0 0.15 0.02 }
+        -- nt { smp: "v3s35", vol: ost $ vlfo 2.0 0.15 0.02 }
+        -- nt { smp: "v2s35", vol: ost $ vlfo 1.0 0.15 0.02 }
         , nt { smp: "v1s35" }
         , nt { smp: "v0s35" }
+        , nt { smp: "tones:36" }
         ]
       -- ti
       +>
-        [ nt { smp: "v5s36" }
-        , nt { smp: "v4s36" }
-        , nt { smp: "v3s36" }
-        , nt { smp: "v2s36" }
-        , nt { smp: "v1s36" }
-        , nt { smp: "v0s36" }
-        ]
+        ( let
+            dwn v t = max 0.0 <<< calcSlope 0.0 v t 0.0
+            bse oss =  [ nt { smp: "v5s36", st: const oss, vol: ost $ dwn 0.1 0.8 }, nt { smp: "v4s36", st: const oss, vol: ost $ dwn 0.2 0.8 }, nt { smp: "v3s36", st: const oss, vol: ost $ dwn 0.3 0.8 }, nt { smp: "v2s36", st: const oss, vol: ost $ dwn 0.2 0.8 }, nt { smp: "v1s36", st: const oss, vol: ost $ dwn 0.1 0.8 }, nt { smp: "v0s36", st: const oss, vol: ost $ dwn 0.3 0.8 }]
+          in
+            fold [ bse 0.0, bse 0.7, bse 1.4, [nt { smp: "tones:72" }] ]
+        )
       -- val
       +>
-        [ nt { smp: "v5s37" }
-        , nt { smp: "v4s37" }
-        , nt { smp: "v3s37" }
-        , nt { smp: "v2s37" }
-        , nt { smp: "v1s37" }
-        , nt { smp: "v0s37" }
-        ]
+        ( let
+            pf fv = makePw ([ 0.0 /\ 0.4, 0.4 /\ 0.05, 0.9 /\ fv ])
+          in
+            [ nt { smp: "v5s37", vol: ost $ pf 0.1 }
+            , nt { smp: "v4s37", vol: ost $ pf 0.2 }
+            , nt { smp: "v3s37", vol: ost $ pf 0.1 }
+            , nt { smp: "v2s37", vol: ost $ pf 0.3 }
+            , nt { smp: "v1s37", vol: ost $ pf 0.2 }
+            , nt { smp: "v0s37", vol: ost $ pf 0.4 }
+            , nt { smp: "tones:36" }
+            ]
+        )
       -- ke
       +>
         [ nt { smp: "v3s38" }
@@ -995,40 +1038,46 @@ pitchesFull =
         , nt { smp: "v1s40" }
         , nt { smp: "v0s40" }
         , nt { smp: "licks1:108" }
-        , nt { smp: "fsbells0", vol: lcmap unwrap (_.sampleTime >>> bell0Pw) }
         ]
       --
       -- Kirk
       +>
-        [ nt { smp: "v3s41" }
-        , nt { smp: "v2s41" }
-        , nt { smp: "v1s41" }
-        , nt { smp: "v0s41" }
-        ]
+        ( let
+            dwn v t = max 0.0 <<< calcSlope 0.0 v t 0.0
+          in
+            [ nt { smp: "v3s41", vol: ost $ dwn 0.3 1.5 }
+            , nt { smp: "v2s41", vol: ost $ dwn 0.3 1.5 }
+            , nt { smp: "v1s41", vol: ost $ dwn 0.3 1.5 }
+            , nt { smp: "v0s41", vol: ost $ dwn 0.3 1.5 }
+            , nt { smp: "v3s41", st: const 0.8, vol: ost $ dwn 0.08 1.5 }
+            , nt { smp: "v2s41", st: const 0.8, vol: ost $ dwn 0.08 1.5 }
+            , nt { smp: "v1s41", st: const 0.8, vol: ost $ dwn 0.08 1.5 }
+            , nt { smp: "v0s41", st: const 0.8, vol: ost $ dwn 0.08 1.5 }
+            , nt { smp: "fsbells0", vol: lcmap unwrap (_.sampleTime >>> bell0Pw) }
+            ]
+        )
       -- kaa
       +>
-        [ nt { smp: "v4s42" }
-        , nt { smp: "v3s42" }
-        , nt { smp: "v2s42" }
-        , nt { smp: "v1s42" }
-        , nt { smp: "v0s42" }
+        [ nt { smp: "v4s42", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v3s42", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v2s42", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v1s42", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v0s42", vol: ost $ vlfo 2.0 0.15 0.02 }
         ]
       -- na
       +>
-        [ nt { smp: "v3s43" }
-        , nt { smp: "v2s43" }
-        , nt { smp: "v1s43" }
-        , nt { smp: "v0s43" }
+        [ nt { smp: "v3s43", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v2s43", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v1s43", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v0s43", vol: ost $ vlfo 3.5 0.15 0.02 }
         ]
       -- sil
       +>
-        [ nt { smp: "v4s44" }
-        , nt { smp: "v3s44" }
-        , nt { smp: "v2s44" }
-        , nt { smp: "v1s44" }
-        , nt { smp: "v0s44" }
-        , nt { smp: "tones:132" }
-        , nt { smp: "tones:132", st: const 0.4 }
+        [ nt { smp: "v4s44", vol: ost $ vlfo 1.0 0.25 0.2 }
+        , nt { smp: "v3s44", vol: ost $ vlfo' 0.3 1.0 0.25 0.2 }
+        , nt { smp: "v2s44", vol: ost $ vlfo' 0.6 1.0 0.25 0.2 }
+        , nt { smp: "v1s44", vol: ost $ vlfo' 0.9 1.0 0.25 0.2 }
+        , nt { smp: "v0s44", vol: ost $ vlfo 1.0 0.25 0.2 }
         ]
       -- miin
       +>
@@ -1040,13 +1089,19 @@ pitchesFull =
         ]
       -- lap
       +>
-        [ nt { smp: "v5s46" }
-        , nt { smp: "v4s46" }
-        , nt { smp: "v3s46" }
-        , nt { smp: "v2s46" }
-        , nt { smp: "v1s46" }
-        , nt { smp: "v0s46" }
-        ]
+        ( let
+            pw = makePw [ 0.0 /\ 0.4, 0.4 /\ 0.05, 0.9 /\ 0.3 ]
+          in
+
+            [ nt { smp: "v5s46", vol: ost $ pw }
+            , nt { smp: "v4s46", vol: ost $ pw }
+            , nt { smp: "v3s46", vol: ost $ pw }
+            , nt { smp: "v2s46", vol: ost $ pw }
+            , nt { smp: "v1s46", vol: ost $ pw }
+            , nt { smp: "v0s46", vol: ost $ pw }
+            , nt { smp: "licks1:86", vol: ost $ l86v }
+            ]
+        )
       -- so
       +>
         [ nt { smp: "v5s47" }
@@ -1058,21 +1113,23 @@ pitchesFull =
         ]
       -- sen
       +>
-        [ nt { smp: "v5s48" }
-        , nt { smp: "v4s48" }
-        , nt { smp: "v3s48" }
-        , nt { smp: "v2s48" }
-        , nt { smp: "v1s48" }
-        , nt { smp: "v0s48" }
+        [ nt { smp: "v5s48", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v4s48", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v3s48", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v2s48", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v1s48", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v0s48", vol: ost $ vlfo 2.0 0.15 0.02 }
+
         ]
       -- nyt
       +>
-        [ nt { smp: "v5s49" }
-        , nt { smp: "v4s49" }
-        , nt { smp: "v3s49" }
-        , nt { smp: "v2s49" }
-        , nt { smp: "v1s49" }
-        , nt { smp: "v0s49" }
+        [ nt { smp: "v5s49", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v4s49", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v3s49", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v2s49", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v1s49", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v0s49", vol: ost $ vlfo 3.5 0.15 0.02 }
+
         ]
       -- lois
       +>
@@ -1082,62 +1139,69 @@ pitchesFull =
         , nt { smp: "v2s50" }
         , nt { smp: "v1s50" }
         , nt { smp: "v0s50" }
-        , nt { smp: "fsbells1", vol: const 0.2 }
 
+        -- , nt { smp: "fsbells1", vol: const 0.2 }
         ]
       -- taa
       +>
-        [ nt { smp: "v5s51" }
-        , nt { smp: "v4s51" }
-        , nt { smp: "v3s51" }
-        , nt { smp: "v2s51" }
-        , nt { smp: "v1s51" }
-        , nt { smp: "v0s51" }
+        [ nt { smp: "v5s51", vol: ost $ vlfo 1.0 0.25 0.2 }
+        , nt { smp: "v4s51", vol: ost $ vlfo 0.9 0.25 0.2 }
+        , nt { smp: "v3s51", vol: ost $ vlfo 0.8 0.25 0.2 }
+        , nt { smp: "v2s51", vol: ost $ vlfo 0.95 0.25 0.2 }
+        , nt { smp: "v1s51", vol: ost $ vlfo 1.0 0.25 0.2 }
+        , nt { smp: "v0s51", vol: ost $ vlfo 1.1 0.25 0.2 }
+
         ]
       --
       -- Maa
       +>
-        [ nt { smp: "v5s52" }
-        , nt { smp: "v4s52" }
-        , nt { smp: "v3s52" }
-        , nt { smp: "v2s52" }
-        , nt { smp: "v1s52" }
-        , nt { smp: "v0s52" }
-        ]
+        ( let
+            dwn v t = max 0.0 <<< calcSlope 0.0 v t 0.0
+          in
+            [ nt { smp: "v5s52", vol: ost $ dwn 0.3 1.5 }
+            , nt { smp: "v4s52", vol: ost $ dwn 0.4 1.5 }
+            , nt { smp: "v3s52", vol: ost $ dwn 0.5 1.5 }
+            , nt { smp: "v2s52", vol: ost $ dwn 0.2 1.5 }
+            , nt { smp: "v1s52", vol: ost $ dwn 0.4 1.5 }
+            , nt { smp: "v0s52", vol: ost $ dwn 0.5 1.5 }
+            , nt { smp: "tones:44" }
+            ]
+        )
       -- ri
       +>
-        [ nt { smp: "v4s53" }
-        , nt { smp: "v3s53" }
-        , nt { smp: "v2s53" }
-        , nt { smp: "v1s53" }
-        , nt { smp: "v0s53" }
+        [ nt { smp: "v4s53", vol: ost $ vlfo 2.0 0.15 0.02 }
+        , nt { smp: "v3s53", vol: ost $ vlfo' 0.2 2.0 0.15 0.02 }
+        , nt { smp: "v2s53", vol: ost $ vlfo' 0.4 2.0 0.15 0.02 }
+        , nt { smp: "v1s53", vol: ost $ vlfo' 0.6 2.0 0.15 0.02 }
+        , nt { smp: "v0s53", vol: ost $ vlfo' 0.8 2.0 0.15 0.02 }
         ]
       -- ai
       +>
-        [ nt { smp: "v5s54" }
-        , nt { smp: "v4s54" }
-        , nt { smp: "v3s54" }
-        , nt { smp: "v2s54" }
-        , nt { smp: "v1s54" }
-        , nt { smp: "v0s54" }
+        [ nt { smp: "v5s54", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v4s54", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v3s54", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v2s54", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v1s54", vol: ost $ vlfo 3.5 0.15 0.02 }
+        , nt { smp: "v0s54", vol: ost $ vlfo 3.5 0.15 0.02 }
         ]
       -- nen
       +>
-        [ nt { smp: "v4s55" }
-        , nt { smp: "v3s55" }
-        , nt { smp: "v2s55" }
-        , nt { smp: "v1s55" }
-        , nt { smp: "v0s55" }
+        [ nt { smp: "v4s55", vol: ost $ vlfo 0.6 0.3 0.02 }
+        , nt { smp: "v3s55", vol: ost $ vlfo' 0.6 0.7 0.3 0.02 }
+        , nt { smp: "v2s55", vol: ost $ vlfo 0.5 0.3 0.02 }
+        , nt { smp: "v1s55", vol: ost $ vlfo' 0.3 0.4 0.3 0.02 }
+        , nt { smp: "v0s55", vol: ost $ vlfo' 0.2 0.2 0.3 0.02 }
         ]
       -- tuu
       +>
-        [ nt { smp: "v6s56" }
-        , nt { smp: "v5s56" }
-        , nt { smp: "v4s56" }
-        , nt { smp: "v3s56" }
-        , nt { smp: "v2s56" }
-        , nt { smp: "v1s56" }
-        , nt { smp: "v0s56" }
+        [ nt { smp: "v6s56", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.7, freq: 0.8 } }
+        , nt { smp: "v5s56", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.7, freq: 0.8 } }
+        , nt { smp: "v4s56", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.7, freq: 0.8 } }
+        , nt { smp: "v3s56", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.7, freq: 0.8 } }
+        , nt { smp: "v2s56", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.7, freq: 0.8 } }
+        , nt { smp: "v1s56", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.7, freq: 0.8 } }
+        , nt { smp: "v0s56", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.7, freq: 0.8 } }
+        , nt { smp: "tones:8" }
         ]
       -- tii
       +>
@@ -1147,14 +1211,11 @@ pitchesFull =
         ]
       -- sei
       +>
-        [ nt { smp: "v6s58" }
-        , nt { smp: "v5s58" }
-        , nt { smp: "v4s58" }
-        , nt { smp: "v3s58" }
-        , nt { smp: "v2s58" }
-        , nt { smp: "v1s58" }
-        , nt { smp: "v0s58" }
-        ]
+        ( let
+            base ottt = [ nt { smp: "v6s58", st: const ottt }, nt { smp: "v5s58", st: const ottt }, nt { smp: "v4s58", st: const ottt }, nt { smp: "v3s58", st: const ottt }, nt { smp: "v2s58", st: const ottt }, nt { smp: "v1s58", st: const ottt }, nt { smp: "v0s58", st: const ottt }]
+          in
+            fold [ base 0.0, base 1.9 ]
+        )
       -- men
       +>
         [ nt { smp: "v4s59" }
@@ -1174,13 +1235,11 @@ pitchesFull =
         ]
       -- nois
       +>
-        [ nt { smp: "v5s61" }
-        , nt { smp: "v4s61" }
-        , nt { smp: "v3s61" }
-        , nt { smp: "v2s61" }
-        , nt { smp: "v1s61" }
-        , nt { smp: "v0s61" }
-        ]
+        ( let
+            bse xy = [nt { smp: "v1s61", st: const xy }, nt { smp: "v0s61", st: const xy }]
+          in
+            fold [ bse 0.0, bse 2.6 ]
+        )
       -- taan
       +>
         [ nt { smp: "v5s62" }
@@ -1190,8 +1249,8 @@ pitchesFull =
         , nt { smp: "v1s62" }
         , nt { smp: "v0s62" }
         , nt { smp: "licks1:20", vol: lcmap unwrap (_.sampleTime >>> lastPw) }
-        , nt { smp: "licks1:20", vol: lcmap unwrap (_.sampleTime >>> lastPw), st: const 1.8 }
-        , nt { smp: "licks1:20", vol: lcmap unwrap (_.sampleTime >>> lastPw), st: const 3.6 }
+        , nt { smp: "licks1:20", vol: lcmap unwrap (_.sampleTime >>> lastPw), st: const 3.0 }
+        , nt { smp: "licks1:20", vol: lcmap unwrap (_.sampleTime >>> lastPw), st: const 9.0 }
         ]
       +> V.empty
   )
