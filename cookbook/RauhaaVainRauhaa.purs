@@ -887,17 +887,18 @@ pitchesFull =
         , nt { smp: "v2s24" }
         , nt { smp: "v1s24" }
         , nt { smp: "v0s24" }
+        , nt { smp: "tones:28", st: const 0.6}
         ]
       -- rau
       +>
         ( let
             dwn v t = max 0.0 <<< calcSlope 0.0 v t 0.0
-            pw = makePw [ 0.0 /\ 0.0, 0.6 /\ 1.0, 1.2 /\ 0.0 ]
           in
             [ nt { smp: "v3s25", vol: ost $ dwn 0.3 1.2 }
             , nt { smp: "v2s25", vol: ost $ dwn 0.3 1.2 }
             , nt { smp: "v1s25", vol: ost $ dwn 0.3 1.2 }
             , nt { smp: "v0s25", vol: ost $ dwn 0.3 1.2 }
+            , nt { smp: "tones:28", st: const 0.6}
             ]
         )
       -- haa
@@ -906,6 +907,7 @@ pitchesFull =
         , nt { smp: "v2s26", vol: ost $ vlfo 3.0 0.1 0.05 }
         , nt { smp: "v1s26", vol: ost $ vlfo 3.0 0.15 0.05 }
         , nt { smp: "v0s26", vol: ost $ vlfo 3.0 0.2 0.05 }
+        , nt { smp: "tones:28", st: const 0.6}
         ]
       -- tois
       +>
