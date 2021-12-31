@@ -979,14 +979,14 @@ pitchesFull =
         ]
       -- jou
       +>
-        [ nt { smp: "v7s33", vol: ost $ vlfo 8.0 0.15 0.02 }
-        , nt { smp: "v6s33", vol: ost $ vlfo 6.0 0.15 0.02 }
-        , nt { smp: "v5s33", vol: ost $ vlfo 6.0 0.15 0.02 }
+        [ nt { smp: "v7s33", vol: ost $ vlfo 8.0 0.10 0.02 }
+        , nt { smp: "v6s33", vol: ost $ vlfo 6.0 0.10 0.02 }
+        , nt { smp: "v5s33", vol: ost $ vlfo 6.0 0.10 0.02 }
         , nt { smp: "v4s33", vol: ost $ vlfo 3.0 0.15 0.02 }
         , nt { smp: "v3s33", vol: ost $ vlfo 2.0 0.15 0.02 }
-        , nt { smp: "v2s33", vol: ost $ vlfo 1.0 0.15 0.02 }
-        , nt { smp: "v1s33", vol: ost $ vlfo 1.0 0.15 0.02 }
-        , nt { smp: "v0s33" }
+        , nt { smp: "v2s33", vol: ost $ vlfo 1.0 0.2 0.02 }
+        , nt { smp: "v1s33", vol: ost $ vlfo 1.0 0.2 0.02 }
+        , nt { smp: "v0s33", vol: const 0.5 }
         , nt { smp: "tones:8" }
         ]
       -- lun
