@@ -124,18 +124,20 @@ volDelayB = add 0.4 <<< lfo { amp: 0.35, freq: 0.35, phase: pi * 0.25 }
 type Sections a = Vec D63 a
 type SubSections a = NonEmptyArray a
 
+sectionToSubSections arr (sectionStart /\ sectionEnd) =
+  let
+    st = min 62 $ max 0 sectionStart
+    ed' = min 63 $ max 1 (sectionEnd + 1)
+    ed = if ed' <= st then st + 1 else ed'
+  in
+    Array.slice st ed arr
+
 sectionsToSubSections :: Sections ~> SubSections
 sectionsToSubSections = unsafeCoerce
   <<< join
   <<< (<#>) sectionMap
-  <<< go
+  <<< sectionToSubSections
   <<< V.toArray
-  where
-  go arr (sectionStart /\ sectionEnd) = Array.slice st ed arr
-    where
-    st = min 62 $ max 0 sectionStart
-    ed' = min 63 $ max 1 (sectionEnd + 1)
-    ed = if ed' <= st then st + 1 else ed'
 
 type Full = (smp :: String, vol :: FoT Unit, st :: DurF, vc :: String -> Int)
 
