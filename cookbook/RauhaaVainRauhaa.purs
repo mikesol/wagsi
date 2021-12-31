@@ -98,9 +98,6 @@ sectionMap = join $
     <> rp 5 [ 18 /\ 22 ]
     <> rp 5 [ 23 /\ 28 ]
     <> rp 3 [ 29 /\ 40 ]
-    {-<> rp 1 [ 41 /\ 45 ]
-    <> rp 5 [ 46 /\ 51 ]
-    <> rp 5 [ 52 /\ 63 ]-}
 
 voice1PanFrequency = 0.38 :: Number
 -- the frequency, in Hz, with which the second voice pans from left to right.
@@ -446,7 +443,7 @@ durationsFull =
     -- sel
     +> 2.5
     -- le
-    +> 2.1
+    +> 1.0
     -- rau
     +> 3.9
     -- ha
@@ -700,10 +697,10 @@ pitchesFull =
         , nt { smp: "v2s10", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.4, freq: 1.6 } }
         , nt { smp: "v1s10", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.4, freq: 1.7 } }
         , nt { smp: "v0s10", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.6, freq: 1.0 } }
-        , nt { smp: "tones:16", vol: seCelVol 0.3, st: const 0.25 }
-        , nt { smp: "tones:16", vol: seCelVol 0.5, st: const 0.4 }
-        , nt { smp: "tones:16", vol: seCelVol 1.0, st: const 0.65 }
-        , nt { smp: "tones:16", vol: seCelVol 1.0, st: const 0.85 }
+        , nt { smp: "tones:16", vol: seCelVol 0.3 }
+        -- , nt { smp: "tones:16", vol: seCelVol 0.5, st: const 0.4 }
+        -- , nt { smp: "tones:16", vol: seCelVol 1.0, st: const 0.65 }
+        -- , nt { smp: "tones:16", vol: seCelVol 1.0, st: const 0.85 }
         ]
       -- le
       -- faster lfo
@@ -712,7 +709,7 @@ pitchesFull =
         , nt { smp: "v1s11", vol: ost $ vlfo 2.3 0.2 0.05 }
         , nt { smp: "v2s11", vol: ost $ vlfo 2.5 0.25 0.05 }
         , nt { smp: "v3s11", vol: ost $ vlfo 2.8 0.3 0.05 }
-        , nt { smp: "tones:48", vol: seCelVol 0.4, st: const 0.3 }
+        , nt { smp: "tones:48", vol: seCelVol 0.4 }
         ]
       -- rau
       -- dot dot dot dot
@@ -736,7 +733,7 @@ pitchesFull =
         , nt { smp: "v2s13" }
         , nt { smp: "v1s13" }
         , nt { smp: "v0s13" }
-        , nt { smp: "tones:36", st: const 1.0 }
+        , nt { smp: "tones:36" }
         ]
       -- ne
       +>
@@ -847,7 +844,6 @@ pitchesFull =
         ( let
             pf infl = makePw ([ 0.0 /\ 0.1, infl /\ 0.6 ])
           in
-
             [ nt { smp: "v4s21", vol: ost $ pf 1.0 }
             , nt { smp: "v3s21", vol: ost $ pf 1.8 }
             , nt { smp: "v2s21", vol: ost $ pf 1.1 }
@@ -887,12 +883,13 @@ pitchesFull =
         , nt { smp: "v2s24" }
         , nt { smp: "v1s24" }
         , nt { smp: "v0s24" }
-        , nt { smp: "tones:28", st: const 0.6}
+        , nt { smp: "tones:28", rt: const 0.99, st: const 0.6}
         ]
       -- rau
       +>
         ( let
             dwn v t = max 0.0 <<< calcSlope 0.0 v t 0.0
+            pw = makePw [ 0.0 /\ 0.0, 0.6 /\ 1.0, 1.2 /\ 0.0 ]
           in
             [ nt { smp: "v3s25", vol: ost $ dwn 0.3 1.2 }
             , nt { smp: "v2s25", vol: ost $ dwn 0.3 1.2 }
@@ -907,7 +904,6 @@ pitchesFull =
         , nt { smp: "v2s26", vol: ost $ vlfo 3.0 0.1 0.05 }
         , nt { smp: "v1s26", vol: ost $ vlfo 3.0 0.15 0.05 }
         , nt { smp: "v0s26", vol: ost $ vlfo 3.0 0.2 0.05 }
-        , nt { smp: "tones:28", rt: const 0.99, st: const 0.6}
         ]
       -- tois
       +>
