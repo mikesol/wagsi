@@ -97,7 +97,7 @@ sectionMap = join $
     <> rp 5 [ 9 /\ 17 ]
     <> rp 5 [ 18 /\ 22 ]
     <> rp 5 [ 23 /\ 28 ]
-    <> rp 3 [ 29 /\ 40 ]
+    <> rp 1 [ 29 /\ 40 ]
 
 voice1PanFrequency = 0.38 :: Number
 -- the frequency, in Hz, with which the second voice pans from left to right.
