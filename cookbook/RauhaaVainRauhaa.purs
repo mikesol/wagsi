@@ -6,17 +6,38 @@ module WAGSI.Cookbook.RauhaaVainRauhaa where
   Performed and arranged by
   Mike Solomon and Verity Scheel
 
-  *API*
+  **Loading**
+  Once you click play, loading will take 10-20 seconds.
+  Subsequent loads will be faster!
+
+  **API**
   After the imports, there are various parameters
   that you can tweak to your heart's content.
   Each one is documented, and each one will result
   in a subtly or perhaps radically different work.
+
+  **Tuning**
+  This document has already had 1000+ listens and any
+  changes you make here will be heard by anyone who
+  visits! The spirit of the project encourages that: the
+  work should evolve organically, and everyone can leave
+  their mark if they wish.
+
+  If you'd rather tweak the parameters in your own
+  version, please copy the contents of this pad into
+  another pad.
+
+  You can create a new pad by going to yap.wags.fm and
+  clicking on the "New Pad" button. Then, copy the
+  contents of this document into the new pad.
+
+  **Thanks!**
   We hope you have a wonderful New Year!
 -}
 
-import Data.Typelevel.Num hiding ((*), (+), (-), mod, (<), max, min, (==), (>), (<=), add, sub, mul)
 import Prelude
 
+import Data.Typelevel.Num (D63)
 import Control.Monad.State (evalState, get, put)
 import Data.Array ((!!))
 import Data.Array as Array
@@ -25,13 +46,13 @@ import Data.Array.NonEmpty as NEA
 import Data.Foldable (fold, foldl)
 import Data.Function (on)
 import Data.FunctorWithIndex (mapWithIndex)
-import Data.Int (fromString, toNumber)
+import Data.Int (fromString)
 import Data.Lens (set, view)
 import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
 import Data.Maybe as DM
 import Data.Newtype (unwrap)
 import Data.NonEmpty ((:|))
@@ -42,11 +63,11 @@ import Data.Traversable (traverse)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Variant.Maybe (nothing)
 import Data.Vec (Vec, (+>))
+import Data.Unfoldable as UF
 import Data.Vec as V
 import Foreign.Object (Object, lookup)
 import Foreign.Object as Object
 import Math ((%), pi)
-import Partial.Unsafe (unsafePartial)
 import Prim.Row (class Nub, class Union)
 import Record as Record
 import Type.Proxy (Proxy(..))
@@ -64,16 +85,38 @@ import WAGS.Math (calcSlope)
 
 --------------
 --- API ------
-sectionStart = 0 :: Int -- must be between 0 and 63 inclusive
-sectionEnd = 64 :: Int -- must be between 0 and 63 inclusive and must be greater than section start
-voice1PanFrequency = 0.38 :: Number -- the frequency, in Hz, with which the first voice pans from left to right. 
-voice2PanFrequency = 0.20 :: Number -- the frequency, in Hz, with which the second voice pans from left to right.
-voice3PanRate = 30.0 :: Number -- the number of sawtooth peaks in the voice 3 LFO over the course of the piece. For more radical, try up to 200.0, and for more tame, try 1.0
+-- A map governing how the 63 sections of the piece are played.
+-- For linear playback of the work, you can do [0 /\ 63].
+-- To loop 0,1,2,3 twice and then 30,31,32,33 twice, you can
+-- do [0 /\ 3, 0 /\ 3, 30 /\ 33, 30 /\ 33].
+sectionMap' :: Array (Int /\ Int)
+sectionMap' = join $
+  rp 3 [ 0 /\ 4 ]
+    <> rp 2 [ 5 /\ 8 ]
+    <> rp 1 [ 0 /\ 8 ]
+    <> rp 3 [ 9 /\ 17 ]
+    <> rp 4 [ 18 /\ 22 ]
+    <> rp 2 [ 23 /\ 63 ]
+
+sectionMap :: Array (Int /\ Int)
+sectionMap = join $
+  rp 1 [ 23 /\ 28 ]
+
+voice1PanFrequency = 0.38 :: Number
+-- the frequency, in Hz, with which the second voice pans from left to right.
+voice2PanFrequency = 0.20 :: Number
+-- the number of sawtooth peaks in the voice 3 LFO over the course of the piece. For more radical, try up to 200.0, and for more tame, try 1.0
+voice3PanRate = 30.0 :: Number
+
 -- NB. the two delay lines below should not be at high volume at the same time for too long, otherwise they will become unstable and
 -- enter into a feedback loop. getting their subtle interplay right can result in some magic moments!
-volDelayA :: Number -> Number -- a function of time setting the volume of the first delay line.
+--
+-- a function of time setting the volume of the first delay line.
+volDelayA :: Number -> Number
 volDelayA = add 0.3 <<< lfo { amp: 0.25, freq: 0.1, phase: pi }
-volDelayB :: Number -> Number -- a function of time setting the volume of the first delay line.
+
+-- a function of time setting the volume of the first delay line.
+volDelayB :: Number -> Number
 volDelayB = add 0.4 <<< lfo { amp: 0.35, freq: 0.35, phase: pi * 0.25 }
 
 --------------
@@ -82,11 +125,17 @@ type Sections a = Vec D63 a
 type SubSections a = NonEmptyArray a
 
 sectionsToSubSections :: Sections ~> SubSections
-sectionsToSubSections = unsafeCoerce <<< Array.slice st ed <<< V.toArray
+sectionsToSubSections = unsafeCoerce
+  <<< join
+  <<< (<#>) sectionMap
+  <<< go
+  <<< V.toArray
   where
-  st = min 63 $ max 0 sectionStart
-  ed' = min 64 $ max 1 sectionEnd
-  ed = if ed' <= st then st + 1 else ed'
+  go arr (sectionStart /\ sectionEnd) = Array.slice st ed arr
+    where
+    st = min 62 $ max 0 sectionStart
+    ed' = min 63 $ max 1 (sectionEnd + 1)
+    ed = if ed' <= st then st + 1 else ed'
 
 type Full = (smp :: String, vol :: FoT Unit, st :: DurF, vc :: String -> Int)
 
@@ -104,6 +153,8 @@ attrVoice s
   , Just ss <- slice (ixv + 1) ixs s
   , Just asI <- fromString ss = asI `mod` 3
   | otherwise = 0
+
+rp = UF.replicate
 
 defaultVol :: FoT Unit
 defaultVol = const 0.3
@@ -151,7 +202,6 @@ wag =
     }
 
 ndg = 0.04 :: Number
-
 
 vocalEffects :: forall event. Int -> Voice event -> Voice event
 vocalEffects voice = addEffect
@@ -369,7 +419,7 @@ durationsFull =
     -- haa
     +> 2.9
     -- vain
-    +> 3.0
+    +> 3.5
     -- rau
     +> 5.0
     -- haa
@@ -388,17 +438,17 @@ durationsFull =
     -- sel
     +> 2.5
     -- le
-    +> 1.4
+    +> 2.1
     -- rau
     +> 3.9
     -- ha
     +> 3.0
     -- ne
-    +> 2.0
+    +> 2.9
     -- rau
     +> 2.3
     -- ha
-    +> 0.9
+    +> 1.6
     -- soi
     +> 6.0
     --
@@ -430,15 +480,15 @@ durationsFull =
     +> 1.7
     -- yl
     +> 1.6
-    -- la'' 
+    -- la''
     +> 1.6
     -- jou
     +> 1.5
-    -- lun 
+    -- lun
     +> 1.4
     -- ta''h
     +> 1.3
-    -- ti 
+    -- ti
     +> 2.0
     -- val
     +> 2.7
@@ -462,9 +512,9 @@ durationsFull =
     +> 1.4
     -- so
     +> 1.2
-    -- sen 
+    -- sen
     +> 1.2
-    -- nyt 
+    -- nyt
     +> 0.9
     -- lois
     +> 3.2
@@ -480,11 +530,11 @@ durationsFull =
     +> 1.8
     -- tuu
     +> 1.8
-    -- tii 
+    -- tii
     +> 1.7
     -- sei
     +> 1.6
-    -- men 
+    -- men
     +> 1.8
     -- pie
     +> 3.0
@@ -505,7 +555,7 @@ rauVol :: FoT Unit
 rauVol = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.0 $ calcSlope 0.0 0.1 0.3 0.0 sampleTime
 
 haVol :: Number -> FoT Unit
-haVol n = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.0 $ calcSlope 0.0 n 0.4 0.0 sampleTime
+haVol n = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.0 $ calcSlope 0.0 n 0.2 0.0 sampleTime
 
 seCelVol :: Number -> FoT Unit
 seCelVol d = lcmap unwrap \{ normalizedSampleTime: sampleTime } -> max 0.0 $ calcSlope 0.0 0.3 d 0.0 sampleTime
@@ -517,6 +567,15 @@ makePw arr n = val
   lb = Map.lookupLE n asMap
   ub = Map.lookupGE n asMap
   val = maybe (maybe 0.0 _.value ub) (\llb -> maybe llb.value (\uub -> calcSlope llb.key llb.value uub.key uub.value n) ub) lb
+
+vlfo :: Number -> Number -> Number -> Number -> Number
+vlfo = vlfo' 0.0
+
+vlfo' :: Number -> Number -> Number -> Number -> Number -> Number
+vlfo' ph fq lg lw time = lfo { phase: pi * ph, freq: fq, amp: (lg - lw) * 2.0 } time + lw
+
+ost :: forall event. (Number -> Number) -> FoT event
+ost f = lcmap unwrap $ _.sampleTime >>> f
 
 pitchesFull :: Sections Pitches
 pitchesFull =
@@ -544,25 +603,25 @@ pitchesFull =
       -- vain
       +>
         [ nt { smp: "v5s2", vol: const 0.05 }
-        , nt { smp: "v4s2", vol: const 0.1 }
+        , nt { smp: "v4s2", vol: ost $ vlfo 2.0 0.1 0.05 }
         , nt { smp: "v3s2", vol: const 0.05 }
-        , nt { smp: "v2s2", vol: const 0.1 }
+        , nt { smp: "v2s2", vol: ost $ vlfo 3.0 0.1 0.05 }
         , nt { smp: "v1s2", vol: const 0.05 }
-        , nt { smp: "v0s2", vol: const 0.1 }
+        , nt { smp: "v0s2", vol: ost $ vlfo 5.0 0.1 0.05 }
         ]
       -- rau
       +>
         ( let
-            vv = (let pf = makePw ([ 0.0 /\ 0.0, 3.0 /\ 1.0, 6.0 /\ 0.0 ]) in lcmap unwrap \{ sampleTime } -> pf sampleTime * (lfo { amp: 0.2, freq: 4.0, phase: 0.0 } sampleTime + 0.5))
-            lfox f = lcmap unwrap (add 0.4 <<< lfo { amp: 0.2, phase: 0.0, freq: f } <<< _.sampleTime)
+            vv = (let pf = makePw ([ 0.0 /\ 0.0, 2.0 /\ 0.4, 4.0 /\ 0.0 ]) in lcmap unwrap \{ sampleTime } -> pf sampleTime * (lfo { amp: 0.2, freq: 4.0, phase: 0.0 } sampleTime + 0.5))
+            fadeTo v t = min v <<< calcSlope 0.0 0.0 t v
           in
-            [ nt { smp: "v6s3", vol: const 0.1 }
-            , nt { smp: "v5s3", vol: lfox 3.0 }
-            , nt { smp: "v4s3", vol: const 0.1 }
-            , nt { smp: "v3s3", vol: lfox 4.0 }
-            , nt { smp: "v2s3", vol: const 0.1 }
-            , nt { smp: "v1s3", vol: lfox 5.0 }
-            , nt { smp: "v0s3", vol: const 0.2 }
+            [ nt { smp: "v6s3", vol: ost $ fadeTo 0.2 2.3 }
+            , nt { smp: "v5s3", vol: ost $ vlfo 2.0 0.1 0.05 }
+            , nt { smp: "v4s3", vol: ost $ fadeTo 0.3 2.7 }
+            , nt { smp: "v3s3", vol: ost $ vlfo 3.0 0.1 0.05 }
+            , nt { smp: "v2s3", vol: ost $ fadeTo 0.5 2.5 }
+            , nt { smp: "v1s3", vol: ost $ vlfo 5.0 0.1 0.05 }
+            , nt { smp: "v0s3", vol: ost $ fadeTo 0.6 3.0 }
             , nt { smp: "tones:44", vol: vv }
             , nt { smp: "tones:40", vol: vv, st: const 0.4 }
             , nt { smp: "tones:48", vol: vv, st: const 0.8 }
@@ -572,24 +631,29 @@ pitchesFull =
             ]
         )
       -- haa
-      +> [ nt { smp: "v0s4", vol: const 0.4 } ]
+      +>
+        [ nt
+            { smp: "v0s4"
+            , vol: ost $ max 0.0 <<< calcSlope 0.0 0.7 0.81 0.0
+            }
+        ]
       -- kel
       +> [ nt { smp: "v1s5" }, nt { smp: "v0s5" }, nt { smp: "tones:110" } ]
       -- lo
       +>
-        [ nt { smp: "v3s6" }
-        , nt { smp: "v2s6" }
-        , nt { smp: "v1s6" }
-        , nt { smp: "v0s6" }
+        [ nt { smp: "v3s6", vol: ost $ vlfo 0.3 0.4 0.05 }
+        , nt { smp: "v2s6", vol: ost $ vlfo' 0.25 0.3 0.4 0.05 }
+        , nt { smp: "v1s6", vol: ost $ vlfo' 0.5 0.3 0.4 0.05 }
+        , nt { smp: "v0s6", vol: ost $ vlfo' 1.0 0.3 0.4 0.05 }
         ]
       -- ne
       +>
-        [ nt { smp: "v5s7", vol: const 0.2 }
-        , nt { smp: "v4s7", vol: const 0.2 }
-        , nt { smp: "v3s7", vol: const 0.1 }
-        , nt { smp: "v2s7", vol: const 0.2 }
-        , nt { smp: "v1s7", vol: const 0.1 }
-        , nt { smp: "v0s7", vol: const 0.3 }
+        [ nt { smp: "v5s7", vol: ost $ vlfo 3.0 0.2 0.05 }
+        , nt { smp: "v4s7", vol: ost $ vlfo 4.0 0.2 0.05 }
+        , nt { smp: "v3s7", vol: ost $ vlfo 5.0 0.2 0.05 }
+        , nt { smp: "v2s7", vol: ost $ vlfo' 1.0 3.0 0.2 0.05 }
+        , nt { smp: "v1s7", vol: ost $ vlfo' 1.0 4.0 0.2 0.05 }
+        , nt { smp: "v0s7", vol: ost $ vlfo' 1.0 0.5 0.4 0.05 }
         , nt { smp: "tones:62", st: const 1.5 }
         ]
       -- soi
@@ -606,93 +670,133 @@ pitchesFull =
       --
       -- Lap
       +>
-        [ nt { smp: "v3s9" }
-        , nt { smp: "v2s9" }
-        , nt { smp: "v1s9" }
-        , nt { smp: "v0s9" }
-        , nt { smp: "tones:56" }
-        , nt { smp: "tones:56", st: const 0.3, vol: const 0.3 }
-        , nt { smp: "tones:56", st: const 0.6, vol: const 0.1 }
-        ]
+        (
+          -- abrupt fade up
+          let
+            pf = makePw ([ 0.0 /\ 0.0, 0.5 /\ 0.2, 0.7 /\ 0.8, 1.0 /\ 0.0 ])
+          in
+            [ nt { smp: "v3s9", vol: ost pf }
+            , nt { smp: "v2s9", vol: ost pf }
+            , nt { smp: "v1s9", vol: ost pf }
+            , nt { smp: "v0s9", vol: ost pf }
+            , nt { smp: "tones:56", st: const 0.3, vol: const 0.3 }
+            , nt { smp: "tones:56", st: const 0.6, vol: const 0.1 }
+            ]
+        )
       -- sel
+      -- bump bump bump
       +>
-        [ nt { smp: "v3s10", st: const 0.7 }
-        , nt { smp: "v2s10", st: const 0.6 }
-        , nt { smp: "v1s10", st: const 0.5 }
-        , nt { smp: "v0s10" }
-        , nt { smp: "v0s10", st: const 0.2 }
-        , nt { smp: "v0s10", st: const 0.4 }
+        [ nt { smp: "v3s10", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.3, freq: 1.5 } }
+        , nt { smp: "v2s10", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.4, freq: 1.6 } }
+        , nt { smp: "v1s10", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.4, freq: 1.7 } }
+        , nt { smp: "v0s10", vol: ost $ max 0.0 <<< lfo { phase: 0.0, amp: 0.6, freq: 1.0 } }
         , nt { smp: "tones:16", vol: seCelVol 0.3, st: const 0.25 }
         , nt { smp: "tones:16", vol: seCelVol 0.5, st: const 0.4 }
         , nt { smp: "tones:16", vol: seCelVol 1.0, st: const 0.65 }
         , nt { smp: "tones:16", vol: seCelVol 1.0, st: const 0.85 }
         ]
-      -- le 
+      -- le
+      -- faster lfo
       +>
-        [ nt { smp: "v0s11" }
-        , nt { smp: "v1s11" }
-        , nt { smp: "v0s11", st: const 0.3 }
-        , nt { smp: "v1s11", st: const 0.3 }
-        , nt { smp: "v2s11", st: const 0.3 }
-        , nt { smp: "v0s11", st: const 0.5 }
-        , nt { smp: "v1s11", st: const 0.5 }
-        , nt { smp: "v2s11", st: const 0.5 }
-        , nt { smp: "v3s11", st: const 0.5 }
-        , nt { smp: "tones:48" }
+        [ nt { smp: "v0s11", vol: ost $ vlfo 2.0 0.18 0.05 }
+        , nt { smp: "v1s11", vol: ost $ vlfo 2.3 0.2 0.05 }
+        , nt { smp: "v2s11", vol: ost $ vlfo 2.5 0.25 0.05 }
+        , nt { smp: "v3s11", vol: ost $ vlfo 2.8 0.3 0.05 }
         , nt { smp: "tones:48", vol: seCelVol 0.4, st: const 0.3 }
         ]
       -- rau
+      -- dot dot dot dot
       +>
         [ nt { smp: "v4s12" }
         , nt { smp: "v3s12" }
         , nt { smp: "v2s12" }
         , nt { smp: "v1s12" }
         , nt { smp: "v0s12" }
+        , nt { smp: "v4s12", vol: const 0.1, st: const 0.8 }
+        , nt { smp: "v3s12", vol: const 0.1, st: const 0.8 }
+        , nt { smp: "v2s12", vol: const 0.1, st: const 0.8 }
+        , nt { smp: "v1s12", vol: const 0.1, st: const 0.8 }
+        , nt { smp: "v0s12", vol: const 0.1, st: const 0.8 }
         , nt { smp: "tones:106" }
         ]
       -- haa,
+      -- ok as is
       +>
         [ nt { smp: "v3s13" }
         , nt { smp: "v2s13" }
         , nt { smp: "v1s13" }
         , nt { smp: "v0s13" }
+        , nt { smp: "tones:36", st: const 1.0 }
         ]
       -- ne
       +>
-        [ nt { smp: "v3s14" }
-        , nt { smp: "v2s14" }
-        , nt { smp: "v1s14" }
-        , nt { smp: "v0s14" }
-        , nt { smp: "tones:36" }
-
-        ]
+        ( let
+            pf = makePw ([ 0.0 /\ 0.0, 0.3 /\ 0.3, 0.6 /\ 0.0, 0.8 /\ 0.0, 1.2 /\ 0.8, 1.5 /\ 0.0 ])
+          in
+            [ nt { smp: "v3s14", vol: ost pf }
+            , nt { smp: "v2s14", vol: ost pf }
+            , nt { smp: "v1s14", vol: ost pf }
+            , nt { smp: "v0s14", vol: ost pf }
+            ]
+        )
       --  rau
       +>
-        [ nt { smp: "v3s15" }
-        , nt { smp: "v2s15" }
-        , nt { smp: "v1s15" }
-        , nt { smp: "v0s15" }
-        , nt { smp: "tones:36", vol: seCelVol 0.4, st: const 0.3 }
-        --, nt { smp: "tones:72" }
-        --, nt { smp: "tones:90", st: const 0.8 }
-        ]
-      -- haa 
+        ( let
+            pf fctr = makePw ([ 0.0 /\ 1.0, (0.3 * fctr) /\ 0.0, (0.6 * fctr) /\ 1.0, (1.0 * fctr) /\ 0.0 ])
+          in
+            [ nt { smp: "v3s15", vol: ost $ pf 1.0 }
+            , nt { smp: "v2s15", vol: ost $ pf 1.3 }
+            , nt { smp: "v1s15", vol: ost $ pf 1.6 }
+            , nt { smp: "v0s15", vol: ost $ pf 1.8 }
+            , nt { smp: "tones:36", vol: seCelVol 0.4, st: const 0.3 }
+            ]
+        )
+      -- haa
       +>
-        [ nt { smp: "v4s16" }
-        , nt { smp: "v3s16" }
-        , nt { smp: "v2s16" }
-        , nt { smp: "v1s16" }
-        , nt { smp: "v0s16" }
+        [ nt { smp: "v4s16", vol: ost $ vlfo 2.0 0.3 0.05 }
+        , nt { smp: "v3s16", vol: ost $ vlfo' 0.2 2.1 0.2 0.05 }
+        , nt { smp: "v2s16", vol: ost $ vlfo' 0.3 2.2 0.2 0.05 }
+        , nt { smp: "v1s16", vol: ost $ vlfo' 0.4 2.3 0.1 0.05 }
+        , nt { smp: "v0s16", vol: ost $ vlfo' 0.5 2.4 0.4 0.05 }
         ]
       -- soi
       +>
-        [ nt { smp: "v3s17" }
-        , nt { smp: "v2s17" }
-        , nt { smp: "v1s17" }
-        , nt { smp: "v0s17" }
-        , nt { smp: "licks2:44" }
-        ]
-      -- 
+        ( let
+            coff v t = max 0.0 <<< calcSlope 0.0 v (t * 3.0) 0.0
+          in
+            [ nt { smp: "v3s17" }
+            , nt { smp: "v2s17" }
+            , nt { smp: "v1s17" }
+            , nt { smp: "v0s17" }
+            , nt { smp: "v3s17", st: const 0.3, vol: ost $ coff 0.5 0.4 }
+            , nt { smp: "v2s17", st: const 0.3, vol: ost $ coff 0.5 0.4 }
+            , nt { smp: "v1s17", st: const 0.3, vol: ost $ coff 0.5 0.4 }
+            , nt { smp: "v0s17", st: const 0.3, vol: ost $ coff 0.5 0.4 }
+            , nt { smp: "v3s17", st: const 0.7, vol: ost $ coff 0.3 0.2 }
+            , nt { smp: "v2s17", st: const 0.7, vol: ost $ coff 0.3 0.2 }
+            , nt { smp: "v1s17", st: const 0.7, vol: ost $ coff 0.3 0.2 }
+            , nt { smp: "v0s17", st: const 0.7, vol: ost $ coff 0.3 0.2 }
+            , nt { smp: "v3s17", st: const 1.2, vol: ost $ coff 0.2 0.9 }
+            , nt { smp: "v2s17", st: const 1.2, vol: ost $ coff 0.2 0.9 }
+            , nt { smp: "v1s17", st: const 1.2, vol: ost $ coff 0.2 0.9 }
+            , nt { smp: "v0s17", st: const 1.2, vol: ost $ coff 0.2 0.9 }
+            ---
+            , nt { smp: "v3s17", st: const 3.3, vol: ost $ coff 0.9 0.4 }
+            , nt { smp: "v2s17", st: const 3.3, vol: ost $ coff 0.9 0.4 }
+            , nt { smp: "v1s17", st: const 3.3, vol: ost $ coff 0.9 0.4 }
+            , nt { smp: "v0s17", st: const 3.3, vol: ost $ coff 0.9 0.4 }
+            , nt { smp: "v3s17", st: const 3.7, vol: ost $ coff 0.4 0.2 }
+            , nt { smp: "v2s17", st: const 3.7, vol: ost $ coff 0.4 0.2 }
+            , nt { smp: "v1s17", st: const 3.7, vol: ost $ coff 0.4 0.2 }
+            , nt { smp: "v0s17", st: const 4.7, vol: ost $ coff 0.4 0.2 }
+            , nt { smp: "v3s17", st: const 4.2, vol: ost $ coff 0.2 0.9 }
+            , nt { smp: "v2s17", st: const 4.2, vol: ost $ coff 0.2 0.9 }
+            , nt { smp: "v1s17", st: const 4.2, vol: ost $ coff 0.2 0.9 }
+            , nt { smp: "v0s17", st: const 4.2, vol: ost $ coff 0.2 0.9 }
+            , nt { smp: "licks2:54" }
+            ]
+        )
+      --
       -- En
       +>
         [ nt { smp: "v5s18" }
@@ -705,38 +809,49 @@ pitchesFull =
         , nt { smp: "tones:128", st: const 0.7 }
         ]
       -- ke
+      -- V dip
       +>
-        [ nt { smp: "v4s19" }
-        , nt { smp: "v3s19" }
-        , nt { smp: "v2s19" }
-        , nt { smp: "v1s19" }
-        , nt { smp: "v0s19" }
-        ]
+        ( let
+            pf infl = makePw ([ 0.0 /\ 0.35, infl /\ 0.0, 1.0 /\ 0.35 ])
+          in
+            [ nt { smp: "v4s19", vol: ost $ pf 0.1 }
+            , nt { smp: "v3s19", vol: ost $ pf 0.3 }
+            , nt { smp: "v2s19", vol: ost $ pf 0.6 }
+            , nt { smp: "v1s19", vol: ost $ pf 1.2 }
+            , nt { smp: "v0s19", vol: ost $ pf 1.8 }
+            ]
+        )
       -- lin
+      -- fade off
       +>
-        [ nt { smp: "v4s20" }
-        , nt { smp: "v3s20" }
-        , nt { smp: "v2s20" }
-        , nt { smp: "v1s20" }
-        , nt { smp: "v0s20" }
+        [ nt { smp: "v4s20", vol: const 0.3 }
+        , nt { smp: "v3s20", vol: const 0.45 }
+        , nt { smp: "v2s20", vol: const 0.3 }
+        , nt { smp: "v1s20", vol: const 0.5 }
+        , nt { smp: "v0s20", vol: ost $ min 0.5 <<< calcSlope 0.0 0.1 0.5 0.4 }
         ]
       -- lau
       +>
-        [ nt { smp: "v4s21" }
-        , nt { smp: "v3s21" }
-        , nt { smp: "v2s21" }
-        , nt { smp: "v1s21" }
-        , nt { smp: "v0s21" }
-        , nt { smp: "tones:72" }
-        ]
+        ( let
+            pf infl = makePw ([ 0.0 /\ 0.2, infl /\ 1.0 ])
+          in
+
+            [ nt { smp: "v4s21", vol: ost $ pf 1.0 }
+            , nt { smp: "v3s21", vol: ost $ pf 1.8 }
+            , nt { smp: "v2s21", vol: ost $ pf 1.1 }
+            , nt { smp: "v1s21", vol: ost $ pf 0.8 }
+            , nt { smp: "v0s21", vol: ost $ pf 0.4 }
+            , nt { smp: "tones:72" }
+            ]
+        )
       -- lu
       +>
-        [ nt { smp: "v5s22" }
-        , nt { smp: "v4s22" }
-        , nt { smp: "v3s22" }
-        , nt { smp: "v2s22" }
-        , nt { smp: "v1s22" }
-        , nt { smp: "v0s22" }
+        [ nt { smp: "v5s22", vol: const 0.4 }
+        , nt { smp: "v4s22", vol: const 0.4 }
+        , nt { smp: "v3s22", vol: const 0.4 }
+        , nt { smp: "v2s22", vol: const 0.4 }
+        , nt { smp: "v1s22", vol: const 0.4 }
+        , nt { smp: "v0s22", vol: const 0.4 }
         , nt { smp: "tones:48" }
         ]
       -- rau
@@ -749,7 +864,7 @@ pitchesFull =
         , nt { smp: "tones:28", vol: seCelVol 0.4 }
         , nt { smp: "tones:28", vol: seCelVol 0.7, st: const 0.4 }
         ]
-      -- haa, 
+      -- haa,
       +>
         [ nt { smp: "v4s24" }
         , nt { smp: "v3s24" }
@@ -765,7 +880,7 @@ pitchesFull =
         , nt { smp: "v0s25" }
         , nt { smp: "licks2:10" }
         ]
-      -- haa 
+      -- haa
       +>
         [ nt { smp: "v3s26" }
         , nt { smp: "v2s26" }
@@ -790,10 +905,10 @@ pitchesFull =
         , nt { smp: "v1s28" }
         , nt { smp: "v0s28" }
         ]
-      -- 
+      --
       -- Sei
       +> [ nt { smp: "v1s29" }, nt { smp: "v0s29" } ]
-      -- men 
+      -- men
       +>
         [ nt { smp: "v3s30" }
         , nt { smp: "v2s30" }
@@ -809,7 +924,7 @@ pitchesFull =
         , nt { smp: "v1s31" }
         , nt { smp: "v0s31" }
         ]
-      -- la'' 
+      -- la''
       +>
         [ nt { smp: "v7s32" }
         , nt { smp: "v6s32" }
@@ -832,7 +947,7 @@ pitchesFull =
         , nt { smp: "v0s33" }
         , nt { smp: "tones:8" }
         ]
-      -- lun 
+      -- lun
       +> [ nt { smp: "v1s34" }, nt { smp: "v0s34" } ]
       -- ta''h
       +>
@@ -845,7 +960,7 @@ pitchesFull =
         , nt { smp: "v1s35" }
         , nt { smp: "v0s35" }
         ]
-      -- ti 
+      -- ti
       +>
         [ nt { smp: "v5s36" }
         , nt { smp: "v4s36" }
@@ -913,7 +1028,7 @@ pitchesFull =
         , nt { smp: "tones:132" }
         , nt { smp: "tones:132", st: const 0.4 }
         ]
-      -- miin 
+      -- miin
       +>
         [ nt { smp: "v4s45" }
         , nt { smp: "v3s45" }
@@ -939,7 +1054,7 @@ pitchesFull =
         , nt { smp: "v1s47" }
         , nt { smp: "v0s47" }
         ]
-      -- sen 
+      -- sen
       +>
         [ nt { smp: "v5s48" }
         , nt { smp: "v4s48" }
@@ -948,7 +1063,7 @@ pitchesFull =
         , nt { smp: "v1s48" }
         , nt { smp: "v0s48" }
         ]
-      -- nyt 
+      -- nyt
       +>
         [ nt { smp: "v5s49" }
         , nt { smp: "v4s49" }
@@ -1004,7 +1119,7 @@ pitchesFull =
         , nt { smp: "v1s54" }
         , nt { smp: "v0s54" }
         ]
-      -- nen 
+      -- nen
       +>
         [ nt { smp: "v4s55" }
         , nt { smp: "v3s55" }
@@ -1022,7 +1137,7 @@ pitchesFull =
         , nt { smp: "v1s56" }
         , nt { smp: "v0s56" }
         ]
-      -- tii 
+      -- tii
       +>
         [ nt { smp: "v2s57" }
         , nt { smp: "v1s57" }
@@ -1038,7 +1153,7 @@ pitchesFull =
         , nt { smp: "v1s58" }
         , nt { smp: "v0s58" }
         ]
-      -- men 
+      -- men
       +>
         [ nt { smp: "v4s59" }
         , nt { smp: "v3s59" }

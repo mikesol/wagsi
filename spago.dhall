@@ -45,6 +45,7 @@ You can edit this file as you like.
   , "transformers"
   , "tuples"
   , "typelevel"
+  , "unsafe-coerce"
   , "wags"
   , "wags-lib"
   , "web-html"
