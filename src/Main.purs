@@ -4,11 +4,10 @@ import Prelude
 
 import Control.Comonad.Cofree (Cofree, (:<))
 import Control.Promise (toAffE)
-import Foreign.Object as Object
 import Data.Either (Either(..), either)
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..), maybe)
-import Data.Newtype (unwrap)
+import Data.Newtype (unwrap, wrap)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Pos)
@@ -20,8 +19,9 @@ import Effect.Class (class MonadEffect)
 import Effect.Class.Console as Log
 import Effect.Ref as Ref
 import FRP.Behavior (Behavior, behavior)
-import FRP.Event (create, makeEvent, subscribe)
+import FRP.Event (makeEvent, subscribe)
 import Foreign (Foreign)
+import Foreign.Object as Object
 import Halogen (SubscriptionId)
 import Halogen as H
 import Halogen.Aff (awaitBody, runHalogenAff)
@@ -34,6 +34,7 @@ import WAGS.Interpret (close, context, contextResume, contextState, makeFFIAudio
 import WAGS.Lib.Learn (Analysers, FullSceneBuilder(..))
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Engine (engine)
+import WAGS.Lib.Tidal.Tidal (openFuture)
 import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, TidalRes)
 import WAGS.Lib.Tidal.Util (doDownloads)
 import WAGS.Run (Run, run)
@@ -249,6 +250,7 @@ handleAction = case _ of
     handleAction StopAudio
     { bufCache, exampleWag } <- H.get
     let ohBehave = r2b bufCache
+    nextRef <- H.liftEffect $ Ref.new $ openFuture (wrap 1.0)
     H.modify_ _ { audioStarted = true, canStopAudio = false, doingGraphRendering = true }
     { emitter, listener } <- H.liftEffect HS.create
     unsubscribeFromHalogen <- H.subscribe emitter
@@ -262,15 +264,15 @@ handleAction = case _ of
           LiveCoding -> do
             -- we prime the pump by pushing an empty future
             H.liftEffect (cachedSrc Nothing Just >>= flip for_ (HS.notify listener <<< Src <<< Just))
-            theFuture <- H.liftEffect create
             unsub0 <- H.liftEffect $ subscribe wag \whatsNext ->
               do
-                launchAff_ $ doDownloads ctx bufCache mempty identity whatsNext
-                theFuture.push whatsNext
+                launchAff_ do
+                  doDownloads ctx bufCache mempty identity whatsNext
+                  H.liftEffect $ Ref.write whatsNext nextRef
             unsub1 <- H.liftEffect $ subscribe src
               (HS.notify listener <<< Src <<< Just)
             H.liftEffect $ HS.notify listener GraphRenderingDone
-            let FullSceneBuilder { triggerWorld, piece } = engine (pure unit) (map (const <<< const) theFuture.event) (Left ohBehave)
+            let FullSceneBuilder { triggerWorld, piece } = engine (pure unit) (map (const <<< const) (r2b nextRef)) (Left ohBehave)
             trigger /\ world <- H.liftAff $ snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
             unsub2 <- H.liftEffect $ subscribe
               (run trigger world { easingAlgorithm } ffiAudio piece)
@@ -278,7 +280,7 @@ handleAction = case _ of
             cw' <- H.liftEffect $ cachedWag Nothing Just
             for_ cw' \cw -> H.liftAff do
               doDownloads ctx bufCache (const $ pure unit) identity cw
-              H.liftEffect $ theFuture.push cw
+              H.liftEffect $ Ref.write cw nextRef
             pure { ctx, unsubscribeFromWags: unsub0 *> unsub1 *> unsub2 }
           Example -> do
             doDownloads ctx bufCache (const $ pure unit) ((#) { clockTime: 0.0 }) exampleWag

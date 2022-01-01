@@ -96,7 +96,7 @@ sectionMap = join $
     <> rp 5 [ 5 /\ 8 ]
     <> rp 5 [ 9 /\ 17 ]
     <> rp 5 [ 18 /\ 22 ]
-    <> rp 5 [ 23 /\ 28 ]
+    <> rp 3 [ 23 /\ 28 ]
     <> rp 1 [ 29 /\ 40 ]
 
 voice1PanFrequency = 0.38 :: Number
@@ -422,9 +422,9 @@ durationsFull =
   -- rau
   3.2
     -- haa
-    +> 2.9
+    +> 1.5
     -- vain
-    +> 3.5
+    +> 2.9
     -- rau
     +> 5.0
     -- haa
@@ -705,10 +705,10 @@ pitchesFull =
       -- le
       -- faster lfo
       +>
-        [ nt { smp: "v0s11", vol: ost $ vlfo 2.0 0.18 0.05 }
-        , nt { smp: "v1s11", vol: ost $ vlfo 2.3 0.2 0.05 }
-        , nt { smp: "v2s11", vol: ost $ vlfo 2.5 0.25 0.05 }
-        , nt { smp: "v3s11", vol: ost $ vlfo 2.8 0.3 0.05 }
+        [ nt { smp: "v0s11" }
+        -- , nt { smp: "v1s11" }
+        -- , nt { smp: "v2s11" }
+        -- , nt { smp: "v3s11" }
         , nt { smp: "tones:48", vol: seCelVol 0.4 }
         ]
       -- rau
@@ -997,7 +997,7 @@ pitchesFull =
         -- nt { smp: "v2s35", vol: ost $ vlfo 1.0 0.15 0.02 }
         , nt { smp: "v1s35" }
         , nt { smp: "v0s35" }
-        , nt { smp: "tones:36" }
+        -- , nt { smp: "tones:36" }
         ]
       -- ti
       +>
