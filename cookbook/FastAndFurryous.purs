@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.Wagged where
+module WAGSI.Cookbook.FastAndFurryous where
 
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, s)
