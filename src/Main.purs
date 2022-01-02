@@ -8,10 +8,8 @@ import Data.Either (Either(..), either)
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap, wrap)
-import Data.Tuple (fst, snd)
-import Data.Tuple.Nested ((/\), type (/\))
-import Data.Typelevel.Num (class Pos)
-import Data.Vec as V
+import Data.Tuple (snd)
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (launchAff_, try)
 import Effect.Aff.Class (class MonadAff)
@@ -30,7 +28,7 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
-import WAGS.Interpret (close, context, contextResume, contextState, makeFFIAudioSnapshot, makePeriodicWave)
+import WAGS.Interpret (close, context, contextResume, contextState, makeFFIAudioSnapshot)
 import WAGS.Lib.Learn (Analysers, FullSceneBuilder(..))
 import WAGS.Lib.Tidal (AFuture)
 import WAGS.Lib.Tidal.Engine (engine)
@@ -38,7 +36,7 @@ import WAGS.Lib.Tidal.Tidal (openFuture)
 import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, TidalRes)
 import WAGS.Lib.Tidal.Util (doDownloads)
 import WAGS.Run (Run, run)
-import WAGS.WebAPI (AudioContext, BrowserPeriodicWave)
+import WAGS.WebAPI (AudioContext)
 import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Repl (src, wag)
 import WAGSI.Plumbing.WagsiMode (WagsiMode(..), wagsiMode)
@@ -198,17 +196,6 @@ render
         , HH.div [ classes [ "flex-grow" ] ] []
         ]
     ]
-
-makeOsc
-  :: ∀ m s
-   . MonadEffect m
-  => Pos s
-  => AudioContext
-  -> (V.Vec s Number) /\ (V.Vec s Number)
-  -> m BrowserPeriodicWave
-makeOsc ctx o =
-  H.liftEffect
-    $ makePeriodicWave ctx (fst o) (snd o)
 
 easingAlgorithm :: Cofree ((->) Int) Int
 easingAlgorithm =
