@@ -198,18 +198,6 @@ render
         , HH.div [ classes [ "flex-grow" ] ] []
         ]
     ]
-
-makeOsc
-  :: ∀ m s
-   . MonadEffect m
-  => Pos s
-  => AudioContext
-  -> (V.Vec s Number) /\ (V.Vec s Number)
-  -> m BrowserPeriodicWave
-makeOsc ctx o =
-  H.liftEffect
-    $ makePeriodicWave ctx (fst o) (snd o)
-
 easingAlgorithm :: Cofree ((->) Int) Int
 easingAlgorithm =
   let
