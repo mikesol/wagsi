@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.Wagged where
+module WAGSI.Cookbook.Swingin where
 
 import Prelude
 
@@ -42,5 +42,5 @@ wag =
     bd
     hh
     """
-    , title: "rossssss"
+    , title: "swing it!"
     }
