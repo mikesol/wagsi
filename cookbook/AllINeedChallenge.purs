@@ -1,4 +1,4 @@
-module WAGSI.LiveCodeHere.Wagged where
+module WAGSI.Cookbook.AllINeed where
 
 import Prelude
 
