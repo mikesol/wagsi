@@ -1,4 +1,4 @@
-module WAGSI.Cookbook.Kiss where
+module WAGSI.Cookbook.AllINeed where
 
 import Prelude
 
