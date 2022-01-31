@@ -41,7 +41,7 @@ wag = make 6.0
         --  - 0.03 * fallFromTo (6.0 / 16.0) (14.0 / 16.0) normalizedBigCycleTime
         --  + 0.05 * fallFromTo (14.0 / 16.0) (16.0 / 16.0) normalizedBigCycleTime
     )
-     $ parse_ seq4
+     $ parse_ seq2
   , fire:  s
     $ onTag "dlang" (changeRate (const 0.5))
     $ onTag "kt" (changeRate (const 4.0))
