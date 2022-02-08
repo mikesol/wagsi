@@ -8,7 +8,7 @@ import Data.Profunctor (lcmap)
 import Math ((%))
 import WAGS.Create.Optionals (highpass, pan)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (changeRate, changeVolume, lvt, make, onTag, parse_, s)
 

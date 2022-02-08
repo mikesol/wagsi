@@ -30,7 +30,7 @@ import Halogen.Subscription as HS
 import Halogen.VDom.Driver (runUI)
 import WAGS.Interpret (close, context, contextResume, contextState, makeFFIAudioSnapshot)
 import WAGS.Lib.Learn (Analysers, FullSceneBuilder(..))
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Engine (engine)
 import WAGS.Lib.Tidal.Tidal (openFuture)
 import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, TidalRes, emptyCtrl)
@@ -259,7 +259,7 @@ handleAction = case _ of
             unsub1 <- H.liftEffect $ subscribe src
               (HS.notify listener <<< Src <<< Just)
             H.liftEffect $ HS.notify listener GraphRenderingDone
-            let FullSceneBuilder { triggerWorld, piece } = engine (pure unit) (map (const <<< const) (r2b nextRef)) (pure emptyCtrl) (Left ohBehave)
+            let FullSceneBuilder { triggerWorld, piece } = engine (pure unit) (map (const <<< const) (r2b nextRef)) (pure emptyCtrl) (pure $ wrap mempty) (Left ohBehave)
             trigger /\ world <- H.liftAff $ snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
             unsub2 <- H.liftEffect $ subscribe
               (run trigger world { easingAlgorithm } ffiAudio piece)
@@ -273,7 +273,7 @@ handleAction = case _ of
             doDownloads ctx bufCache (const $ pure unit) ((#) { clockTime: 0.0 }) exampleWag
             H.liftEffect $ HS.notify listener GraphRenderingDone
             H.liftEffect $ HS.notify listener (Tick $ Nothing)
-            let FullSceneBuilder { triggerWorld, piece } = engine (pure unit) (pure (const exampleWag)) (pure emptyCtrl)(Left ohBehave)
+            let FullSceneBuilder { triggerWorld, piece } = engine (pure unit) (pure (const exampleWag)) (pure emptyCtrl) (pure $ wrap mempty) (Left ohBehave)
             trigger /\ world <- H.liftAff $ snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
             unsubscribeFromWags <- H.liftEffect $ subscribe
               (run trigger world { easingAlgorithm } ffiAudio piece)

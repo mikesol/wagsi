@@ -14,7 +14,7 @@ import Prelude as Prelude
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Sounds.Gamelan as Gamelan
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (c2d, cycleFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (changeRate, lnr, lvt, make, onTag, parse_, s)

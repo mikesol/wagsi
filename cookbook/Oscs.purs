@@ -8,7 +8,7 @@ import Data.Lens (set, traversed)
 import Data.NonEmpty ((:|))
 import WAGS.Create.Optionals (bandpass, gain, highpass, pan)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle as C
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (addEffect, b_, i_, lnf, make, s)

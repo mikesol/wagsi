@@ -28,7 +28,7 @@ import Foreign.Object as Object
 import Math (pi)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Sounds.Drones (drones)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (c2d, cycleFromSample_, digeridoo, harmonium)
 import WAGS.Lib.Tidal.Samples (bigCycleTime, clockTime, initialEntropy)
 import WAGS.Lib.Tidal.Samples as S

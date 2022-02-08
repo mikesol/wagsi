@@ -8,7 +8,7 @@ import Data.Profunctor (lcmap)
 import WAGS.Lib.Tidal.Samples (initialEntropy)
 import WAGS.Lib.Tidal.Samples as S
 import WAGS.Lib.Tidal.Tidal (lns, lnv, make, onTag, parse_, s)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 wag :: AFuture
 wag = make 1.0

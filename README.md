@@ -27,7 +27,7 @@ When you start, the top-level file has the following code:
 module WAGSI.LiveCodeHere.Wagged where
 
 import WAGS.Lib.Tidal.Tidal (make, s)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 wag :: AFuture
 wag = make 1.0
@@ -43,7 +43,7 @@ Here's an example that uses mini-notation.
 ```purescript
 module WAGSI.LiveCodeHere.Wagged where
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, s)
 
 wag :: AFuture
@@ -75,7 +75,7 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (r, bassdm, bassdm_2, hh27, gab)
 import WAGS.Lib.Tidal.Tidal (make, u, s, i, b, x)
 
@@ -101,7 +101,7 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, parse_, plainly, rend)
 
 wag :: AFuture
@@ -119,7 +119,7 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import Data.Lens (set, traversed)
 import WAGS.Lib.Tidal.Tidal (lnr, make, parse_, s)
 
@@ -138,7 +138,7 @@ module WAGSI.LiveCodeHere.Wagged where
 
 import Prelude
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import Data.Lens (set, traversed)
 import WAGS.Lib.Tidal.Cycle (hh27, bassdm, r, gab)
 import WAGS.Lib.Tidal.Tidal (i, b, changeRate, make, s, u, x)
@@ -163,7 +163,7 @@ import Prelude
 
 import Data.Lens (set, traversed, view)
 import Data.Variant.Either (hush)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Samples as S
 import WAGS.Lib.Tidal.Tidal (focus, lnr, lns, make, parse_, s)
 

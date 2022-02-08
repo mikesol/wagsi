@@ -3,7 +3,7 @@ module WAGSI.Cookbook.Tink where
 import Prelude
 
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Tidal (changeRate, changeVolume, make, onTag, parse_, s)
 
 wag :: AFuture

@@ -12,7 +12,7 @@ import Data.Tuple.Nested ((/\))
 import Data.Variant.Either (right)
 import Data.Variant.Maybe (nothing)
 import Foreign.Object as Object
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..))
 import WAGS.Math (calcSlope)

@@ -3,7 +3,7 @@ module WAGSI.Cookbook.SimpleGroove where
 import Prelude
 
 import WAGS.Lib.Tidal.Tidal (make, s)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 m2 = 4.0 * 1.0 * 60.0/111.0 :: Number
 

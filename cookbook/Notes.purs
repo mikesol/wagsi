@@ -7,7 +7,7 @@ import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
 import WAGS.Create.Optionals (highpass, pan)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (changeRate, lvt, make, parse_, s)
 

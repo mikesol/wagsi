@@ -4,7 +4,7 @@ import Prelude
 
 import WAGS.Create.Optionals (bandpass, gain)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (addEffect, changeRate, changeVolume, make, onTag, parse_, s)
 -- palindromes anyone?

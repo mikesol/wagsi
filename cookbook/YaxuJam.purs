@@ -2,7 +2,7 @@ module WAGSI.Cookbook.YaxuJam where
 
 import Prelude
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (c2d, hollowair)
 import WAGS.Lib.Tidal.Tidal (changeRate, make, onTag, parse_, s)
 

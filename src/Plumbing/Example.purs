@@ -6,7 +6,7 @@ import Data.List ((:), List(..))
 import Data.Tuple.Nested ((/\))
 import WAGS.Lib.Tidal.Tidal (make, s)
 import WAGSI.Plumbing.Guards (asFofCycles)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 wag :: { clockTime :: Number } -> AFuture
 wag =

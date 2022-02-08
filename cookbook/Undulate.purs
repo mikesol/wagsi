@@ -10,7 +10,7 @@ import WAGS.Lib.Tidal.Cycle (c2d, hollowair)
 import WAGS.Lib.Tidal.Samples (clockTime)
 import WAGS.Lib.Tidal.Tidal (betwixt, derivative, ldr, ldv, lvg, make, s)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 wag :: AFuture
 wag = make 1.0

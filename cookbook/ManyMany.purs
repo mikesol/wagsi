@@ -2,7 +2,7 @@ module WAGSI.Cookbook.ManyMany where
 
 import Prelude
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Tidal (changeVolume, make, parse_, s)
 
 wag :: AFuture

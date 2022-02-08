@@ -2,7 +2,7 @@ module WAGSI.Cookbook.PollyWannaCracker where
 
 import Prelude
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (c2d, lowdark)
 import WAGS.Lib.Tidal.Tidal (changeRate, changeVolume, make, parse_, s)
 

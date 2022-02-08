@@ -19,7 +19,7 @@ import WAGS.Lib.Tidal.Cycle (pad_1)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (bufferDuration)
 import WAGS.Lib.Tidal.Tidal (i, lnbo, lnf, lnv, lvt, x, u, make, s)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Learn.Oscillator (lfo)
 
 shuffle xs = { newSeed: mkSeed 42, size: 10 } # evalGen do

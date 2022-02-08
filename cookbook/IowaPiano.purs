@@ -10,7 +10,7 @@ import Data.Tuple.Nested ((/\))
 import Data.Variant.Either (left)
 import Foreign.Object (Object)
 import Foreign.Object as Object
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Samples (initialEntropy)
 import WAGS.Lib.Tidal.Tidal (betwixt, changeVolume, lns, make, onTag, parse_, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))

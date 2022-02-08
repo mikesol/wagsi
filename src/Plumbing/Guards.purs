@@ -22,7 +22,7 @@ import Foreign.Object as Object
 import Data.Variant.Maybe (maybe)
 import WAGS.Lib.Tidal.Types (TheFuture(..))
 import WAGS.Lib.Tidal.Util (d2s, v2s)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 epsilon = 0.2 :: Number
 

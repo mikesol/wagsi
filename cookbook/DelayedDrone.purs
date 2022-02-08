@@ -10,7 +10,7 @@ import WAGS.Lib.Tidal.Cycle (c2d, lowdark)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (clockTime)
 import WAGS.Lib.Tidal.Tidal (ldt, make, s)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 wag :: AFuture
 wag = make 1.0

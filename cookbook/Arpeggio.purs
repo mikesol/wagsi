@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Lens (set, traversed)
 import Data.Profunctor (lcmap)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Samples (littleCycleTime)
 import WAGS.Lib.Tidal.Tidal (lnr, lnv, make, onTag, parse_, s)
 

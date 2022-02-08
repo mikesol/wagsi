@@ -7,7 +7,7 @@ import Data.Lens.Iso.Newtype (unto)
 import Data.Lens.Record (prop)
 import Math (floor, (%))
 import Type.Proxy (Proxy(..))
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Tidal (c2s, make, parse_, s, s2f)
 import WAGS.Lib.Tidal.Types (NoteInFlattenedTime(..), Note(..))
 

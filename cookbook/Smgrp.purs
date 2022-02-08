@@ -2,7 +2,7 @@ module WAGSI.Cookbook.Smgrp where
 
 import Prelude
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Tidal (make, s)
 
 wag0 :: AFuture

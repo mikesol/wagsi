@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Tuple.Nested ((/\))
 import Foreign.Object as Object
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Tidal (changeRate, changeVolume, make, onTag, parse_, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..))
 

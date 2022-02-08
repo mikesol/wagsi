@@ -9,7 +9,7 @@ import Effect (Effect)
 import Effect.Random (randomInt)
 import FRP.Event (Event, makeEvent)
 import Foreign.Object (Object)
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 foreign import wagHandlers :: Effect (Object (AFuture -> Effect Unit))
 

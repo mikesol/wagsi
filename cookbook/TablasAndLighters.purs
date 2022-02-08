@@ -2,7 +2,7 @@ module WAGSI.Cookbook.TablasAndLighters where
 
 import Prelude
 
-import WAGS.Lib.Tidal (AFuture)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Tidal (betwixt, changeVolume, make, onTag, parse_, s)
 import WAGS.Math (calcSlope)
 
