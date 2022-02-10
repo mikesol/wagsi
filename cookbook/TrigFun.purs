@@ -8,7 +8,7 @@ import Data.Profunctor (lcmap)
 import Math (pi, cos)
 import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Samples (normalizedBigCycleTime)
-import WAGS.Lib.Tidal.Tidal (c2s, changeRate, changeVolume, lnr, lnv, make, onTag, parse_, s, s2f)
+import WAGS.Lib.Tidal.Tidal (c2s, changeRate, changeVolume, lnr, lnv, make, onTag, parse, s, s2f)
 import WAGS.Lib.Tidal.Types (NoteInFlattenedTime(..))
 
 trigfun :: Number -> Number
@@ -24,12 +24,12 @@ wag = make 2.0
               (\i -> i { bigStartsAt = trigfun (i.bigStartsAt / i.bigCycleDuration) * i.bigCycleDuration }) <<< s2f
           )
       $ c2s
-      $ parse_ " bass:3 blip*4 "
+      $ parse " bass:3 blip*4 "
   , wind: s $ onTag "x" (changeVolume (const 0.3))
       $ onTag "x"
           ( changeRate \{ normalizedBigCycleTime: t } ->
               0.7 + (t * 0.84)
           )
-      $ parse_ "~ blip*4;x"
+      $ parse "~ blip*4;x"
   , title: "Rising blips"
   }

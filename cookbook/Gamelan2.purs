@@ -17,7 +17,7 @@ import WAGS.Lib.Sounds.Gamelan as Gamelan
 import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (c2d, cycleFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
-import WAGS.Lib.Tidal.Tidal (changeRate, lnr, lvt, make, onTag, parse_, s)
+import WAGS.Lib.Tidal.Tidal (changeRate, lnr, lvt, make, onTag, parse, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
 
 clip :: Number -> Number
@@ -41,11 +41,11 @@ wag = make 6.0
         --  - 0.03 * fallFromTo (6.0 / 16.0) (14.0 / 16.0) normalizedBigCycleTime
         --  + 0.05 * fallFromTo (14.0 / 16.0) (16.0 / 16.0) normalizedBigCycleTime
     )
-     $ parse_ seq2
+     $ parse seq2
   , fire:  s
     $ onTag "dlang" (changeRate (const 0.5))
     $ onTag "kt" (changeRate (const 4.0))
-    $  parse_ "GAp LUNG*2 ~ TONG*2 KtPL6*2 ~ KtPL6*3;kt GKSL3f ~ KPL1h DLANG*2;dlang ~ KPL1h*3 TAK ~ ~ , DHA*2;dlang ~ ~ ~ DHA ~ TAK TAK"
+    $  parse "GAp LUNG*2 ~ TONG*2 KtPL6*2 ~ KtPL6*3;kt GKSL3f ~ KPL1h DLANG*2;dlang ~ KPL1h*3 TAK ~ ~ , DHA*2;dlang ~ ~ ~ DHA ~ TAK TAK"
   , wind: map
         ( set lvt
             (lcmap unwrap \{ clockTime } -> let t = clockTime in fx

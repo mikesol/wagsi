@@ -32,7 +32,7 @@ import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (noteFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (intentionalSilenceForInternalUseOnly__Sample)
-import WAGS.Lib.Tidal.Tidal (addEffect, make, parse_, s)
+import WAGS.Lib.Tidal.Tidal (addEffect, make, parse, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..), FoT)
 import WAGS.Math (calcSlope)
 
@@ -429,7 +429,7 @@ projectToGrid n = DM.maybe (DM.maybe 0.0 _.value ub) (\lb' -> DM.maybe lb'.value
 
 wag :: AFuture
 wag = make subDur
-  { lambert: map orgFx $ s $ parse_ "ain"
+  { lambert: map orgFx $ s $ parse "ain"
   , ross: map hpFx $ s $ justNotes 3
   , earth: map myFx $ s $ justNotes 0
   , wind: map myFx $ s $ justNotes 1

@@ -6,7 +6,7 @@ import WAGS.Create.Optionals (bandpass, gain)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
-import WAGS.Lib.Tidal.Tidal (addEffect, changeRate, changeVolume, make, onTag, parse_, s)
+import WAGS.Lib.Tidal.Tidal (addEffect, changeRate, changeVolume, make, onTag, parse, s)
 -- palindromes anyone?
 -- what is this backwards?
 -- ah that's nice!
@@ -54,7 +54,7 @@ wag = make 0.9
       $ map (changeRate (\{ clockTime } -> lfo { phase: 0.0, amp: 0.05, freq: 2.0} clockTime + 1.0))
       $ onTag "nt" (changeVolume (const 0.5))
       $ onTag "nt1" (changeVolume (const 0.2))
-      $ parse_ """<
+      $ parse """<
   [psr:3]
   [psr:3 psr:3]
   [psr:3 [psr:3 bd]]

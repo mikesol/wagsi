@@ -12,7 +12,7 @@ import Foreign.Object (Object)
 import Foreign.Object as Object
 import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Samples (initialEntropy)
-import WAGS.Lib.Tidal.Tidal (betwixt, changeVolume, lns, make, onTag, parse_, s)
+import WAGS.Lib.Tidal.Tidal (betwixt, changeVolume, lns, make, onTag, parse, s)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
 import WAGS.Math (calcSlope)
 
@@ -42,7 +42,7 @@ wag = make 1.0
           ( changeVolume
               (_.sampleTime >>> (betwixt 0.0 1.0 <<< arenv))
           )
-      $ parse_ "ip:C4 ip:G4 ip:Bb4 ip:D4 ip:D5 ip:F4, ~ ip:F5;fun ~"
+      $ parse "ip:C4 ip:G4 ip:Bb4 ip:D4 ip:D5 ip:F4, ~ ip:F5;fun ~"
   , sounds: pno
   , preload: map Sample [ "ip:C5", "ip:D5", "ip:E5", "ip:F5", "ip:G5", "ip:A5", "ip:Bb5" ]
   , title: "m i n i m a l"

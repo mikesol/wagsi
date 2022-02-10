@@ -8,7 +8,7 @@ import Data.Lens.Record (prop)
 import Math (floor, (%))
 import Type.Proxy (Proxy(..))
 import WAGS.Lib.Tidal.Types (AFuture)
-import WAGS.Lib.Tidal.Tidal (c2s, make, parse_, s, s2f)
+import WAGS.Lib.Tidal.Tidal (c2s, make, parse, s, s2f)
 import WAGS.Lib.Tidal.Types (NoteInFlattenedTime(..), Note(..))
 
 tpo = 2.5 :: Number
@@ -32,7 +32,7 @@ swing = (base $ prop (Proxy :: _ "littleStartsAt")) <<< (base $ prop (Proxy :: _
 wag :: AFuture
 wag =
   make tpo
-    { earth: s $ (map <<< map) swing $ map s2f $ c2s $ parse_ """
+    { earth: s $ (map <<< map) swing $ map s2f $ c2s $ parse """
     bd
     [hh bd]
     bd

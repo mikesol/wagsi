@@ -9,7 +9,7 @@ import WAGS.Create.Optionals (highpass, pan)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
-import WAGS.Lib.Tidal.Tidal (changeRate, lvt, make, parse_, s)
+import WAGS.Lib.Tidal.Tidal (changeRate, lvt, make, parse, s)
 
 wag :: AFuture
 wag =
@@ -45,6 +45,6 @@ wag =
       ~
       newnotes:7
       ~"""
-    , wind: s $ map (changeRate (_.littleCycleTime >>> (add 0.5 <<< mul 0.5))) $ parse_ $ "chin:0 ~ chin:1 ~ ~ chin:2 ~ chin:3"
+    , wind: s $ map (changeRate (_.littleCycleTime >>> (add 0.5 <<< mul 0.5))) $ parse $ "chin:0 ~ chin:1 ~ ~ chin:2 ~ chin:3"
     , title: "notes"
     }

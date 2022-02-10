@@ -10,7 +10,7 @@ import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (c2d, harmonium, sitar_1)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (clockTime)
-import WAGS.Lib.Tidal.Tidal (changeRate, changeVolume, ldt, ldv, make, onTag, parse_, s)
+import WAGS.Lib.Tidal.Tidal (changeRate, changeVolume, ldt, ldv, make, onTag, parse, s)
 
 bells :: Number -> Number
 bells t
@@ -21,8 +21,8 @@ bells t
 
 wag :: AFuture
 wag = make 1.5
-  { earth: s $ onTag "tk" (changeRate (_.normalizedBigCycleTime >>> bells)) $ parse_ "<tabla tabla:3 tabla> ~ tabla:3 ~ , ~ tink*4;tk ~ ~ , ~ can  "
-  , wind: s $ map (changeVolume (const 0.2)) $ parse_ "~ ~ ~ <newnotes:1 newnotes:2 newnotes:3>"
+  { earth: s $ onTag "tk" (changeRate (_.normalizedBigCycleTime >>> bells)) $ parse "<tabla tabla:3 tabla> ~ tabla:3 ~ , ~ tink*4;tk ~ ~ , ~ can  "
+  , wind: s $ map (changeVolume (const 0.2)) $ parse "~ ~ ~ <newnotes:1 newnotes:2 newnotes:3>"
   , heart: set (traversed <<< ldv) (lcmap clockTime (add 0.2 <<< lfo { phase: 0.0, freq: 0.3, amp: 0.2 })) $ c2d harmonium
   , air:
       set (traversed <<< ldt)
