@@ -91,6 +91,6 @@ wag =
                           hello
                       }
                   }
-          ) $ s $ (set (traversed <<< traversed <<< lnf) false) seq22
+          ) $ s $ (set (traversed <<< traversed <<< lnf) (const false)) seq22
     , title: "oscs"
     }

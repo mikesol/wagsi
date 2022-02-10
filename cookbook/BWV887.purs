@@ -50,7 +50,7 @@ nt2nift i { n, t } =
     NoteInFlattenedTime
       { note: Note
           { sampleFoT: right (Sample $ "hcd" <> show n)
-          , forward: true
+          , forwardFoT: const true
           , rateFoT: const 1.0
           , bufferOffsetFoT: const 0.0
           , volumeFoT: lcmap unwrap \{ sampleTime } -> if sampleTime < 0.5 then 1.0 else calcSlope 0.5 1.0 2.0 0.0 sampleTime

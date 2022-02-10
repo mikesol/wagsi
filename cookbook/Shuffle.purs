@@ -32,7 +32,7 @@ hocket fwd len cyc =
   in
     i (head arr $ cyc) (map ((#) cyc) (tail arr))
 
-bkwd fwd = set (traversed <<< traversed <<< lnf) fwd
+bkwd fwd = set (traversed <<< traversed <<< lnf) (const fwd)
 
 short dv = set (traversed <<< traversed <<< lnv) $ lcmap unwrap \{ sampleTime, littleCycleDuration } ->
   let

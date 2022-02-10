@@ -390,7 +390,7 @@ nt2nift _ i { smp, st, vol, rt, bo, fw } = Just
       { note:
           set (unto Note <<< prop (Proxy :: _ "volumeFoT")) vol
             $ set (unto Note <<< prop (Proxy :: _ "rateFoT")) rt
-            $ set (unto Note <<< prop (Proxy :: _ "forward")) fw
+            $ set (unto Note <<< prop (Proxy :: _ "forwardFoT")) (const fw)
             $ set (unto Note <<< prop (Proxy :: _ "bufferOffsetFoT")) bo
             $ noteFromSample (Sample smp)
       , bigStartsAt: startsAt

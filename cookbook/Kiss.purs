@@ -80,7 +80,7 @@ sitars = map
         NoteInFlattenedTime
           { note: Note
               { sampleFoT: right S.sitar_3__Sample
-              , forward: true
+              , forwardFoT: const true
               , rateFoT: const 1.0
               , bufferOffsetFoT: const 0.0
               , volumeFoT: const 1.0
@@ -127,7 +127,7 @@ tbl = join $ mapWithIndex
                       6 -> S.tabla_24__Sample
                       7 -> S.tabla_16__Sample
                       _ -> S.intentionalSilenceForInternalUseOnly__Sample
-                  , forward: true
+                  , forwardFoT: const true
                   , rateFoT: const 1.0
                   , bufferOffsetFoT: const 0.0
                   , volumeFoT: const 1.0

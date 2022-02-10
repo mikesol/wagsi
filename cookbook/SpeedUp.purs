@@ -27,7 +27,7 @@ nt2nift len dur i =
     NoteInFlattenedTime
       { note: Note
           { sampleFoT: right (Sample $ "glitch:" <> show (i `mod` 7))
-          , forward: true
+          , forwardFoT: const true
           , rateFoT: const rt
           , bufferOffsetFoT: const 0.0
           , volumeFoT: const 1.0
