@@ -56,7 +56,7 @@ wag = make 3.2
   , sounds
   }
 
-machine ∷ Vec D16 (Vec D16 (Maybe String))
+machine :: Vec D16 (Vec D16 (Maybe String))
 machine =
   v
     1
