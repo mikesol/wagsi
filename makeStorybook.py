@@ -98,7 +98,7 @@ main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
   bufCache <- H.liftEffect $ Ref.new Object.empty
-  runStorybook {{ stories: stories bufCache, logo: Nothing }} body
+  runStorybook {{ stories: stories bufCache, logo: pure $ HH.text "stuff wags does" }} body
 '''
 
 if not os.path.isdir('storybook'):
