@@ -33,6 +33,4 @@ seq = """<
   [psr:3 [psr:3,bd] [psr:3,notes:7] [psr:3,bd]]
   [[psr:3,notes:0] [psr:3,bd,notes:1] [psr:3,bd,[notes:6 notes:3]] [psr:3,bd,[notes:2 notes:0]]]
 >
-
-# docs @ https://mikesol.github.io/sf/yap
 """
