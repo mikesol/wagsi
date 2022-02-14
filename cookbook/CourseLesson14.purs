@@ -1,4 +1,4 @@
-module WAGSI.Cookbook.DrmMchn where
+module WAGSI.Cookbook.CourseLesson14 where
 
 import Data.Typelevel.Num
 import Prelude
@@ -52,7 +52,7 @@ sounds = map BufferUrl $ fromHomogeneous
 wag :: AFuture
 wag = make 3.2
   { earth: s muzak
-  , title: "drum mash een"
+  , title: "course - lesson 14 - drum machine"
   , sounds
   }
 
