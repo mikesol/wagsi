@@ -11,6 +11,7 @@ import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (gain)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
+import WAGS.Lib.Sounds.Drones as Drones
 import WAGS.Lib.Tidal.Cycle (c2d)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (ldr, ldv, lvt, make, numericTumult, oscWarp, parse, s)
@@ -47,4 +48,5 @@ wag = make 1.0
               )
         ) $ c2d $ parse "hollowair"
   , title: "Undulating drone"
+  , sounds: Drones.drones
   }
