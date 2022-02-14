@@ -27,7 +27,7 @@ wag =
         ) $ s $ onTag "ph" (changeRate \{ normalizedSampleTime: t } -> min 1.2 (1.0 + t*0.3) )
            $ onTag "print" (changeVolume \{ normalizedSampleTime: _ } -> 0.2 )
            $ onTag "pk" (changeRate \{ normalizedSampleTime: t } -> 0.7 - t*0.2 )
-           $ onTag "kt" (changeRate \{ normalizedSampleTime: t } -> min 1.0 (0.6 + t*0.8) ) $ parse "psr:3 ~ [~ chin*4] ~ ~ [psr:3;ph psr:3;ph ~ ] _ _ , [~ ~ ~ <psr:1;print kurt:0;print> ] kurt:5;kt , ~ ~ pluck:1;pk ~ ~ ~ ~ ~ "
+           $ onTag "kt" (changeRate \{ normalizedSampleTime: t } -> min 1.0 (0.6 + t*0.8) ) $ parse "psr:3 [~ chin*4] ~ [psr:3;ph psr:3;ph ~ ] _ _ , [~ ~ ~ <psr:1;print kurt:0;print> ] kurt:5;kt , ~ ~ pluck:1;pk ~ ~ ~ ~ ~ "
     , fire: map
         ( set lvt
             (lcmap (getNow >>> unwrap) \{ clockTime } -> fx
