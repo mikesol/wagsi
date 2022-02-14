@@ -20,6 +20,6 @@ wag =
         $ parse (Proxy :: _ "hh hh hh hh hh hh hh hh hh hh hh hh hh hh hh hh")
     , fire: s
         $ onTag "c0" (changeVolume (const 0.8))
-        $ parse (Proxy :: _ "~ clap;c0 ~ clap")
+        $ parse (Proxy :: _ "~ realclaps;c0 ~ realclaps")
     , title: "course - lesson 5 - volume and rate"
     }
