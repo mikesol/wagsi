@@ -2,8 +2,8 @@ module WAGSI.Cookbook.BWV887 where
 
 import Prelude
 
-import Data.Array.NonEmpty as NEA
 import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Array.NonEmpty as NEA
 import Data.Int (toNumber)
 import Data.Newtype (unwrap)
 import Data.NonEmpty (NonEmpty, (:|))
@@ -12,8 +12,9 @@ import Data.Tuple.Nested ((/\))
 import Data.Variant.Either (right)
 import Data.Variant.Maybe (nothing)
 import Foreign.Object as Object
-import WAGS.Lib.Tidal.Types (AFuture)
+import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (make, s)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..))
 import WAGS.Math (calcSlope)
 
@@ -53,6 +54,7 @@ nt2nift i { n, t } =
           , forwardFoT: const true
           , rateFoT: const 1.0
           , bufferOffsetFoT: const 0.0
+          , tumultFoT: const $ fx $ goodbye $ hello
           , volumeFoT: lcmap unwrap \{ sampleTime } -> if sampleTime < 0.5 then 1.0 else calcSlope 0.5 1.0 2.0 0.0 sampleTime
           }
       , bigStartsAt: startsAt

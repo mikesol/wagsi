@@ -2,14 +2,11 @@ module WAGSI.Cookbook.TrigFun where
 
 import Prelude
 
-import Data.Lens (_Just, over, set, traversed)
+import Data.Lens (over, traversed)
 import Data.Lens.Iso.Newtype (unto)
-import Data.Profunctor (lcmap)
 import Math (pi, cos)
-import WAGS.Lib.Tidal.Types (AFuture)
-import WAGS.Lib.Tidal.Samples (normalizedBigCycleTime)
-import WAGS.Lib.Tidal.Tidal (c2s, changeRate, changeVolume, lnr, lnv, make, onTag, parse, s, s2f)
-import WAGS.Lib.Tidal.Types (NoteInFlattenedTime(..))
+import WAGS.Lib.Tidal.Tidal (c2s, changeRate, changeVolume, make, onTag, parse, s, s2f)
+import WAGS.Lib.Tidal.Types (AFuture, NoteInFlattenedTime(..))
 
 trigfun :: Number -> Number
 trigfun x

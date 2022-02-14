@@ -14,13 +14,15 @@ import Test.QuickCheck.Gen (evalGen, frequency)
 import WAGS.Create.Optionals (highpass)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal.Types (AFuture)
-import WAGS.Lib.Tidal.Cycle (bd, cycleLength, hh, r)
+import WAGS.Lib.Tidal.Cycle (cycleLength, r)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
-import WAGS.Lib.Tidal.Tidal (addEffect, changeVolume, i_, make, s)
+import WAGS.Lib.Tidal.Tidal (addEffect, parse, changeVolume, i, make, s)
 import WAGS.Math (calcSlope)
+bd = parse "bd"
+hh = parse "hh"
 
 snglG = frequency $ wrap ((0.8 /\ pure bd) :| (0.2 /\ pure hh) : (0.1 /\ pure r) : Nil)
-seqG = i_ <$> snglG <*> (replicate 100 <$> snglG)
+seqG = i <$> snglG <*> (replicate 100 <$> snglG)
 seq = evalGen seqG { newSeed: mkSeed 0, size: 10 }
 l = cycleLength seq
 

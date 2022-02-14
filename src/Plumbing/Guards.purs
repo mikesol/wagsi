@@ -20,9 +20,8 @@ import Data.Tuple (fst, snd, swap)
 import Data.Tuple.Nested (type (/\), (/\))
 import Foreign.Object as Object
 import Data.Variant.Maybe (maybe)
-import WAGS.Lib.Tidal.Types (TheFuture(..))
+import WAGS.Lib.Tidal.Types (AFuture, TheFuture(..))
 import WAGS.Lib.Tidal.Util (d2s, v2s)
-import WAGS.Lib.Tidal.Types (AFuture)
 
 epsilon = 0.2 :: Number
 
@@ -39,9 +38,9 @@ asFofTime a wn = go withPreloads
   where
   sorted = sortBy (compare `on` fst) a
   makeSounds = \(TheFuture { sounds }) -> sounds
-  makePreload = \(TheFuture { earth, wind, fire, air, heart, preload }) -> Set.toUnfoldable $ Set.fromFoldable (preload
+  makePreload = \(TheFuture { earth, wind, fire, water, heart, preload }) -> Set.toUnfoldable $ Set.fromFoldable (preload
       <> fold (map v2s [ earth, wind, fire ])
-      <> (compact $ (map (maybe Nothing Just)) $ ((map <<< map) d2s [ air, heart ])))
+      <> (compact $ (map (maybe Nothing Just)) $ ((map <<< map) d2s [ water, heart ])))
   allPreloads =
     ( Array.fromFoldable
         $ join

@@ -4,15 +4,15 @@ import Prelude
 
 import Data.Array ((..))
 import Data.Lens (set)
+import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
 import Data.String as String
 import Data.Tuple.Nested ((/\))
 import Data.Variant.Either (left)
 import Foreign.Object (Object)
 import Foreign.Object as Object
-import WAGS.Lib.Tidal.Types (AFuture)
-import WAGS.Lib.Tidal.Samples (initialEntropy)
 import WAGS.Lib.Tidal.Tidal (betwixt, changeVolume, lns, make, onTag, parse, s)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
 import WAGS.Math (calcSlope)
 
@@ -35,7 +35,7 @@ wag = make 1.0
       $ onTag "fun"
           ( map
               ( set lns $ left
-                  $ lcmap initialEntropy (Sample <<< e2s)
+                  $ lcmap (unwrap >>> _.initialEntropy) (Sample <<< e2s)
               )
           )
       $ map

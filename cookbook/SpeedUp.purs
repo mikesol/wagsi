@@ -12,10 +12,9 @@ import Data.Variant.Maybe (nothing)
 import Math (pow)
 import WAGS.Create.Optionals (pan)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (addEffect, make, s)
-import WAGS.Lib.Tidal.Types (Note(..), NoteInFlattenedTime(..), Sample(..))
+import WAGS.Lib.Tidal.Types (AFuture, Note(..), NoteInFlattenedTime(..), Sample(..))
 
 nt2nift ::  Int -> Number -> Int -> NoteInFlattenedTime (Note Unit)
 nt2nift len dur i =
@@ -28,6 +27,7 @@ nt2nift len dur i =
       { note: Note
           { sampleFoT: right (Sample $ "glitch:" <> show (i `mod` 7))
           , forwardFoT: const true
+          , tumultFoT: const $ fx $ goodbye hello
           , rateFoT: const rt
           , bufferOffsetFoT: const 0.0
           , volumeFoT: const 1.0
@@ -44,7 +44,9 @@ nt2nift len dur i =
       , tag: nothing
       }
 
+terminus :: Int
 terminus = 101
+totalDur :: Number
 totalDur = 8.0
 
 notes :: NonEmptyArray (NoteInFlattenedTime (Note Unit))

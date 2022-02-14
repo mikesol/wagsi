@@ -14,13 +14,11 @@ import Data.Tuple (fst, snd, Tuple(..))
 import Test.QuickCheck (arbitrary, mkSeed)
 import Test.QuickCheck.Gen (Gen, evalGen)
 import WAGS.Create.Optionals (highpass, lowpass, pan)
-import WAGS.Math (calcSlope)
-import WAGS.Lib.Tidal.Cycle (pad_1)
-import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
-import WAGS.Lib.Tidal.Samples (bufferDuration)
-import WAGS.Lib.Tidal.Tidal (i, lnbo, lnf, lnv, lvt, x, u, make, s)
-import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Learn.Oscillator (lfo)
+import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
+import WAGS.Lib.Tidal.Tidal (parse, i, lnbo, lnf, lnv, lvt, x, make, s)
+import WAGS.Lib.Tidal.Types (AFuture, getNow)
+import WAGS.Math (calcSlope)
 
 shuffle xs = { newSeed: mkSeed 42, size: 10 } # evalGen do
   ns <- traverse (flip map (arbitrary :: Gen Int) <<< Tuple) xs
@@ -44,25 +42,25 @@ short dv = set (traversed <<< traversed <<< lnv) $ lcmap unwrap \{ sampleTime, l
   in
     vl
 
-offsets l i = set (traversed <<< traversed <<< lnbo) $ lcmap bufferDuration \d -> d * (toNumber i) / toNumber l
+offsets l i = set (traversed <<< traversed <<< lnbo) $ lcmap (unwrap >>> _.bufferDuration) \d -> d * (toNumber i) / toNumber l
 
 wag :: AFuture
 wag = make 4.0
   { earth:
       map
         ( set lvt
-            (lcmap unwrap \{ clockTime } -> fx
+            (lcmap (getNow >>> unwrap) \{ clockTime } -> fx
                 ( goodbye $ pan (1.0) { myhp: lowpass (lfo { phase: 0.0, amp: 2000.0, freq: 0.4 } clockTime + 2000.0) hello }
                 )
             )
-        ) $ s $ u $ x (hocket true 8 pad_1) []
+        ) $ s $ x (hocket true 8 (parse "pad:1")) []
   , wind:
       map
         ( set lvt
-            (lcmap unwrap \{ clockTime } -> fx
+            (lcmap (getNow >>> unwrap) \{ clockTime } -> fx
                 ( goodbye $ pan (-1.0) { myhp: highpass (lfo { phase: 0.0, amp: 2000.0, freq: 0.4 } clockTime + 3000.0) hello }
                 )
             )
-        ) $ s $ u $ x (hocket false 8 pad_1) []
+        ) $ s $ x (hocket false 8 (parse "pad:1")) []
   , title: "trippy pad + backwards + filt + shuffle"
   }

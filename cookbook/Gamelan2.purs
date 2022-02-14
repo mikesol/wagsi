@@ -14,10 +14,10 @@ import Prelude as Prelude
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Sounds.Gamelan as Gamelan
-import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (c2d, cycleFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (changeRate, lnr, lvt, make, onTag, parse, s)
+import WAGS.Lib.Tidal.Types (AFuture, getNow)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Sample(..))
 
 clip :: Number -> Number
@@ -48,7 +48,7 @@ wag = make 6.0
     $  parse "GAp LUNG*2 ~ TONG*2 KtPL6*2 ~ KtPL6*3;kt GKSL3f ~ KPL1h DLANG*2;dlang ~ KPL1h*3 TAK ~ ~ , DHA*2;dlang ~ ~ ~ DHA ~ TAK TAK"
   , wind: map
         ( set lvt
-            (lcmap unwrap \{ clockTime } -> let t = clockTime in fx
+            (lcmap (getNow >>> unwrap) \{ clockTime } -> let t = clockTime in fx
             ( goodbye $ gain 1.0
                 { mymix: highpass
                     { freq: 3010.0 + lfo { phase: 0.0, freq: 0.1, amp: 3000.0 } t

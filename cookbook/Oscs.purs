@@ -1,96 +1,61 @@
-module WAGSI.Cookbook.Oscs where
+module WAGSI.Cookbook.Alphabet where
 
 import Prelude
 
-import Data.Array (replicate)
-import Data.Foldable (foldl)
-import Data.Lens (set, traversed)
-import Data.NonEmpty ((:|))
-import WAGS.Create.Optionals (bandpass, gain, highpass, pan)
+import WAGS.Create.Optionals (bandpass, gain, highpass, ref, sawtoothOsc, triangleOsc)
+import Data.Vec as V
+import Data.Typelevel.Num.Reps (d0, d1)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal.Types (AFuture)
-import WAGS.Lib.Tidal.Cycle as C
+import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
-import WAGS.Lib.Tidal.Tidal (addEffect, b_, i_, lnf, make, s)
+import WAGS.Lib.Tidal.Tidal (addEffect, make, s)
 
-fund = 256.0
-
-seq0 = C.alphabet_10 :| [ C.alphabet_13, C.alphabet_14, C.alphabet_2, C.alphabet_1, C.alphabet_7, C.alphabet_9, C.alphabet_20 ]
-
-seq1 = C.alphabet_11 :| [ C.alphabet_16, C.alphabet_15, C.alphabet_3, C.alphabet_4, C.alphabet_8 ]
-
-seq2 = C.alphabet_9 :| [ C.alphabet_12, C.alphabet_14, C.alphabet_0, C.alphabet_25, C.alphabet_6, C.alphabet_22, C.alphabet_23, C.alphabet_24, C.alphabet_17, C.alphabet_18, C.alphabet_19 ]
-
-f n s = b_ (i_ <^> s) [ i_ <^> (foldl (<>) s (replicate n s)) ]
-seq00 = f 1 seq0
-seq11 = f 2 seq1
-seq22 = f 3 seq2
-
-napply fn (h :| t) = fn h t
-
-infixr 5 napply as <^>
+f = ff 0.03
 
 wag :: AFuture
 wag =
-  make 4.6
+  make 8.0
     { earth:
         map
           ( addEffect
-              \{ clockTime } ->
-                fx $ goodbye $ gain 0.02
-                  { ipt: hello
-                  , mxr: gain 1.0
-                      { bp0: bandpass
-                          { freq: 2000.0 + lfo
-                              { phase: 0.0
-                              , freq: 0.3
-                              , amp: 1500.0
-                              }
-                              clockTime
-                          , q: 40.0
-                          }
-                          hello
-                      }
-                  }
-          ) $ s $ seq00
-    , wind:
-        map
-          ( addEffect
-              \{ clockTime } ->
-                fx $ goodbye $ gain 0.03
-                  { ipt: hello
-                  , mxr: gain 1.0
-                      { bp0: pan
-                          ( lfo
-                              { phase: 0.0
-                              , freq: 3.0
-                              , amp: 0.8
-                              }
-                              clockTime
-                          )
-                          hello
-                      }
-                  }
-          ) $ s $ seq11
-    , fire:
-        map
-          ( addEffect
-              \{ clockTime } ->
-                fx $ goodbye $ gain 0.05
-                  { ipt: hello
-                  , mxr: gain 1.0
-                      { bp0: highpass
-                          { freq: 2000.0 + lfo
-                              { phase: 0.0
-                              , freq: 0.15
-                              , amp: 1500.0
-                              }
-                              clockTime
-                          , q: 10.0
-                          }
-                          hello
-                      }
-                  }
-          ) $ s $ (set (traversed <<< traversed <<< lnf) (const false)) seq22
+              \{ clockTime, externalControl: { floats } } ->
+                let
+                  fAdd = V.index floats d0
+                  freqAdd = V.index floats d1
+                  fund = 256.0 + fAdd
+                in
+                  fx $ goodbye $ gain 1.0
+                    { ipt: hello
+                    , mxr: gain 1.0
+                        { bp0: bandpass
+                            { freq: f $ pure $ 2000.0 + freqAdd + lfo
+                                { phase: 0.0
+                                , freq: 0.3
+                                , amp: 1500.0
+                                }
+                                clockTime
+                            , q: 40.0
+                            }
+                            { oscs: ref }
+                        , bp1: highpass
+                            { freq: f $ pure $ 1500.0 + lfo
+                                { phase: 0.0
+                                , freq: 0.1
+                                , amp: 1400.0
+                                }
+                                clockTime
+                            , q: 30.0
+                            }
+                            { oscs: ref }
+                        , muted: gain 0.0
+                            { oscs: gain 1.0
+                                { osc0: sawtoothOsc (f $ pure $ fund)
+                                , osc1: triangleOsc (f $ pure $ fund * 2.0 + 10.0)
+                                }
+                            }
+                        }
+                    }
+          ) $ s $ "tink:1 tink:2 tink:3 tink:4"
     , title: "oscs"
     }

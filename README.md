@@ -76,13 +76,18 @@ module WAGSI.LiveCodeHere.Wagged where
 import Prelude
 
 import WAGS.Lib.Tidal.Types (AFuture)
-import WAGS.Lib.Tidal.Cycle (r, bassdm, bassdm_2, hh27, gab)
-import WAGS.Lib.Tidal.Tidal (make, u, s, i, b, x)
+import WAGS.Lib.Tidal.Cycle (r)
+import WAGS.Lib.Tidal.Tidal (make, parse, s, i, b, x)
+
+bassdm = parse "bassdm"
+bassdm_2 = parse "bassdm:2"
+hh27 = parse "hh27"
+gab = parse "gab"
 
 wag :: AFuture
 wag = make 2.0
   -- "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
-  { earth: s $ u $ x (i bassdm [ hh27, i bassdm_2 [ bassdm_2 ], hh27 ]) [ b (i r [ gab, r, gab ]) [ r ] ]
+  { earth: s $ x (i bassdm [ hh27, i bassdm_2 [ bassdm_2 ], hh27 ]) [ b (i r [ gab, r, gab ]) [ r ] ]
   }
 ```
 
@@ -140,12 +145,16 @@ import Prelude
 
 import WAGS.Lib.Tidal.Types (AFuture)
 import Data.Lens (set, traversed)
-import WAGS.Lib.Tidal.Cycle (hh27, bassdm, r, gab)
-import WAGS.Lib.Tidal.Tidal (i, b, changeRate, make, s, u, x)
+import WAGS.Lib.Tidal.Cycle (r)
+import WAGS.Lib.Tidal.Tidal (parse, i, b, changeRate, make, s, x)
+
+bassdm = parse "bassdm"
+hh27 = parse "hh27"
+gab = parse "gab"
 
 wag :: AFuture
 wag = make 2.0
-  { earth: s $ u
+  { earth: s
       $ x
           ( i (map (changeRate (const 0.5)) bassdm)
               [ hh27, i bassdm [ bassdm ], hh27 ]
@@ -163,15 +172,15 @@ import Prelude
 
 import Data.Lens (set, traversed, view)
 import Data.Variant.Either (hush)
+import Data.Newtype (wrap)
 import WAGS.Lib.Tidal.Types (AFuture)
-import WAGS.Lib.Tidal.Samples as S
 import WAGS.Lib.Tidal.Tidal (focus, lnr, lns, make, parse, s)
 
 wag :: AFuture
 wag = make 2.0
   { earth: s
       $ set
-          (traversed <<< traversed <<< focus (eq (pure S.gab_0__Sample) <<< hush <<< view lns) <<< lnr)
+          (traversed <<< traversed <<< focus (eq (pure (wrap "gab:0")) <<< hush <<< view lns) <<< lnr)
           (const 1.5)
       $ parse "bassdm hh27 [bassdm:2 bassdm:2] hh27 , <[~ gab ~ gab] ~>"
   }

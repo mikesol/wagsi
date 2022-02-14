@@ -28,11 +28,11 @@ import Foreign.Object as Object
 import Math (pi)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Sounds.Drones (drones)
-import WAGS.Lib.Tidal.Types (AFuture)
-import WAGS.Lib.Tidal.Cycle (c2d, cycleFromSample_, digeridoo, harmonium)
-import WAGS.Lib.Tidal.Samples (bigCycleTime, clockTime, initialEntropy)
+import WAGS.Lib.Tidal.Cycle (c2d, cycleFromSample_)
+import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples as S
-import WAGS.Lib.Tidal.Tidal (betwixt, ldr, ldv, lnv, make, s)
+import WAGS.Lib.Tidal.Tidal (betwixt, ldr, ldv, lnv, make, parse, s)
+import WAGS.Lib.Tidal.Types (AFuture, Sample(..), getNow)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..))
 import WAGS.Math (calcSlope)
 
@@ -79,8 +79,9 @@ sitars = map
       in
         NoteInFlattenedTime
           { note: Note
-              { sampleFoT: right S.sitar_3__Sample
+              { sampleFoT: right (Sample "sitar:3")
               , forwardFoT: const true
+              , tumultFoT: const $ fx $ goodbye $ hello
               , rateFoT: const 1.0
               , bufferOffsetFoT: const 0.0
               , volumeFoT: const 1.0
@@ -117,17 +118,18 @@ tbl = join $ mapWithIndex
           in
             NoteInFlattenedTime
               { note: Note
-                  { sampleFoT: left $ lcmap initialEntropy \_ -> case j' of
-                      0 -> S.tabla_24__Sample -- S.tabla_1__Sample (cors?)
-                      1 -> S.tabla_0__Sample
-                      2 -> S.tabla_6__Sample
-                      3 -> S.tabla_14__Sample
-                      4 -> S.tabla_23__Sample
-                      5 -> S.tabla_8__Sample
-                      6 -> S.tabla_24__Sample
-                      7 -> S.tabla_16__Sample
-                      _ -> S.intentionalSilenceForInternalUseOnly__Sample
+                  { sampleFoT: left $ lcmap (unwrap >>> _.initialEntropy) \_ -> case j' of
+                      0 -> Sample "tabla:24" -- S.tabla_24__Sample -- S.tabla_1__Sample (cors?)
+                      1 -> Sample "tabla:0" -- S.tabla_0__Sample
+                      2 -> Sample "tabla:6" -- S.tabla_6__Sample
+                      3 -> Sample "tabla:14" -- S.tabla_14__Sample
+                      4 -> Sample "tabla:23" -- S.tabla_23__Sample
+                      5 -> Sample "tabla:8" -- S.tabla_8__Sample
+                      6 -> Sample "tabla:24" -- S.tabla_24__Sample
+                      7 -> Sample "tabla:16" -- S.tabla_16__Sample
+                      _ -> Sample "intentionalSilenceForInternalUseOnly" -- S.intentionalSilenceForInternalUseOnly__Sample
                   , forwardFoT: const true
+                  , tumultFoT: const $ fx $ goodbye $ hello
                   , rateFoT: const 1.0
                   , bufferOffsetFoT: const 0.0
                   , volumeFoT: const 1.0
@@ -171,26 +173,27 @@ wag :: AFuture
 wag =
   make end
     { earth: s $ finalize (tbl <> sitars)
-    , wind: s $ (set (traversed <<< traversed <<< lnv) (lcmap bigCycleTime voxFade)) $ cycleFromSample_ (Sample "kissv")
+    , wind: s $ (set (traversed <<< traversed <<< lnv) (lcmap (unwrap >>> _.bigCycleTime) voxFade)) $ cycleFromSample_ (Sample "kissv")
     , heart:
         set
           (traversed <<< ldv)
-          (lcmap clockTime (mul <$> startFade <*> (add 0.4 <<< lfo { phase: 0.0, freq: 0.3, amp: 0.3 })))
+          (lcmap (getNow >>> unwrap >>> _.clockTime) (mul <$> startFade <*> (add 0.4 <<< lfo { phase: 0.0, freq: 0.3, amp: 0.3 })))
           $ set (traversed <<< ldr) (const $ 0.8)
-          $ c2d harmonium
-    , air:
+          $ c2d
+          $ parse "harmonium"
+    , water:
         set (traversed <<< ldv)
-          (lcmap clockTime (mul <$> startFade <*> (add 0.7 <<< lfo { phase: pi, freq: 0.1, amp: 0.15 }))) $ set (traversed <<< ldr) (const $ 0.75) $ c2d digeridoo
+          (lcmap (getNow >>> unwrap >>> _.clockTime) (mul <$> startFade <*> (add 0.7 <<< lfo { phase: pi, freq: 0.1, amp: 0.15 }))) $ set (traversed <<< ldr) (const $ 0.75) $ c2d $ parse "digeridoo"
     , title: "kiss"
     , preload:
-        [ S.tabla_24__Sample
-        , S.tabla_0__Sample
-        , S.tabla_6__Sample
-        , S.tabla_14__Sample
-        , S.tabla_23__Sample
-        , S.tabla_8__Sample
-        , S.tabla_24__Sample
-        , S.tabla_16__Sample
+        [ Sample "tabla:24" -- S.tabla_24__Sample -- S.tabla_1__Sample (cors?)
+        , Sample "tabla:0" -- S.tabla_0__Sample
+        , Sample "tabla:6" -- S.tabla_6__Sample
+        , Sample "tabla:14" -- S.tabla_14__Sample
+        , Sample "tabla:23" -- S.tabla_23__Sample
+        , Sample "tabla:8" -- S.tabla_8__Sample
+        , Sample "tabla:24" -- S.tabla_24__Sample
+        , Sample "tabla:16" -- S.tabla_16__Sample
         ]
     , sounds: Object.union drones $ Object.fromFoldable [ "kissv" /\ BufferUrl "https://klank-share.s3.amazonaws.com/prince/kiss/kissv.ogg" ]
     }
