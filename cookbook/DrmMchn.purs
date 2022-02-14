@@ -1,4 +1,4 @@
-module WAGSI.Cookbook.LongestNight2021 where
+module WAGSI.Cookbook.DrmMchn where
 
 import Data.Typelevel.Num
 import Prelude
