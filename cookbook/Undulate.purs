@@ -23,7 +23,7 @@ wag = make 1.0
       map
         ( set lvt \ipt -> fx $ goodbye $ gain 1.0
             { mygain: gain
-                ( ff 0.3
+                ( ff 0.03
                     $ pure
                     $ oscWarp { upTime: 1.0, downTime: 1.0, upWarp: 0.0, downWarp: 0.0 }
                         ( map
