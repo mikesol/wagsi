@@ -56,11 +56,11 @@ wag = make 3.2
   , sounds
   }
 
-machine :: Vec D16 (Vec D16 (Maybe String))
+machine ∷ Vec D16 (Vec D16 (Maybe String))
 machine =
   v
     1
-    (u "xe3" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
+    (u "xe3" 1 n 2 y 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
     2
     (u "xe2" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
     3
@@ -68,19 +68,19 @@ machine =
     4
     (u "xe0" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
     5
-    (u "xdk" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
+    (u "xdk" 1 n 2 n 3 n 4 n 5 n 6 n 7 y 8 y 9 n 10 n 11 n 12 n 13 n 14 y 15 n 16 y)
     6
     (u "xmc" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
     7
-    (u "xcp" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
+    (u "xcp" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 y 16 y)
     8
     (u "xcb" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
     9
     (u "xho" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
     10
-    (u "xhc" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
+    (u "xhc" 1 y 2 n 3 y 4 n 5 y 6 n 7 y 8 n 9 y 10 n 11 y 12 n 13 y 14 n 15 y 16 n)
     11
-    (u "xsn" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
+    (u "xsn" 1 n 2 n 3 n 4 n 5 y 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 y 14 n 15 n 16 n)
     12
     (u "xth" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
     13
@@ -88,6 +88,6 @@ machine =
     14
     (u "xtl" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
     15
-    (u "xk1" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
+    (u "xk1" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 y 15 n 16 n)
     16
-    (u "xk0" 1 n 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 n 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
+    (u "xk0" 1 y 2 n 3 n 4 n 5 n 6 n 7 n 8 n 9 y 10 n 11 n 12 n 13 n 14 n 15 n 16 n)
