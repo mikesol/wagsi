@@ -14,18 +14,19 @@ wag0 =
   make 0.4
     { earth: s $ (Proxy :: forall s. Append "future" " bd:4" s => Proxy s)
     , wind: s $ "~ hh hh hh" <> " ~ realclaps ~ realclaps"
-    , title: "course - lesson 9 - appending"
+    , title: "course"
     }
 
 wag1 :: AFuture
 wag1 =
   let
-    seq = "~" :| ["tabla2:17", "notes:3", "hh:3"]
+    seq = "~" :| [ "tabla2:17", "notes:3", "hh:3" ]
     op f = nefy f $ map parse seq
   in
     make 0.4
       { wind: s $ op i
       , fire: s $ op x
+      , title: "lesson 9"
       }
 
 wag2 :: AFuture
@@ -38,6 +39,7 @@ wag2 =
             , 0.9 /\ nl (_ { s = "notes:4" })
             ]
         )
+    , title: "appending"
     }
 
 wag :: AFuture
