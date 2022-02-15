@@ -14,14 +14,14 @@ import WAGS.Lib.Tidal.Types (AFuture)
 
 wag :: AFuture
 wag =
-  make 6.0
+  make 4.6
     { earth:
         map
           ( addEffect
               \{ buffers, silence } ->
                 fx $ goodbye $ convolver
                  (maybe silence _.buffer.forward (lookup "reverb0" buffers)) hello
-          ) $ s "future"
+          ) $ s "~ bd"
     , wind:
         map
           ( addEffect
@@ -50,6 +50,6 @@ wag =
                   }
           ) $ s "pad:1"
     , preload: map wrap [ "reverb0" ]
-    , sounds: map wrap $ singleton "reverb0" "http://reverbjs.org/Library/AbernyteGrainSilo.m4a"
+    , sounds: map wrap $ singleton "reverb0" "https://cdn.jsdelivr.net/gh/andibrae/Reverb.js/Library/AbernyteGrainSilo.m4a"
     , title: "course - lesson 10 - filters and reverb"
     }

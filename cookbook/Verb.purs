@@ -25,8 +25,8 @@ wag =
         map (verbMe "reverb1") $ s "~ bd:0 ~ ~"
     , preload: map wrap [ "reverb0", "reverb1" ]
     , sounds: map wrap $ Object.fromFoldable
-        [ "reverb0" /\ "http://reverbjs.org/Library/AbernyteGrainSilo.m4a"
-        , "reverb1" /\ "http://reverbjs.org/Library/StMarysAbbeyReconstructionPhase3.m4a"
+        [ "reverb0" /\ "https://cdn.jsdelivr.net/gh/andibrae/Reverb.js/Library/AbernyteGrainSilo.m4a"
+        , "reverb1" /\ "https://cdn.jsdelivr.net/gh/andibrae/Reverb.js/Library/StMarysAbbeyReconstructionPhase3.m4a"
         ]
     , title: "verb-re"
     }
