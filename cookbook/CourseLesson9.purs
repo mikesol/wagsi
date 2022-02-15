@@ -6,11 +6,8 @@ import Data.NonEmpty ((:|))
 import Data.Tuple.Nested ((/\))
 import Prim.Symbol (class Append)
 import Type.Proxy (Proxy(..))
-import WAGS.Lib.Tidal.Tidal (i, make, mseq, nl, parse, s, x)
+import WAGS.Lib.Tidal.Tidal (i, make, mseq, nefy, nl, parse, s, x)
 import WAGS.Lib.Tidal.Types (AFuture)
-
-wag :: AFuture
-wag = wag0 <> wag1 <> wag2
 
 wag0 :: AFuture
 wag0 =
@@ -23,11 +20,12 @@ wag0 =
 wag1 :: AFuture
 wag1 =
   let
-    op f x = f (parse x) [ parse x, parse x ]
+    seq = "~" :| ["tabla2:17", "notes:3", "hh:3"]
+    op f = nefy f $ map parse seq
   in
     make 0.4
-      { wind: s $ op i "tabla2:17"
-      , fire: s $ op x "tabla2:18"
+      { wind: s $ op i
+      , fire: s $ op x
       }
 
 wag2 :: AFuture
@@ -41,3 +39,6 @@ wag2 =
             ]
         )
     }
+
+wag :: AFuture
+wag = wag0 <> wag1 <> wag2
