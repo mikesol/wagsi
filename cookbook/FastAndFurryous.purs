@@ -1,12 +1,15 @@
 module WAGSI.Cookbook.FastAndFurryous where
 
-import WAGS.Lib.Tidal.Types (AFuture)
+import Type.Proxy (Proxy(..))
 import WAGS.Lib.Tidal.Tidal (make, s)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 wag :: AFuture
 wag =
   make 0.6
-    { earth: s """<
+    { earth: s
+        ( Proxy :: _
+            """<
   [bd bd hh*2 [notes:6, chin*4]]
   [bd bd hh*2 [notes:7, chin*4]]
   [bd bd hh*2 [notes:8, chin*4]]
@@ -31,5 +34,6 @@ wag =
   [bd hh*2 [notes:6, chin*4] bd hh*2 [notes:7, chin*4]]
 
 >"""
+        )
     , title: "Fast and Furry-ous"
     }

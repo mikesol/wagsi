@@ -7,6 +7,7 @@ import Data.Newtype (unwrap)
 import Data.Profunctor (lcmap)
 import WAGS.Create.Optionals (delay, gain, highpass, ref)
 import WAGS.Lib.Learn.Oscillator (lfo)
+import WAGS.Lib.Sounds.Drones as Drones
 import WAGS.Lib.Tidal.Cycle (c2d)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (ldt, make, parse, s)
@@ -31,4 +32,5 @@ wag = make 1.0
             )
         ) $ c2d $ parse "lowdark"
   , title: "Drone with delay"
+  , sounds: Drones.drones
   }
