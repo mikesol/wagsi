@@ -34,10 +34,10 @@ wag = make end
 type Nt = { n :: Int, t :: Int }
 
 fac :: Int -> Number
-fac i = toNumber i * 0.00037 + 3.5
+fac i = toNumber i * 0.00037 + 0.1
 
 asNea = NEA.fromNonEmpty bwv887
-end = fac (NEA.last asNea).t + 0.5 :: Number
+end = fac (NEA.last asNea).t + 3.0 :: Number
 len = NEA.length asNea :: Int
 
 notes :: NonEmptyArray (NoteInFlattenedTime (Note Unit))
