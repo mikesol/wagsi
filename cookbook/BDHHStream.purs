@@ -1,4 +1,20 @@
-module WAGSI.Cookbook.BDHHStream where
+module WAGSI.Cookbook.BDHHStream
+  ( FofTime
+  , base
+  , bd
+  , driver1
+  , driver2
+  , dur
+  , freq1
+  , freq2
+  , hh
+  , l
+  , seqG
+  , snglG
+  , vol
+  , wag
+  )
+  where
 
 import Prelude
 
@@ -10,19 +26,20 @@ import Data.NonEmpty ((:|))
 import Data.Tuple.Nested ((/\))
 import Math ((%), pi)
 import Random.LCG (mkSeed)
-import Test.QuickCheck.Gen (evalGen, frequency)
+import Test.QuickCheck.Gen (evalGen, frequency, shuffle)
 import WAGS.Create.Optionals (highpass)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (cycleLength, r)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (addEffect, parse, changeVolume, i, make, s)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Math (calcSlope)
+
 bd = parse "bd"
 hh = parse "hh"
 
-snglG = frequency $ wrap ((0.8 /\ pure bd) :| (0.2 /\ pure hh) : (0.1 /\ pure r) : Nil)
-seqG = i <$> snglG <*> (replicate 100 <$> snglG)
+snglG = [ bd, bd, hh, hh, hh ]
+seqG = i bd <$> (shuffle $ join $ replicate 10 snglG)
 seq = evalGen seqG { newSeed: mkSeed 0, size: 10 }
 l = cycleLength seq
 
@@ -51,7 +68,7 @@ dur = 1.0 / 16.0 :: Number
 wag :: AFuture
 wag =
   make (toNumber l * dur)
-    { earth :
+    { earth:
         map
           ( addEffect
               \{ clockTime } ->
