@@ -23,7 +23,7 @@ wag1 =
     seq = "~" :| [ "tabla2:17", "notes:3", "hh:3" ]
     op f = nefy f $ map parse seq
   in
-    make 0.4
+    make 0.9
       { wind: s $ op i
       , fire: s $ op x
       , title: "lesson 9"

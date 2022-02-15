@@ -436,6 +436,7 @@ wag = make subDur
   -- pndFx drains too much nrg
   , fire: map pndAltFx $ s $ justNotes 2
   , sounds
+  , title: "#AllINeedChallenge"
   }
 
 -- a useful strategy to import files
