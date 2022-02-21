@@ -53,6 +53,8 @@ bpm n { end, seq } =
         ( \x -> x
             { littleStartsAt = fac * x.littleStartsAt
             , bigStartsAt = fac * x.bigStartsAt
+            , littleCycleDuration = fac * x.littleCycleDuration
+            , bigCycleDuration = fac * x.bigCycleDuration
             }
         )
         seq
