@@ -7,6 +7,8 @@ import Data.Array.NonEmpty as NEA
 import Data.Filterable (filter)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Int (toNumber)
+import Data.Lens (over, traversed)
+import Data.Lens.Iso.Newtype (unto)
 import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..), maybe)
 import Data.NonEmpty ((:|))
@@ -19,10 +21,12 @@ import WAGS.Lib.Piecewise (APFofT, makePiecewise)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Synth (m2f)
 import WAGS.Lib.Tidal.Tidal (make, mseq, nl, s)
-import WAGS.Lib.Tidal.Types (AFuture, Note, NoteInFlattenedTime, TheFuture, TimeIs(..))
+import WAGS.Lib.Tidal.Types (AFuture, Note, NoteInFlattenedTime(..), TheFuture, TimeIs(..))
 
 wag :: AFuture
-wag = w $ zplay "0 3 2 5 03 37 24 48 37 03 25 2 3 2 1"
+wag = zplay "0 3 2 5 03 37 25 58 37 03 25 2 3 2 0 7"
+  # bpm 90.0
+  # w
 
 ------
 ------
@@ -38,6 +42,21 @@ type ZPlay event =
   { end :: Number
   , seq :: NEA.NonEmptyArray (NoteInFlattenedTime (Note event))
   }
+
+bpm :: Number -> ZPlay ~> ZPlay
+bpm n { end, seq } =
+  let
+    fac = 60.0 / n
+  in
+    { end: end * fac
+    , seq: over (traversed <<< unto NoteInFlattenedTime)
+        ( \x -> x
+            { littleStartsAt = fac * x.littleStartsAt
+            , bigStartsAt = fac * x.bigStartsAt
+            }
+        )
+        seq
+    }
 
 emptyZ = { end: 0.25, seq: mseq 0.25 ((0.0 /\ nl identity) :| []) }
 
