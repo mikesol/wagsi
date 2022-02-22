@@ -107,5 +107,5 @@ zplay s = maybe emptyZ (\arr -> { seq: mseq (toNumber $ A.length split) (NEA.toN
 w :: forall event. ZPlay event -> TheFuture event
 w { end, seq } = make end
   { earth: s seq
-  , title: "Beat with @yaxu"
+  , title: "ziffers compat"
   }
