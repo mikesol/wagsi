@@ -35,7 +35,7 @@ import WAGS.Lib.Tidal.Engine (engine)
 import WAGS.Lib.Tidal.Tidal (openFuture)
 import WAGS.Lib.Tidal.Types (BufferUrl, ForwardBackwards, TidalRes, emptyCtrl)
 import WAGS.Lib.Tidal.Util (doDownloads)
-import WAGS.Run (Run, run)
+import WAGS.Run (BehavingRun, run)
 import WAGS.WebAPI (AudioContext)
 import WAGSI.Plumbing.Example as Example
 import WAGSI.Plumbing.Repl (src, wag)
@@ -263,7 +263,7 @@ handleAction = case _ of
             trigger /\ world <- H.liftAff $ snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
             unsub2 <- H.liftEffect $ subscribe
               (run trigger world { easingAlgorithm } ffiAudio piece)
-              (\(_ :: Run TidalRes Analysers) -> pure unit)
+              (\(_ :: BehavingRun TidalRes Analysers) -> pure unit)
             cw' <- H.liftEffect $ cachedWag Nothing Just
             for_ cw' \cw -> H.liftAff do
               doDownloads ctx bufCache (const $ pure unit) identity cw
@@ -277,7 +277,7 @@ handleAction = case _ of
             trigger /\ world <- H.liftAff $ snd $ triggerWorld (ctx /\ pure (pure {} /\ pure {}))
             unsubscribeFromWags <- H.liftEffect $ subscribe
               (run trigger world { easingAlgorithm } ffiAudio piece)
-              (\(_ :: Run TidalRes Analysers) -> pure unit)
+              (\(_ :: BehavingRun TidalRes Analysers) -> pure unit)
             pure { ctx, unsubscribeFromWags }
     H.modify_
       _

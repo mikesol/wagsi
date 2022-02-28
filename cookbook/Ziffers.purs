@@ -93,7 +93,7 @@ defaultPw =
           : (0.25 /\ 0.1)
           : (0.45 /\ 0.0)
           : Nil
-    ) :: APFofT Number
+    ) :: APFofT
 
 zplay :: forall event. String -> ZPlay event
 zplay s = maybe emptyZ (\arr -> { seq: mseq (toNumber $ A.length split) (NEA.toNonEmpty arr), end: toNumber $ A.length split })

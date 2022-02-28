@@ -37,7 +37,6 @@ module WAGSI.Cookbook.RauhaaVainRauhaa where
 
 import Prelude
 
-import Data.Typelevel.Num (D63)
 import Control.Monad.State (evalState, get, put)
 import Data.Array ((!!))
 import Data.Array as Array
@@ -61,9 +60,10 @@ import Data.String as String
 import Data.String.CodeUnits (slice)
 import Data.Traversable (traverse)
 import Data.Tuple.Nested ((/\), type (/\))
+import Data.Typelevel.Num (D63)
+import Data.Unfoldable as UF
 import Data.Variant.Maybe (nothing)
 import Data.Vec (Vec, (+>))
-import Data.Unfoldable as UF
 import Data.Vec as V
 import Foreign.Object (Object, lookup)
 import Foreign.Object as Object
@@ -73,13 +73,14 @@ import Record as Record
 import Type.Proxy (Proxy(..))
 import Unsafe.Coerce (unsafeCoerce)
 import WAGS.Create.Optionals (bandpass, convolver, delay, gain, highpass, pan, ref)
+import WAGS.Graph.Paramable (paramize)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (noteFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (intentionalSilenceForInternalUseOnly__Sample)
 import WAGS.Lib.Tidal.Tidal (addEffect, make, s)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), FoT, Note(..), NoteInFlattenedTime(..), Sample(..), Voice)
 import WAGS.Math (calcSlope)
 
@@ -210,8 +211,8 @@ vocalEffects :: forall event. Int -> Voice event -> Voice event
 vocalEffects voice = addEffect
   ( \{ clockTime } ->
       fx
-        ( goodbye $ gain (ff ndg $ pure $ 1.0)
-            { mymix: gain (ff ndg $ pure $ 1.0)
+        ( goodbye $ gain (ff ndg $ paramize $ 1.0)
+            { mymix: gain (ff ndg $ paramize $ 1.0)
                 { ipt:
                     pan
                       ( if voice == 0 then lfo { amp: 0.4, freq: voice1PanFrequency, phase: 0.0 } clockTime
@@ -219,7 +220,7 @@ vocalEffects voice = addEffect
                         else ((calcSlope 0.0 0.0 end voice3PanRate clockTime) % 2.0) - 1.0
                       ) $ gain 1.0
                       { hp0: gain (0.5 + lfo { amp: 0.3, freq: 0.4, phase: 0.0 } clockTime) $ highpass
-                          { freq: ff ndg $ pure $
+                          { freq: ff ndg $ paramize $
                               lfo
                                 { amp: 1400.0
                                 , freq:
@@ -232,7 +233,7 @@ vocalEffects voice = addEffect
                                 }
                                 clockTime + 2000.0 +
                                 (if voice == 0 then 0.0 else if voice == 1 then 800.0 else 1700.0)
-                          , q: ff ndg $ pure $
+                          , q: ff ndg $ paramize $
                               ( lfo
                                   { amp: 9.0
                                   , freq: 0.13
@@ -246,7 +247,7 @@ vocalEffects voice = addEffect
                           }
                           hello
                       , bp1: gain (0.2 + lfo { amp: 0.13, freq: 0.2, phase: 0.0 } clockTime) $ bandpass
-                          { freq: ff ndg $ pure $
+                          { freq: ff ndg $ paramize $
                               lfo
                                 { amp: if voice == 0 then 50.0 else if voice == 1 then 90.0 else 130.0
                                 , freq:
@@ -259,7 +260,7 @@ vocalEffects voice = addEffect
                                 }
                                 clockTime + 450.0 +
                                 (if voice == 0 then 0.0 else if voice == 1 then 40.0 else 80.0)
-                          , q: ff ndg $ pure $
+                          , q: ff ndg $ paramize $
                               ( lfo
                                   { amp: 9.0
                                   , freq: 0.13
@@ -273,7 +274,7 @@ vocalEffects voice = addEffect
                           }
                           hello
                       , bp0: gain (0.1 + lfo { amp: 0.07, freq: 2.0, phase: pi } clockTime) $ bandpass
-                          { freq: ff ndg $ pure $
+                          { freq: ff ndg $ paramize $
                               lfo
                                 { amp: 200.0
                                 , freq:
@@ -286,7 +287,7 @@ vocalEffects voice = addEffect
                                 }
                                 clockTime + 1050.0 +
                                 (if voice == 0 then 0.0 else if voice == 1 then 240.0 else 580.0)
-                          , q: ff ndg $ pure $
+                          , q: ff ndg $ paramize $
                               ( lfo
                                   { amp: 9.0
                                   , freq: 0.13

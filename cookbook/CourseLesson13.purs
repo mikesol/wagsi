@@ -1,19 +1,21 @@
 module WAGSI.Cookbook.CourseLesson13 where
 
 import Prelude
+
 import Data.Array.NonEmpty as NEA
-import Data.List ((:), List(..))
 import Data.Int (toNumber)
+import Data.List ((:), List(..))
 import Data.NonEmpty (NonEmpty, (:|))
 import Data.Tuple (snd)
-import WAGS.Graph.Parameter (ff)
 import Data.Tuple.Nested ((/\), type (/\))
 import WAGS.Create.Optionals (gain, triangleOsc)
+import WAGS.Graph.Paramable (paramize)
+import WAGS.Graph.Parameter (ff)
+import WAGS.Lib.Piecewise (APFofT, makePiecewise)
 import WAGS.Lib.Tidal.FX (fx, hello, goodbye)
 import WAGS.Lib.Tidal.Synth (m2f)
-import WAGS.Lib.Piecewise (APFofT, makePiecewise)
-import WAGS.Lib.Tidal.Types (AFuture, TimeIs(..))
 import WAGS.Lib.Tidal.Tidal (make, s, mseq, nl)
+import WAGS.Lib.Tidal.Types (AFuture, TimeIs(..))
 
 wag :: AFuture
 wag =
@@ -24,7 +26,7 @@ wag =
           t = \(TimeIs { sampleTime: time, headroomInSeconds }) -> fx $
                  goodbye $ gain (fff (defaultPw { time, headroomInSeconds })) {
                    i: hello
-                 , s: triangleOsc (fff $ pure $ m2f $ toNumber pt)
+                 , s: triangleOsc (fff $ paramize $ m2f $ toNumber pt)
                  }
         })) score
     , title: "course - lesson 13 - synths"
@@ -41,7 +43,7 @@ defaultPw =
           : (0.21 /\ 0.1)
           : (0.32 /\ 0.0)
           : Nil
-    ) :: APFofT Number
+    ) :: APFofT
 
 fac = 0.0013 :: Number
 

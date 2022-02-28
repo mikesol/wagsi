@@ -4,11 +4,12 @@ import Prelude
 
 import Math (pow, (%))
 import WAGS.Create.Optionals (bandpass, gain, lowpass, sawtoothOsc, squareOsc)
+import WAGS.Graph.Paramable (paramize)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (addEffect, make, s)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 m = 1.2
 facH1 = 0.6
@@ -36,8 +37,8 @@ wag = make (m * 4.0)
         ( addEffect \{ clockTime } ->
             fx $ goodbye $ gain 1.0
               { bassdm: hello
-              , osc0: gain (ff 0.03 $ pure $ lfo { amp: 0.25, freq: (lfofq clockTime) / m, phase: 0.4 } clockTime + 0.52) { osc0o: lowpass { freq: 110.0, q: 7.0 } $ squareOsc (pitch clockTime) }
-              , osc1: gain ((ff 0.03 $ pure $ (lfo { amp: 0.25, freq: (lfofq clockTime) / m, phase: 0.4 } clockTime + 0.52) * facH1))  { osc1o: bandpass { freq: 330.0, q: 3.0 } $ sawtoothOsc (pitch clockTime * 1.97) }
+              , osc0: gain (ff 0.03 $ paramize $ lfo { amp: 0.25, freq: (lfofq clockTime) / m, phase: 0.4 } clockTime + 0.52) { osc0o: lowpass { freq: 110.0, q: 7.0 } $ squareOsc (pitch clockTime) }
+              , osc1: gain ((ff 0.03 $ paramize $ (lfo { amp: 0.25, freq: (lfofq clockTime) / m, phase: 0.4 } clockTime + 0.52) * facH1))  { osc1o: bandpass { freq: 330.0, q: 3.0 } $ sawtoothOsc (pitch clockTime * 1.97) }
               }
         ) $ s "bd*8"
   , title: "dubstep"

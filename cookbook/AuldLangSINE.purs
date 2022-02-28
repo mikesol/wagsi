@@ -11,11 +11,12 @@ import Data.Tuple (fst, snd, swap)
 import Data.Tuple.Nested (type (/\), (/\))
 import Math (pow, (%))
 import WAGS.Create.Optionals (bandpass, gain, lowpass, squareOsc, triangleOsc)
+import WAGS.Graph.Paramable (paramize)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (addEffect, make, s)
+import WAGS.Lib.Tidal.Types (AFuture)
 
 makePw :: Array (Number /\ Number) -> Number -> Number
 makePw arr n = val
@@ -116,7 +117,7 @@ piecePW = makePw $ over traversed swap
   $ over (traversed <<< _1) (midiToFreq <<< toNumber)
   $ piece2
 
-pff = ff 0.03 <<< pure
+pff = ff 0.03 <<< paramize
 
 wag :: AFuture
 wag =

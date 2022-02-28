@@ -5,6 +5,7 @@ import Prelude
 import Data.Lens (set)
 import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (gain, highpass)
+import WAGS.Graph.Paramable (paramize)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Sounds.Drones as Drones
 import WAGS.Lib.Tidal.Cycle (c2d)
@@ -19,7 +20,7 @@ wag = make 1.0
         ( set ldt \ipt -> fx $ goodbye $ gain 1.0
             { myhpf: highpass
                 ( ff 0.03
-                    $ pure
+                    $ paramize
                     $ fadeTo { n: 3000.0, duration: 10.0 }
                         ( map
                             ( numericTumult 2000.0

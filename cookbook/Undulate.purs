@@ -9,6 +9,7 @@ import Data.Profunctor (lcmap)
 import Math (pi)
 import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (gain)
+import WAGS.Graph.Paramable (paramize)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Sounds.Drones as Drones
@@ -24,7 +25,7 @@ wag = make 1.0
         ( set lvt \ipt -> fx $ goodbye $ gain 1.0
             { mygain: gain
                 ( ff 0.03
-                    $ pure
+                    $ paramize
                     $ oscWarp { upTime: 1.0, downTime: 1.0, upWarp: 0.0, downWarp: 0.0 }
                         ( map
                             (numericTumult 0.0 (Proxy :: _ "makeGain") "mygain" _.gain)

@@ -6,6 +6,7 @@ import Data.Maybe (maybe)
 import Data.Newtype (wrap)
 import Foreign.Object (lookup, singleton)
 import WAGS.Create.Optionals (bandpass, highpass, lowpass, convolver, gain)
+import WAGS.Graph.Paramable (paramize)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
@@ -25,7 +26,7 @@ wag =
     , wind:
         map
           ( addEffect
-              \{ clockTime } -> let dl = ff 0.03 <<< pure in
+              \{ clockTime } -> let dl = ff 0.03 <<< paramize in
                 fx $ goodbye $ gain 1.0
                   { bp0: lowpass
                       { freq: 500.0 + lfo { amp: 250.0, freq: 0.1, phase: 0.0 } clockTime # dl

@@ -26,13 +26,14 @@ import Prim.Row (class Nub, class Union)
 import Record as Record
 import Type.Proxy (Proxy(..))
 import WAGS.Create.Optionals (bandpass, gain, highpass, pan)
+import WAGS.Graph.Paramable (paramize)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
-import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Cycle (noteFromSample)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Samples (intentionalSilenceForInternalUseOnly__Sample)
 import WAGS.Lib.Tidal.Tidal (addEffect, make, parse, s)
+import WAGS.Lib.Tidal.Types (AFuture)
 import WAGS.Lib.Tidal.Types (BufferUrl(..), Note(..), NoteInFlattenedTime(..), Sample(..), FoT)
 import WAGS.Math (calcSlope)
 
@@ -300,8 +301,8 @@ pndFx = addEffect
               $ gain 1.0
               $
                 { hp0: gain (fp true t) $ highpass 3000.0 hello
-                , bp0: gain (fp true t) $ bandpass ({ freq: mff $ pure $ lfo { phase: 0.0, freq: 0.8, amp: 600.0 } t + 2000.0, q: 6.0 }) hello
-                , bp1: gain (fp true t) $ bandpass ({ freq: mff $ pure $ lfo { phase: 0.0, freq: 0.4, amp: 350.0 } t + 1000.0, q: 6.0 }) hello
+                , bp0: gain (fp true t) $ bandpass ({ freq: mff $ paramize $ lfo { phase: 0.0, freq: 0.8, amp: 600.0 } t + 2000.0, q: 6.0 }) hello
+                , bp1: gain (fp true t) $ bandpass ({ freq: mff $ paramize $ lfo { phase: 0.0, freq: 0.4, amp: 350.0 } t + 1000.0, q: 6.0 }) hello
                 , bsk: gain (fp false t) $ hello
                 }
           )

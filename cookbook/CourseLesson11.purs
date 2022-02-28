@@ -4,13 +4,14 @@ import Prelude
 
 import Foreign.Object (singleton)
 import WAGS.Create.Optionals (delay, gain, ref)
+import WAGS.Graph.Paramable (paramize)
 import WAGS.Graph.Parameter (ff)
 import WAGS.Lib.Learn.Oscillator (lfo)
 import WAGS.Lib.Tidal.FX (fx, goodbye, hello)
 import WAGS.Lib.Tidal.Tidal (addEffect, make, s)
 import WAGS.Lib.Tidal.Types (AFuture, BufferUrl(..))
 
-f = ff 0.03 <<< pure
+f = ff 0.03 <<< paramize
 
 wag :: AFuture
 wag =
