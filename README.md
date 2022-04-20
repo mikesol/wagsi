@@ -1,3 +1,5 @@
+> This project is now read-only. It was fun while it lasted! But it was made obsolete by the release of `wags@1.0.0`. Perhaps in the future some of these ideas will be brought back to life, but many of them existed to try to bend a rendering loop into something it wasn't, and `wags@1.0.0` novel approach to events makes a lot of this machinery unnecessary. Check out the [new wags](https://github.com/mikesol/purescript-wags) for ideas and inspiration!
+
 # WagsI
 
 Collaborative interactive music-making using [`purescript-wags`](https://github.com/mikesol/purescript-wags).
